@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="reaper-scripts" commit="af8e45a6c85824300046b615f0ecc6a4f7a33f95">
+<index version="1" name="MonkeyBars-reaper-scripts" commit="af8e45a6c85824300046b615f0ecc6a4f7a33f95">
   <category name="Example">
     <reapack name="cfillion_Hello world.lua" type="script" desc="Hello world">
       <metadata>
