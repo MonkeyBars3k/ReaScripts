@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="0baad503d03cc2b1e1136b92b05ae5ed3a3a31e8">
+<index version="1" name="MonkeyBars-ReaScripts" commit="09456bc33d445cfae54ef527494e0708fa5133fe">
   <category name="Example">
     <reapack name="cfillion_Hello world.lua" type="script" desc="Hello world">
       <metadata>
@@ -29,6 +29,9 @@ Markdown
       <version name="1.01" author="MonkeyBars" time="2021-10-07T21:06:25Z">
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/7434b4dced213193dafe50888a9db832deda0c0e/Item%20Containers/Create%20Item%20Container.lua</source>
       </version>
+      <version name="1.02" author="MonkeyBars" time="2021-10-07T21:52:23Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/09456bc33d445cfae54ef527494e0708fa5133fe/Item%20Containers/Create%20Item%20Container.lua</source>
+      </version>
     </reapack>
     <reapack name="Open Item Container.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
       <metadata>
@@ -36,6 +39,9 @@ Markdown
       </metadata>
       <version name="1.01" author="MonkeyBars" time="2021-10-07T21:18:30Z">
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/0baad503d03cc2b1e1136b92b05ae5ed3a3a31e8/Item%20Containers/Open%20Item%20Container.lua</source>
+      </version>
+      <version name="1.02" author="MonkeyBars" time="2021-10-07T21:52:23Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/09456bc33d445cfae54ef527494e0708fa5133fe/Item%20Containers/Open%20Item%20Container.lua</source>
       </version>
     </reapack>
   </category>
