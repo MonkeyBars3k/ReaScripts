@@ -9,7 +9,7 @@ matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of i
 
 MonkeyBars continues the effort under a more generic, clear name: **Item Containers**.
 
-Select items and run the action "Create Item Container.lua" to join items together into a fused item (the Item Container) **on each track** that remembers the constituent items. To open and edit Item Containers, use the "Open Item Container.lua" action.
+Select items and run the action "Create Item Container(s) from selected items.lua" to join items together into a fused item (the Item Container) **on each track** that remembers the constituent items. To open and edit Item Containers, use the "Open Item Containers.lua" action.
 
 - Item Container *re*creation **updates all instances** – you may need to zoom in/out to refresh.
 - When you **Open Item Container**, a new empty item "icc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new group that doesnt update other instances.
