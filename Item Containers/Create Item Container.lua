@@ -1,12 +1,8 @@
 -- @description Create container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts
 -- @author MonkeyBars
 -- @version 1.01
--- @changelog 
--- @provides
 -- [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
--- @donation 
--- @about 
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
