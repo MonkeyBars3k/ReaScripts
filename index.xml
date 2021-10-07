@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="241af62b0616d2ca9bbfbe48ae108487bab285c8">
+<index version="1" name="MonkeyBars-ReaScripts" commit="4f6d798108c0c24444eecdd1ad4a6cd9538bff13">
   <category name="Item Containers">
-    <reapack name="Create Item Container.lua" type="script" desc="Create container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+    <reapack name="Create Item Container(s) from selected items.lua" type="script" desc="Create Item Container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
       <metadata>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.01" author="MonkeyBars" time="2021-10-07T21:06:25Z">
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/7434b4dced213193dafe50888a9db832deda0c0e/Item%20Containers/Create%20Item%20Container.lua</source>
-      </version>
-      <version name="1.02" author="MonkeyBars" time="2021-10-07T21:52:23Z">
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/09456bc33d445cfae54ef527494e0708fa5133fe/Item%20Containers/Create%20Item%20Container.lua</source>
+      <version name="1.03" author="MonkeyBars" time="2021-10-07T23:46:33Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c6e9894b987a0ea2e55048187c39554bc743d271/Item%20Containers/Create%20Item%20Container(s)%20from%20selected%20items.lua</source>
       </version>
     </reapack>
     <reapack name="Item Container Utils.lua" type="script" desc="Tools for Item Container functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
@@ -31,15 +28,12 @@
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/241af62b0616d2ca9bbfbe48ae108487bab285c8/Item%20Containers/Item%20Container%20Utils.lua</source>
       </version>
     </reapack>
-    <reapack name="Open Item Container.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+    <reapack name="Open Item Containers.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
       <metadata>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.01" author="MonkeyBars" time="2021-10-07T21:18:30Z">
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/0baad503d03cc2b1e1136b92b05ae5ed3a3a31e8/Item%20Containers/Open%20Item%20Container.lua</source>
-      </version>
-      <version name="1.02" author="MonkeyBars" time="2021-10-07T21:52:23Z">
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/09456bc33d445cfae54ef527494e0708fa5133fe/Item%20Containers/Open%20Item%20Container.lua</source>
+      <version name="1.03" author="MonkeyBars" time="2021-10-07T23:46:50Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/4f6d798108c0c24444eecdd1ad4a6cd9538bff13/Item%20Containers/Open%20Item%20Containers.lua</source>
       </version>
     </reapack>
   </category>
@@ -53,7 +47,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Item Containers\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort under a more generic, clear name: {\b Item Containers}.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 Select items and run the action "Create Item Container.lua" to join items together into a fused item (the Item Container) {\b on each track} that remembers the constituent items. To open and edit Item Containers, use the "Open Item Container.lua" action.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Select items and run the action "Create Item Container(s) from selected items.lua" to join items together into a fused item (the Item Container) {\b on each track} that remembers the constituent items. To open and edit Item Containers, use the "Open Item Containers.lua" action.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Item Container {\i re}creation {\b updates all instances} \u8211- you may need to zoom in/out to refresh.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When you {\b Open Item Container}, a new empty item "icc" is inserted under the original items. This item has the data to recall which group these items came from \u8211- don't delete it unless you want to glue the items and make a new group that doesnt update other instances.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab If you {\b add new items} to the Item Container, select them AND at least one of the original items to make sure they get added to the existing Item Container. If you just tweak the existing items, you can select any one and recreate, and it will remember which Item Container it belongs to.\par}
