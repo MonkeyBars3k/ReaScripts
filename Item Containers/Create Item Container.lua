@@ -1,7 +1,7 @@
 -- @description Create container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts
 -- @author MonkeyBars
 -- @version 1.01
--- [main] .
+-- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 
 

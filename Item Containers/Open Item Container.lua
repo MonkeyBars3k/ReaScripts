@@ -1,8 +1,7 @@
 -- @description Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts
 -- @author MonkeyBars
 -- @version 1.01
--- @provides
--- [main] .
+-- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 
 
