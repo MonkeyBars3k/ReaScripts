@@ -9,8 +9,9 @@ matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of i
 
 MonkeyBars continues the effort under a more generic, clear name: **Item Containers**.
 
-- Currently Item Containers only work on a **single track**.
-- Item Container recreation **updates all instances** – you may need to zoom in/out to refresh.
+Select items **on a single track** and run the action "Create Item Container.lua" to join them together into a fused item (the Item Container) that remembers the constituent items. To open and edit your Item Container, use the "Open Item Container.lua" action.
+
+- Item Container *re*creation **updates all instances** – you may need to zoom in/out to refresh.
 - When you **Open Item Container**, a new empty item "icc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new group that doesnt update other instances.
 - If you **add new items** to the Item Container, select them AND at least one of the original items to make sure they get added to the existing Item Container. If you just tweak the existing items, you can select any one and recreate, and it will remember which Item Container it belongs to.
 - You can use the **empty container** "icc" to create silence at the start and end of the glued wav.
@@ -19,5 +20,6 @@ MonkeyBars continues the effort under a more generic, clear name: **Item Contain
 - Item Containers **CAN be nested inside other Item Containers**. When you update the nested Item Container, the script checks the parent item too, and updates that. Tested with 20 levels of nesting.
 - Requires **SWS Plugin Extension** of course!
 
-Future improvements include:
-- Add **Explode Item Containers** action to completely remove Item Containers and revert items to original state.
+
+Future improvements:
+- Add **Explode Item Containers** action to completely remove Item Container and revert items to original state.
