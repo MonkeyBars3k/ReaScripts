@@ -1,7 +1,6 @@
 -- @description Tools for Item Container functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts
 -- @author MonkeyBars
--- @version 1.03
--- @noindex
+-- @version 1.04
 -- @provides [nomain] Item Container Utils.lua
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about 
