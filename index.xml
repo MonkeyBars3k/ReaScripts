@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="09456bc33d445cfae54ef527494e0708fa5133fe">
+<index version="1" name="MonkeyBars-ReaScripts" commit="baa3f344ea0e7ac87ddf8d3881ec0294452d58e8">
   <category name="Example">
     <reapack name="cfillion_Hello world.lua" type="script" desc="Hello world">
       <metadata>
@@ -31,6 +31,21 @@ Markdown
       </version>
       <version name="1.02" author="MonkeyBars" time="2021-10-07T21:52:23Z">
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/09456bc33d445cfae54ef527494e0708fa5133fe/Item%20Containers/Create%20Item%20Container.lua</source>
+      </version>
+    </reapack>
+    <reapack name="Item Container Utils.lua" type="script" desc="Tools for Item Container functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 Item Containers\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.04" author="MonkeyBars" time="2021-10-07T22:09:55Z">
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/baa3f344ea0e7ac87ddf8d3881ec0294452d58e8/Item%20Containers/Item%20Container%20Utils.lua</source>
       </version>
     </reapack>
     <reapack name="Open Item Container.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
