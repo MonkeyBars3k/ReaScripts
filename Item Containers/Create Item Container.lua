@@ -6,7 +6,7 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("Glue Group Utils")
+require("Item Container Utils")
 
 
 
@@ -63,7 +63,7 @@ function glueGroup()
   reaper.Main_OnCommand(1011, 0)
   reaper.Main_OnCommand(1012, 0)
   --
-  reaper.Undo_EndBlock("Glue Group", -1)
+  reaper.Undo_EndBlock("Create Item Container", -1)
 
  end
 
@@ -122,7 +122,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
       if item_glue_group then
         -- are we attempting to nest an instance of the current glue group in itself?
         if item_glue_group == glue_group then 
-          reaper.ShowConsoleMsg("Glue Group: Error: You can't put an instance of glue group "..glue_group.." inside itself")
+          reaper.ShowConsoleMsg("Item Container: Error: You can't put an instance of item container "..glue_group.." inside itself")
           return false
         end
         -- else keep track of this items glue group to set up dependencies later

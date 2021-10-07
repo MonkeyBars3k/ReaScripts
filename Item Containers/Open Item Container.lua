@@ -6,7 +6,7 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("Glue Group Utils")
+require("Item Container Utils")
 
 
 
@@ -49,7 +49,7 @@ function unglueGroup()
     reaper.UpdateTimeline()
     reaper.UpdateArrange()
     reaper.TrackList_AdjustWindows(true)
-    reaper.Undo_EndBlock("Unglue Glue Group", -1)
+    reaper.Undo_EndBlock("Open Item Container", -1)
 
   end
 end

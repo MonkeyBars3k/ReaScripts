@@ -116,7 +116,7 @@ function setToAudioTake(item)
         reaper.SetActiveTake(reaper.GetTake(item, num_takes))
         active_take = reaper.GetActiveTake(item)
         
-        local take_name = "glue_group_render:"..math.floor(active_take_number)
+        local take_name = "item_container_render:"..math.floor(active_take_number)
 
         reaper.GetSetMediaItemTakeInfo_String(active_take, "P_NAME", take_name, true)
         reaper.SetMediaItemSelected(item, 0)
@@ -138,7 +138,7 @@ function restoreOriginalTake(item)
 
       local take_name =  reaper.GetTakeName(active_take)
       
-      local take_number = string.match(take_name, "glue_group_render:(%d+)")
+      local take_number = string.match(take_name, "item_container_render:(%d+)")
       if take_number then
         
         -- delete the rendered midi take wav
@@ -175,8 +175,8 @@ end
 
 function setItemGlueGroup(item, glue_group, not_container)
 
-  local key = "glue_group_container:"
-  if not_container then key = "glue_group:" end
+  local key = "[container]:"
+  if not_container then key = "[]:" end
 
   local name = key..glue_group
   
@@ -198,8 +198,8 @@ function getGlueGroupFromItem(item, not_container)
 
   local key, name, take
 
-  key = "glue_group_container:(%d+)"
-  if not_container then key = "glue_group:(%d+)" end
+  key = "[container]:(%d+)"
+  if not_container then key = "[]:(%d+)" end
   
   take = reaper.GetActiveTake(item)
   if take then 
@@ -223,7 +223,7 @@ function checkSelectionForContainer(num_items)
     if new_glue_group then
       -- if this search has already found another container
       if glue_group then
-        log("Glue Group: Error: The selected items contain 2 different glue_group_containers, unable to proceed.")
+        log("Item Container: Error: The selected items contain 2 different [container]s, unable to proceed.")
         return
       else
         container = item
@@ -266,7 +266,7 @@ function restoreItems( glue_group, track, position, dont_restore_take, dont_offs
       restored_item = reaper.AddMediaItemToTrack(track)
       getSetObjectState(restored_item, val)
 
-      if string.find(val, "glue_group_container:") then 
+      if string.find(val, "[container]:") then 
         container = restored_item
       elseif not return_item then
         return_item = restored_item
