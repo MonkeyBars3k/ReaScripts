@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="298893d473748b774562fca90565b8e109119970">
+<index version="1" name="MonkeyBars-ReaScripts" commit="241af62b0616d2ca9bbfbe48ae108487bab285c8">
   <category name="Item Containers">
     <reapack name="Create Item Container.lua" type="script" desc="Create container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
       <metadata>
@@ -25,6 +25,10 @@
       </metadata>
       <version name="1.04" author="MonkeyBars" time="2021-10-07T22:09:55Z">
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/baa3f344ea0e7ac87ddf8d3881ec0294452d58e8/Item%20Containers/Item%20Container%20Utils.lua</source>
+      </version>
+      <version name="1.05" author="MonkeyBars" time="2021-10-07T23:21:43Z">
+        <changelog><![CDATA[Changed item string names to "ic" & "icc" for brevity – @Julian]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/241af62b0616d2ca9bbfbe48ae108487bab285c8/Item%20Containers/Item%20Container%20Utils.lua</source>
       </version>
     </reapack>
     <reapack name="Open Item Container.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
