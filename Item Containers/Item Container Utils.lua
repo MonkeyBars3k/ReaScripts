@@ -1,6 +1,7 @@
 -- @description Tools for Item Container functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts
 -- @author MonkeyBars
--- @version 1.04
+-- @version 1.05
+-- @changelog Changed item string names to "ic" & "icc" for brevity – @Julian
 -- @provides [nomain] Item Container Utils.lua
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Item Containers
@@ -11,7 +12,7 @@
 -- 
 -- - Currently item containers only work on a **single track**.
 -- - Future improvements include:
---      - Adding **explode** action to completely remove item container
+--      - Adding **explode** action to completely remove item container and revert items to original state
 
 function deselect()
   local num = reaper.CountSelectedMediaItems(0)
@@ -172,8 +173,8 @@ end
 
 function setItemGlueGroup(item, glue_group, not_container)
 
-  local key = "[container]:"
-  if not_container then key = "[]:" end
+  local key = "icc:"
+  if not_container then key = "ic:" end
 
   local name = key..glue_group
   
@@ -195,8 +196,8 @@ function getGlueGroupFromItem(item, not_container)
 
   local key, name, take
 
-  key = "[container]:(%d+)"
-  if not_container then key = "[]:(%d+)" end
+  key = "icc:(%d+)"
+  if not_container then key = "ic:(%d+)" end
   
   take = reaper.GetActiveTake(item)
   if take then 
@@ -205,7 +206,7 @@ function getGlueGroupFromItem(item, not_container)
     return
   end
 
-  return string.match(name, key) 
+  return string.match(name, key)
 end
 
 function checkSelectionForContainer(num_items)
@@ -220,7 +221,7 @@ function checkSelectionForContainer(num_items)
     if new_glue_group then
       -- if this search has already found another container
       if glue_group then
-        log("Item Container: Error: The selected items contain 2 different [container]s, unable to proceed.")
+        log("Item Container: Error: The selected items contain 2 different icc's. Unable to proceed.")
         return
       else
         container = item
@@ -263,7 +264,7 @@ function restoreItems( glue_group, track, position, dont_restore_take, dont_offs
       restored_item = reaper.AddMediaItemToTrack(track)
       getSetObjectState(restored_item, val)
 
-      if string.find(val, "[container]:") then 
+      if string.find(val, "icc:") then 
         container = restored_item
       elseif not return_item then
         return_item = restored_item
