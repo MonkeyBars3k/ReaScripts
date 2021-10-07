@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="af8e45a6c85824300046b615f0ecc6a4f7a33f95">
+<index version="1" name="MonkeyBars-ReaScripts" commit="7434b4dced213193dafe50888a9db832deda0c0e">
   <category name="Example">
     <reapack name="cfillion_Hello world.lua" type="script" desc="Hello world">
       <metadata>
@@ -18,6 +18,16 @@ Markdown
       </metadata>
       <version name="1.0" author="cfillion" time="2021-01-04T23:30:32Z">
         <source main="main">https://github.com/cfillion/reapack-repository-template/raw/58a3e39ba95bd0f35846aa1f39aa4cb2574295e1/Example/cfillion_Hello%20world.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Item Containers">
+    <reapack name="Create Item Container.lua" type="script" desc="Create container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+      <metadata>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.01" author="MonkeyBars" time="2021-10-07T21:06:25Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/7434b4dced213193dafe50888a9db832deda0c0e/Item%20Containers/Create%20Item%20Container.lua</source>
       </version>
     </reapack>
   </category>
