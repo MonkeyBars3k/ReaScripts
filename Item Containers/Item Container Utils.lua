@@ -3,8 +3,7 @@
 -- @version 1.04
 -- @provides [nomain] Item Container Utils.lua
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
--- @about 
--- # Item Containers
+-- @about # Item Containers
 -- 
 -- matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. 
 -- 
