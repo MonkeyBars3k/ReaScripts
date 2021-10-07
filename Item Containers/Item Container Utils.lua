@@ -2,8 +2,7 @@
 -- @author MonkeyBars
 -- @version 1.02
 -- @noindex
--- @provides
--- [nomain] Item Container Utils.lua
+-- @provides [nomain] Item Container Utils.lua
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about 
 -- # Item Containers
