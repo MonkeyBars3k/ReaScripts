@@ -23,3 +23,6 @@ Select items and run the action "Create Item Container(s) from selected items.lu
 
 Future improvements:
 - Add **Explode Item Containers** action to completely remove Item Container and revert items to original state.
+
+*Changelog*:
+- 1.05 Change script names & default Item Container labels
