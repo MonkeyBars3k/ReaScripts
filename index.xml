@@ -58,6 +58,8 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension} of course!\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 Future improvements:\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Item Containers} action to completely remove Item Container and revert items to original state.\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\i Changelog}:\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.05 Change script names & default Item Container labels\sa180\par}
 }
 ]]></description>
   </metadata>
