@@ -1,8 +1,9 @@
--- @description Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts
+-- @description Reveal contents of existing container item, retaining group
 -- @author MonkeyBars
--- @version 1.03
+-- @version 1.06
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
+-- @about Adapted from matthewjumpsoffbuildings's Glue Groups scripts
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
