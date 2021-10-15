@@ -1,39 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="4f6d798108c0c24444eecdd1ad4a6cd9538bff13">
-  <category name="Item Containers">
-    <reapack name="Create Item Container(s) from selected items.lua" type="script" desc="Create Item Container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+<index version="1" name="MonkeyBars-ReaScripts" commit="ce9a5e98afe0e76f400571f300b728e50437c4b1">
+  <category name="Glue (Reversible)">
+    <reapack name="Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="Create Item Container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
       <metadata>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.03" author="MonkeyBars" time="2021-10-07T23:46:33Z">
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c6e9894b987a0ea2e55048187c39554bc743d271/Item%20Containers/Create%20Item%20Container(s)%20from%20selected%20items.lua</source>
+      <version name="1.03" author="MonkeyBars" time="2021-10-15T15:03:00Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ce9a5e98afe0e76f400571f300b728e50437c4b1/Glue%20(Reversible)/Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
-    <reapack name="Item Container Utils.lua" type="script" desc="Tools for Item Container functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+    <reapack name="Glue (Reversible) Utils.lua" type="script" desc="Tools for Glue (Reversible) functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
-{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 Item Containers\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 Glue (Reversible)\par}
 }
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.04" author="MonkeyBars" time="2021-10-07T22:09:55Z">
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/baa3f344ea0e7ac87ddf8d3881ec0294452d58e8/Item%20Containers/Item%20Container%20Utils.lua</source>
-      </version>
-      <version name="1.05" author="MonkeyBars" time="2021-10-07T23:21:43Z">
-        <changelog><![CDATA[Changed item string names to "ic" & "icc" for brevity – @Julian]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/241af62b0616d2ca9bbfbe48ae108487bab285c8/Item%20Containers/Item%20Container%20Utils.lua</source>
+      <version name="1.06" author="MonkeyBars" time="2021-10-15T15:03:00Z">
+        <changelog><![CDATA[Change nomenclature to Glue (Reversible), gr/grc item labels]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/ce9a5e98afe0e76f400571f300b728e50437c4b1/Glue%20(Reversible)/Glue%20(Reversible)%20Utils.lua</source>
       </version>
     </reapack>
-    <reapack name="Open Item Containers.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+    <reapack name="Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
       <metadata>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.03" author="MonkeyBars" time="2021-10-07T23:46:50Z">
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/4f6d798108c0c24444eecdd1ad4a6cd9538bff13/Item%20Containers/Open%20Item%20Containers.lua</source>
+      <version name="1.03" author="MonkeyBars" time="2021-10-15T15:03:00Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ce9a5e98afe0e76f400571f300b728e50437c4b1/Glue%20(Reversible)/Unglue%20(Reversible)%20-%20Reveal%20items%20joined%20with%20%22Glue%20(Reversible)%22,%20retaining%20container%20item%20&amp;%20group.lua</source>
       </version>
     </reapack>
   </category>
@@ -68,7 +65,7 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Autoname container items by first selected item.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Glue (Reversible) container items} action to completely remove container items and ungroup contained items.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 {\i Changelog}:\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.05 Change script names & default Item Container labels\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.06 Change nomenclature to Glue (Reversible), gr/grc item labels\sa180\par}
 }
 ]]></description>
   </metadata>
