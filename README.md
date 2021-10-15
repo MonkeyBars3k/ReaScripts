@@ -41,4 +41,4 @@ MonkeyBars continues the effort with some different nomenclature in the interest
 - Add **Explode Glue (Reversible) container items** action to completely remove container items and ungroup contained items.
 
 ## *Changelog*:
-- 1.05 Change script names & default Item Container labels
+- 1.06 Change nomenclature to Glue (Reversible), gr/grc item labels

@@ -1,18 +1,16 @@
--- @description Tools for Item Container functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts
+-- @description Tools for Glue (Reversible) functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts
 -- @author MonkeyBars
--- @version 1.05
--- @changelog Changed item string names to "ic" & "icc" for brevity – @Julian
--- @provides [nomain] Item Container Utils.lua
+-- @version 1.06
+-- @changelog Change nomenclature to Glue (Reversible), gr/grc item labels
+-- @provides [nomain] Glue (Reversible) Utils.lua
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
--- @about # Item Containers
+-- @about # Glue (Reversible)
 -- 
--- matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. 
--- 
--- MonkeyBars continues the effort under a more generic, clear name: **Item Containers**.
--- 
--- - Currently item containers only work on a **single track**.
--- - Future improvements include:
---      - Adding **explode** action to completely remove item container and revert items to original state
+-- To use Glue (Reversible), simply select items or make a time selection with items inside and trigger the Glue (Reversible) script.
+--
+-- To edit your glued items, Unglue (Reversible) opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible).
+--
+-- You can Glue (Reversible) existing container items, nondestructively nesting container items. There is no limit in the code as to how many times you can nest.
 
 function deselect()
   local num = reaper.CountSelectedMediaItems(0)
@@ -114,7 +112,7 @@ function setToAudioTake(item)
         reaper.SetActiveTake(reaper.GetTake(item, num_takes))
         active_take = reaper.GetActiveTake(item)
         
-        local take_name = "item_container_render:"..math.floor(active_take_number)
+        local take_name = "glue_reversible_render:"..math.floor(active_take_number)
 
         reaper.GetSetMediaItemTakeInfo_String(active_take, "P_NAME", take_name, true)
         reaper.SetMediaItemSelected(item, 0)
@@ -136,7 +134,7 @@ function restoreOriginalTake(item)
 
       local take_name =  reaper.GetTakeName(active_take)
       
-      local take_number = string.match(take_name, "item_container_render:(%d+)")
+      local take_number = string.match(take_name, "glue_reversible_render:(%d+)")
       if take_number then
         
         -- delete the rendered midi take wav
@@ -173,8 +171,8 @@ end
 
 function setItemGlueGroup(item, glue_group, not_container)
 
-  local key = "icc:"
-  if not_container then key = "ic:" end
+  local key = "grc:"
+  if not_container then key = "gr:" end
 
   local name = key..glue_group
   
@@ -196,8 +194,8 @@ function getGlueGroupFromItem(item, not_container)
 
   local key, name, take
 
-  key = "icc:(%d+)"
-  if not_container then key = "ic:(%d+)" end
+  key = "grc:(%d+)"
+  if not_container then key = "gr:(%d+)" end
   
   take = reaper.GetActiveTake(item)
   if take then 
@@ -221,7 +219,7 @@ function checkSelectionForContainer(num_items)
     if new_glue_group then
       -- if this search has already found another container
       if glue_group then
-        log("Item Container: Error: The selected items contain 2 different icc's. Unable to proceed.")
+        log("Glue (Reversible): Error: The selected items contain 2 different container items. Unable to proceed.")
         return
       else
         container = item
@@ -264,7 +262,7 @@ function restoreItems( glue_group, track, position, dont_restore_take, dont_offs
       restored_item = reaper.AddMediaItemToTrack(track)
       getSetObjectState(restored_item, val)
 
-      if string.find(val, "icc:") then 
+      if string.find(val, "grc:") then 
         container = restored_item
       elseif not return_item then
         return_item = restored_item
