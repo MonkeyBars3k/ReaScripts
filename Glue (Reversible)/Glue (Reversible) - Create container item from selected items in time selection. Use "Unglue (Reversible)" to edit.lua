@@ -6,7 +6,7 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("Item Container Utils")
+require("Glue (Reversible) Utils")
 
 
 
