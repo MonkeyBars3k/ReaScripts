@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="db785e0348b38a4c3072594b2da3372d46e8aa6c">
+<index version="1" name="MonkeyBars-ReaScripts" commit="dd120322a042b25c822330a3f356f7612120e416">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="Create container item from selected items in time selection">
       <metadata>
@@ -14,6 +14,22 @@
       </metadata>
       <version name="1.07" author="MonkeyBars" time="2021-10-15T19:34:48Z">
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/db785e0348b38a4c3072594b2da3372d46e8aa6c/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="Tools for Glue (Reversible) functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 Glue (Reversible)\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.07" author="MonkeyBars" time="2021-10-15T19:39:34Z">
+        <changelog><![CDATA[Change nomenclature to Glue (Reversible), gr/grc item labels]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/dd120322a042b25c822330a3f356f7612120e416/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20Utils.lua</source>
       </version>
     </reapack>
     <reapack name="MB Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="Reveal contents of existing container item, retaining group">
