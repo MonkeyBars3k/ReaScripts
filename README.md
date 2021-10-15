@@ -22,7 +22,7 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 ### Notes
 - Copied Glue (Reversible) container items are effectively pooled; editing and regluing one container item **updates all instances** – you may need to zoom in/out to refresh.
 - When you **Unglue (Reversible)**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new group that doesnt update other instances.
-- If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you just tweak the existing items, you can select any one and recreate, and it will remember which container item it belongs to.
+- If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
 - You can use the **empty container** "grc" to create silence at the start and end of the glued wav.
 - Uses item notes/names to keep track of which container item items belong in. If you see "gr1:" or "grc1:", **don't delete it from the item's name**, as the code depends on that name to find it! You can add text to notes/names AFTER – e.g. "gr1: My extra text"
 - Even creates **MIDI container items**. Uses "Apply track FX as new take" on each item to get the wav. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active.
