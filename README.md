@@ -29,16 +29,16 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 - Item Containers **CAN be nested inside other Item Containers**. When you update the nested Item Container, the script checks the parent item too, and updates that. Tested with 20 levels of nesting.
 - Requires **SWS Plugin Extension** of course!
 
-## History
+### History
 
 matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/
 
 MonkeyBars continues the effort with some different nomenclature in the interest of onboarding new users and making it easy to find in the Actions Window.
 
 
-## Planned improvements:
+#### Planned improvements
 - Autoname container items by first selected item.
 - Add **Explode Glue (Reversible) container items** action to completely remove container items and ungroup contained items.
 
-## *Changelog*:
+#### *Changelog*:
 - 1.06 Change nomenclature to Glue (Reversible), gr/grc item labels
