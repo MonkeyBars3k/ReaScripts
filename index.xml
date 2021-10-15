@@ -72,7 +72,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Copied Glue (Reversible) container items are effectively pooled; editing and regluing one container item {\b updates all instances} \u8211- you may need to zoom in/out to refresh.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When you {\b Unglue (Reversible)}, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from \u8211- don't delete it unless you want to glue the items and make a new group that doesnt update other instances.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab If you {\b add new items} to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you just tweak the existing items, you can select any one and recreate, and it will remember which container item it belongs to.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab If you {\b add new items} to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab You can use the {\b empty container} "grc" to create silence at the start and end of the glued wav.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes/names to keep track of which container item items belong in. If you see "gr1:" or "grc1:", {\b don't delete it from the item's name}, as the code depends on that name to find it! You can add text to notes/names AFTER \u8211- e.g. "gr1: My extra text"\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Even creates {\b MIDI container items}. Uses "Apply track FX as new take" on each item to get the wav. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active.\par}
@@ -84,6 +84,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs24 Planned improvements\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Autoname container items by first selected item.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Rename Glue (Reversible) container items} script to rename all instances of container item.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Reglue (Reversible) container item} script to make a container item independent from its pool.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Glue (Reversible) container items} script to completely remove container items and ungroup contained items.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs24 {\i Changelog}:\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.06 Change nomenclature to Glue (Reversible), gr/grc item labels\sa180\par}
