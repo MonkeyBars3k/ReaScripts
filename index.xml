@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="ce9a5e98afe0e76f400571f300b728e50437c4b1">
+<index version="1" name="MonkeyBars-ReaScripts" commit="f62aac245d42c624577f71fda352e31dd9f413af">
   <category name="Glue (Reversible)">
-    <reapack name="Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="Create Item Container from selected items – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+    <reapack name="Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="Create container item from selected items in time selection">
       <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Adapted from matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
       <version name="1.03" author="MonkeyBars" time="2021-10-15T15:03:00Z">
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ce9a5e98afe0e76f400571f300b728e50437c4b1/Glue%20(Reversible)/Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
+      <version name="1.06" author="MonkeyBars" time="2021-10-15T15:45:05Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f62aac245d42c624577f71fda352e31dd9f413af/Glue%20(Reversible)/Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
     <reapack name="Glue (Reversible) Utils.lua" type="script" desc="Tools for Glue (Reversible) functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
@@ -25,12 +35,22 @@
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/ce9a5e98afe0e76f400571f300b728e50437c4b1/Glue%20(Reversible)/Glue%20(Reversible)%20Utils.lua</source>
       </version>
     </reapack>
-    <reapack name="Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="Open existing item container, retaining info for closing again (recreation) – adapted from matthewjumpsoffbuildings's Glue Groups scripts">
+    <reapack name="Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="Reveal contents of existing container item, retaining group">
       <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Adapted from matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
       <version name="1.03" author="MonkeyBars" time="2021-10-15T15:03:00Z">
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ce9a5e98afe0e76f400571f300b728e50437c4b1/Glue%20(Reversible)/Unglue%20(Reversible)%20-%20Reveal%20items%20joined%20with%20%22Glue%20(Reversible)%22,%20retaining%20container%20item%20&amp;%20group.lua</source>
+      </version>
+      <version name="1.06" author="MonkeyBars" time="2021-10-15T15:45:05Z">
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f62aac245d42c624577f71fda352e31dd9f413af/Glue%20(Reversible)/Unglue%20(Reversible)%20-%20Reveal%20items%20joined%20with%20%22Glue%20(Reversible)%22,%20retaining%20container%20item%20&amp;%20group.lua</source>
       </version>
     </reapack>
   </category>
