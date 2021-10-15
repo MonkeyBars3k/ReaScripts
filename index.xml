@@ -44,10 +44,15 @@
 
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 MonkeyBars Reaper Scripts\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 The URL to import in ReaPack is https://github.com/MonkeyBars3k/ReaScripts/raw/master/index.xml.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Item Containers\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort under a more generic, clear name: {\b Item Containers}.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 Select items and run the action "Create Item Container(s) from selected items.lua" to join items together into a fused item (the Item Container) {\b on each track} that remembers the constituent items. To open and edit Item Containers, use the "Open Item Containers.lua" action.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Glue (Reversible)\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 There are two main ways to consolidate selected items on a track in Reaper: {\b Glue} and {\b Groups}. Both have disadvantages.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b Glue} is permanent: once you glue items together, you cannot make edits later without cutting again. This has disadvantages, as you may wish to extend the length of one of the enclosed items (such as make the sound of a kick drum's tail longer, etc.). You cannot do this using Glue.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 The other option is to b items. This works well if you simply want to move items around or select multiple items by clicking one item; however, you cannot use the other benefits of Reaper items, such as quickly looping, take envelopes, etc. Grouping can become confusing because Groups are highlighted in green around the items, but {\i not} around the boundary of the group itself. Groups can be unwieldy to work with in many musical contexts, such as a four-bar repetition. Groups tend to create visual clutter.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Glue (Reversible) aims to address the shortcomings of both Glue and Groups, as well as restore the convenient functionality already present in items (looping, timestretching, and much more), by placing selected items in a new container item.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b To use Glue (Reversible)}, simply select items or make a time selection with items inside and trigger the Glue (Reversible) script.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 To edit your glued items, {\b Unglue (Reversible)} opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible).\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 You can Glue (Reversible) existing container items, nondestructively {\b nesting} container items. There is no limit in the code as to how many times you can nest.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Item Container {\i re}creation {\b updates all instances} \u8211- you may need to zoom in/out to refresh.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When you {\b Open Item Container}, a new empty item "icc" is inserted under the original items. This item has the data to recall which group these items came from \u8211- don't delete it unless you want to glue the items and make a new group that doesnt update other instances.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab If you {\b add new items} to the Item Container, select them AND at least one of the original items to make sure they get added to the existing Item Container. If you just tweak the existing items, you can select any one and recreate, and it will remember which Item Container it belongs to.\par}
@@ -56,9 +61,13 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Even creates {\b MIDI Item Containers}. Uses "Apply track FX as new take" on each item to get the wav. When you Open Item Container, the wav take is removed and just the original MIDI take is restored to active.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Item Containers {\b CAN be nested inside other Item Containers}. When you update the nested Item Container, the script checks the parent item too, and updates that. Tested with 20 levels of nesting.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension} of course!\sa180\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 Future improvements:\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Item Containers} action to completely remove Item Container and revert items to original state.\sa180\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 {\i Changelog}:\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 History\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort with some different nomenclature in the interest of onboarding new users and making it easy to find in the Actions Window.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Planned improvements:\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Autoname container items by first selected item.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Glue (Reversible) container items} action to completely remove container items and ungroup contained items.\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 {\i Changelog}:\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.05 Change script names & default Item Container labels\sa180\par}
 }
 ]]></description>
