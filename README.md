@@ -3,14 +3,23 @@
 The URL to import in ReaPack is https://github.com/MonkeyBars3k/ReaScripts/raw/master/index.xml.
 
 
-## Item Containers
+## Glue (Reversible)
 
-matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/
+There are two main ways to consolidate selected items on a track in Reaper: **Glue** and **Groups**. Both have disadvantages. 
 
-MonkeyBars continues the effort under a more generic, clear name: **Item Containers**.
+**Glue** is permanent: once you glue items together, you cannot make edits later without cutting again. This has disadvantages, as you may wish to extend the length of one of the enclosed items (such as make the sound of a kick drum's tail longer, etc.). You cannot do this using Glue.
 
-Select items and run the action "Create Item Container(s) from selected items.lua" to join items together into a fused item (the Item Container) **on each track** that remembers the constituent items. To open and edit Item Containers, use the "Open Item Containers.lua" action.
+The other option is to b items. This works well if you simply want to  move items around or select multiple items by clicking one item; however, you cannot use the other benefits of Reaper items, such as quickly looping, take envelopes, etc. Grouping can become confusing because Groups are highlighted in green around the items, but *not* around the boundary of the group itself. Groups can be unwieldy to work with in many musical contexts, such as a four-bar repetition. Groups tend to create visual clutter.
 
+Glue (Reversible) aims to address the shortcomings of both Glue and Groups, as well as restore the convenient functionality already present in items (looping, timestretching, and much more), by placing selected items in a new container item. 
+
+**To use Glue (Reversible)**, simply select items or make a time selection with items inside and trigger the Glue (Reversible) script.
+
+To edit your glued items, **Unglue (Reversible)** opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible). 
+
+You can  Glue (Reversible) existing container items, nondestructively **nesting** container items. There is no limit in the code as to how many times you can nest.
+
+### Notes
 - Item Container *re*creation **updates all instances** – you may need to zoom in/out to refresh.
 - When you **Open Item Container**, a new empty item "icc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new group that doesnt update other instances.
 - If you **add new items** to the Item Container, select them AND at least one of the original items to make sure they get added to the existing Item Container. If you just tweak the existing items, you can select any one and recreate, and it will remember which Item Container it belongs to.
@@ -20,9 +29,16 @@ Select items and run the action "Create Item Container(s) from selected items.lu
 - Item Containers **CAN be nested inside other Item Containers**. When you update the nested Item Container, the script checks the parent item too, and updates that. Tested with 20 levels of nesting.
 - Requires **SWS Plugin Extension** of course!
 
+## History
 
-Future improvements:
-- Add **Explode Item Containers** action to completely remove Item Container and revert items to original state.
+matthewjumpsoffbuildings created the "Glue Groups" actions to create a sort of item container that is a basically a combination of item gluing and grouping. https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/
 
-*Changelog*:
+MonkeyBars continues the effort with some different nomenclature in the interest of onboarding new users and making it easy to find in the Actions Window.
+
+
+## Planned improvements:
+- Autoname container items by first selected item.
+- Add **Explode Glue (Reversible) container items** action to completely remove container items and ungroup contained items.
+
+## *Changelog*:
 - 1.05 Change script names & default Item Container labels
