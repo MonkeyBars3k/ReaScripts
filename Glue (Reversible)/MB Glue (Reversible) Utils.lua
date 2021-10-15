@@ -1,6 +1,6 @@
 -- @description Tools for Glue (Reversible) functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts
 -- @author MonkeyBars
--- @version 1.06
+-- @version 1.07
 -- @changelog Change nomenclature to Glue (Reversible), gr/grc item labels
 -- @provides [nomain] Glue (Reversible) Utils.lua
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -11,6 +11,9 @@
 -- To edit your glued items, Unglue (Reversible) opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible).
 --
 -- You can Glue (Reversible) existing container items, nondestructively nesting container items. There is no limit in the code as to how many times you can nest.
+--
+-- Adapted from matthewjumpsoffbuildings's Glue Groups scripts
+
 
 function deselect()
   local num = reaper.CountSelectedMediaItems(0)
@@ -27,21 +30,28 @@ function deselect()
 
 end
 
+
 function reselect( items )
   local i, item
+
   for i,item in pairs(items) do
     reaper.SetMediaItemSelected(item, true)
   end
+
 end
+
 
 function duplicateItem( item, selected)
   local track = reaper.GetMediaItemTrack(item)
   local state = getSetObjectState(item)
   local duplicate = reaper.AddMediaItemToTrack(track)
   getSetObjectState(duplicate, state)
+
   if selected then reaper.SetMediaItemSelected(duplicate, true) end
+  
   return duplicate
 end
+
 
 function getSetObjectState(obj, state, minimal)
 
@@ -60,6 +70,7 @@ function getSetObjectState(obj, state, minimal)
   return state
 
 end
+
 
 function getSetItemName(item, name, add_or_remove)
 
@@ -86,12 +97,14 @@ function getSetItemName(item, name, add_or_remove)
   end
 end
 
+
 function getItemWavSrc(item, take)
   take = take or reaper.GetActiveTake(item)
   local source = reaper.GetMediaItemTake_Source(take)
   local filename = reaper.GetMediaSourceFileName(source, '')
   if string.len(filename) > 0 then return filename end
 end
+
 
 function setToAudioTake(item)
   
@@ -122,6 +135,7 @@ function setToAudioTake(item)
     end
   end
 end
+
 
 function restoreOriginalTake(item)
 
@@ -158,6 +172,7 @@ function restoreOriginalTake(item)
   end
 end
 
+
 function cleanNullTakes(item, force)
 
   state = getSetObjectState(item)
@@ -190,7 +205,7 @@ function setItemGlueGroup(item, glue_group, not_container)
 end
 
 
-function getGlueGroupFromItem(item, not_container)
+function getGlueGroupFromItem(item, not_container, first_selected_item_name)
 
   local key, name, take
 
@@ -206,6 +221,7 @@ function getGlueGroupFromItem(item, not_container)
 
   return string.match(name, key)
 end
+
 
 function checkSelectionForContainer(num_items)
 
@@ -239,9 +255,11 @@ function checkSelectionForContainer(num_items)
   return glue_group, container, non_container_item
 end
 
+
 function checkItemForGlueGroup(item)
   return getGlueGroupFromItem(item, true)
 end
+
 
 function restoreItems( glue_group, track, position, dont_restore_take, dont_offset )
 
@@ -298,6 +316,7 @@ function restoreItems( glue_group, track, position, dont_restore_take, dont_offs
 
   return return_item, container, restored_items
 end
+
 
 function log(...)
   local arg = {...}

@@ -1,14 +1,13 @@
 -- @description Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.06
+-- @version 1.07
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Adapted from matthewjumpsoffbuildings's Glue Groups scripts
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("Glue (Reversible) Utils")
-
+require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
@@ -64,11 +63,9 @@ function glueGroup()
   reaper.Main_OnCommand(1011, 0)
   reaper.Main_OnCommand(1012, 0)
   --
-  reaper.Undo_EndBlock("Create Item Container", -1)
+  reaper.Undo_EndBlock("Glue (Reversible)", -1)
 
  end
-
-  
 
 
 function doGlue(source_track, source_item, glue_group, existing_container, ignore_depends)
@@ -123,7 +120,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
       if item_glue_group then
         -- are we attempting to nest an instance of the current glue group in itself?
         if item_glue_group == glue_group then 
-          reaper.ShowConsoleMsg("Item Container: Error: You can't put an instance of item container "..glue_group.." inside itself")
+          reaper.ShowConsoleMsg("Glue (Reversible): Error: You can't put an instance of "..glue_group.." inside itself")
           return false
         end
         -- else keep track of this items glue group to set up dependencies later
@@ -289,7 +286,6 @@ function reGlue(source_track, source_item, glue_group, container)
 end
 
 
-
 function  updateSource( item, glue_group_string, new_src)
   local take_name, current_src, take
 
@@ -312,7 +308,6 @@ function  updateSource( item, glue_group_string, new_src)
     end
   end
 end
-
 
 
 function updateSources(new_src, glue_group)
@@ -446,10 +441,5 @@ function updateDependents( glue_group, src )
 end
 
 
-
-
-
 -- do the actual glue
 glueGroup()
-
-

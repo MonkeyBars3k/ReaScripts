@@ -1,14 +1,13 @@
 -- @description Reveal contents of existing container item, retaining group
 -- @author MonkeyBars
--- @version 1.06
+-- @version 1.07
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Adapted from matthewjumpsoffbuildings's Glue Groups scripts
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("Glue (Reversible) Utils")
-
+require("MB Glue (Reversible) Utils")
 
 
 function unglueGroup()
@@ -50,20 +49,10 @@ function unglueGroup()
     reaper.UpdateTimeline()
     reaper.UpdateArrange()
     reaper.TrackList_AdjustWindows(true)
-    reaper.Undo_EndBlock("Open Item Container", -1)
+    reaper.Undo_EndBlock("Unglue (Reversible)", -1)
 
   end
 end
 
 
 unglueGroup()
-
-
-
-
-
-
-
-
-
-
