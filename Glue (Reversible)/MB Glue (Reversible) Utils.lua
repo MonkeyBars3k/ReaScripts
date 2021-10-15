@@ -2,7 +2,7 @@
 -- @author MonkeyBars
 -- @version 1.07
 -- @changelog Change nomenclature to Glue (Reversible), gr/grc item labels
--- @provides [nomain] Glue (Reversible) Utils.lua
+-- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
 -- 
