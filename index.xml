@@ -77,9 +77,9 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window) and additional features.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs24 Planned improvements\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Autoname container items by first selected item.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Rename Glue (Reversible) container items} script to rename all instances of container item.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Rename Glue (Reversible) container items} script to rename all pooled instances of container item.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Reglue (Reversible) container item} script to make a container item independent from its pool, but retain all other settings.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Glue (Reversible) container items} script to completely remove container items and ungroup contained items.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Glue (Reversible) container items} script to completely remove container items and ungroup contained items back to their original state.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Toggle Glue (Reversible) Pooled by default} global option.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs24 {\i Changelog}:\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.06 Change nomenclature to Glue (Reversible), gr/grc item labels\sa180\par}
