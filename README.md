@@ -39,8 +39,9 @@ MonkeyBars continues the effort with some different nomenclature in the interest
 #### Planned improvements
 - Autoname container items by first selected item.
 - Add **Rename Glue (Reversible) container items** script to rename all instances of container item.
-- Add **Reglue (Reversible) container item** script to make a container item independent from its pool.
+- Add **Reglue (Reversible) container item** script to make a container item independent from its pool, but retain all other settings.
 - Add **Explode Glue (Reversible) container items** script to completely remove container items and ungroup contained items.
+- Add **Toggle Glue (Reversible) Pooled by default** global option.
 
 #### *Changelog*:
 - 1.06 Change nomenclature to Glue (Reversible), gr/grc item labels
