@@ -47,7 +47,7 @@ matthewjumpsoffbuildings created the powerful, excellent "Glue Groups" scripts: 
 MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window) and additional features.
 
 
-#### Planned improvements
+### Planned improvements
 - Autoname container items by first selected item - COMPLETE
 - Add **Rename Glue (Reversible) container items** script to rename all pooled instances of container item.
 - Add **Reglue (Reversible) container item** script to make a container item independent from its pool, but retain all other settings.
@@ -55,6 +55,6 @@ MonkeyBars continues the effort with some different nomenclature (in the interes
 - Add **Toggle Glue (Reversible) Pooled by default** global option.
 - Add **Toggle Glue/Unglue (Reversible)** script
 
-#### *Changelog*:
+### *Changelog*:
 - 1.08 Autoname container items by first selected item
 - 1.06 Shorten & change default item container string 
