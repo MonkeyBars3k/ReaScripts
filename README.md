@@ -5,6 +5,8 @@ The URL to import in ReaPack is https://github.com/MonkeyBars3k/ReaScripts/raw/m
 
 ## Glue (Reversible)
 
+### Background
+
 There are two main ways to consolidate selected items on a track in Reaper: **Glue** and **Groups**. Both have disadvantages. 
 
 **Glue** is permanent: once you glue items together, you cannot make edits later without cutting again. This has disadvantages, as you may wish to extend the length of one of the enclosed items (such as make the sound of a kick drum's tail longer, etc.). You cannot do this using Glue.
@@ -52,4 +54,4 @@ MonkeyBars continues the effort with some different nomenclature (in the interes
 - Add **Toggle Glue/Unglue (Reversible)** script
 
 #### *Changelog*:
-- 1.06 Change nomenclature to Glue (Reversible), gr/grc item labels
+- 1.08 Autoname container items by first selected item
