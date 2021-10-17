@@ -1,7 +1,7 @@
 -- @description Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.08
--- @changelog Default item container name gets first selected item on end
+-- @version 1.09
+-- @changelog Enable single item GR creation https://github.com/MonkeyBars3k/ReaScripts/issues/1 
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -22,7 +22,9 @@ function glueGroup()
 
   -- get num_items again in case it changed
   num_items = reaper.CountSelectedMediaItems(0)
-  if not num_items or num_items < 2 then return end
+  -- single selected item enabled. remove comment to disable 
+  if not num_items -- or num_items < 2 
+    then return end
 
 
   -- undo block
