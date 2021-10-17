@@ -20,7 +20,7 @@ To edit your glued items, **Unglue (Reversible)** opens the created container it
 You can  Glue (Reversible) existing container items, nondestructively **nesting** container items. There is no limit in the code as to how many times you can nest.
 
 ### Notes
-- Copied Glue (Reversible) container items are effectively pooled; editing and regluing one container item **updates all instances** – you may need to zoom in/out to refresh.
+- Copied Glue (Reversible) container items are effectively pooled; editing and regluing one container item **updates all instances** – you may need to zoom in/out to refresh. _Note_: this is Matthew's original comment; the codebase does include a zoom in/out on every Glue (perhaps to update the GUI?), which probably means you don't have to.
 - When you **Unglue (Reversible)**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new group that doesnt update other instances.
 - If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
 - You can use the **empty container** "grc" to create silence at the start and end of the glued wav.
