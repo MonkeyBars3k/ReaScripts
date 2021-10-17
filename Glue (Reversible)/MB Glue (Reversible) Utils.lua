@@ -1,7 +1,7 @@
--- @description Tools for Glue (Reversible) functionality – adapted from matthewjumpsoffbuildings's Glue Groups scripts
+-- @description Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.07
--- @changelog Change nomenclature to Glue (Reversible), gr/grc item labels
+-- @version 1.08
+-- @changelog Default item container name gets first selected item on end
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -12,7 +12,7 @@
 --
 -- You can Glue (Reversible) existing container items, nondestructively nesting container items. There is no limit in the code as to how many times you can nest.
 --
--- Adapted from matthewjumpsoffbuildings's Glue Groups scripts
+-- Fork of matthewjumpsoffbuildings's Glue Groups scripts
 
 
 function deselect()
@@ -116,9 +116,9 @@ function setToAudioTake(item)
 
       if reaper.TakeIsMIDI(active_take) then
 
-        -- store ref to the original active take for unglueing
+        -- store ref to original active take for ungluing
         local active_take_number = reaper.GetMediaItemTakeInfo_Value(active_take, "IP_TAKENUMBER")
-        -- convert the active MIDI item to an audio take
+        -- convert active MIDI item to an audio take
         reaper.SetMediaItemSelected(item, 1)
         reaper.Main_OnCommand(40209, 0)
 
@@ -151,7 +151,7 @@ function restoreOriginalTake(item)
       local take_number = string.match(take_name, "glue_reversible_render:(%d+)")
       if take_number then
         
-        -- delete the rendered midi take wav
+        -- delete rendered midi take wav
         local old_src = getItemWavSrc(item)
         os.remove(old_src)
         os.remove(old_src..'.reapeaks')
@@ -184,12 +184,12 @@ function cleanNullTakes(item, force)
 end
 
 
-function setItemGlueGroup(item, glue_group, not_container)
+function setItemGlueGroup(item, item_name_ending, not_container)
 
   local key = "grc:"
   if not_container then key = "gr:" end
 
-  local name = key..glue_group
+  local name = key..item_name_ending
   
   local take = reaper.GetActiveTake(item)
 
@@ -205,7 +205,7 @@ function setItemGlueGroup(item, glue_group, not_container)
 end
 
 
-function getGlueGroupFromItem(item, not_container, first_selected_item_name)
+function getGlueGroupFromItem(item, not_container)
 
   local key, name, take
 
@@ -231,17 +231,17 @@ function checkSelectionForContainer(num_items)
     item = reaper.GetSelectedMediaItem(0, i)
     new_glue_group = getGlueGroupFromItem(item)
 
-    -- if a glue group has been found on this item
+    -- if glue group found on this item
     if new_glue_group then
       -- if this search has already found another container
       if glue_group then
-        log("Glue (Reversible): Error: The selected items contain 2 different container items. Unable to proceed.")
+        log("Glue (Reversible): Error: The selected items contain 2 or more different container items. Unable to proceed.")
         return
       else
         container = item
         glue_group = new_glue_group
       end
-    -- if we dont have a non-container item yet
+    -- if we don't have a non-container item yet
     elseif not non_container_item then
       non_container_item = item
     end

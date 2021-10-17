@@ -1,9 +1,10 @@
 -- @description Reveal contents of existing container item, retaining group
 -- @author MonkeyBars
 -- @version 1.07
+-- @changelog nomenclature
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
--- @about Adapted from matthewjumpsoffbuildings's Glue Groups scripts
+-- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
@@ -12,7 +13,7 @@ require("MB Glue (Reversible) Utils")
 
 function unglueGroup()
 
-  -- only get the first selected item. no unglue of multiple items
+  -- only get first selected item. no unglue of multiple items
   item = reaper.GetSelectedMediaItem(0,0)
 
   -- make sure we selected something that is a glued group instance
@@ -33,10 +34,10 @@ function unglueGroup()
     -- deselect all
     deselect()
 
-    -- restore the stored items
+    -- restore stored items
     _, container = restoreItems(glue_group, original_track, original_pos)
 
-    -- create a unique key for the original state, and store it in the containers name, space it out of sight then store it in the ProjExtState
+    -- create a unique key for original state, and store it in container's name, space it out of sight then store it in ProjExtState
     original_state_key = "original_state:"..glue_group..":"..os.time()*7
     getSetItemName(container, "                                                                                                      "..original_state_key, 1)
     reaper.SetProjExtState(0, "GLUE_GROUPS", original_state_key, original_state)
