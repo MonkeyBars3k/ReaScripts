@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="7cfeffefa41e8fc3c9bef1c5dddd1b20716a1445">
+<index version="1" name="MonkeyBars-ReaScripts" commit="ca649c987e47d80d30c9f71ac6d4cddd026f3af9">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="Create container item from selected items in time selection">
       <metadata>
@@ -26,6 +26,10 @@
       <version name="1.10" author="MonkeyBars" time="2021-10-18T07:39:35Z">
         <changelog><![CDATA[https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/7cfeffefa41e8fc3c9bef1c5dddd1b20716a1445/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
+      <version name="1.11" author="MonkeyBars" time="2021-10-18T07:47:35Z">
+        <changelog><![CDATA[https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ca649c987e47d80d30c9f71ac6d4cddd026f3af9/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="Tools for MB Glue (Reversible) functionality">
