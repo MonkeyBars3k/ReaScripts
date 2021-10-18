@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="ca649c987e47d80d30c9f71ac6d4cddd026f3af9">
+<index version="1" name="MonkeyBars-ReaScripts" commit="a7e14db6aec7eb72a95ce8c60cbd03ce2aae6d68">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="Create container item from selected items in time selection">
       <metadata>
@@ -52,7 +52,7 @@
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/47c6836d0630557c6de9d4fd029f49b5066ac1dc/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20Utils.lua</source>
       </version>
     </reapack>
-    <reapack name="MB Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="Reveal contents of existing container item, retaining group">
+    <reapack name="MB Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="Reveal constituent items of previously Glue (Reversible) container item, retaining group">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -65,6 +65,10 @@
       </metadata>
       <version name="1.07" author="MonkeyBars" time="2021-10-15T19:34:48Z">
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/db785e0348b38a4c3072594b2da3372d46e8aa6c/Glue%20(Reversible)/MB%20Unglue%20(Reversible)%20-%20Reveal%20items%20joined%20with%20%22Glue%20(Reversible)%22,%20retaining%20container%20item%20&amp;%20group.lua</source>
+      </version>
+      <version name="1.08" author="MonkeyBars" time="2021-10-18T09:28:36Z">
+        <changelog><![CDATA[https://github.com/MonkeyBars3k/ReaScripts/issues/14 Unglue won't do multiple containers]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/a7e14db6aec7eb72a95ce8c60cbd03ce2aae6d68/Glue%20(Reversible)/MB%20Unglue%20(Reversible)%20-%20Reveal%20items%20joined%20with%20%22Glue%20(Reversible)%22,%20retaining%20container%20item%20&amp;%20group.lua</source>
       </version>
     </reapack>
   </category>
@@ -111,9 +115,10 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Toggle Glue (Reversible) Pooled by default} global option.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Toggle Glue/Unglue (Reversible)} script\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 {\i Changelog}:\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.11 Disable multitrack gluing; Add count of items to glued container name\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.08 Autoname container items by first selected item\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.06 Shorten & change default item container string\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Unglue won't do multiple containers - add message\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Disable multitrack gluing; Add count of items to glued container name\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Autoname container items by first selected item\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Shorten & change default item container string\sa180\par}
 }
 ]]></description>
   </metadata>
