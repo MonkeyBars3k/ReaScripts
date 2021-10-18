@@ -1,9 +1,7 @@
--- @description Create container item from selected items in time selection
+-- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.11
--- @changelog https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing
--- https://github.com/MonkeyBars3k/ReaScripts/issues/13 Include first selected item name in container item name 
--- https://github.com/MonkeyBars3k/ReaScripts/issues/10 Add count of items to glued container name
+-- @version 1.12
+-- @changelog https://github.com/MonkeyBars3k/ReaScripts/issues/17 Nested container item name still has first contained item name + item count
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -128,17 +126,21 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
       first_item_name = reaper.GetTakeName(first_item_take)
 
       is_nested_container = string.match(first_item_name, "^grc:")
+      log("is_nested_container = ")
+      log(is_nested_container)
 
     -- in nested containers the 1st regular item comes after the container
     elseif i == 1 and is_nested_container then
       first_item_take = reaper.GetActiveTake(original_items[i])
       first_item_name = reaper.GetTakeName(first_item_take)
 
-      -- if this item is to be a nested container, remove *its* first item name
+    elseif i == 1 then
+      -- if this item is to be a nested container, remove *its* first item name & item count
       nested_container_label = string.match(first_item_name, "^gr:%d+")
+      log("nested_container_label = ")
+      log(nested_container_label)
       if nested_container_label then
         first_item_name = nested_container_label
-        item_name_addl_count = ""
       end
     end
 
@@ -226,7 +228,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
 
   -- store a reference to this glue group in glued item
   item_name_addl_count = " +"..(num_items-1).. " more"
-  glued_item_init_name = glue_group.." – "..first_item_name..item_name_addl_count
+  glued_item_init_name = glue_group.." ["..first_item_name..item_name_addl_count.."]"
   setItemGlueGroup(glued_item, glued_item_init_name, true)
 
   -- make sure container is big enough
