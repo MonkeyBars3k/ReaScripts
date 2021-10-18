@@ -126,8 +126,6 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
       first_item_name = reaper.GetTakeName(first_item_take)
 
       is_nested_container = string.match(first_item_name, "^grc:")
-      log("is_nested_container = ")
-      log(is_nested_container)
 
     -- in nested containers the 1st regular item comes after the container
     elseif i == 1 and is_nested_container then
@@ -137,8 +135,6 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
     elseif i == 1 then
       -- if this item is to be a nested container, remove *its* first item name & item count
       nested_container_label = string.match(first_item_name, "^gr:%d+")
-      log("nested_container_label = ")
-      log(nested_container_label)
       if nested_container_label then
         first_item_name = nested_container_label
       end
