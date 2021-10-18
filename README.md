@@ -56,5 +56,6 @@ MonkeyBars continues the effort with some different nomenclature (in the interes
 - Add **Toggle Glue/Unglue (Reversible)** script
 
 ### *Changelog*:
+- 1.10 Disable multitrack gluing; Add count of items to glued container name
 - 1.08 Autoname container items by first selected item
 - 1.06 Shorten & change default item container string 
