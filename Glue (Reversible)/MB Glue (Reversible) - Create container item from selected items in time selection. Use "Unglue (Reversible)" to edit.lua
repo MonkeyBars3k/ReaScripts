@@ -1,7 +1,9 @@
 -- @description Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.09
--- @changelog Enable single item GR creation https://github.com/MonkeyBars3k/ReaScripts/issues/1 
+-- @version 1.10
+-- @changelog https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing
+-- https://github.com/MonkeyBars3k/ReaScripts/issues/13 Include first selected item name in container item name 
+-- https://github.com/MonkeyBars3k/ReaScripts/issues/10 Add count of items to glued container name
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -12,7 +14,7 @@ require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
-  local num_items, source_item, source_track, glue_group, glued_item, container
+  local num_items, source_item, source_track, glue_group, glued_item, container, selected_items, item_track, prev_item_track, title_multitrack_notice, message_multitrack_notice
 
   num_items = reaper.CountSelectedMediaItems(0)
   if not num_items or num_items < 1 then return end
@@ -25,6 +27,28 @@ function glueGroup()
   -- single selected item enabled. remove comment to disable 
   if not num_items -- or num_items < 2 
     then return end
+
+  num_items = reaper.CountSelectedMediaItems(0)
+
+  -- parse selected items & check for multitrack
+  selected_items = {}
+  i = 0
+  while i < num_items do
+    selected_items[i] = reaper.GetSelectedMediaItem(0, i)
+    item_track = reaper.GetMediaItemTrack(selected_items[i])
+
+    -- if this item's track differs from the last
+    if item_track and prev_item_track and item_track ~= prev_item_track then
+      -- display "OK" message and quit
+      title_multitrack_notice = "All Glue (Reversible) items must be on a single track."
+      message_multitrack_notice = "You have selected items on more than one track, which is not supported (yet). Please deselect and try again."
+      reaper.ShowMessageBox(message_multitrack_notice, title_multitrack_notice, 0)
+      return false
+    end
+
+    prev_item_track = item_track
+    i = i + 1
+  end
 
 
   -- undo block
@@ -67,13 +91,12 @@ function glueGroup()
   reaper.Main_OnCommand(1012, 0)
 
   reaper.Undo_EndBlock("Glue (Reversible)", -1)
-
- end
+end
 
 
 function doGlue(source_track, source_item, glue_group, existing_container, ignore_depends)
 
-  local num_items, original_items, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_glue_group, nested_glue_groups, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, glued_item_init_name
+  local num_items, original_items, is_nested_container, nested_container_label, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_glue_group, recursion_error_title, recursion_error_message, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
 
   -- make a new glue_group id from group id if this is a new group and name glue_track accordingly
   if not glue_group then
@@ -89,11 +112,12 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   -- store this glue group id so next group can increment up
   reaper.SetProjExtState(0, "GLUE_GROUPS", "last", glue_group)
 
+
   -- count items to be added
   num_items = reaper.CountSelectedMediaItems(0)
-
-  -- keep track of originally selected items
+  
   original_items = {}
+  is_nested_container = false
   i = 0
   while i < num_items do
     original_items[i] = reaper.GetSelectedMediaItem(0, i)
@@ -102,6 +126,20 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
     if i == 0 then
       first_item_take = reaper.GetActiveTake(original_items[i])
       first_item_name = reaper.GetTakeName(first_item_take)
+
+      is_nested_container = string.match(first_item_name, "^grc:")
+
+    -- in nested containers the 1st regular item comes after the container
+    elseif i == 1 and is_nested_container then
+      first_item_take = reaper.GetActiveTake(original_items[i])
+      first_item_name = reaper.GetTakeName(first_item_take)
+
+      -- if this item is to be a nested container, remove *its* first item name
+      nested_container_label = string.match(first_item_name, "^gr:%d+")
+      if nested_container_label then
+        first_item_name = nested_container_label
+        item_name_addl_count = ""
+      end
     end
 
     i = i + 1
@@ -125,12 +163,14 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
       item_states = item_states..getSetObjectState(item)
       item_states = item_states.."|||"
 
-      item_glue_group = getGlueGroupFromItem(item, true, item_name)
+      item_glue_group = getGlueGroupFromItem(item, true)
 
       if item_glue_group then
         -- are we attempting to nest an instance of current glue group in itself?
-        if item_glue_group == glue_group then 
-          reaper.ShowConsoleMsg("Glue (Reversible): Error: You can't put an instance of "..glue_group.." inside itself!")
+        if item_glue_group == glue_group then
+          recursion_error_title = "Glue (Reversible) recursion error"
+          recursion_error_message = "You can't put an instance of "..glue_group.." inside itself!"
+          reaper.ShowMessageBox(recursion_error_message, recursion_error_title, 0)()
           return false
         end
         -- else keep track of this items glue group to set up dependencies later
@@ -143,7 +183,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   -- if we're attempting to glue a bunch of containers and nothing else
   if not has_non_container_items then return end
 
-  -- if we're passing in an existing container (e.g. reglue an unglued group)
+  -- if we're regluing
   if existing_container then
     -- existing container will be used for state storage/resizing later
     container = existing_container
@@ -180,10 +220,13 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
 
   -- glue selected items
   reaper.Main_OnCommand(41588, 0)
+  
   -- store ref to new glued item
   glued_item = reaper.GetSelectedMediaItem(0, 0)
+
   -- store a reference to this glue group in glued item
-  glued_item_init_name = glue_group.." - "..first_item_name
+  item_name_addl_count = " +"..(num_items-1).. " more"
+  glued_item_init_name = glue_group.." – "..first_item_name..item_name_addl_count
   setItemGlueGroup(glued_item, glued_item_init_name, true)
 
   -- make sure container is big enough
