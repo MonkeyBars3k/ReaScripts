@@ -1,7 +1,7 @@
--- @description Reveal contents of existing container item, retaining group
+-- @description Reveal constituent items of previously Glue (Reversible) container item, retaining group
 -- @author MonkeyBars
--- @version 1.07
--- @changelog nomenclature
+-- @version 1.08
+-- @changelog https://github.com/MonkeyBars3k/ReaScripts/issues/14 Unglue won't do multiple containers
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -12,6 +12,19 @@ require("MB Glue (Reversible) Utils")
 
 
 function unglueGroup()
+  local num_items, multiitem_title, multiitem_message, multiitem_result
+
+  num_items = reaper.CountSelectedMediaItems(0)
+
+  if num_items > 1 then 
+    multiitem_title = "Unglue (Reversible) multiple container items is not supported (yet)."
+    multiitem_message = "Would you like to Unglue the first (earliest) selected item?"
+    multiitem_result = reaper.ShowMessageBox(multiitem_message, multiitem_title, 1)
+  end
+
+  if multiitem_result == 2 then
+    return false
+  end
 
   -- only get first selected item. no unglue of multiple items
   item = reaper.GetSelectedMediaItem(0,0)
