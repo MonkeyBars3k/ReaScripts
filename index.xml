@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="053366a3999bd598c3a7626fc3eacde250c8860d">
+<index version="1" name="MonkeyBars-ReaScripts" commit="7cfeffefa41e8fc3c9bef1c5dddd1b20716a1445">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="Create container item from selected items in time selection">
       <metadata>
@@ -22,6 +22,10 @@
       <version name="1.09" author="MonkeyBars" time="2021-10-17T01:56:33Z">
         <changelog><![CDATA[Enable single item GR creation https://github.com/MonkeyBars3k/ReaScripts/issues/1]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/053366a3999bd598c3a7626fc3eacde250c8860d/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
+      <version name="1.10" author="MonkeyBars" time="2021-10-18T07:39:35Z">
+        <changelog><![CDATA[https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/7cfeffefa41e8fc3c9bef1c5dddd1b20716a1445/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="Tools for MB Glue (Reversible) functionality">
@@ -103,6 +107,7 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Toggle Glue (Reversible) Pooled by default} global option.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Toggle Glue/Unglue (Reversible)} script\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 {\i Changelog}:\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.10 Disable multitrack gluing; Add count of items to glued container name\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.08 Autoname container items by first selected item\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab 1.06 Shorten & change default item container string\sa180\par}
 }
