@@ -1,6 +1,6 @@
 -- @description Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.10
+-- @version 1.11
 -- @changelog https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing
 -- https://github.com/MonkeyBars3k/ReaScripts/issues/13 Include first selected item name in container item name 
 -- https://github.com/MonkeyBars3k/ReaScripts/issues/10 Add count of items to glued container name
