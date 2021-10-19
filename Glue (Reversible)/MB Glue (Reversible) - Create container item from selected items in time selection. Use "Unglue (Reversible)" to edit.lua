@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.12
--- @changelog https://github.com/MonkeyBars3k/ReaScripts/issues/17 Nested container item name still has first contained item name + item count
+-- @version 1.13
+-- @changelog remove log calls
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
