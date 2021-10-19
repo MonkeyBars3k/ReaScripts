@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.12
--- @changelog https://github.com/MonkeyBars3k/ReaScripts/issues/17 Nested container item name still has first contained item name + item count
+-- @version 1.13
+-- @changelog message text
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -39,7 +39,7 @@ function glueGroup()
     if item_track and prev_item_track and item_track ~= prev_item_track then
       -- display "OK" message and quit
       title_multitrack_notice = "All Glue (Reversible) items must be on a single track."
-      message_multitrack_notice = "You have selected items on more than one track, which is not supported (yet). Please deselect and try again."
+      message_multitrack_notice = "You have selected items on more than one track, which is not supported (yet). Change the items selected and try again."
       reaper.ShowMessageBox(message_multitrack_notice, title_multitrack_notice, 0)
       return false
     end
