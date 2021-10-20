@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.09
--- @changelog Change error message, add comments
+-- @version 1.15
+-- @changelog Add table length function (unused for now), clarify comments
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -205,7 +205,7 @@ function setItemGlueGroup(item, item_name_ending, not_container)
 end
 
 
--- gets container name prefix
+-- gets container item name prefix
 function getGlueGroupFromItem(item, not_container)
 
   local key, name, take
@@ -228,7 +228,7 @@ function checkItemForGlueGroup(item)
 end
 
 
--- get container info from selection
+-- get unglued container info from selection
 function checkSelectionForContainer(num_items)
 
   local i = 0, item, glue_group, non_container_item, container, new_glue_group
@@ -320,22 +320,6 @@ function restoreItems( glue_group, track, position, dont_restore_take, dont_offs
 end
 
 
-function log(...)
-  local arg = {...}
-  local msg = "", i, v
-  for i,v in ipairs(arg) do
-    msg = msg..v..", "
-  end
-  msg = msg.."\n"
-  reaper.ShowConsoleMsg(msg)
-end
-
-function logV(name, val)
-  val = val or ""
-  reaper.ShowConsoleMsg(name.."="..val.."\n")
-end
-
-
 function string:split(sSeparator, nMax, bRegexp)
   assert(sSeparator ~= '')
   assert(nMax == nil or nMax >= 1)
@@ -359,4 +343,29 @@ function string:split(sSeparator, nMax, bRegexp)
   end
 
   return aRecord
+end
+
+
+-- function getTableSize(t)
+--     local count = 0
+--     for _, __ in pairs(t) do
+--         count = count + 1
+--     end
+--     return count
+-- end
+
+
+function log(...)
+  local arg = {...}
+  local msg = "", i, v
+  for i,v in ipairs(arg) do
+    msg = msg..v..", "
+  end
+  msg = msg.."\n"
+  reaper.ShowConsoleMsg(msg)
+end
+
+function logV(name, val)
+  val = val or ""
+  reaper.ShowConsoleMsg(name.."="..val.."\n")
 end
