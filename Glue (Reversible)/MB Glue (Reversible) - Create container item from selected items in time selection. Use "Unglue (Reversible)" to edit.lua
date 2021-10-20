@@ -1,9 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.14
--- @changelog Fix bug:
--- https://github.com/MonkeyBars3k/ReaScripts/issues/18 Regluing multiple unglued groups aborts too late - prevent
--- cleanup
+-- @version 1.15
+-- @changelog Fix bug https://github.com/MonkeyBars3k/ReaScripts/issues/27 No warning if MIDI glued on track without virtual instrument
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -14,7 +12,7 @@ require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
-  local num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group
+  local num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group, active_take, midi_item_is_selected
 
   num_items = reaper.CountSelectedMediaItems(0)
   if not num_items or num_items < 1 then return end
@@ -63,28 +61,41 @@ function glueGroup()
       num_unglued_containers_selected = num_unglued_containers_selected + 1
     end
 
+    -- take is MIDI?
+    active_take = reaper.GetActiveTake(selected_items[i])
+    if active_take and reaper.TakeIsMIDI(active_take) then
+      midi_item_is_selected = true
+    end
+
     i = i + 1
   end
 
   -- if multiple unglued containers in selection, abort.
   if num_unglued_containers_selected and num_unglued_containers_selected > 1 then
-    reaper.ShowMessageBox("Gluing multiple unglued containers is not supported (yet). Please change selection and try again.", "The selected items contain 2 or more unglued Glue (Reversible) containers", 0)
+    reaper.ShowMessageBox("Gluing multiple unglued containers is not supported (yet). Please change selection and try again.", "You can only reglue one Glue (Reversible) container at a time", 0)
 
-    -- reset item selection from selectiong set slot 10
-  reaper.Main_OnCommand(41248, 0)
+    -- reset item selection from selection set slot 10
+    reaper.Main_OnCommand(41248, 0)
 
     return false
   end
-
-
-  -- Group items regardless
-  reaper.Main_OnCommand(40032, 0)
 
   -- store reference to original item
   source_item = reaper.GetSelectedMediaItem(0, 0)
 
   -- store pointer to original track
   source_track = reaper.GetMediaItemTrack(source_item)
+
+  -- Virtual instrument present on track?
+  local track_has_virtual_instrument = reaper.TrackFX_GetInstrument(source_track)
+  if midi_item_is_selected and track_has_virtual_instrument == -1 then
+    reaper.ShowMessageBox("Glue (Reversible) isn't supported for pure MIDI (yet). Add a virtual instrument to render into the container, or try a different item selection.", "You can't Glue (Reversible) MIDI without a virtual instrument", 0)
+    return false
+  end
+
+
+  -- Group items regardless
+  reaper.Main_OnCommand(40032, 0)
 
   -- are we regluing a previously glued item?
   glue_group, container = checkSelectionForContainer(num_items)
@@ -175,6 +186,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   i = 0
   while i < num_items do
     item = original_items[i]
+
     if item ~= existing_container then
 
       has_non_container_items = true
