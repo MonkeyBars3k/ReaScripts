@@ -45,7 +45,7 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 
 matthewjumpsoffbuildings created the powerful, excellent "Glue Groups" scripts: https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/
 
-MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window) and additional features.
+MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window), bugfixes, and additional features.
 
 
 ### Planned improvements
