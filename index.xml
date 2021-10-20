@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="d0328853ad15eb7fbc1ae91bb879de14d7c4db79">
+<index version="1" name="MonkeyBars-ReaScripts" commit="ac56ee296c0334ca41a3a5a973e29478656a5cd6">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items in time selection">
       <metadata>
@@ -42,6 +42,10 @@
       <version name="1.14" author="MonkeyBars" time="2021-10-20T03:09:15Z">
         <changelog><![CDATA[Fix bug:]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/047353c208442f6d78ddcd8af3639b0885743ac1/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
+      <version name="1.15" author="MonkeyBars" time="2021-10-20T06:13:46Z">
+        <changelog><![CDATA[Fix bug https://github.com/MonkeyBars3k/ReaScripts/issues/27 No warning if MIDI glued on track without virtual instrument]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ac56ee296c0334ca41a3a5a973e29478656a5cd6/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality">
