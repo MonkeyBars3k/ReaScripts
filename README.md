@@ -38,7 +38,8 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 - You can use the **empty container** "grc" to create silence at the start and end of the glued wav.
 - Uses item notes/names to keep track of which container item items belong in. If you see "gr:1" or "grc:1", **don't delete it from the item's name**, as the code depends on that name to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active.
-- When using copies of Glue (Reversible) container items, you can't make a copy of itself inside itself, as that would cause an infinite recursion. 
+- When using copies of Glue (Reversible) container items, you can't make a copy of itself inside itself, as that would cause an infinite recursion.
+- Uses selection set slot 10 at times to save and recall selected items. 
 
 ### History
 
@@ -54,9 +55,3 @@ MonkeyBars continues the effort with some different nomenclature (in the interes
 - Add **Explode Glue (Reversible) container items** script to completely remove container items and ungroup contained items back to their original state.
 - Add **Toggle Glue (Reversible) Pooled by default** global option.
 - Add **Toggle Glue/Unglue (Reversible)** script
-
-### *Changelog*:
-- Unglue won't do multiple containers - add message
-- Disable multitrack gluing; Add count of items to glued container name
-- Autoname container items by first selected item
-- Shorten & change default item container string 

@@ -1,7 +1,9 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.13
--- @changelog remove log calls
+-- @version 1.14
+-- @changelog Fix bug:
+-- https://github.com/MonkeyBars3k/ReaScripts/issues/18 Regluing multiple unglued groups aborts too late - prevent
+-- cleanup
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -12,46 +14,67 @@ require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
-  local num_items, source_item, source_track, glue_group, glued_item, container, selected_items, item_track, prev_item_track, title_multitrack_notice, message_multitrack_notice
+  local num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group
 
   num_items = reaper.CountSelectedMediaItems(0)
   if not num_items or num_items < 1 then return end
+
+
+  -- undo block
+  reaper.Undo_BeginBlock()
+  reaper.PreventUIRefresh(1)
+
+
+  -- save selected item set to slot 10 for later recall
+  reaper.Main_OnCommand(41238, 0)
 
   -- select all items in group (if in one)
   reaper.Main_OnCommand(40034, 0)
 
   -- get num_items again in case it changed
   num_items = reaper.CountSelectedMediaItems(0)
-  -- single selected item enabled. remove comment to disable 
+
+  -- single selected item enabled. uncomment to disable 
   if not num_items -- or num_items < 2 
     then return end
 
   num_items = reaper.CountSelectedMediaItems(0)
 
-  -- parse selected items & check for multitrack
+  -- parse selected items
   selected_items = {}
+  num_unglued_containers_selected = 0
   i = 0
   while i < num_items do
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
-    item_track = reaper.GetMediaItemTrack(selected_items[i])
 
-    -- if this item's track differs from the last
+    -- check for multitrack
+    item_track = reaper.GetMediaItemTrack(selected_items[i])
+    -- this item's track differs from the last?
     if item_track and prev_item_track and item_track ~= prev_item_track then
       -- display "OK" message and quit
-      title_multitrack_notice = "All Glue (Reversible) items must be on a single track."
-      message_multitrack_notice = "You have selected items on more than one track, which is not supported (yet). Change the items selected and try again."
-      reaper.ShowMessageBox(message_multitrack_notice, title_multitrack_notice, 0)
+      reaper.ShowMessageBox("You have selected items on more than one track, which is not supported (yet). Change the items selected and try again.", "All Glue (Reversible) items must be on a single track.", 0)
       return false
     end
-
     prev_item_track = item_track
+
+    -- item part of unglued container?
+    item_glue_group = getGlueGroupFromItem(selected_items[i])
+    if item_glue_group then
+      num_unglued_containers_selected = num_unglued_containers_selected + 1
+    end
+
     i = i + 1
   end
 
+  -- if multiple unglued containers in selection, abort.
+  if num_unglued_containers_selected and num_unglued_containers_selected > 1 then
+    reaper.ShowMessageBox("Gluing multiple unglued containers is not supported (yet). Please change selection and try again.", "The selected items contain 2 or more unglued Glue (Reversible) containers", 0)
 
-  -- undo block
-  reaper.Undo_BeginBlock()
-  reaper.PreventUIRefresh(1)
+    -- reset item selection from selectiong set slot 10
+  reaper.Main_OnCommand(41248, 0)
+
+    return false
+  end
 
 
   -- Group items regardless
@@ -63,7 +86,7 @@ function glueGroup()
   -- store pointer to original track
   source_track = reaper.GetMediaItemTrack(source_item)
 
-  -- is this regluing a previously glued item?
+  -- are we regluing a previously glued item?
   glue_group, container = checkSelectionForContainer(num_items)
 
   if glue_group then
@@ -127,7 +150,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
 
       is_nested_container = string.match(first_item_name, "^grc:")
 
-    -- in nested containers the 1st regular item comes after the container
+    -- in nested containers the 1st noncontainer item comes after the container
     elseif i == 1 and is_nested_container then
       first_item_take = reaper.GetActiveTake(original_items[i])
       first_item_name = reaper.GetTakeName(first_item_take)
@@ -185,22 +208,28 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   if existing_container then
     -- existing container will be used for state storage/resizing later
     container = existing_container
+
+      -- GLUE CONTAINER NEEDS TO EXPAND TO BOTH TIME SELECTION AND SELECTED ITEMS, BUT DOESN'T NOW
     -- store reference to a new empty container for gluing purposes only
     glue_container = reaper.AddMediaItemToTrack(source_track)
+    
     -- select glue_container too; it will be absorbed in the glue
     reaper.SetMediaItemSelected(glue_container, true)
-    -- resize and reposition  new glue_container to match  existing container
+    
+    -- resize and reposition new glue_container to match existing container
     container_length = reaper.GetMediaItemInfo_Value(container, "D_LENGTH")
     container_position = reaper.GetMediaItemInfo_Value(container, "D_POSITION")
     reaper.SetMediaItemInfo_Value(glue_container, "D_LENGTH", container_length)
     reaper.SetMediaItemInfo_Value(glue_container, "D_POSITION", container_position)
+    
     -- does this container have a reference to an original state of item that was unglued?
     container_name = getSetItemName(container)
     original_state_key = string.match(container_name, "original_state:%d+:%d+")
     -- get rid of original state key from container, not needed anymore
     getSetItemName(container, "%s+original_state:%d+:%d+", -1)
+  
+  -- otherwise this is a new glue, create container that will be resized and stored after glue is done
   else
-    -- otherwise this is a new glue, create container that will be resized and stored after glue is done
     container = reaper.AddMediaItemToTrack(source_track)
     -- set container's name to point to this glue group
     setItemGlueGroup(container, glue_group)
@@ -241,7 +270,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   -- insert stored states into ProjExtState
   reaper.SetProjExtState(0, "GLUE_GROUPS", glue_group, item_states)
 
-  -- if this is being called from an 'updateSources' nested call, dependencies havent been changed so dont bother with this part
+  -- if this is being called from an 'updateSources' nested call, dependencies havent been changed so don't bother with this part
   if not ignore_depends then
 
     r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", glue_group..":dependencies", '')

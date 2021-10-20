@@ -1,7 +1,7 @@
--- @description Tools for MB Glue (Reversible) functionality
+-- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.08
--- @changelog Default item container name gets first selected item on end
+-- @version 1.09
+-- @changelog Change error message, add comments
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -205,6 +205,7 @@ function setItemGlueGroup(item, item_name_ending, not_container)
 end
 
 
+-- gets container name prefix
 function getGlueGroupFromItem(item, not_container)
 
   local key, name, take
@@ -222,7 +223,12 @@ function getGlueGroupFromItem(item, not_container)
   return string.match(name, key)
 end
 
+function checkItemForGlueGroup(item)
+  return getGlueGroupFromItem(item, true)
+end
 
+
+-- get container info from selection
 function checkSelectionForContainer(num_items)
 
   local i = 0, item, glue_group, non_container_item, container, new_glue_group
@@ -235,12 +241,13 @@ function checkSelectionForContainer(num_items)
     if new_glue_group then
       -- if this search has already found another container
       if glue_group then
-        log("Glue (Reversible): Error: The selected items contain 2 or more different container items. Unable to proceed.")
-        return
+        reaper.ShowMessageBox("The selected items contain 2 or more different container items. Unable to proceed.", "MB Glue (Reversible) error", 0)
+        return false
       else
         container = item
         glue_group = new_glue_group
       end
+
     -- if we don't have a non-container item yet
     elseif not non_container_item then
       non_container_item = item
@@ -253,11 +260,6 @@ function checkSelectionForContainer(num_items)
   if not glue_group or not container or not non_container_item then return end
 
   return glue_group, container, non_container_item
-end
-
-
-function checkItemForGlueGroup(item)
-  return getGlueGroupFromItem(item, true)
 end
 
 
