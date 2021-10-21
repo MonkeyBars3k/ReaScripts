@@ -122,7 +122,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 To edit your glued items, {\b Unglue (Reversible)} opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible).\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 You can Glue (Reversible) existing container items, nondestructively {\b nesting} container items. There is no limit in the code as to how many times you can nest.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Features\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Fills in the missing {\b nondestructive/reversible Glue function} in Reaper, for both MIDI and audio!\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Fills in the missing {\b nondestructive/reversible Glue function} in Reaper!\par}
 {\pard \ql \f0 \sa0 \li720 \fi-360 \bullet \tx360\tab \endash \tx360\tab A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes\sa180\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Currently, Glue (Reversible) container item copies are {\b pooled by default}. Editing and regluing one container item {\b updates all instances}.\par}
 {\pard \ql \f0 \sa0 \li720 \fi-360 \bullet \tx360\tab \endash \tx360\tab Considering Reaper is missing native Pooled Audio Items, this is great! However, we do plan to allow this to be toggled off and back on with a global script.\sa180\par}
@@ -134,7 +134,7 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab If you {\b add new items} to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab You can use the {\b empty container} "grc" to create silence at the start and end of the glued wav.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes/names to keep track of which container item items belong in. If you see "gr:1" or "grc:1", {\b don't delete it from the item's name}, as the code depends on that name to find it! You can add text to notes/names AFTER \u8211- e.g. "gr:1 - My extra text"\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI container items}, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI container items}, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of Glue (Reversible) container items, you can't make a copy of itself inside itself, as that would cause an infinite recursion.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses selection set slot 10 at times to save and recall selected items.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 History\par}
