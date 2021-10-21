@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.17
--- @changelog Fix bug: Unsaved projects are disabled; instead check for absolute render path in prefs (https://github.com/MonkeyBars3k/ReaScripts/issues/36)
+-- @version 1.18
+-- @changelog Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -32,7 +32,6 @@ function glueGroup()
   if not num_items or num_items < 1 then return end
 
 
-  -- undo block
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
 
@@ -46,10 +45,12 @@ function glueGroup()
   -- get num_items again in case it changed
   num_items = reaper.CountSelectedMediaItems(0)
 
+  
   -- any items selected?
     -- gluing single item enabled. uncomment to disable 
   if not num_items -- or num_items < 2 
     then return end
+
 
   -- parse selected items
   selected_items = {}
@@ -58,26 +59,25 @@ function glueGroup()
   while i < num_items do
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
 
-    -- check for multitrack
+    -- multiple tracks selected?
     item_track = reaper.GetMediaItemTrack(selected_items[i])
     -- this item's track differs from the last?
     if item_track and prev_item_track and item_track ~= prev_item_track then
-      -- display "OK" message and quit
       reaper.ShowMessageBox("You have selected items on more than one track, which is not supported (yet). Change the items selected and try again.", "All Glue (Reversible) items must be on a single track.", 0)
       return false
     end
     prev_item_track = item_track
 
-    -- item part of unglued container?
-    item_glue_group = getGlueGroupFromItem(selected_items[i])
-    if item_glue_group then
-      num_unglued_containers_selected = num_unglued_containers_selected + 1
-    end
-
     -- take is MIDI?
     active_take = reaper.GetActiveTake(selected_items[i])
     if active_take and reaper.TakeIsMIDI(active_take) then
       midi_item_is_selected = true
+    end
+
+    -- item part of unglued container?
+    item_glue_group = getGlueGroupFromItem(selected_items[i])
+    if item_glue_group then
+      num_unglued_containers_selected = num_unglued_containers_selected + 1
     end
 
     i = i + 1
@@ -93,10 +93,10 @@ function glueGroup()
     return false
   end
 
-  -- store reference to original item
+  -- get original item
   source_item = reaper.GetSelectedMediaItem(0, 0)
 
-  -- store pointer to original track
+  -- get original track
   source_track = reaper.GetMediaItemTrack(source_item)
 
   -- Virtual instrument present on track?
@@ -110,7 +110,7 @@ function glueGroup()
   -- Group items regardless
   reaper.Main_OnCommand(40032, 0)
 
-  -- are we regluing a previously glued item?
+  -- regluing a previously glued item?
   glue_group, container = checkSelectionForContainer(num_items)
 
   if glue_group then
@@ -190,6 +190,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
     i = i + 1
   end
 
+
   deselect()
 
   -- convert to audio takes, store state, and check for dependencies
@@ -234,7 +235,6 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
     -- existing container will be used for state storage/resizing later
     container = existing_container
 
-      -- GLUE CONTAINER NEEDS TO EXPAND TO BOTH TIME SELECTION AND SELECTED ITEMS, BUT DOESN'T NOW
     -- store reference to a new empty container for gluing purposes only
     glue_container = reaper.AddMediaItemToTrack(source_track)
     
@@ -284,6 +284,9 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   -- make sure container is big enough
   new_length = reaper.GetMediaItemInfo_Value(glued_item, "D_LENGTH")
   reaper.SetMediaItemInfo_Value(container, "D_LENGTH", new_length)
+
+  -- refresh timeline so we get current time selection
+  reaper.UpdateTimeline()
 
   -- make sure container is aligned with start of items
   item_position = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
