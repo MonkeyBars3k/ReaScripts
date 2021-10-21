@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.16
--- @changelog Fix bugs: Glue errors out if project unsaved (https://github.com/MonkeyBars3k/ReaScripts/issues/32)
+-- @version 1.17
+-- @changelog Fix bug: Unsaved projects are disabled; instead check for absolute render path in prefs (https://github.com/MonkeyBars3k/ReaScripts/issues/36)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -12,12 +12,18 @@ require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
-  local project_is_saved, num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group, active_take, midi_item_is_selected
+  local platform, proj_renderpath, is_win, is_win_absolute_path, is_nix_absolute_path, num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group, active_take, midi_item_is_selected
 
 
-  project_is_saved = reaper.GetProjectName(0)
-  if project_is_saved == "" then
-    reaper.ShowMessageBox("Save your project and try again.", "Glue (Reversible) only works in a saved project.", 0)
+  -- warn if using without render path set
+  platform = reaper.GetOS()
+  proj_renderpath = reaper.GetProjectPath(0)
+  is_win = string.match(platform, "^Win")
+  is_win_absolute_path = string.match(proj_renderpath, "^%u:\\")
+  is_nix_absolute_path = string.match(proj_renderpath, "^/")
+  -- trying to Glue without render path set? 
+  if (is_win and not is_win_absolute_path) or (not is_win and not is_nix_absolute_path) then
+    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "You need a file render path to use Glue (Reversible).", 0)
     return false
   end
 
@@ -210,7 +216,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
         if item_glue_group == glue_group then
           recursion_error_title = "Glue (Reversible) recursion error"
           recursion_error_message = "You can't put an instance of "..glue_group.." inside itself!"
-          reaper.ShowMessageBox(recursion_error_message, recursion_error_title, 0)()
+          reaper.ShowMessageBox(recursion_error_message, recursion_error_title, 0)
           return false
         end
         -- else keep track of this items glue group to set up dependencies later
