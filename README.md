@@ -49,9 +49,4 @@ MonkeyBars continues the effort with some different nomenclature (in the interes
 
 
 ### Planned improvements
-- Autoname container items by first selected item - COMPLETE
-- Add **Rename Glue (Reversible) container items** script to rename all pooled instances of container item.
-- Add **DePool Glue (Reversible) container item** script to make a container item independent from its pool, but retain all other settings.
-- Add **Explode Glue (Reversible) container items** script to completely remove container items and ungroup contained items back to their original state.
-- Add **Toggle Glue (Reversible) Pooled by default** global option.
-- Add **Toggle Glue/Unglue (Reversible)** script
+See [Issues labeled "enhancement"](https://github.com/MonkeyBars3k/ReaScripts/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement).
