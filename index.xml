@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="c3c552c962b9717a8428bb0292c6ab0a5e4b84a4">
+<index version="1" name="MonkeyBars-ReaScripts" commit="e1b54ccd8e44b0fd6bfa667ac45703d6aad01215">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items in time selection">
       <metadata>
@@ -50,6 +50,10 @@
       <version name="1.16" author="MonkeyBars" time="2021-10-21T03:22:00Z">
         <changelog><![CDATA[Fix bugs: Glue errors out if project unsaved (https://github.com/MonkeyBars3k/ReaScripts/issues/32)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c3c552c962b9717a8428bb0292c6ab0a5e4b84a4/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
+      <version name="1.17" author="MonkeyBars" time="2021-10-21T16:17:29Z">
+        <changelog><![CDATA[Fix bug: Unsaved projects are disabled; instead check for absolute render path in prefs (https://github.com/MonkeyBars3k/ReaScripts/issues/36)]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/e1b54ccd8e44b0fd6bfa667ac45703d6aad01215/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality">
