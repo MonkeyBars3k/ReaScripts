@@ -52,4 +52,4 @@ MonkeyBars continues the effort with some different nomenclature (in the interes
 See [enhancement Issues](https://github.com/MonkeyBars3k/ReaScripts/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement).
 
 ### Report a Bug
-[Add a bug Issue here](https://github.com/MonkeyBars3k/ReaScripts/issues/new).
+Add a bug Issue [here](https://github.com/MonkeyBars3k/ReaScripts/issues/new).
