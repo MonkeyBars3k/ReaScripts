@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.15
--- @changelog Fix bug https://github.com/MonkeyBars3k/ReaScripts/issues/27 No warning if MIDI glued on track without virtual instrument
+-- @version 1.16
+-- @changelog Fix bugs: Glue errors out if project unsaved (https://github.com/MonkeyBars3k/ReaScripts/issues/32)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -12,7 +12,15 @@ require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
-  local num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group, active_take, midi_item_is_selected
+  local project_is_saved, num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group, active_take, midi_item_is_selected
+
+
+  project_is_saved = reaper.GetProjectName(0)
+  if project_is_saved == "" then
+    reaper.ShowMessageBox("Save your project and try again.", "Glue (Reversible) only works in a saved project.", 0)
+    return false
+  end
+
 
   num_items = reaper.CountSelectedMediaItems(0)
   if not num_items or num_items < 1 then return end
@@ -32,11 +40,10 @@ function glueGroup()
   -- get num_items again in case it changed
   num_items = reaper.CountSelectedMediaItems(0)
 
-  -- single selected item enabled. uncomment to disable 
+  -- any items selected?
+    -- gluing single item enabled. uncomment to disable 
   if not num_items -- or num_items < 2 
     then return end
-
-  num_items = reaper.CountSelectedMediaItems(0)
 
   -- parse selected items
   selected_items = {}
