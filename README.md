@@ -50,3 +50,6 @@ MonkeyBars continues the effort with some different nomenclature (in the interes
 
 ### Planned improvements
 See [enhancement Issues](https://github.com/MonkeyBars3k/ReaScripts/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement).
+
+### Report a Bug
+[Add a bug Issue here](https://github.com/MonkeyBars3k/ReaScripts/issues/new).
