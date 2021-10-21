@@ -145,12 +145,15 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 matthewjumpsoffbuildings created the powerful, excellent "Glue Groups" scripts: https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window), bugfixes, and additional features.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Planned improvements\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Autoname container items by first selected item - COMPLETE\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Rename Glue (Reversible) container items} script to rename all pooled instances of container item.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b DePool Glue (Reversible) container item} script to make a container item independent from its pool, but retain all other settings.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Explode Glue (Reversible) container items} script to completely remove container items and ungroup contained items back to their original state.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Toggle Glue (Reversible) Pooled by default} global option.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Add {\b Toggle Glue/Unglue (Reversible)} script\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 See {\field{\*\fldinst{HYPERLINK "https://github.com/MonkeyBars3k/ReaScripts/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement"}}{\fldrslt{\ul
+enhancement Issues
+}}}
+.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Report a Bug\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Add a bug Issue {\field{\*\fldinst{HYPERLINK "https://github.com/MonkeyBars3k/ReaScripts/issues/new"}}{\fldrslt{\ul
+here
+}}}
+.\par}
 }
 ]]></description>
   </metadata>
