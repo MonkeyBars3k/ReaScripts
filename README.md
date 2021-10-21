@@ -24,7 +24,7 @@ To edit your glued items, **Unglue (Reversible)** opens the created container it
 You can  Glue (Reversible) existing container items, nondestructively **nesting** container items. There is no limit in the code as to how many times you can nest.
 
 ### Features
-- Fills in the missing **nondestructive/reversible Glue function** in Reaper, for both MIDI and audio!
+- Fills in the missing **nondestructive/reversible Glue function** in Reaper!
 - - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes
 - Currently, Glue (Reversible) container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. 
 - - Considering Reaper is missing native Pooled Audio Items, this is great! However, we do plan to allow this to be toggled off and back on with a global script. 
@@ -37,7 +37,7 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 - If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
 - You can use the **empty container** "grc" to create silence at the start and end of the glued wav.
 - Uses item notes/names to keep track of which container item items belong in. If you see "gr:1" or "grc:1", **don't delete it from the item's name**, as the code depends on that name to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
-- To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active.
+- To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
 - When using copies of Glue (Reversible) container items, you can't make a copy of itself inside itself, as that would cause an infinite recursion.
 - Uses selection set slot 10 at times to save and recall selected items. 
 
