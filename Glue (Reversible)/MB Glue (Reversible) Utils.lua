@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.15
--- @changelog Add table length function (unused for now), clarify comments
+-- @version 1.19
+-- @changelog Clarify comments, add isGluedOrUnglued(), remove superfluous error (check moved to Glue script)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -205,7 +205,7 @@ function setItemGlueGroup(item, item_name_ending, not_container)
 end
 
 
--- gets container item name prefix
+-- gets unglued container item name prefix
 function getGlueGroupFromItem(item, not_container)
 
   local key, name, take
@@ -227,6 +227,28 @@ function checkItemForGlueGroup(item)
   return getGlueGroupFromItem(item, true)
 end
 
+function isGluedOrUnglued(item)
+  local name, take_name, is_unglued_container, is_glued_container
+
+  take = reaper.GetActiveTake(item)
+  if take then 
+    name = reaper.GetTakeName(take)
+  else
+    return
+  end
+
+  is_unglued_container = "^grc:(%d+)"
+  is_glued_container = "^gr:(%d+)"
+
+  if string.match(name, is_unglued_container) then
+    return "unglued"
+  elseif string.match(name, is_glued_container) then
+    return "glued"
+  else
+    return false
+  end
+end
+
 
 -- get unglued container info from selection
 function checkSelectionForContainer(num_items)
@@ -241,7 +263,6 @@ function checkSelectionForContainer(num_items)
     if new_glue_group then
       -- if this search has already found another container
       if glue_group then
-        reaper.ShowMessageBox("The selected items contain 2 or more different container items. Unable to proceed.", "MB Glue (Reversible) error", 0)
         return false
       else
         container = item

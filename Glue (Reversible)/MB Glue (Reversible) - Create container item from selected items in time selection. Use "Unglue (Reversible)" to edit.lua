@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.18
--- @changelog Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)
+-- @version 1.19
+-- @changelog Fix bug: Reglue: Recursive glue check happens too late (https://github.com/MonkeyBars3k/ReaScripts/issues/34)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -12,7 +12,7 @@ require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
-  local platform, proj_renderpath, is_win, is_win_absolute_path, is_nix_absolute_path, num_items, selected_items, source_item, source_track, glue_group, glued_item, container, num_unglued_containers_selected, item_track, prev_item_track, item_glue_group, active_take, midi_item_is_selected
+  local platform, proj_renderpath, is_win, is_win_absolute_path, is_nix_absolute_path, num_items, source_item, source_track, glue_group, glued_item, container, selected_items, glued_containers, unglued_containers, num_unglued_containers_selected, i, item_track, prev_item_track, item_glue_group, item, j, active_take, midi_item_is_selected
 
 
   -- warn if using without render path set
@@ -52,15 +52,22 @@ function glueGroup()
     then return end
 
 
+  -- set previously glued item, if present
+  glue_group, container = checkSelectionForContainer(num_items)
+
+
   -- parse selected items
   selected_items = {}
+  glued_containers = {}
+  unglued_containers = {}
   num_unglued_containers_selected = 0
   i = 0
   while i < num_items do
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
+    item = selected_items[i]
 
     -- multiple tracks selected?
-    item_track = reaper.GetMediaItemTrack(selected_items[i])
+    item_track = reaper.GetMediaItemTrack(item)
     -- this item's track differs from the last?
     if item_track and prev_item_track and item_track ~= prev_item_track then
       reaper.ShowMessageBox("You have selected items on more than one track, which is not supported (yet). Change the items selected and try again.", "All Glue (Reversible) items must be on a single track.", 0)
@@ -68,16 +75,25 @@ function glueGroup()
     end
     prev_item_track = item_track
 
-    -- take is MIDI?
-    active_take = reaper.GetActiveTake(selected_items[i])
-    if active_take and reaper.TakeIsMIDI(active_take) then
-      midi_item_is_selected = true
-    end
-
     -- item part of unglued container?
-    item_glue_group = getGlueGroupFromItem(selected_items[i])
+    item_glue_group = getGlueGroupFromItem(item)
     if item_glue_group then
       num_unglued_containers_selected = num_unglued_containers_selected + 1
+
+      -- gluing instance of unglued glue group in itself?
+      if item_glue_group == glue_group then
+        table.insert(glued_containers, item)
+      end
+    end
+
+    if isGluedOrUnglued(item) == "glued" then
+      table.insert(unglued_containers, item)
+    end
+
+    -- take is MIDI?
+    active_take = reaper.GetActiveTake(item)
+    if active_take and reaper.TakeIsMIDI(active_take) then
+      midi_item_is_selected = true
     end
 
     i = i + 1
@@ -91,6 +107,24 @@ function glueGroup()
     reaper.Main_OnCommand(41248, 0)
 
     return false
+  end
+
+  -- don't allow gluing instance into unglued copy of itself
+  for i = 1, #glued_containers do
+    local this_container_name = getSetItemName(glued_containers[i])
+    local this_glued_container_num = string.match(this_container_name, "^grc:(%d+)")
+
+    local j = 1
+    for j = 1, #unglued_containers do
+      this_container_name = getSetItemName(unglued_containers[j])
+      local this_unglued_container_num = string.match(this_container_name, "^gr:(%d+)")
+      if this_glued_container_num == this_unglued_container_num then
+        reaper.ShowMessageBox("You can't glue a glued container item to its own unglued copy!", "Glue (Reversible) recursion error", 0)
+        -- reset item selection from selection set slot 10
+        reaper.Main_OnCommand(41248, 0)
+        return false
+      end
+    end
   end
 
   -- get original item
@@ -109,9 +143,6 @@ function glueGroup()
 
   -- Group items regardless
   reaper.Main_OnCommand(40032, 0)
-
-  -- regluing a previously glued item?
-  glue_group, container = checkSelectionForContainer(num_items)
 
   if glue_group then
     glued_item = reGlue(source_track, source_item, glue_group, container)
@@ -141,7 +172,7 @@ end
 
 function doGlue(source_track, source_item, glue_group, existing_container, ignore_depends)
 
-  local num_items, original_items, is_nested_container, nested_container_label, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_glue_group, recursion_error_title, recursion_error_message, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
+  local num_items, original_items, is_nested_container, nested_container_label, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_glue_group, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
 
   -- make a new glue_group id from group id if this is a new group and name glue_track accordingly
   if not glue_group then
@@ -213,14 +244,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
       item_glue_group = getGlueGroupFromItem(item, true)
 
       if item_glue_group then
-        -- are we attempting to nest an instance of current glue group in itself?
-        if item_glue_group == glue_group then
-          recursion_error_title = "Glue (Reversible) recursion error"
-          recursion_error_message = "You can't put an instance of "..glue_group.." inside itself!"
-          reaper.ShowMessageBox(recursion_error_message, recursion_error_title, 0)
-          return false
-        end
-        -- else keep track of this items glue group to set up dependencies later
+        -- keep track of this items glue group to set up dependencies later
         dependencies_table[item_glue_group] = item_glue_group
       end
     end
