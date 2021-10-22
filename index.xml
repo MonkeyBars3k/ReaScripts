@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="44a3bcd40f1b87ce58daa91532c23f3648add323">
+<index version="1" name="MonkeyBars-ReaScripts" commit="377f8c92fbeb803ccda9b6a5324ff61a979449bf">
   <category name="Glue (Reversible)">
-    <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items in time selection">
+    <reapack name="MB Glue (Reversible) - Create container item from selected items, expanding to time selection if any. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items, expanding to time selection, if any">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -12,76 +12,25 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.07" author="MonkeyBars" time="2021-10-15T19:34:48Z">
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/db785e0348b38a4c3072594b2da3372d46e8aa6c/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      <version name="1.25" author="MonkeyBars" time="2021-10-22T14:28:03Z">
+        <changelog><![CDATA[Add "Glue (Reversible) ignoring time selection" script (https://github.com/MonkeyBars3k/ReaScripts/issues/43)]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/377f8c92fbeb803ccda9b6a5324ff61a979449bf/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items,%20expanding%20to%20time%20selection%20if%20any.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
-      <version name="1.08" author="MonkeyBars" time="2021-10-17T00:52:52Z">
-        <changelog><![CDATA[Default item container name gets first selected item on end]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/47c6836d0630557c6de9d4fd029f49b5066ac1dc/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.09" author="MonkeyBars" time="2021-10-17T01:56:33Z">
-        <changelog><![CDATA[Enable single item GR creation https://github.com/MonkeyBars3k/ReaScripts/issues/1]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/053366a3999bd598c3a7626fc3eacde250c8860d/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.10" author="MonkeyBars" time="2021-10-18T07:39:35Z">
-        <changelog><![CDATA[https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/7cfeffefa41e8fc3c9bef1c5dddd1b20716a1445/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.11" author="MonkeyBars" time="2021-10-18T07:47:35Z">
-        <changelog><![CDATA[https://github.com/MonkeyBars3k/ReaScripts/issues/12 Disable multitrack gluing]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ca649c987e47d80d30c9f71ac6d4cddd026f3af9/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.12" author="MonkeyBars" time="2021-10-18T22:13:06Z">
-        <changelog><![CDATA[https://github.com/MonkeyBars3k/ReaScripts/issues/17 Nested container item name still has first contained item name + item count]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/51f9b8361a3a1663999797da7cc3dc8489aa7784/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.13" author="MonkeyBars" time="2021-10-19T14:46:13Z">
-        <changelog><![CDATA[remove log calls]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/2a0a2ad89589311c69eadb62541561c2f7928b46/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.14" author="MonkeyBars" time="2021-10-20T03:09:15Z">
-        <changelog><![CDATA[Fix bug:]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/047353c208442f6d78ddcd8af3639b0885743ac1/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.15" author="MonkeyBars" time="2021-10-20T06:13:46Z">
-        <changelog><![CDATA[Fix bug https://github.com/MonkeyBars3k/ReaScripts/issues/27 No warning if MIDI glued on track without virtual instrument]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ac56ee296c0334ca41a3a5a973e29478656a5cd6/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.16" author="MonkeyBars" time="2021-10-21T03:22:00Z">
-        <changelog><![CDATA[Fix bugs: Glue errors out if project unsaved (https://github.com/MonkeyBars3k/ReaScripts/issues/32)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c3c552c962b9717a8428bb0292c6ab0a5e4b84a4/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.17" author="MonkeyBars" time="2021-10-21T16:17:29Z">
-        <changelog><![CDATA[Fix bug: Unsaved projects are disabled; instead check for absolute render path in prefs (https://github.com/MonkeyBars3k/ReaScripts/issues/36)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/e1b54ccd8e44b0fd6bfa667ac45703d6aad01215/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.18" author="MonkeyBars" time="2021-10-21T20:44:39Z">
-        <changelog><![CDATA[Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/aa6986e8d0097c63b341650071e910341c7e7984/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.19" author="MonkeyBars" time="2021-10-22T00:28:06Z">
-        <changelog><![CDATA[Fix bug: Reglue: Recursive glue check happens too late (https://github.com/MonkeyBars3k/ReaScripts/issues/34)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b33dd6c101d976f8286a49051362a83a3977f4e4/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.20" author="MonkeyBars" time="2021-10-22T03:12:08Z">
-        <changelog><![CDATA[Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/8070512a40bc48680879b582a22f2dfcb63786bb/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.21" author="MonkeyBars" time="2021-10-22T03:31:34Z">
-        <changelog><![CDATA[Fix bug: Arrange view jumps (scrolls) after glue intermittently (https://github.com/MonkeyBars3k/ReaScripts/issues/16)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/49245d12347ea74fc5a28eef9b8096d8d17ab9c5/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.22" author="MonkeyBars" time="2021-10-22T07:08:40Z">
-        <changelog><![CDATA[Fix bugs: Following pooled containers don't update length on change https://github.com/MonkeyBars3k/ReaScripts/issues/39; Reglue: Unpooled container items update (https://github.com/MonkeyBars3k/ReaScripts/issues/40)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/79403aaa6d5b4670599c1ac1ba3bbda179e472c7/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.23" author="MonkeyBars" time="2021-10-22T07:32:22Z">
-        <changelog><![CDATA[Tighten error messages]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/0c661f22dd297a87ae5e415e8cf2fe28964e4266/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
-      </version>
-      <version name="1.24" author="MonkeyBars" time="2021-10-22T14:02:27Z">
-        <changelog><![CDATA[Fix bug: Don't append add'l items string to name if none (https://github.com/MonkeyBars3k/ReaScripts/issues/42)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/44a3bcd40f1b87ce58daa91532c23f3648add323/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+    </reapack>
+    <reapack name="MB Glue (Reversible) - Create container item from selected items, ignoring time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items, ignoring time selection">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.25" author="MonkeyBars" time="2021-10-22T14:28:03Z">
+        <changelog><![CDATA[Add "Glue (Reversible) ignoring time selection" script (https://github.com/MonkeyBars3k/ReaScripts/issues/43)]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/377f8c92fbeb803ccda9b6a5324ff61a979449bf/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items,%20ignoring%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality">
@@ -114,6 +63,10 @@
       <version name="1.19" author="MonkeyBars" time="2021-10-22T00:28:06Z">
         <changelog><![CDATA[Clarify comments, add isGluedOrUnglued(), remove superfluous error (check moved to Glue script)]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b33dd6c101d976f8286a49051362a83a3977f4e4/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20Utils.lua</source>
+      </version>
+      <version name="1.25" author="MonkeyBars" time="2021-10-22T14:28:03Z">
+        <changelog><![CDATA[Add "Glue (Reversible) ignoring time selection" script (https://github.com/MonkeyBars3k/ReaScripts/issues/43)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/377f8c92fbeb803ccda9b6a5324ff61a979449bf/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20Utils.lua</source>
       </version>
     </reapack>
     <reapack name="MB Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="MB Unglue (Reversible): Reveal constituent items of previously Glue (Reversible) container item, retaining group">
