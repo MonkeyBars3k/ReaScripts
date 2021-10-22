@@ -26,8 +26,7 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 ### Features
 - Fills in the missing **nondestructive/reversible Glue function** in Reaper!
 - - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes
-- Currently, Glue (Reversible) container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. 
-- - Considering Reaper is missing native Pooled Audio Items, this is great! However, we do plan to allow this to be toggled off and back on with a global script. 
+- Currently, Glue (Reversible) container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. (Yes! We have scripted the missing native **pooled audio items** feature in Reaper along with everything else!)
 - Supports **nesting Glue (Reversible) container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. Tested with 20 levels of nesting.
 
 ### Tips
