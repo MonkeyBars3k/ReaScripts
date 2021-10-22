@@ -31,7 +31,7 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 
 ### Tips
 - If you want to **move items** inside an unglued container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.
-- If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
+- If you want to **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
 - You can use the **empty container** "grc" to create silence at the start and end of the glued wav, or just expand the time selection before reglue.
 - **Using just the pooled audio item feature:** Feel free to glue a single audio item and make copies of that! Since every glued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is unglue before editing your audio item and reglue after.
 
