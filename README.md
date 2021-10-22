@@ -32,8 +32,8 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 
 ### Notes
 - Requires **SWS Plugin Extension**, of course!
-- After copying a Glue (Reversible) container item, you may need to zoom in/out to refresh. _Note_: this is Matthew's original comment; the codebase does include a zoom in/out on every Glue (perhaps to update the GUI?), which probably means you don't have to.
-- When you **Unglue (Reversible)**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new group that doesnt update other instances.
+- When you **Unglue (Reversible)**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances.
+- If you want to **move items** inside an unglued container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.
 - If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
 - You can use the **empty container** "grc" to create silence at the start and end of the glued wav.
 - Uses item notes/names to keep track of which container item items belong in. If you see "gr:1" or "grc:1", **don't delete it from the item's name**, as the code depends on that name to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
