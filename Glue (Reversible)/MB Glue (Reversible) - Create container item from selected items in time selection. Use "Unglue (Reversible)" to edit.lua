@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.20
--- @changelog Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)
+-- @version 1.21
+-- @changelog Fix bug: Arrange view jumps (scrolls) after glue intermittently (https://github.com/MonkeyBars3k/ReaScripts/issues/16)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -159,13 +159,13 @@ function glueGroup()
   end
 
   -- clean up
-  reaper.PreventUIRefresh(-1) -- is this causing the jump or other visible effects?
+  reaper.PreventUIRefresh(-1)
   reaper.UpdateTimeline()
   reaper.UpdateArrange()
   reaper.TrackList_AdjustWindows(true)
-  -- zoom in then out
-  reaper.Main_OnCommand(1011, 0)
-  reaper.Main_OnCommand(1012, 0)
+  -- zoom in then out - WAS CAUSING ISSUES. APPARENTLY HELPED REFRESH POOLED COPY CONTENTS REFRESH
+  -- reaper.Main_OnCommand(1011, 0)
+  -- reaper.Main_OnCommand(1012, 0)
 
   reaper.Undo_EndBlock("Glue (Reversible)", -1)
 end
