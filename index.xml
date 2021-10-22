@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="79403aaa6d5b4670599c1ac1ba3bbda179e472c7">
+<index version="1" name="MonkeyBars-ReaScripts" commit="0c661f22dd297a87ae5e415e8cf2fe28964e4266">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items in time selection">
       <metadata>
@@ -75,6 +75,10 @@
         <changelog><![CDATA[Fix bugs: Following pooled containers don't update length on change https://github.com/MonkeyBars3k/ReaScripts/issues/39; Reglue: Unpooled container items update (https://github.com/MonkeyBars3k/ReaScripts/issues/40)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/79403aaa6d5b4670599c1ac1ba3bbda179e472c7/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
+      <version name="1.23" author="MonkeyBars" time="2021-10-22T07:32:22Z">
+        <changelog><![CDATA[Tighten error messages]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/0c661f22dd297a87ae5e415e8cf2fe28964e4266/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality">
       <metadata>
@@ -129,6 +133,10 @@
       <version name="1.15" author="MonkeyBars" time="2021-10-20T19:12:18Z">
         <changelog><![CDATA[Fix bugs: https://github.com/MonkeyBars3k/ReaScripts/issues/30 Unglue doesn't detect presence of container items in selection; https://github.com/MonkeyBars3k/ReaScripts/issues/31 Disable Ungluing across multple tracks]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/a12104fabfd45a27a7cb861e71803a5a54373cfd/Glue%20(Reversible)/MB%20Unglue%20(Reversible)%20-%20Reveal%20items%20joined%20with%20%22Glue%20(Reversible)%22,%20retaining%20container%20item%20&amp;%20group.lua</source>
+      </version>
+      <version name="1.23" author="MonkeyBars" time="2021-10-22T07:32:22Z">
+        <changelog><![CDATA[Tighten error messages]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/0c661f22dd297a87ae5e415e8cf2fe28964e4266/Glue%20(Reversible)/MB%20Unglue%20(Reversible)%20-%20Reveal%20items%20joined%20with%20%22Glue%20(Reversible)%22,%20retaining%20container%20item%20&amp;%20group.lua</source>
       </version>
     </reapack>
   </category>
