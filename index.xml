@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="aa6986e8d0097c63b341650071e910341c7e7984">
+<index version="1" name="MonkeyBars-ReaScripts" commit="b33dd6c101d976f8286a49051362a83a3977f4e4">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items in time selection">
       <metadata>
@@ -59,6 +59,10 @@
         <changelog><![CDATA[Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/aa6986e8d0097c63b341650071e910341c7e7984/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
+      <version name="1.19" author="MonkeyBars" time="2021-10-22T00:28:06Z">
+        <changelog><![CDATA[Fix bug: Reglue: Recursive glue check happens too late (https://github.com/MonkeyBars3k/ReaScripts/issues/34)]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b33dd6c101d976f8286a49051362a83a3977f4e4/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality">
       <metadata>
@@ -86,6 +90,10 @@
       <version name="1.15" author="MonkeyBars" time="2021-10-20T19:12:18Z">
         <changelog><![CDATA[Add table length function (unused for now), clarify comments]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/a12104fabfd45a27a7cb861e71803a5a54373cfd/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20Utils.lua</source>
+      </version>
+      <version name="1.19" author="MonkeyBars" time="2021-10-22T00:28:06Z">
+        <changelog><![CDATA[Clarify comments, add isGluedOrUnglued(), remove superfluous error (check moved to Glue script)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b33dd6c101d976f8286a49051362a83a3977f4e4/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20Utils.lua</source>
       </version>
     </reapack>
     <reapack name="MB Unglue (Reversible) - Reveal items joined with &quot;Glue (Reversible)&quot;, retaining container item &amp; group.lua" type="script" desc="MB Unglue (Reversible): Reveal constituent items of previously Glue (Reversible) container item, retaining group">
