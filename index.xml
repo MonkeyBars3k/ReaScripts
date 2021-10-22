@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="8070512a40bc48680879b582a22f2dfcb63786bb">
+<index version="1" name="MonkeyBars-ReaScripts" commit="49245d12347ea74fc5a28eef9b8096d8d17ab9c5">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items in time selection. Use &quot;Unglue (Reversible)&quot; to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items in time selection">
       <metadata>
@@ -66,6 +66,10 @@
       <version name="1.20" author="MonkeyBars" time="2021-10-22T03:12:08Z">
         <changelog><![CDATA[Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/8070512a40bc48680879b582a22f2dfcb63786bb/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
+      </version>
+      <version name="1.21" author="MonkeyBars" time="2021-10-22T03:31:34Z">
+        <changelog><![CDATA[Fix bug: Arrange view jumps (scrolls) after glue intermittently (https://github.com/MonkeyBars3k/ReaScripts/issues/16)]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/49245d12347ea74fc5a28eef9b8096d8d17ab9c5/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20-%20Create%20container%20item%20from%20selected%20items%20in%20time%20selection.%20Use%20%22Unglue%20(Reversible)%22%20to%20edit.lua</source>
       </version>
     </reapack>
     <reapack name="MB Glue (Reversible) Utils.lua" type="script" desc="MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality">
