@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.19
--- @changelog Fix bug: Reglue: Recursive glue check happens too late (https://github.com/MonkeyBars3k/ReaScripts/issues/34)
+-- @version 1.20
+-- @changelog Fix bug: Reglue doesn't grow container item to size of time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/23)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -109,6 +109,7 @@ function glueGroup()
     return false
   end
 
+
   -- don't allow gluing instance into unglued copy of itself
   for i = 1, #glued_containers do
     local this_container_name = getSetItemName(glued_containers[i])
@@ -158,7 +159,7 @@ function glueGroup()
   end
 
   -- clean up
-  reaper.PreventUIRefresh(-1)
+  reaper.PreventUIRefresh(-1) -- is this causing the jump or other visible effects?
   reaper.UpdateTimeline()
   reaper.UpdateArrange()
   reaper.TrackList_AdjustWindows(true)
@@ -223,6 +224,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
 
 
   deselect()
+
 
   -- convert to audio takes, store state, and check for dependencies
   item_states = ''
@@ -309,9 +311,6 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   new_length = reaper.GetMediaItemInfo_Value(glued_item, "D_LENGTH")
   reaper.SetMediaItemInfo_Value(container, "D_LENGTH", new_length)
 
-  -- refresh timeline so we get current time selection
-  reaper.UpdateTimeline()
-
   -- make sure container is aligned with start of items
   item_position = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
   reaper.SetMediaItemInfo_Value(container, "D_POSITION", item_position)
@@ -373,7 +372,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
 
   reaper.DeleteTrackMediaItem(source_track, container)
 
-  return glued_item, original_state_key, item_position
+  return glued_item, original_state_key, item_position, new_length
 end
 
 
@@ -385,7 +384,7 @@ function reGlue(source_track, source_item, glue_group, container)
 
 
   -- run doGlue, but this time with a glue_group and container
-  glued_item, original_state_key, pos = doGlue(source_track, source_item, glue_group, container)
+  glued_item, original_state_key, pos, length = doGlue(source_track, source_item, glue_group, container)
 
   -- store updated src
   new_src = getItemWavSrc(glued_item)
@@ -397,11 +396,15 @@ function reGlue(source_track, source_item, glue_group, container)
     if r > 0 and original_state then
       -- reapply original state to glued item
       getSetObjectState(glued_item, original_state)
+
       -- reapply new src because original state would have old one
       take = reaper.GetActiveTake(glued_item)
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
-      -- move to new position in case newly glued version sits further left
+
+      -- set new position & length in case of differences from last glue
       reaper.SetMediaItemInfo_Value(glued_item, "D_POSITION", pos)
+      reaper.SetMediaItemInfo_Value(glued_item, "D_LENGTH", length)
+
       -- remove original state data, not needed anymore
       reaper.SetProjExtState(0, "GLUE_GROUPS", original_state_key, '')
     end
