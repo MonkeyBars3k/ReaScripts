@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.23
--- @changelog Tighten error messages
+-- @version 1.24
+-- @changelog Fix bug: Don't append add'l items string to name if none (https://github.com/MonkeyBars3k/ReaScripts/issues/42)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -304,7 +304,11 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   glued_item = reaper.GetSelectedMediaItem(0, 0)
 
   -- store a reference to this glue group in glued item
-  item_name_addl_count = " +"..(num_items-1).. " more"
+  if item_name_addl_count and item_name_addl_count > 0 then
+    item_name_addl_count = " +"..(num_items-1).. " more"
+  else
+    item_name_addl_count = ""
+  end 
   glued_item_init_name = glue_group.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
   setItemGlueGroup(glued_item, glued_item_init_name, true)
 
