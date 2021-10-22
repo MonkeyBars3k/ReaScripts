@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
 -- @version 1.21
--- @changelog Fix bug: Arrange view jumps (scrolls) after glue intermittently (https://github.com/MonkeyBars3k/ReaScripts/issues/16)
+-- @changelog Fix bugs: Pooled item containers don't update (https://github.com/MonkeyBars3k/ReaScripts/issues/38); Unglued container item detected as MIDI; Reglue
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -92,7 +92,7 @@ function glueGroup()
 
     -- take is MIDI?
     active_take = reaper.GetActiveTake(item)
-    if active_take and reaper.TakeIsMIDI(active_take) then
+    if item_glue_group and active_take and reaper.TakeIsMIDI(active_take) then
       midi_item_is_selected = true
     end
 
@@ -304,7 +304,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
 
   -- store a reference to this glue group in glued item
   item_name_addl_count = " +"..(num_items-1).. " more"
-  glued_item_init_name = glue_group.." ["..first_item_name..item_name_addl_count.."]"
+  glued_item_init_name = glue_group.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
   setItemGlueGroup(glued_item, glued_item_init_name, true)
 
   -- make sure container is big enough
@@ -321,7 +321,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
   -- insert stored states into ProjExtState
   reaper.SetProjExtState(0, "GLUE_GROUPS", glue_group, item_states)
 
-  -- if this is being called from an 'updateSources' nested call, dependencies havent been changed so don't bother with this part
+  -- if being called from an 'updateSources' nested call, dependencies haven't been changed, so don't bother with this part
   if not ignore_depends then
 
     r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", glue_group..":dependencies", '')
@@ -330,7 +330,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
     dependencies = ""
     dependent = "|"..glue_group.."|"
 
-    -- store a reference to this glue group for all the nested glue groups so if any of them get updated they can check and update this group
+    -- store a reference to this glue group for all the nested glue groups so if any of them get updated, they can check and update this group
     for item_glue_group, r in pairs(dependencies_table) do
       
       -- make a key for nested glue group to keep track of which groups are dependent on it
@@ -338,7 +338,7 @@ function doGlue(source_track, source_item, glue_group, existing_container, ignor
       -- see if nested glue group already has a list of dependents
       r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", key, '')
       if r == 0 then dependents = "" end
-      -- if this glue group isnt already in list, add it
+      -- if this glue group isn't already in list, add it
       if not string.find(dependents, dependent) then
         dependents = dependents..dependent
         reaper.SetProjExtState(0, "GLUE_GROUPS", key, dependents)
@@ -422,7 +422,7 @@ function reGlue(source_track, source_item, glue_group, container)
 end
 
 
-function  updateSource( item, glue_group_string, new_src)
+function updateSource( item, glue_group_string, new_src)
   local take_name, current_src, take
 
   -- get take name and see if it matches currently updated glue group
@@ -436,8 +436,8 @@ function  updateSource( item, glue_group_string, new_src)
 
       -- update src
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
-      
-      -- peakRebuildNeeded = true
+      -- refresh peak display
+      reaper.ClearPeakCache()
 
       return current_src
 
@@ -450,9 +450,9 @@ function updateSources(new_src, glue_group)
 
   deselect()
 
-  local num_items, glue_group_string, i, old_src, old_srcs
+  local num_items, glue_group_string, i, this_item, old_src, old_srcs
 
-  glue_group_string = "glue_group:"..glue_group
+  glue_group_string = "gr:"..glue_group
 
   old_srcs = {}
 
@@ -462,8 +462,8 @@ function updateSources(new_src, glue_group)
   -- loop through and update wav srcs
   i = 0
   while i < num_items do
-
-    old_src = updateSource(reaper.GetMediaItem(0, i), glue_group_string, new_src)
+    this_item = reaper.GetMediaItem(0, i)
+    old_src = updateSource(this_item, glue_group_string, new_src)
 
     if old_src then old_srcs[old_src] = true end
 
@@ -506,12 +506,12 @@ function calculateUpdates(glue_group, nesting_level)
         update_table[dependent_group].nesting_level = math.max(nesting_level, update_table[dependent_group].nesting_level)
 
       else 
-      -- this is the first time this group has come up, set up for the update loop
+      -- this is the first time this group has come up. set up for update loop
         current_entry = {}
         current_entry.glue_group = dependent_group
         current_entry.nesting_level = nesting_level
 
-        -- make a track for this items updates
+        -- make track for this item's updates
         reaper.InsertTrackAtIndex(0, false)
         track = reaper.GetTrack(0, 0)
 
