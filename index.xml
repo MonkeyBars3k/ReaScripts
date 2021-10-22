@@ -160,8 +160,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Features\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Fills in the missing {\b nondestructive/reversible Glue function} in Reaper!\par}
 {\pard \ql \f0 \sa0 \li720 \fi-360 \bullet \tx360\tab \endash \tx360\tab A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes\sa180\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Currently, Glue (Reversible) container item copies are {\b pooled by default}. Editing and regluing one container item {\b updates all instances}.\par}
-{\pard \ql \f0 \sa0 \li720 \fi-360 \bullet \tx360\tab \endash \tx360\tab Considering Reaper is missing native Pooled Audio Items, this is great! However, we do plan to allow this to be toggled off and back on with a global script.\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Currently, Glue (Reversible) container item copies are {\b pooled by default}. Editing and regluing one container item {\b updates all instances}. (Yes! We have scripted the missing native {\b pooled audio items} feature in Reaper along with everything else!)\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Supports {\b nesting Glue (Reversible) container items} inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. Tested with 20 levels of nesting.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Tips\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab If you want to {\b move items} inside an unglued container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.\par}
@@ -171,7 +170,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension}, of course!\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When you {\b Unglue (Reversible)}, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from \u8211- don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes/names to keep track of which container item items belong in. {\b Never delete "gr:1" or "grc:1" from items names}, as the code depends on that label to find it! You can add text to notes/names AFTER \u8211- e.g. "gr:1 - My extra text"\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes/names to keep track of which container item items belong in. {\b Never delete "gr:1" or "grc:1" from items' names}, as the code depends on that label to find it! You can add text to notes/names AFTER \u8211- e.g. "gr:1 - My extra text"\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI container items}, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of Glue (Reversible) container items, you can't make a copy of itself inside itself, as that would cause an {\b infinite recursion}.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses selection set slot 10 at times to save and recall selected items.\sa180\par}
