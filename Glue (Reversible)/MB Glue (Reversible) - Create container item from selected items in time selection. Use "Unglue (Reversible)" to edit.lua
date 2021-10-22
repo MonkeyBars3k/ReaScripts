@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.21
--- @changelog Fix bugs: Pooled item containers don't update (https://github.com/MonkeyBars3k/ReaScripts/issues/38); Unglued container item detected as MIDI; Reglue
+-- @version 1.22
+-- @changelog Fix bugs: Following pooled containers don't update length on change https://github.com/MonkeyBars3k/ReaScripts/issues/39; Reglue: Unpooled container items update (https://github.com/MonkeyBars3k/ReaScripts/issues/40)
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -415,14 +415,14 @@ function reGlue(source_track, source_item, glue_group, container)
   -- sort dependents update_table by how nested they are
   sortUpdates()
   -- do actual updates now
-  updateDependents(glue_group, new_src)
+  updateDependents(glue_group, new_src, length)
 
   return glued_item
 
 end
 
 
-function updateSource( item, glue_group_string, new_src)
+function updateSource( item, glue_group_string, new_src, length)
   local take_name, current_src, take
 
   -- get take name and see if it matches currently updated glue group
@@ -436,6 +436,10 @@ function updateSource( item, glue_group_string, new_src)
 
       -- update src
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
+
+      -- update length
+      reaper.SetMediaItemInfo_Value(item, "D_LENGTH", length)
+
       -- refresh peak display
       reaper.ClearPeakCache()
 
@@ -446,7 +450,7 @@ function updateSource( item, glue_group_string, new_src)
 end
 
 
-function updateSources(new_src, glue_group)
+function updateSources(new_src, glue_group, length)
 
   deselect()
 
@@ -463,7 +467,7 @@ function updateSources(new_src, glue_group)
   i = 0
   while i < num_items do
     this_item = reaper.GetMediaItem(0, i)
-    old_src = updateSource(this_item, glue_group_string, new_src)
+    old_src = updateSource(this_item, glue_group_string, new_src, length)
 
     if old_src then old_srcs[old_src] = true end
 
@@ -549,10 +553,10 @@ end
 
 
 -- do the actual updates of the dependent groups
-function updateDependents( glue_group, src )
+function updateDependents( glue_group, src, length )
 
   -- update items with just one level of nesting now that they are exposed
-  updateSources(src, glue_group)
+  updateSources(src, glue_group, length)
 
   local glued_item, i, dependent, new_src
 
@@ -568,7 +572,7 @@ function updateDependents( glue_group, src )
 
     -- update all instances of this group, including any in other more deeply nested dependent groups which are exposed and waiting to be updated
     new_src = getItemWavSrc(glued_item)
-    updateSources(new_src, dependent.glue_group)
+    updateSources(new_src, dependent.glue_group, length)
 
     -- delete glue track
     reaper.DeleteTrack(dependent.track)
