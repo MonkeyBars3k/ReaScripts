@@ -30,15 +30,18 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 - - Considering Reaper is missing native Pooled Audio Items, this is great! However, we do plan to allow this to be toggled off and back on with a global script. 
 - Supports **nesting Glue (Reversible) container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. Tested with 20 levels of nesting.
 
+### Tips
+- If you want to **move items** inside an unglued container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.
+- If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
+- You can use the **empty container** "grc" to create silence at the start and end of the glued wav, or just expand the time selection before reglue.
+- **Using just the pooled audio item feature:** Feel free to glue a single audio item and make copies of that! Since every glued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is unglue before editing your audio item and reglue after.
+
 ### Notes
 - Requires **SWS Plugin Extension**, of course!
 - When you **Unglue (Reversible)**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances.
-- If you want to **move items** inside an unglued container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.
-- If you **add new items** to a Glue (Reversible) container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
-- You can use the **empty container** "grc" to create silence at the start and end of the glued wav.
-- Uses item notes/names to keep track of which container item items belong in. If you see "gr:1" or "grc:1", **don't delete it from the item's name**, as the code depends on that name to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
+- Uses item notes/names to keep track of which container item items belong in. **Never delete "gr:1" or "grc:1" from items names**, as the code depends on that label to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
-- When using copies of Glue (Reversible) container items, you can't make a copy of itself inside itself, as that would cause an infinite recursion.
+- When using copies of Glue (Reversible) container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
 - Uses selection set slot 10 at times to save and recall selected items. 
 
 ### History
