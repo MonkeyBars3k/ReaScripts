@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible): Create container item from selected items in time selection
 -- @author MonkeyBars
--- @version 1.22
--- @changelog Fix bugs: Following pooled containers don't update length on change https://github.com/MonkeyBars3k/ReaScripts/issues/39; Reglue: Unpooled container items update (https://github.com/MonkeyBars3k/ReaScripts/issues/40)
+-- @version 1.23
+-- @changelog Tighten error messages
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -12,7 +12,7 @@ require("MB Glue (Reversible) Utils")
 
 
 function glueGroup()
-  local platform, proj_renderpath, is_win, is_win_absolute_path, is_nix_absolute_path, num_items, source_item, source_track, glue_group, glued_item, container, selected_items, glued_containers, unglued_containers, num_unglued_containers_selected, i, item_track, prev_item_track, item_glue_group, item, j, active_take, midi_item_is_selected
+  local platform, proj_renderpath, is_win, is_win_absolute_path, is_nix_absolute_path, num_items, source_item, source_track, glue_group, glued_item, container, selected_items, glued_containers, unglued_containers, num_unglued_containers_selected, i, item_track, msg_change_selected_items, prev_item_track, item_glue_group, item, j, active_take, midi_item_is_selected
 
 
   -- warn if using without render path set
@@ -23,7 +23,7 @@ function glueGroup()
   is_nix_absolute_path = string.match(proj_renderpath, "^/")
   -- trying to Glue without render path set? 
   if (is_win and not is_win_absolute_path) or (not is_win and not is_nix_absolute_path) then
-    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "You need a file render path to use Glue (Reversible).", 0)
+    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "Glue (Reversible) needs a file render path.", 0)
     return false
   end
 
@@ -58,6 +58,7 @@ function glueGroup()
 
   -- parse selected items
   selected_items = {}
+  msg_change_selected_items = "Change the items selected and try again."
   glued_containers = {}
   unglued_containers = {}
   num_unglued_containers_selected = 0
@@ -70,7 +71,7 @@ function glueGroup()
     item_track = reaper.GetMediaItemTrack(item)
     -- this item's track differs from the last?
     if item_track and prev_item_track and item_track ~= prev_item_track then
-      reaper.ShowMessageBox("You have selected items on more than one track, which is not supported (yet). Change the items selected and try again.", "All Glue (Reversible) items must be on a single track.", 0)
+      reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only glue items on a single track.", 0)
       return false
     end
     prev_item_track = item_track
@@ -101,7 +102,7 @@ function glueGroup()
 
   -- if multiple unglued containers in selection, abort.
   if num_unglued_containers_selected and num_unglued_containers_selected > 1 then
-    reaper.ShowMessageBox("Gluing multiple unglued containers is not supported (yet). Please change selection and try again.", "You can only reglue one Glue (Reversible) container at a time", 0)
+    reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only reglue one container at a time.", 0)
 
     -- reset item selection from selection set slot 10
     reaper.Main_OnCommand(41248, 0)
@@ -120,7 +121,7 @@ function glueGroup()
       this_container_name = getSetItemName(unglued_containers[j])
       local this_unglued_container_num = string.match(this_container_name, "^gr:(%d+)")
       if this_glued_container_num == this_unglued_container_num then
-        reaper.ShowMessageBox("You can't glue a glued container item to its own unglued copy!", "Glue (Reversible) recursion error", 0)
+        reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can't glue a glued container item to an unglued, pooled copy of itself!", 0)
         -- reset item selection from selection set slot 10
         reaper.Main_OnCommand(41248, 0)
         return false
@@ -137,7 +138,7 @@ function glueGroup()
   -- Virtual instrument present on track?
   local track_has_virtual_instrument = reaper.TrackFX_GetInstrument(source_track)
   if midi_item_is_selected and track_has_virtual_instrument == -1 then
-    reaper.ShowMessageBox("Glue (Reversible) isn't supported for pure MIDI (yet). Add a virtual instrument to render into the container, or try a different item selection.", "You can't Glue (Reversible) MIDI without a virtual instrument", 0)
+    reaper.ShowMessageBox("Add a virtual instrument to render audio into the glued container, or try a different item selection.", "Glue (Reversible) can't glue pure MIDI without a virtual instrument.", 0)
     return false
   end
 

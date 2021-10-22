@@ -1,7 +1,7 @@
 -- @description MB Unglue (Reversible): Reveal constituent items of previously Glue (Reversible) container item, retaining group
 -- @author MonkeyBars
--- @version 1.15
--- @changelog Fix bugs: https://github.com/MonkeyBars3k/ReaScripts/issues/30 Unglue doesn't detect presence of container items in selection; https://github.com/MonkeyBars3k/ReaScripts/issues/31 Disable Ungluing across multple tracks
+-- @version 1.23
+-- @changelog Tighten error messages
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -16,15 +16,17 @@ function unglueGroup()
 
   num_items = reaper.CountSelectedMediaItems(0)
 
-  -- check whether items glued/unglued
+ 
   selected_items = {}
   num_containers_selected = 0
   noncontainers = {}
+  msg_change_selected_items = "Change the items selected and try again."
   i = 0
   while i < num_items do
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
     glued_container = checkItemForGlueGroup(selected_items[i])
     
+     -- check whether items glued/unglued
     if glued_container then
       num_containers_selected = num_containers_selected + 1
     else
@@ -36,7 +38,7 @@ function unglueGroup()
     -- this item's track differs from the last?
     if item_track and prev_item_track and item_track ~= prev_item_track then
       -- display "OK" message and quit
-      reaper.ShowMessageBox("You have selected items on more than one track, which is not supported (yet). Change the items selected and try again.", "All Glue (Reversible) items must be on a single track.", 0)
+      reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue items on a single track.", 0)
       return false
     end
     prev_item_track = item_track
@@ -46,10 +48,10 @@ function unglueGroup()
 
   -- Throw error if zero or multiple container items selected
   if num_containers_selected == 0 then
-    reaper.ShowMessageBox("You haven't selected any glued container items. Please select one and try again.", "Unglue (Reversible): You can only unglue previously glued container items." , 0)
+    reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue previously glued container items." , 0)
     return
   elseif num_containers_selected > 1 then
-    multiitem_result = reaper.ShowMessageBox("You have selected multiple glued container items. Would you like to Unglue the first (earliest) selected container item?", "Unglue (Reversible): You can only unglue a single glued container item at a time.", 1)
+    multiitem_result = reaper.ShowMessageBox("Would you like to Unglue the first (earliest) selected container item only?", "Unglue (Reversible) can only unglue a single glued container item at a time.", 1)
     if multiitem_result == 2 then
       return
     end
