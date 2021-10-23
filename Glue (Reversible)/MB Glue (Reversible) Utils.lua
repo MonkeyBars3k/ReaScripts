@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.25
--- @changelog Add "Glue (Reversible) ignoring time selection" script (https://github.com/MonkeyBars3k/ReaScripts/issues/43)
+-- @version 1.26
+-- @changelog 
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -365,6 +365,7 @@ function string:split(sSeparator, nMax, bRegexp)
 
   return aRecord
 end
+
 
 function glueGroup(obey_time_selection)
   local platform, proj_renderpath, is_win, is_win_absolute_path, is_nix_absolute_path, num_items, source_item, source_track, glue_group, glued_item, container, selected_items, glued_containers, unglued_containers, num_unglued_containers_selected, i, item_track, msg_change_selected_items, prev_item_track, item_glue_group, item, j, active_take, midi_item_is_selected
