@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
 -- @version 1.27
--- @changelog Refactor glueGroup() - new name initGlueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/35)
+-- @changelog Refactor glueGroup() - new name initGlueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/35); Add "Toggle Glue/Unglue (Reversible)" scripts (https://github.com/MonkeyBars3k/ReaScripts/issues/9)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -32,7 +32,7 @@ function initGlueReversible(obey_time_selection)
   selected_item_count = getSelectedItemsCount()
   if itemsAreSelected(selected_item_count) == false then return end
 
-  -- find previously glued item, if present
+  -- find unglued item if present
   glue_group, container = checkSelectionForContainer(selected_item_count)
 
   source_item, source_track = getSourceSelections()
@@ -42,10 +42,9 @@ function initGlueReversible(obey_time_selection)
   groupSelectedItems()
 
   glued_item = triggerGlueReversible(glue_group, source_track, source_item, glue_group, container, obey_time_selection)
-
   exclusiveSelectItem(glued_item)
-  refreshUI()
-  reaper.Undo_EndBlock("Glue (Reversible)", -1)
+
+  cleanUpGlueReversible("Glue (Reversible)")
 end
 
 
@@ -199,11 +198,9 @@ end
 
 
 function ungluedContainersAreInvalid(selected_item_count, glue_group)
-  local selected_items, glued_containers, unglued_containers
+  local glued_containers, unglued_containers = getContainers(selected_item_count, glue_group)
 
-  glued_containers, unglued_containers = getContainers(selected_item_count, glue_group)
-
-  if multipleUngluedContainersAreSelected(#unglued_containers, msg_change_selected_items) or recursiveContainerIsBeingGlued(glued_containers, unglued_containers, msg_change_selected_items) then
+  if multipleUngluedContainersAreSelected(#unglued_containers) == true or recursiveContainerIsBeingGlued(glued_containers, unglued_containers) == true then
     return true
   end
 end
@@ -352,8 +349,14 @@ function deselect()
   end
 
   num = reaper.CountSelectedMediaItems(0)
-
 end
+
+
+function cleanUpGlueReversible(undo_block_string)
+  refreshUI()
+  reaper.Undo_EndBlock(undo_block_string, -1)
+end
+
 
 
 function refreshUI()
@@ -1080,6 +1083,53 @@ function reselect( items )
 
   for i,item in pairs(items) do
     reaper.SetMediaItemSelected(item, true)
+  end
+end
+
+
+function initToggleGlueUnglueReversible(obey_time_selection)
+  local selected_item_count, glue_group
+
+  selected_item_count = doPreGlueChecks()
+  if selected_item_count == false then return end
+
+  selected_item_count = doPreGlueChecks()
+  if selected_item_count == false then return end
+
+  prepareGlueState()
+  
+  -- refresh in case item selection changed
+  selected_item_count = getSelectedItemsCount()
+  if itemsAreSelected(selected_item_count) == false then return end
+
+  -- find unglued item if present
+  glue_group = checkSelectionForContainer(selected_item_count)
+
+  if singleGluedContainerIsSelected(selected_item_count, glue_group) == true then
+    -- unglue
+  end
+
+  -- only multiple glued containers OR 
+    -- multiple glued containers AND only noncontainers OR 
+    -- only noncontainers OR 
+    -- single unglued container OR
+    -- noncontainer(s) and single unglued container selected? GLUE
+  
+  -- glued container(s) and 1 unglued container selected? GLUE/ABORT DIALOG
+
+end
+
+
+function singleGluedContainerIsSelected(selected_item_count, glue_group)
+  local glued_containers, unglued_containers, num_noncontainers
+
+  glued_containers, unglued_containers = getContainers(selected_item_count, glue_group)
+  num_noncontainers = selected_item_count - #glued_containers - #unglued_containers
+
+  if #glued_containers == 1 and #unglued_containers == 0 and num_noncontainers == 0 then
+    return true
+  else
+    return false
   end
 end
 
