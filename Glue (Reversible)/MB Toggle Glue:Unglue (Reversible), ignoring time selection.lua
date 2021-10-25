@@ -1,6 +1,6 @@
--- @description MB Toggle Glue/Unglue (Reversible)
+-- @description MB Toggle Glue/Unglue (Reversible), ignoring time selection
 -- @author MonkeyBars
--- @version 1.0
+-- @version 1.27
 -- @changelog initial commit
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
