@@ -1200,7 +1200,7 @@ function initToggleGlueUnglueReversible(obey_time_selection)
 
   if ungluedContainersAreInvalid(selected_item_count) == true then return end
 
-  if doGlueReversibleAction(selected_item_count) == false then 
+  if doGlueReversibleAction(selected_item_count, obey_time_selection) == false then 
     reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
     setResetItemSet()
     return
@@ -1218,7 +1218,7 @@ function getGlueReversibleAction(selected_item_count)
   singleGluedContainerIsSelected = #glued_containers == 1
   gluedContainersAreSelected = #glued_containers > 0
   noUngluedContainersAreSelected = #unglued_containers == 0
-  singleUngluedContainerIsSelected = #unglued_containers < 2
+  singleUngluedContainerIsSelected = #unglued_containers == 1
   noNoncontainersAreSelected = num_noncontainers == 0
 
   if singleGluedContainerIsSelected and noUngluedContainersAreSelected and noNoncontainersAreSelected then
@@ -1241,7 +1241,7 @@ function getNumSelectedItemsByType(selected_item_count)
 end
 
 
-function doGlueReversibleAction(selected_item_count)
+function doGlueReversibleAction(selected_item_count, obey_time_selection)
   glue_reversible_action = getGlueReversibleAction(selected_item_count)
 
   if glue_reversible_action == "unglue" then
