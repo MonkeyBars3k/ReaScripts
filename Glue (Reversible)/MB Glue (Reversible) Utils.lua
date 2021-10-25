@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.27
--- @changelog Refactor glueGroup() - new name initGlueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/35); Add "Toggle Glue/Unglue (Reversible)" scripts (https://github.com/MonkeyBars3k/ReaScripts/issues/9)
+-- @version 1.28
+-- @changelog Iterate version for ReaPack
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
