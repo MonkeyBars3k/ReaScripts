@@ -1220,7 +1220,7 @@ function getGlueReversibleAction(selected_item_count)
   noUngluedContainersAreSelected = #unglued_containers == 0
   singleUngluedContainerIsSelected = #unglued_containers == 1
   noNoncontainersAreSelected = num_noncontainers == 0
-  noncontainersAreSelected = num_noncontainers > 1
+  noncontainersAreSelected = num_noncontainers > 0
 
   if singleGluedContainerIsSelected and noUngluedContainersAreSelected and noNoncontainersAreSelected then
     return "unglue"
