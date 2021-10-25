@@ -17,17 +17,17 @@ The other option is to **Group** items. This works well if you simply want to  m
 
 ### How to use
 
-**To use Glue (Reversible)**, simply select items or make a time selection with items inside and trigger the Glue (Reversible) script.
+**To use Glue (Reversible)**, simply select items or make a time selection with items inside and trigger either Glue (Reversible) script (time selection enabled/disabled).
 
 To edit your glued items, **Unglue (Reversible)** opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible). 
 
-You can  Glue (Reversible) existing container items, nondestructively **nesting** container items. There is no limit in the code as to how many times you can nest.
+**Toggle Glue/Unglue** (with time selection enabled/disabled) will intelligently determine which action is required based on your item selections.
 
 ### Features
 - Fills in the missing **nondestructive/reversible Glue function** in Reaper!
 - - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes
 - Currently, Glue (Reversible) container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. (Yes! We have scripted the missing native **pooled audio items** feature in Reaper along with everything else!)
-- Supports **nesting Glue (Reversible) container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. Tested with 20 levels of nesting.
+- Supports **nesting Glue (Reversible) container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest – tested with 20 levels of nesting.
 
 ### Tips
 - If you want to **move items** inside an unglued container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.
