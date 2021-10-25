@@ -238,19 +238,18 @@ function getContainers(selected_item_count)
   return glued_containers, unglued_containers
 end
 
-
 function recursiveContainerIsBeingGlued(glued_containers, unglued_containers)
   local i, j, this_container_name, unglued_container_name_prefix, this_glued_container_num, glued_container_name_prefix
 
   for i = 1, #glued_containers do
     this_container_name = getSetItemName(glued_containers[i])
-    unglued_container_name_prefix = "^grc:(%d+)"
+    unglued_container_name_prefix = "^gr:(%d+)"
     this_glued_container_num = string.match(this_container_name, unglued_container_name_prefix)
 
     j = 1
     for j = 1, #unglued_containers do
       this_container_name = getSetItemName(unglued_containers[j])
-      glued_container_name_prefix = "^gr:(%d+)"
+      glued_container_name_prefix = "^grc:(%d+)"
       this_unglued_container_num = string.match(this_container_name, glued_container_name_prefix)
       
       if this_glued_container_num == this_unglued_container_num then
@@ -1210,16 +1209,15 @@ end
 
 
 function getGlueReversibleAction(selected_item_count)
-  local glued_containers, unglued_containers, num_noncontainers, singleGluedContainerIsSelected, noUngluedContainersAreSelected, noNoncontainersAreSelected, onlyNoncontainersAreSelected, singleUngluedContainerIsSelected
+  local glued_containers, unglued_containers, num_noncontainers, singleGluedContainerIsSelected, noUngluedContainersAreSelected, noNoncontainersAreSelected, gluedContainersAreSelected, noGluedContainersAreSelected, singleUngluedContainerIsSelected
 
   glued_containers, unglued_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
   noGluedContainersAreSelected = #glued_containers == 0
   singleGluedContainerIsSelected = #glued_containers == 1
   gluedContainersAreSelected = #glued_containers > 0
   noUngluedContainersAreSelected = #unglued_containers == 0
-  lessThanTwoUngluedContainersAreSelected = #unglued_containers < 2
+  singleUngluedContainerIsSelected = #unglued_containers < 2
   noNoncontainersAreSelected = num_noncontainers == 0
-  singleUngluedContainerIsSelected = #unglued_containers == 1
 
   if singleGluedContainerIsSelected and noUngluedContainersAreSelected and noNoncontainersAreSelected then
     log("unglue")
@@ -1227,7 +1225,7 @@ function getGlueReversibleAction(selected_item_count)
   elseif singleUngluedContainerIsSelected and gluedContainersAreSelected then
     log("glue/abort")
     return "glue/abort"
-  elseif (noGluedContainersAreSelected and lessThanTwoUngluedContainersAreSelected) or (gluedContainersAreSelected and noUngluedContainersAreSelected) then
+  elseif (noGluedContainersAreSelected and singleUngluedContainerIsSelected) or (gluedContainersAreSelected and noUngluedContainersAreSelected) then
     log("glue")
     return "glue"
   end
@@ -1246,12 +1244,13 @@ end
 
 function doGlueReversibleAction(selected_item_count)
   glue_reversible_action = getGlueReversibleAction(selected_item_count)
+
   if glue_reversible_action == "unglue" then
     unglueReversible()
   elseif glue_reversible_action == "glue" then
     initGlueReversible(obey_time_selection)
   elseif glue_reversible_action == "glue/abort" then
-    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an unglued container and glued container(s).", 2)
+    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an unglued container and glued container(s).", 1)
     if glue_abort_dialog == 2 then
       setResetItemSet()
       return
