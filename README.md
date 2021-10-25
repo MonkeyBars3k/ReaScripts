@@ -37,6 +37,7 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 
 ### Notes
 - Requires **SWS Plugin Extension**, of course!
+- Don't **Clean current project directory** after gluing, or you'll lose your original items!
 - When you **Unglue (Reversible)**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances.
 - Uses item notes/names to keep track of which container item items belong in. **Never delete "gr:1" or "grc:1" from items' names**, as the code depends on that label to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
