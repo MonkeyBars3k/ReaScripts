@@ -100,9 +100,9 @@ end
 -- get unglued container info from selection
 function checkSelectionForContainer(selected_item_count)
 
-  local i = 0, item, glue_group, non_container_item, container, new_glue_group
+  local i, item, glue_group, new_glue_group, container
 
-  while i < selected_item_count do
+  for i = 0, selected_item_count-1 do
     item = reaper.GetSelectedMediaItem(0, i)
     new_glue_group = getGlueGroupFromItem(item)
 
@@ -120,14 +120,12 @@ function checkSelectionForContainer(selected_item_count)
     elseif not non_container_item then
       non_container_item = item
     end
-
-    i = i + 1
   end
 
   -- make sure we have all 3 needed items
   if not glue_group or not container or not non_container_item then return end
 
-  return glue_group, container, non_container_item
+  return glue_group, container
 end
 
 
@@ -1009,86 +1007,6 @@ function restoreItems( glue_group, track, position, dont_restore_take, dont_offs
 end
 
 
-function initToggleGlueUnglueReversible(obey_time_selection)
-  local selected_item_count, glue_group, glue_reversible_action, glue_abort_dialog
-
-  selected_item_count = doPreGlueChecks()
-  if selected_item_count == false then return end
-
-  prepareGlueState()
-  
-  -- refresh in case item selection changed
-  selected_item_count = getSelectedItemsCount()
-  if itemsAreSelected(selected_item_count) == false then return end
-
-  -- find unglued item if present
-  glue_group = checkSelectionForContainer(selected_item_count)
-
-  if doGlueReversibleAction(selected_item_count) == false then 
-    reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
-    setResetItemSet()
-    return
-  end
-
-  reaper.Undo_EndBlock("Toggle Glue/Unglue (Reversible)", -1)
-end
-
-
-function getGlueReversibleAction(selected_item_count)
-  local glued_containers, unglued_containers, num_noncontainers, singleGluedContainerIsSelected, noUngluedContainersAreSelected, noNoncontainersAreSelected, onlyNoncontainersAreSelected, singleUngluedContainerIsSelected
-
-  glued_containers, unglued_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
-  noGluedContainersAreSelected = #glued_containers == 0
-  singleGluedContainerIsSelected = #glued_containers == 1
-  gluedContainersAreSelected = #glued_containers > 0
-  noUngluedContainersAreSelected = #unglued_containers == 0
-  lessThanTwoUngluedContainersAreSelected = #unglued_containers < 2
-  noNoncontainersAreSelected = num_noncontainers == 0
-  singleUngluedContainerIsSelected = #unglued_containers == 1
-
-  if singleGluedContainerIsSelected and noUngluedContainersAreSelected and noNoncontainersAreSelected then
-    log("unglue")
-    return "unglue"
-  elseif singleUngluedContainerIsSelected and gluedContainersAreSelected then
-    log("glue/abort")
-    return "glue/abort"
-  elseif (noGluedContainersAreSelected and lessThanTwoUngluedContainersAreSelected) or (gluedContainersAreSelected and noUngluedContainersAreSelected) then
-    log("glue")
-    return "glue"
-  end
-end
-
-
-function getNumSelectedItemsByType(selected_item_count)
-  local glued_containers, unglued_containers, num_noncontainers = 0
-
-  glued_containers, unglued_containers = getContainers(selected_item_count)
-  num_noncontainers = selected_item_count - #glued_containers - #unglued_containers
-
-  return glued_containers, unglued_containers, num_noncontainers
-end
-
-
-function doGlueReversibleAction(selected_item_count)
-  glue_reversible_action = getGlueReversibleAction(selected_item_count)
-  if glue_reversible_action == "unglue" then
-    unglueReversible()
-  elseif glue_reversible_action == "glue" then
-    initGlueReversible(obey_time_selection)
-  elseif glue_reversible_action == "glue/abort" then
-    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an unglued container and glued container(s).", 2)
-    if glue_abort_dialog == 2 then
-      setResetItemSet()
-      return
-    else
-      initGlueReversible(obey_time_selection)
-    end
-  else
-    return false
-  end
-end
-
-
 function string:split(sSeparator, nMax, bRegexp)
   assert(sSeparator ~= '')
   assert(nMax == nil or nMax >= 1)
@@ -1262,6 +1180,86 @@ function unglueReversible()
     reaper.TrackList_AdjustWindows(true)
     reaper.Undo_EndBlock("Unglue (Reversible)", -1)
 
+  end
+end
+
+
+function initToggleGlueUnglueReversible(obey_time_selection)
+  local selected_item_count, glue_group, glue_reversible_action, glue_abort_dialog
+
+  selected_item_count = doPreGlueChecks()
+  if selected_item_count == false then return end
+
+  prepareGlueState()
+  
+  -- refresh in case item selection changed
+  selected_item_count = getSelectedItemsCount()
+  if itemsAreSelected(selected_item_count) == false then return end
+
+  -- find unglued item if present
+  glue_group = checkSelectionForContainer(selected_item_count)
+
+  if doGlueReversibleAction(selected_item_count) == false then 
+    reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
+    setResetItemSet()
+    return
+  end
+
+  reaper.Undo_EndBlock("Toggle Glue/Unglue (Reversible)", -1)
+end
+
+
+function getGlueReversibleAction(selected_item_count)
+  local glued_containers, unglued_containers, num_noncontainers, singleGluedContainerIsSelected, noUngluedContainersAreSelected, noNoncontainersAreSelected, onlyNoncontainersAreSelected, singleUngluedContainerIsSelected
+
+  glued_containers, unglued_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
+  noGluedContainersAreSelected = #glued_containers == 0
+  singleGluedContainerIsSelected = #glued_containers == 1
+  gluedContainersAreSelected = #glued_containers > 0
+  noUngluedContainersAreSelected = #unglued_containers == 0
+  lessThanTwoUngluedContainersAreSelected = #unglued_containers < 2
+  noNoncontainersAreSelected = num_noncontainers == 0
+  singleUngluedContainerIsSelected = #unglued_containers == 1
+
+  if singleGluedContainerIsSelected and noUngluedContainersAreSelected and noNoncontainersAreSelected then
+    log("unglue")
+    return "unglue"
+  elseif singleUngluedContainerIsSelected and gluedContainersAreSelected then
+    log("glue/abort")
+    return "glue/abort"
+  elseif (noGluedContainersAreSelected and lessThanTwoUngluedContainersAreSelected) or (gluedContainersAreSelected and noUngluedContainersAreSelected) then
+    log("glue")
+    return "glue"
+  end
+end
+
+
+function getNumSelectedItemsByType(selected_item_count)
+  local glued_containers, unglued_containers, num_noncontainers = 0
+
+  glued_containers, unglued_containers = getContainers(selected_item_count)
+  num_noncontainers = selected_item_count - #glued_containers - #unglued_containers
+
+  return glued_containers, unglued_containers, num_noncontainers
+end
+
+
+function doGlueReversibleAction(selected_item_count)
+  glue_reversible_action = getGlueReversibleAction(selected_item_count)
+  if glue_reversible_action == "unglue" then
+    unglueReversible()
+  elseif glue_reversible_action == "glue" then
+    initGlueReversible(obey_time_selection)
+  elseif glue_reversible_action == "glue/abort" then
+    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an unglued container and glued container(s).", 2)
+    if glue_abort_dialog == 2 then
+      setResetItemSet()
+      return
+    else
+      initGlueReversible(obey_time_selection)
+    end
+  else
+    return false
   end
 end
 
