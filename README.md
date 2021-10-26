@@ -17,17 +17,17 @@ The other option is to **Group** items. This works well if you simply want to  m
 
 ### How to use
 
-**To use Glue (Reversible)**, simply select items or make a time selection with items inside and trigger the Glue (Reversible) script.
+**To use Glue (Reversible)**, simply select items or make a time selection with items inside and trigger either Glue (Reversible) script (time selection enabled/disabled).
 
 To edit your glued items, **Unglue (Reversible)** opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible). 
 
-You can  Glue (Reversible) existing container items, nondestructively **nesting** container items. There is no limit in the code as to how many times you can nest.
+**Toggle Glue/Unglue** (with time selection enabled/disabled) will intelligently determine which action is required based on your item selections.
 
 ### Features
 - Fills in the missing **nondestructive/reversible Glue function** in Reaper!
-- - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes
+- - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes, Pooled Audio Items
 - Currently, Glue (Reversible) container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. (Yes! We have scripted the missing native **pooled audio items** feature in Reaper along with everything else!)
-- Supports **nesting Glue (Reversible) container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. Tested with 20 levels of nesting.
+- Supports **nesting Glue (Reversible) container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest – tested with 20 levels of nesting.
 
 ### Tips
 - If you want to **move items** inside an unglued container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.
@@ -37,6 +37,7 @@ You can  Glue (Reversible) existing container items, nondestructively **nesting*
 
 ### Notes
 - Requires **SWS Plugin Extension**, of course!
+- Don't **Clean current project directory** after gluing, or you'll lose your original items!
 - When you **Unglue (Reversible)**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances.
 - Uses item notes/names to keep track of which container item items belong in. **Never delete "gr:1" or "grc:1" from items' names**, as the code depends on that label to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Unglue (Reversible), the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
