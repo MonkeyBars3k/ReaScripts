@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="b950e0a5e37fb23fe83c1cda6f1efaa50827196b">
+<index version="1" name="MonkeyBars-ReaScripts" commit="fb7386c6b6dc44c6c02b59250b3bf5de74bac17a">
   <category name="Glue (Reversible)">
     <reapack name="MB Glue (Reversible) - Create container item from selected items, expanding to time selection if any. Use Unglue (Reversible) to edit.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items, expanding to time selection, if any">
       <metadata>
@@ -85,26 +85,6 @@
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b70318c4a53158e14c8ef3c9062109c6cdbe08fb/Glue%20(Reversible)/MB%20Glue%20(Reversible)%20Utils.lua</source>
       </version>
     </reapack>
-    <reapack name="MB Toggle Glue:Unglue (Reversible), expanding to time selection if any.lua" type="script" desc="MB Toggle Glue/Unglue (Reversible), expanding to time selection if any">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
-}
-]]></description>
-        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
-      </metadata>
-      <version name="1.0" author="MonkeyBars" time="2021-10-24T23:24:27Z">
-        <changelog><![CDATA[initial commit]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/47250d1a87a6f9520e7d9639c8228efd5dfaa072/Glue%20(Reversible)/MB%20Toggle%20Glue:Unglue%20(Reversible),%20expanding%20to%20time%20selection%20if%20any.lua</source>
-      </version>
-      <version name="1.27" author="MonkeyBars" time="2021-10-25T02:25:20Z">
-        <changelog><![CDATA[initial commit]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b1decbc17532c17bf6f77a307e9a7d62eedc55ed/Glue%20(Reversible)/MB%20Toggle%20Glue:Unglue%20(Reversible),%20expanding%20to%20time%20selection%20if%20any.lua</source>
-      </version>
-    </reapack>
     <reapack name="MB Toggle Glue:Unglue (Reversible), ignoring time selection.lua" type="script" desc="MB Toggle Glue/Unglue (Reversible), ignoring time selection">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
@@ -123,6 +103,22 @@
       <version name="1.27" author="MonkeyBars" time="2021-10-25T02:25:20Z">
         <changelog><![CDATA[initial commit]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b1decbc17532c17bf6f77a307e9a7d62eedc55ed/Glue%20(Reversible)/MB%20Toggle%20Glue:Unglue%20(Reversible),%20ignoring%20time%20selection.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB Toggle Glue:Unglue (Reversible); expand glue to time selection if any.lua" type="script" desc="MB Toggle Glue/Unglue (Reversible); expand glue to time selection if any">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.29" author="MonkeyBars" time="2021-10-26T20:53:16Z">
+        <changelog><![CDATA[change action name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/80c4e58962f73803ecd1c3f85e1a7e127bdb068e/Glue%20(Reversible)/MB%20Toggle%20Glue:Unglue%20(Reversible);%20expand%20glue%20to%20time%20selection%20if%20any.lua</source>
       </version>
     </reapack>
     <reapack name="MB Unglue (Reversible) - Reveal items joined with Glue (Reversible), retaining container item &amp; group.lua" type="script" desc="MB Unglue (Reversible): Reveal constituent items of previously Glue (Reversible) container item, retaining group">
