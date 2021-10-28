@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.28
--- @changelog Iterate version for ReaPack
+-- @version 1.30
+-- @changelog Refactor doUnglue() new name initUnglueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/49); Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60); Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -19,14 +19,13 @@
 local msg_change_selected_items = "Change the items selected and try again."
 
 
-
 function initGlueReversible(obey_time_selection)
   local selected_item_count, glue_group, container, source_item, source_track, glued_item
 
   selected_item_count = doPreGlueChecks()
   if selected_item_count == false then return end
 
-  prepareGlueState()
+  prepareGlueState("glue")
   
   -- refresh in case item selection changed
   selected_item_count = getSelectedItemsCount()
@@ -36,6 +35,7 @@ function initGlueReversible(obey_time_selection)
   glue_group, container = checkSelectionForContainer(selected_item_count)
 
   source_item, source_track = getSourceSelections()
+
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or ungluedContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
 
   groupSelectedItems()
@@ -56,11 +56,19 @@ function doPreGlueChecks()
 end
 
 
-function prepareGlueState()
+function getSelectedItemsCount()
+  return reaper.CountSelectedMediaItems(0)
+end
+
+
+function prepareGlueState(action)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
-  setResetItemSet(true)
-  selectAllItemsInGroups()
+
+  if action == "glue" then
+    setResetItemSet(true)
+    selectAllItemsInGroups()
+  end
 end
 
 
@@ -79,11 +87,6 @@ function renderPathIsValid()
   else
     return true
   end
-end
-
-
-function getSelectedItemsCount()
-  return reaper.CountSelectedMediaItems(0)
 end
 
 
@@ -158,7 +161,7 @@ function itemsOnMultipleTracksAreSelected(selected_item_count)
   local itemsOnMultipleTracksDetected = detectItemsOnMultipleTracks(selected_item_count)
 
   if itemsOnMultipleTracksDetected == true then 
-      reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only glue items on a single track.", 0)
+      reaper.ShowMessageBox(msg_change_selected_items, "Glue and Unglue (Reversible) only works on items on a single track.", 0)
       return true
   end
 end
@@ -198,25 +201,16 @@ end
 function ungluedContainersAreInvalid(selected_item_count)
   local glued_containers, unglued_containers = getContainers(selected_item_count)
 
-  if multipleUngluedContainersAreSelected(#unglued_containers) == true or recursiveContainerIsBeingGlued(glued_containers, unglued_containers) == true then
-    return true
-  end
-end
-
-
-function multipleUngluedContainersAreSelected(num_unglued_containers_selected)
-  if num_unglued_containers_selected and num_unglued_containers_selected > 1 then
-    reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only reglue one container at a time.", 0)
+  if #glued_containers > 1 or #unglued_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, unglued_containers) == true then
+    reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only reglue or unglue one container at a time.", 0)
     setResetItemSet()
     return true
-  else
-    return false
   end
 end
 
 
 function getContainers(selected_item_count)
-  local selected_items, glued_containers, unglued_containers, i
+  local selected_items, glued_containers, unglued_containers, noncontainers, i
 
   selected_items = {}
   glued_containers = {}
@@ -226,16 +220,17 @@ function getContainers(selected_item_count)
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
     item = selected_items[i]
 
-    if isGluedOrUnglued(item) == "glued" then
+    if getItemType(item) == "glued" then
       table.insert(glued_containers, item)
-    end
-
-    if isGluedOrUnglued(item) == "unglued" then
+    elseif getItemType(item) == "unglued" then
       table.insert(unglued_containers, item)
+    elseif
+      getItemType(item) == "noncontainer" then
+      table.insert(noncontainers, item)
     end
   end
 
-  return glued_containers, unglued_containers
+  return glued_containers, unglued_containers, noncontainers
 end
 
 function recursiveContainerIsBeingGlued(glued_containers, unglued_containers)
@@ -327,13 +322,13 @@ end
 
 function exclusiveSelectItem(item)
   if item then
-    deselect()
+    deselectAll()
     reaper.SetMediaItemSelected(item, true)
   end
 end
 
 
-function deselect()
+function deselectAll()
   local num = reaper.CountSelectedMediaItems(0)
   
   if not num or num < 1 then return end
@@ -415,7 +410,7 @@ function glueReversible(source_track, source_item, obey_time_selection, glue_gro
   end
 
 
-  deselect()
+  deselectAll()
 
 
   -- convert to audio takes, store state, and check for dependencies
@@ -805,11 +800,11 @@ function getGlueGroupFromItem(item, not_container)
   return string.match(name, key)
 end
 
-function checkItemForGlueGroup(item)
+function checkItemForGluedContainer(item)
   return getGlueGroupFromItem(item, true)
 end
 
-function isGluedOrUnglued(item)
+function getItemType(item)
   local name, take_name, is_unglued_container, is_glued_container
 
   take = reaper.GetActiveTake(item)
@@ -827,7 +822,7 @@ function isGluedOrUnglued(item)
   elseif string.match(name, is_glued_container) then
     return "glued"
   else
-    return false
+    return "noncontainer"
   end
 end
 
@@ -862,7 +857,7 @@ end
 
 function updateSources(new_src, glue_group, length)
 
-  deselect()
+  deselectAll()
 
   local selected_item_count, glue_group_string, i, this_item, old_src, old_srcs
 
@@ -951,7 +946,7 @@ end
 
 function restoreItems( glue_group, track, position, dont_restore_take, dont_offset )
 
-  deselect()
+  deselectAll()
 
   -- get stored items
   local r, stored_items = reaper.GetProjExtState(0, "GLUE_GROUPS", glue_group, '')
@@ -1056,7 +1051,7 @@ function updateDependents( glue_group, src, length, obey_time_selection )
   -- loop thru dependents and update them in order
   for i, dependent in ipairs(iupdate_table) do
 
-    deselect()
+    deselectAll()
 
     reselect(dependent.restored_items)
 
@@ -1083,83 +1078,100 @@ function reselect( items )
 end
 
 
-function unglueReversible()
-  local num_items, selected_items, num_containers_selected, noncontainers, i, glued_container, item_track, prev_item_track, item, multiitem_result, noncontainer_idx
+function initUnglueReversible()
+  local selected_item_count, glued_containers, unglued_containers, num_containers_selected, noncontainers, i, glued_container, item_track, prev_item_track, item, multiitem_result, noncontainer_idx
 
-  num_items = reaper.CountSelectedMediaItems(0)
+  selected_item_count = doPreGlueChecks()
+  if selected_item_count == false then return end
 
+  prepareGlueState("unglue")
+
+  -- refresh in case item selection changed
+  selected_item_count = getSelectedItemsCount()
+  if itemsAreSelected(selected_item_count) == false then return end
+
+  -- find unglued item if present
+  -- glue_group, container = checkSelectionForContainer(selected_item_count)
+
+  glued_containers, unglued_containers, noncontainers = getContainers(selected_item_count)
+
+  glued_container_num = multipleContainersAreSelected(#glued_containers, "glued")
+
+  if notSingleGluedContainer(glued_container_num) == true then return end
+
+  selectDeselectItems(noncontainers, false)
+
+  -- source_item, source_track = getSourceSelections()
+  -- if itemsOnMultipleTracksAreSelected(selected_item_count) == true or if multipleContainersAreSelected(#unglued_containers) == true then return end
  
-  selected_items = {}
-  num_containers_selected = 0
-  noncontainers = {}
-  msg_change_selected_items = "Change the items selected and try again."
-  i = 0
-  while i < num_items do
-    selected_items[i] = reaper.GetSelectedMediaItem(0, i)
-    glued_container = checkItemForGlueGroup(selected_items[i])
+  -- selected_items = {}
+  -- num_containers_selected = 0
+  -- noncontainers = {}
+  -- i = 0
+  -- while i < selected_item_count do
+  --   selected_items[i] = reaper.GetSelectedMediaItem(0, i)
+  --   glued_container = checkItemForGluedContainer(selected_items[i])
     
-     -- check whether items glued/unglued
-    if glued_container then
-      num_containers_selected = num_containers_selected + 1
-    else
-      table.insert(noncontainers, i)
-    end
+  --    -- check whether items glued/unglued
+  --   if glued_container then
+  --     num_containers_selected = num_containers_selected + 1
+  --   else
+  --     table.insert(noncontainers, i)
+  --   end
 
     -- check for multitrack
-    item_track = reaper.GetMediaItemTrack(selected_items[i])
-    -- this item's track differs from the last?
-    if item_track and prev_item_track and item_track ~= prev_item_track then
-      -- display "OK" message and quit
-      reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue items on a single track.", 0)
-      return false
-    end
-    prev_item_track = item_track
+    -- item_track = reaper.GetMediaItemTrack(selected_items[i])
+    -- -- this item's track differs from the last?
+    -- if item_track and prev_item_track and item_track ~= prev_item_track then
+    --   -- display "OK" message and quit
+    --   reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue items on a single track.", 0)
+    --   return false
+    -- end
+    -- prev_item_track = item_track
 
-    i = i + 1
-  end
+  --   i = i + 1
+  -- end
 
   -- Throw error if zero or multiple container items selected
-  if num_containers_selected == 0 then
-    reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue previously glued container items." , 0)
-    return
-  elseif num_containers_selected > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to Unglue the first (earliest) selected container item only?", "Unglue (Reversible) can only unglue a single glued container item at a time.", 1)
-    if multiitem_result == 2 then
-      return
-    end
-  end
+  -- if num_containers_selected == 0 then
+  --   reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue previously glued container items." , 0)
+  --   return
+  -- elseif num_containers_selected > 1 then
+  --   multiitem_result = reaper.ShowMessageBox("Would you like to Unglue the first (earliest) selected container item only?", "Unglue (Reversible) can only unglue a single glued container item at a time.", 1)
+  --   if multiitem_result == 2 then
+  --     return
+  --   end
+  -- end
 
   -- deselect noncontainers
-  i = 0
-  while i < #noncontainers do
-    -- LUA starts iteration at 1.
-    noncontainer_idx = noncontainers[i+1]
-    reaper.SetMediaItemSelected(selected_items[noncontainer_idx], false)
-    i = i + 1
-  end
-  if #noncontainers > 0 then
-    reaper.UpdateArrange()
-  end
-
+  -- i = 0
+  -- while i < #noncontainers do
+  --   -- LUA starts iteration at 1.
+  --   noncontainer_idx = noncontainers[i+1]
+  --   reaper.SetMediaItemSelected(selected_items[noncontainer_idx], false)
+  --   i = i + 1
+  -- end
+  -- if #noncontainers > 0 then
+  --   reaper.UpdateArrange()
+  -- end
 
   -- only get first selected item. no unglue of multiple items (yet)
   item = reaper.GetSelectedMediaItem(0, 0)
 
-  -- make sure we selected something that is a glued group instance
-  if item then glue_group = checkItemForGlueGroup(item) end
+  -- make sure glued container is selected
+  if item then glue_group = checkItemForGluedContainer(item) end
 
   if glue_group and item then
 
-    reaper.Undo_BeginBlock()
-    reaper.PreventUIRefresh(1)
+    -- reaper.Undo_BeginBlock()
+    -- reaper.PreventUIRefresh(1)
 
     -- store state of glued item
     original_state = getSetObjectState(item)
     original_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     original_track = reaper.GetMediaItemTrack(item)
 
-    -- deselect all
-    deselect()
+    deselectAll()
 
     -- restore stored items
     _, container = restoreItems(glue_group, original_track, original_pos)
@@ -1173,23 +1185,47 @@ function unglueReversible()
     reaper.DeleteTrackMediaItem(original_track, item)
 
     -- clean up
-    reaper.PreventUIRefresh(-1)
-    reaper.UpdateTimeline()
-    reaper.UpdateArrange()
-    reaper.TrackList_AdjustWindows(true)
-    reaper.Undo_EndBlock("Unglue (Reversible)", -1)
+    -- reaper.PreventUIRefresh(-1)
+    -- reaper.UpdateTimeline()
+    -- reaper.UpdateArrange()
+    -- reaper.TrackList_AdjustWindows(true)
+    -- reaper.Undo_EndBlock("Unglue (Reversible)", -1)
+
+    cleanUpGlueReversible("Unglue (Reversible)")
 
   end
 end
 
 
-function initToggleGlueUnglueReversible(obey_time_selection)
+function notSingleGluedContainer(glued_container_num)
+  if glued_container_num == 0 then
+    reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue previously glued container items." , 0)
+    return true
+  elseif glued_container_num > 1 then
+    multiitem_result = reaper.ShowMessageBox("Would you like to Unglue the first (earliest) selected container item only?", "Unglue (Reversible) can only unglue a single glued container item at a time.", 1)
+    if multiitem_result == 2 then
+      return true
+    end
+  else
+    return false
+  end
+end
+
+
+function selectDeselectItems(items, toggle)
+  for i = 0, #items-1 do
+    reaper.SetMediaItemSelected(items[i], toggle)
+  end
+end
+
+
+function initToggleGlueinitUnglueReversible(obey_time_selection)
   local selected_item_count, glue_group, glue_reversible_action, glue_abort_dialog
 
   selected_item_count = doPreGlueChecks()
   if selected_item_count == false then return end
 
-  prepareGlueState()
+  prepareGlueState("glue")
   
   -- refresh in case item selection changed
   selected_item_count = getSelectedItemsCount()
@@ -1246,7 +1282,7 @@ function doGlueReversibleAction(selected_item_count, obey_time_selection)
   glue_reversible_action = getGlueReversibleAction(selected_item_count)
 
   if glue_reversible_action == "unglue" then
-    unglueReversible()
+    initUnglueReversible()
   elseif glue_reversible_action == "glue" then
     initGlueReversible(obey_time_selection)
   elseif glue_reversible_action == "glue/abort" then
