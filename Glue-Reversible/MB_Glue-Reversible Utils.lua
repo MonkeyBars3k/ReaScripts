@@ -1219,7 +1219,7 @@ function selectDeselectItems(items, toggle)
 end
 
 
-function initSmartGlueUnglueReversible(obey_time_selection)
+function initSmartAction(obey_time_selection)
   local selected_item_count, glue_group, glue_reversible_action, glue_abort_dialog
 
   selected_item_count = doPreGlueChecks()
@@ -1246,7 +1246,7 @@ function initSmartGlueUnglueReversible(obey_time_selection)
 end
 
 
-function getGlueUnglueAction(selected_item_count)
+function getSmartAction(selected_item_count)
   local glued_containers, unglued_containers, num_noncontainers, singleGluedContainerIsSelected, noUngluedContainersAreSelected, noNoncontainersAreSelected, gluedContainersAreSelected, noGluedContainersAreSelected, singleUngluedContainerIsSelected
 
   glued_containers, unglued_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
@@ -1279,7 +1279,7 @@ end
 
 
 function doGlueUnglueAction(selected_item_count, obey_time_selection)
-  glue_reversible_action = getGlueUnglueAction(selected_item_count)
+  glue_reversible_action = getSmartAction(selected_item_count)
 
   if glue_reversible_action == "unglue" then
     initEditGlueReversible()
