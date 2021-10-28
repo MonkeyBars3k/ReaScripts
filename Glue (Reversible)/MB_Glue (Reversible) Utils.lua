@@ -1219,7 +1219,7 @@ function selectDeselectItems(items, toggle)
 end
 
 
-function initToggleGlueinitUnglueReversible(obey_time_selection)
+function initSmartGlueUnglueReversible(obey_time_selection)
   local selected_item_count, glue_group, glue_reversible_action, glue_abort_dialog
 
   selected_item_count = doPreGlueChecks()
