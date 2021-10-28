@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
 -- @version 1.30
--- @changelog Refactor doUnglue() new name initUnglueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/49); Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60); Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)
+-- @changelog Refactor doUnglue() new name initEditGlueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/49); Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60); Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -1078,7 +1078,7 @@ function reselect( items )
 end
 
 
-function initUnglueReversible()
+function initEditGlueReversible()
   local selected_item_count, glued_containers, unglued_containers, num_containers_selected, noncontainers, i, glued_container, item_track, prev_item_track, item, multiitem_result, noncontainer_idx
 
   selected_item_count = doPreGlueChecks()
@@ -1236,7 +1236,7 @@ function initSmartGlueUnglueReversible(obey_time_selection)
 
   if ungluedContainersAreInvalid(selected_item_count) == true then return end
 
-  if doGlueReversibleAction(selected_item_count, obey_time_selection) == false then 
+  if doGlueUnglueAction(selected_item_count, obey_time_selection) == false then 
     reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
     setResetItemSet()
     return
@@ -1246,7 +1246,7 @@ function initSmartGlueUnglueReversible(obey_time_selection)
 end
 
 
-function getGlueReversibleAction(selected_item_count)
+function getGlueUnglueAction(selected_item_count)
   local glued_containers, unglued_containers, num_noncontainers, singleGluedContainerIsSelected, noUngluedContainersAreSelected, noNoncontainersAreSelected, gluedContainersAreSelected, noGluedContainersAreSelected, singleUngluedContainerIsSelected
 
   glued_containers, unglued_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
@@ -1278,11 +1278,11 @@ function getNumSelectedItemsByType(selected_item_count)
 end
 
 
-function doGlueReversibleAction(selected_item_count, obey_time_selection)
-  glue_reversible_action = getGlueReversibleAction(selected_item_count)
+function doGlueUnglueAction(selected_item_count, obey_time_selection)
+  glue_reversible_action = getGlueUnglueAction(selected_item_count)
 
   if glue_reversible_action == "unglue" then
-    initUnglueReversible()
+    initEditGlueReversible()
   elseif glue_reversible_action == "glue" then
     initGlueReversible(obey_time_selection)
   elseif glue_reversible_action == "glue/abort" then
