@@ -43,7 +43,7 @@ To edit your glued items, the **Edit** script opens the created container item; 
 - Uses item notes/names to keep track of which container item items belong in. **Never delete "gr:1" or "grc:1" from items' names**, as the code depends on that label to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
 - When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
-- Uses **selection set slot 10** at times to save and recall selected items. 
+- Uses **item selection set slot 10** at times to save and recall selected items. 
 - Some **undo bugs** may still be lurking in this script, so you should prefer ungluing and regluing to undoing. But please create an Issue [here](https://github.com/MonkeyBars3k/ReaScripts/issues/new) if you notice any bugs.
  
 ### History
