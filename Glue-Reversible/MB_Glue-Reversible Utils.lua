@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.31
--- @changelog Add tiling image to glued container (https://github.com/MonkeyBars3k/ReaScripts/issues/22)
+-- @version 1.32
+-- @changelog Add tiling stripe image to container holder (https://github.com/MonkeyBars3k/ReaScripts/issues/70)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -1090,7 +1090,7 @@ end
 
 
 function initEditGlueReversible()
-  local selected_item_count, glued_containers, unglued_containers, noncontainers, item, this_container_name, original_item_state, original_item_pos, original_item_track, container, original_item_state_key
+  local selected_item_count, glued_containers, unglued_containers, noncontainers, item, this_container_name, original_item_state, original_item_pos, original_item_track, container, img_path, original_item_state_key
 
   selected_item_count = initAction("unglue")
   if selected_item_count == false then return end
@@ -1115,6 +1115,9 @@ function initEditGlueReversible()
     deselectAll()
 
     _, container = restoreItems(this_container_name, original_item_track, original_item_pos)
+
+    img_path = script_path.."gr-bg.png"
+    reaper.BR_SetMediaItemImageResource(container, img_path, 1)
 
     -- create a unique key for original state, and store it in container's name, space it out of sight then store it in ProjExtState
     original_item_state_key = "original_item_state:"..this_container_name..":"..os.time()*7
