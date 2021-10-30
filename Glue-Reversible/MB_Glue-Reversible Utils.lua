@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.33
--- @changelog Further Edit refactoring
+-- @version 1.34
+-- @changelog Image path cleanup
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -16,7 +16,6 @@
 
 
 
-local script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 local msg_change_selected_items = "Change the items selected and try again."
 
 
@@ -369,7 +368,7 @@ end
 
 function glueReversible(source_track, source_item, obey_time_selection, this_container_name, existing_container, ignore_depends)
 
-  local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_this_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name, img_path
+  local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_this_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
 
   -- make a new this_container_name id from group id if this is a new group and name glue_track accordingly
   if not this_container_name then
@@ -583,7 +582,11 @@ end
 
 
 function setItemImage(item)
-  local img_path = script_path.."gr-bg.png"
+  local script_path, img_path 
+
+  script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
+  img_path = script_path.."gr-bg.png"
+
   reaper.BR_SetMediaItemImageResource(item, img_path, 1)
 end
 
@@ -1154,7 +1157,7 @@ end
 
 
 function processEditGlueReversibleData(item, this_container_name)
-  local original_item_state, original_item_pos, original_item_track, _, container, img_path, original_item_state_key
+  local original_item_state, original_item_pos, original_item_track, _, container, original_item_state_key
 
   original_item_state, original_item_pos, original_item_track = storeOriginalItemState(item)
 
