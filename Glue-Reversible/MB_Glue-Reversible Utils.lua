@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.34
--- @changelog Image path cleanup
+-- @version 1.35
+-- @changelog Fix container detection
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -211,7 +211,7 @@ end
 function openContainersAreInvalid(selected_item_count)
   local glued_containers, open_containers = getContainers(selected_item_count)
 
-  if #glued_containers > 1 or #open_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, open_containers) == true then
+  if #open_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, open_containers) == true then
     reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only Reglue or Edit one container at a time.", 0)
     setResetItemSet()
     return true
@@ -240,6 +240,7 @@ function getContainers(selected_item_count)
 
   return glued_containers, open_containers, noncontainers
 end
+
 
 function recursiveContainerIsBeingGlued(glued_containers, open_containers)
   local i, j, this_container_name, this_glued_container_num, glued_container_name_prefix, open_container_name_prefix
