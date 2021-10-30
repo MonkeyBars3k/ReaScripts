@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="e5d1ef68a23dfc63546ff8420556a95b7b12e19f">
+<index version="1" name="MonkeyBars-ReaScripts" commit="d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331">
   <category name="Glue-Reversible">
-    <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB Unglue (Reversible): Reveal constituent items of previously Glue (Reversible) container item, retaining group">
+    <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -16,8 +16,12 @@
         <changelog><![CDATA[Change nomenclature from Unglue to Edit (https://github.com/MonkeyBars3k/ReaScripts/issues/64)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Edit%20container%20item,%20retaining%20container%20holder.lua</source>
       </version>
+      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
+        <changelog><![CDATA[metadata update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Edit%20container%20item,%20retaining%20container%20holder.lua</source>
+      </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Glue selected item(s) into pooled container item, expanding to time selection if any.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items, expanding to time selection, if any">
+    <reapack name="MB_Glue-Reversible - Glue selected item(s) into pooled container item, expanding to time selection if any.lua" type="script" desc="MB_Glue-Reversible - Glue selected item(s) into pooled container item, expanding to time selection if any">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -32,8 +36,12 @@
         <changelog><![CDATA[Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20expanding%20to%20time%20selection%20if%20any.lua</source>
       </version>
+      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
+        <changelog><![CDATA[metadata update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20expanding%20to%20time%20selection%20if%20any.lua</source>
+      </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Glue selected item(s) into pooled container item, ignoring time selection.lua" type="script" desc="MB Glue (Reversible): Create container item from selected items, ignoring time selection">
+    <reapack name="MB_Glue-Reversible - Glue selected item(s) into pooled container item, ignoring time selection.lua" type="script" desc="MB_Glue-Reversible - Glue selected item(s) into pooled container item, ignoring time selection">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -48,8 +56,12 @@
         <changelog><![CDATA[Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20ignoring%20time%20selection.lua</source>
       </version>
+      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
+        <changelog><![CDATA[metadata update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20ignoring%20time%20selection.lua</source>
+      </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any.lua" type="script" desc="MB Toggle Glue/Unglue (Reversible); expand glue to time selection if any">
+    <reapack name="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any.lua" type="script" desc="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -64,8 +76,12 @@
         <changelog><![CDATA[Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
       </version>
+      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
+        <changelog><![CDATA[metadata update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
+      </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, ignoring time selection.lua" type="script" desc="MB Toggle Glue/Unglue (Reversible), ignoring time selection">
+    <reapack name="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, ignoring time selection.lua" type="script" desc="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, ignoring time selection">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -80,8 +96,12 @@
         <changelog><![CDATA[Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
       </version>
+      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
+        <changelog><![CDATA[metadata update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
+      </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible Utils.lua" type="script" desc="MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality">
+    <reapack name="MB_Glue-Reversible Utils.lua" type="script" desc="MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -103,6 +123,10 @@
       <version name="1.32" author="MonkeyBars" time="2021-10-30T20:11:03Z">
         <changelog><![CDATA[Add tiling stripe image to container holder (https://github.com/MonkeyBars3k/ReaScripts/issues/70)]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e5d1ef68a23dfc63546ff8420556a95b7b12e19f/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      </version>
+      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
+        <changelog><![CDATA[Further Edit refactoring]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
       </version>
     </reapack>
   </category>
