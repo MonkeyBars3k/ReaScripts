@@ -1,7 +1,7 @@
 -- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
 -- @author MonkeyBars
--- @version 1.30
--- @changelog Refactor doUnglue() new name initEditGlueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/49); Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60); Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)
+-- @version 1.31
+-- @changelog Add tiling image to glued container (https://github.com/MonkeyBars3k/ReaScripts/issues/22)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -16,6 +16,7 @@
 
 
 
+local script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 local msg_change_selected_items = "Change the items selected and try again."
 
 
@@ -368,7 +369,7 @@ end
 
 function glueReversible(source_track, source_item, obey_time_selection, this_container_name, existing_container, ignore_depends)
 
-  local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_this_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
+  local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, glue_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_this_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name, img_path
 
   -- make a new this_container_name id from group id if this is a new group and name glue_track accordingly
   if not this_container_name then
@@ -439,7 +440,6 @@ function glueReversible(source_track, source_item, obey_time_selection, this_con
       item_states = item_states.."|||"
 
       item_this_container_name = getContainerName(item, true)
-
       if item_this_container_name then
         -- keep track of this items glue group to set up dependencies later
         dependencies_table[item_this_container_name] = item_this_container_name
@@ -575,6 +575,9 @@ function glueReversible(source_track, source_item, obey_time_selection, this_con
   end
 
   reaper.DeleteTrackMediaItem(source_track, container)
+
+  img_path = script_path.."gr-bg.png"
+  reaper.BR_SetMediaItemImageResource(glued_item, img_path, 1)
 
   return glued_item, original_state_key, item_position, new_length
 end
