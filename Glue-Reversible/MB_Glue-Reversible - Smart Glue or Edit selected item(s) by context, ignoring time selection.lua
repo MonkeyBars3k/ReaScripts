@@ -8,6 +8,6 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("MB Glue (Reversible) Utils")
+require("MB_Glue-Reversible Utils")
 
 initSmartAction(false)
