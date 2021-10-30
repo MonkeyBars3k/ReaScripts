@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331">
+<index version="1" name="MonkeyBars-ReaScripts" commit="b4853750fa25c9f6eb8d1e569b0cdd1b7f456671">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -127,6 +127,10 @@
       <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
         <changelog><![CDATA[Further Edit refactoring]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      </version>
+      <version name="1.34" author="MonkeyBars" time="2021-10-30T21:00:06Z">
+        <changelog><![CDATA[Image path cleanup]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b4853750fa25c9f6eb8d1e569b0cdd1b7f456671/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
       </version>
     </reapack>
   </category>
