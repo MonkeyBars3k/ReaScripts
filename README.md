@@ -30,7 +30,7 @@ To edit your glued items, the **Edit** script opens the created container item; 
 - Supports **nesting Glue-Reversible container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest – tested with 20 levels of nesting.
 
 ### Tips
-- If you want to **move items** while Editing a container, you'll need to ungroup them temporarily. When you regroup them, ensure that you select ALL the items in the group so the script can keep track of the container and update all the pooled instances after reglue.
+- If you want to **change items** while Editing a container, you'll need to ungroup the items inside temporarily. When you regroup them, ensure that you select the unglued container (the empty item that has "grc" in the name) so the script can keep track of the container and update all the pooled instances after reglue.
 - If you want to **add new items** to a Glue-Reversible container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
 - You can expand the **empty container** "grc" to create silence at the start and end of the glued wav, or just expand the time selection before reglue.
 - **Using just the pooled audio item feature:** Feel free to glue a single audio item and make copies of that! Since every glued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Edit any one of the pooled glue containers and reglue after.
@@ -38,8 +38,8 @@ To edit your glued items, the **Edit** script opens the created container item; 
 ### Notes
 - Requires **SWS Plugin Extension**, of course!
 - Don't **Clean current project directory** after gluing, or you'll lose your original items!
-- When you **
--Reversible**, a new empty item "grc" is inserted under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances.
+- When you **Edit**, a new empty item "grc" is visible under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances!
+- 
 - Uses item notes/names to keep track of which container item items belong in. **Never delete "gr:1" or "grc:1" from items' names**, as the code depends on that label to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
 - When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
