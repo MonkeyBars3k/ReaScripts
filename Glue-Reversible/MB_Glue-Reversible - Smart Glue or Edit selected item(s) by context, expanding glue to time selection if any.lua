@@ -1,7 +1,7 @@
--- @description MB Toggle Glue/Unglue (Reversible); expand glue to time selection if any
+-- @description MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any
 -- @author MonkeyBars
--- @version 1.30
--- @changelog Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)
+-- @version 1.33
+-- @changelog metadata update
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts

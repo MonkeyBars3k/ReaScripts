@@ -1,7 +1,7 @@
--- @description MB Glue (Reversible) Utils: Tools for MB Glue (Reversible) functionality
+-- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.32
--- @changelog Add tiling stripe image to container holder (https://github.com/MonkeyBars3k/ReaScripts/issues/70)
+-- @version 1.33
+-- @changelog Further Edit refactoring
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about # Glue (Reversible)
@@ -26,12 +26,12 @@ function initGlueReversible(obey_time_selection)
   selected_item_count = initAction("glue")
   if selected_item_count == false then return end
 
-  -- find unglued item if present
+  -- find open item if present
   this_container_name, container = checkSelectionForContainer(selected_item_count)
 
   source_item, source_track = getSourceSelections()
 
-  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or ungluedContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
+  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
 
   groupSelectedItems()
   glued_item = triggerGlueReversible(this_container_name, source_track, source_item, container, obey_time_selection)
@@ -111,7 +111,7 @@ function itemsAreSelected(selected_item_count)
 end
 
 
--- get unglued container info from selection
+-- get open container info from selection
 function checkSelectionForContainer(selected_item_count)
 
   local i, item, this_container_name, new_this_container_name, container
@@ -209,11 +209,11 @@ function isDifferent(value1, value2)
 end
 
 
-function ungluedContainersAreInvalid(selected_item_count)
-  local glued_containers, unglued_containers = getContainers(selected_item_count)
+function openContainersAreInvalid(selected_item_count)
+  local glued_containers, open_containers = getContainers(selected_item_count)
 
-  if #glued_containers > 1 or #unglued_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, unglued_containers) == true then
-    reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only reglue or unglue one container at a time.", 0)
+  if #glued_containers > 1 or #open_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, open_containers) == true then
+    reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only Reglue or Edit one container at a time.", 0)
     setResetItemSet()
     return true
   end
@@ -221,10 +221,10 @@ end
 
 
 function getContainers(selected_item_count)
-  local glued_containers, unglued_containers, noncontainers, i, item
+  local glued_containers, open_containers, noncontainers, i, item
 
   glued_containers = {}
-  unglued_containers = {}
+  open_containers = {}
   noncontainers = {}
 
   for i = 0, selected_item_count-1 do
@@ -232,32 +232,32 @@ function getContainers(selected_item_count)
 
     if getItemType(item) == "glued" then
       table.insert(glued_containers, item)
-    elseif getItemType(item) == "unglued" then
-      table.insert(unglued_containers, item)
+    elseif getItemType(item) == "open" then
+      table.insert(open_containers, item)
     elseif getItemType(item) == "noncontainer" then
       table.insert(noncontainers, item)
     end
   end
 
-  return glued_containers, unglued_containers, noncontainers
+  return glued_containers, open_containers, noncontainers
 end
 
-function recursiveContainerIsBeingGlued(glued_containers, unglued_containers)
-  local i, j, this_container_name, unglued_container_name_prefix, this_glued_container_num, glued_container_name_prefix
+function recursiveContainerIsBeingGlued(glued_containers, open_containers)
+  local i, j, this_container_name, this_glued_container_num, glued_container_name_prefix, open_container_name_prefix
 
   for i = 1, #glued_containers do
     this_container_name = getSetItemName(glued_containers[i])
-    unglued_container_name_prefix = "^gr:(%d+)"
-    this_glued_container_num = string.match(this_container_name, unglued_container_name_prefix)
+    glued_container_name_prefix = "^gr:(%d+)"
+    this_glued_container_num = string.match(this_container_name, glued_container_name_prefix)
 
     j = 1
-    for j = 1, #unglued_containers do
-      this_container_name = getSetItemName(unglued_containers[j])
-      glued_container_name_prefix = "^grc:(%d+)"
-      this_unglued_container_num = string.match(this_container_name, glued_container_name_prefix)
+    for j = 1, #open_containers do
+      this_container_name = getSetItemName(open_containers[j])
+      open_container_name_prefix = "^grc:(%d+)"
+      this_open_container_num = string.match(this_container_name, open_container_name_prefix)
       
-      if this_glued_container_num == this_unglued_container_num then
-        reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can't glue a pooled, glued container item to an unglued copy of itself!", 0)
+      if this_glued_container_num == this_open_container_num then
+        reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can't glue a pooled, glued container item to an open copy of itself!", 0)
         setResetItemSet()
         return true
       end
@@ -468,7 +468,7 @@ function glueReversible(source_track, source_item, obey_time_selection, this_con
     reaper.SetMediaItemInfo_Value(glue_container, "D_LENGTH", container_length)
     reaper.SetMediaItemInfo_Value(glue_container, "D_POSITION", container_position)
     
-    -- does this container have a reference to an original state of item that was unglued?
+    -- does this container have a reference to an original state of item that was open?
     container_name = getSetItemName(container)
     original_state_key = string.match(container_name, "original_state:%d+:%d+")
     -- get rid of original state key from container, not needed anymore
@@ -576,17 +576,22 @@ function glueReversible(source_track, source_item, obey_time_selection, this_con
 
   reaper.DeleteTrackMediaItem(source_track, container)
 
-  img_path = script_path.."gr-bg.png"
-  reaper.BR_SetMediaItemImageResource(glued_item, img_path, 1)
+  setItemImage(glued_item)
 
   return glued_item, original_state_key, item_position, new_length
+end
+
+
+function setItemImage(item)
+  local img_path = script_path.."gr-bg.png"
+  reaper.BR_SetMediaItemImageResource(item, img_path, 1)
 end
 
 
 function reglueReversible(source_track, source_item, this_container_name, container, obey_time_selection)
 
   local glued_item, new_src, original_state, pos, take, r, original_state_key, container_name
-  -- get original state that unglued item was in
+  -- get original state that open item was in
   -- TODO - use ExtState to store it and key it to a particular container that was inserted on unglue
 
 
@@ -816,7 +821,7 @@ function getGluedContainerName(item)
 end
 
 function getItemType(item)
-  local name, take_name, is_unglued_container, is_glued_container
+  local name, take_name, is_open_container, is_glued_container
 
   take = reaper.GetActiveTake(item)
   if take then 
@@ -825,11 +830,11 @@ function getItemType(item)
     return
   end
 
-  is_unglued_container = "^grc:(%d+)"
+  is_open_container = "^grc:(%d+)"
   is_glued_container = "^gr:(%d+)"
 
-  if string.match(name, is_unglued_container) then
-    return "unglued"
+  if string.match(name, is_open_container) then
+    return "open"
   elseif string.match(name, is_glued_container) then
     return "glued"
   else
@@ -1090,44 +1095,19 @@ end
 
 
 function initEditGlueReversible()
-  local selected_item_count, glued_containers, unglued_containers, noncontainers, item, this_container_name, original_item_state, original_item_pos, original_item_track, container, img_path, original_item_state_key
+  local selected_item_count, glued_containers, open_containers, noncontainers, item, this_container_name
 
   selected_item_count = initAction("unglue")
   if selected_item_count == false then return end
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true then return end
 
-  glued_containers, unglued_containers, noncontainers = getContainers(selected_item_count)
+  glued_containers, open_containers, noncontainers = getContainers(selected_item_count)
 
   if notSingleGluedContainer(#glued_containers) == true then return end
   
   selectDeselectItems(noncontainers, false)
-
-  -- only get first selected item. no unglue of multiple items (yet)
-  item = reaper.GetSelectedMediaItem(0, 0)
-
-  -- make sure a glued container is selected
-  if item then this_container_name = getGluedContainerName(item) end
-
-  if this_container_name and item then
-    original_item_state, original_item_pos, original_item_track = storeOriginalItemState(item)
-
-    deselectAll()
-
-    _, container = restoreItems(this_container_name, original_item_track, original_item_pos)
-
-    img_path = script_path.."gr-bg.png"
-    reaper.BR_SetMediaItemImageResource(container, img_path, 1)
-
-    -- create a unique key for original state, and store it in container's name, space it out of sight then store it in ProjExtState
-    original_item_state_key = "original_item_state:"..this_container_name..":"..os.time()*7
-    getSetItemName(container, "                                                                                                      "..original_item_state_key, 1)
-    reaper.SetProjExtState(0, "GLUE_GROUPS", original_item_state_key, original_item_state)
-
-    reaper.DeleteTrackMediaItem(original_item_track, item)
-
-    cleanUpAction("Unglue (Reversible)")
-  end
+  doEditGlueReversible()
 end
 
 
@@ -1135,10 +1115,10 @@ function notSingleGluedContainer(glued_container_num)
   local multiitem_result
 
   if glued_container_num == 0 then
-    reaper.ShowMessageBox(msg_change_selected_items, "Unglue (Reversible) can only unglue previously glued container items." , 0)
+    reaper.ShowMessageBox(msg_change_selected_items, "Edit (Reversible) can only Edit previously glued container items." , 0)
     return true
   elseif glued_container_num > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to Unglue the first (earliest) selected container item only?", "Unglue (Reversible) can only unglue a single glued container item at a time.", 1)
+    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first (earliest) selected container item only?", "Edit (Reversible) can only Edit a single glued container item at a time.", 1)
     if multiitem_result == 2 then
       return true
     end
@@ -1154,6 +1134,42 @@ function selectDeselectItems(items, toggle)
   for i = 1, #items do
     reaper.SetMediaItemSelected(items[i], toggle)
   end
+end
+
+
+function doEditGlueReversible()
+  local item, this_container_name
+
+  -- only get first selected item. no Edit of multiple items (yet)
+  item = reaper.GetSelectedMediaItem(0, 0)
+
+  -- make sure a glued container is selected
+  if item then this_container_name = getGluedContainerName(item) end
+
+  if this_container_name and item then
+    processEditGlueReversibleData(item, this_container_name)
+    cleanUpAction("Edit-Reversible")
+  end
+end
+
+
+function processEditGlueReversibleData(item, this_container_name)
+  local original_item_state, original_item_pos, original_item_track, _, container, img_path, original_item_state_key
+
+  original_item_state, original_item_pos, original_item_track = storeOriginalItemState(item)
+
+  deselectAll()
+
+  _, container = restoreItems(this_container_name, original_item_track, original_item_pos)
+
+  setItemImage(container)
+
+  -- create a unique key for original state, and store it in container's name, space it out of sight then store it in ProjExtState
+  original_item_state_key = "original_item_state:"..this_container_name..":"..os.time()*7
+  getSetItemName(container, "                                                                                                      "..original_item_state_key, 1)
+  reaper.SetProjExtState(0, "GLUE_GROUPS", original_item_state_key, original_item_state)
+
+  reaper.DeleteTrackMediaItem(original_item_track, item)
 end
 
 
@@ -1180,10 +1196,10 @@ function initSmartAction(obey_time_selection)
   selected_item_count = getSelectedItemsCount()
   if itemsAreSelected(selected_item_count) == false then return end
 
-  -- find unglued item if present
+  -- find open item if present
   this_container_name = checkSelectionForContainer(selected_item_count)
 
-  if ungluedContainersAreInvalid(selected_item_count) == true then return end
+  if openContainersAreInvalid(selected_item_count) == true then return end
 
   if doGlueUnglueAction(selected_item_count, obey_time_selection) == false then 
     reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
@@ -1196,34 +1212,34 @@ end
 
 
 function getSmartAction(selected_item_count)
-  local glued_containers, unglued_containers, num_noncontainers, singleGluedContainerIsSelected, noUngluedContainersAreSelected, noNoncontainersAreSelected, gluedContainersAreSelected, noGluedContainersAreSelected, singleUngluedContainerIsSelected
+  local glued_containers, open_containers, num_noncontainers, singleGluedContainerIsSelected, noOpenContainersAreSelected, noNoncontainersAreSelected, gluedContainersAreSelected, noGluedContainersAreSelected, singleOpenContainerIsSelected
 
-  glued_containers, unglued_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
+  glued_containers, open_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
   noGluedContainersAreSelected = #glued_containers == 0
   singleGluedContainerIsSelected = #glued_containers == 1
   gluedContainersAreSelected = #glued_containers > 0
-  noUngluedContainersAreSelected = #unglued_containers == 0
-  singleUngluedContainerIsSelected = #unglued_containers == 1
+  noOpenContainersAreSelected = #open_containers == 0
+  singleOpenContainerIsSelected = #open_containers == 1
   noNoncontainersAreSelected = num_noncontainers == 0
   noncontainersAreSelected = num_noncontainers > 0
 
-  if singleGluedContainerIsSelected and noUngluedContainersAreSelected and noNoncontainersAreSelected then
+  if singleGluedContainerIsSelected and noOpenContainersAreSelected and noNoncontainersAreSelected then
     return "unglue"
-  elseif singleUngluedContainerIsSelected and gluedContainersAreSelected then
+  elseif singleOpenContainerIsSelected and gluedContainersAreSelected then
     return "glue/abort"
-  elseif (noGluedContainersAreSelected and singleUngluedContainerIsSelected) or (gluedContainersAreSelected and noUngluedContainersAreSelected) or (noncontainersAreSelected and noGluedContainersAreSelected and noUngluedContainersAreSelected) then
+  elseif (noGluedContainersAreSelected and singleOpenContainerIsSelected) or (gluedContainersAreSelected and noOpenContainersAreSelected) or (noncontainersAreSelected and noGluedContainersAreSelected and noOpenContainersAreSelected) then
     return "glue"
   end
 end
 
 
 function getNumSelectedItemsByType(selected_item_count)
-  local glued_containers, unglued_containers, num_noncontainers = 0
+  local glued_containers, open_containers, num_noncontainers = 0
 
-  glued_containers, unglued_containers = getContainers(selected_item_count)
-  num_noncontainers = selected_item_count - #glued_containers - #unglued_containers
+  glued_containers, open_containers = getContainers(selected_item_count)
+  num_noncontainers = selected_item_count - #glued_containers - #open_containers
 
-  return glued_containers, unglued_containers, num_noncontainers
+  return glued_containers, open_containers, num_noncontainers
 end
 
 
@@ -1235,7 +1251,7 @@ function doGlueUnglueAction(selected_item_count, obey_time_selection)
   elseif glue_reversible_action == "glue" then
     initGlueReversible(obey_time_selection)
   elseif glue_reversible_action == "glue/abort" then
-    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an unglued container and glued container(s).", 1)
+    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an open container and glued container(s).", 1)
     if glue_abort_dialog == 2 then
       setResetItemSet()
       return
