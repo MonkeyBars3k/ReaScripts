@@ -173,6 +173,10 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When Editing a container and you ungroup to change items, you {\i must} regroup all the constituent items again before regluing or you will break pooling.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI container items}, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an {\b infinite recursion}.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When gluing with time selection, ensure your time selection includes all items being glued because of {\field{\*\fldinst{HYPERLINK "https://forums.cockos.com/showthread.php?t=258769"}}{\fldrslt{\ul
+this Reaper bug
+}}}
+.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses {\b item selection set slot 10} at times to save and recall selected items.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Some {\b undo bugs} may still be lurking in this script, so you should prefer ungluing and regluing to undoing. But please create an Issue {\field{\*\fldinst{HYPERLINK "https://github.com/MonkeyBars3k/ReaScripts/issues/new"}}{\fldrslt{\ul
 here
