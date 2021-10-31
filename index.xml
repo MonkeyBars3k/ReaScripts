@@ -169,8 +169,8 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension}, of course!\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Don't {\b Clean current project directory} after gluing, or you'll lose your original items!\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When you {\b Edit}, a new empty item "grc" is visible under the original items. This item has the data to recall which group these items came from \u8211- don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances!\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab \par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes/names to keep track of which container item items belong in. {\b Never delete "gr:1" or "grc:1" from items' names}, as the code depends on that label to find it! You can add text to notes/names AFTER \u8211- e.g. "gr:1 - My extra text"\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When Editing a container and you ungroup to change items, you {\i must} regroup all the constituent items again before regluing or you will break pooling.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI container items}, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an {\b infinite recursion}.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses {\b item selection set slot 10} at times to save and recall selected items.\par}
