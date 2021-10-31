@@ -112,21 +112,20 @@ end
 
 -- get open container info from selection
 function checkSelectionForContainer(selected_item_count)
-
   local i, item, this_container_num, new_container_num, container
 
   for i = 0, selected_item_count-1 do
     item = reaper.GetSelectedMediaItem(0, i)
-    new_container_name = getContainerName(item)
+    new_container_num = getContainerName(item)
 
     -- if glue group found on this item
-    if new_container_name then
+    if new_container_num then
       -- if this search has already found another container
       if this_container_num then
         return false
       else
         container = item
-        this_container_num = new_container_name
+        this_container_num = new_container_num
       end
 
     -- if we don't have a non-container item yet
@@ -300,7 +299,7 @@ function pureMIDIItemsAreSelected(selected_item_count, source_track)
 end
 
 
-function isMIDIItem(item, item_container_name)
+function isMIDIItem(item)
   local active_take = reaper.GetActiveTake(item)
 
   if active_take and reaper.TakeIsMIDI(active_take) then
@@ -861,31 +860,25 @@ function getItemType(item)
 end
 
 
-function updateSource(item, this_container_name_string, new_src, length, pos_delta)
+function updateSource(item, this_container_name, new_src, length, pos_delta)
   local take_name, current_src, current_pos, take, new_pos
 
   -- get take name and see if it matches currently updated glue group
   take_name, take = getSetItemName(item)
 
-  if take_name and string.find(take_name, this_container_name_string) then
+  if take_name and string.find(take_name, this_container_name) then
     
     current_src = getItemWavSrc(item)
-    current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+    -- current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     --new_pos = current_pos + pos_delta
 
     if current_src ~= new_src or current_pos ~= new_pos then
-
-      -- update src
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
-      -- update position
       --reaper.SetMediaItemInfo_Value(item, "D_POSITION", new_pos)
-      -- update length
       reaper.SetMediaItemInfo_Value(item, "D_LENGTH", length)
-      -- refresh peak display
       reaper.ClearPeakCache()
 
       return current_src
-
     end
   end
 end
@@ -895,9 +888,9 @@ function updateSources(new_src, this_container_num, length, pos_delta)
 
   deselectAll()
 
-  local selected_item_count, this_container_name_string, i, this_item, old_src, old_srcs
+  local selected_item_count, this_container_name, i, this_item, old_src, old_srcs
 
-  this_container_name_string = "gr:"..this_container_num
+  this_container_name = "gr:"..this_container_num
 
   old_srcs = {}
 
@@ -908,7 +901,7 @@ function updateSources(new_src, this_container_num, length, pos_delta)
   i = 0
   while i < selected_item_count do
     this_item = reaper.GetMediaItem(0, i)
-    old_src = updateSource(this_item, this_container_name_string, new_src, length, pos_delta)
+    old_src = updateSource(this_item, this_container_name, new_src, length, pos_delta)
 
     if old_src then old_srcs[old_src] = true end
 
