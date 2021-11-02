@@ -1,18 +1,10 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
 -- @version 1.36
--- @changelog Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)
+-- @changelog Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41); add bg image to all contained items
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
--- @about # Glue (Reversible)
--- 
--- To use Glue (Reversible), simply select items or make a time selection with items inside and trigger the Glue (Reversible) script.
---
--- To edit your glued items, Unglue (Reversible) opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue (Reversible), but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue (Reversible).
---
--- You can Glue (Reversible) existing container items, nondestructively nesting container items. There is no limit in the code as to how many times you can nest.
---
--- Fork of matthewjumpsoffbuildings's Glue Groups scripts
+-- @about Code for Glue-Reversible scripts
 
 
 
@@ -35,7 +27,7 @@ function initGlueReversible(obey_time_selection)
   groupSelectedItems()
   glued_item = triggerGlueReversible(this_container_num, source_track, source_item, container, obey_time_selection)
   exclusiveSelectItem(glued_item)
-  cleanUpAction("Glue (Reversible)")
+  cleanUpAction("Glue-Reversible")
 end
 
 
@@ -92,7 +84,7 @@ function renderPathIsValid()
   is_nix_absolute_path = string.match(proj_renderpath, "^/")
   
   if (is_win and not is_win_absolute_path) or (not is_win and not is_nix_absolute_path) then
-    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "Glue (Reversible) needs a file render path.", 0)
+    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "Glue-Reversible needs a file render path.", 0)
     return false
   else
     return true
@@ -180,7 +172,7 @@ function itemsOnMultipleTracksAreSelected(selected_item_count)
   local itemsOnMultipleTracksDetected = detectItemsOnMultipleTracks(selected_item_count)
 
   if itemsOnMultipleTracksDetected == true then 
-      reaper.ShowMessageBox(msg_change_selected_items, "Glue and Unglue (Reversible) only works on items on a single track.", 0)
+      reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible and Edit container item only work on items on a single track.", 0)
       return true
   end
 end
@@ -221,7 +213,7 @@ function openContainersAreInvalid(selected_item_count)
   local glued_containers, open_containers = getContainers(selected_item_count)
 
   if #open_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, open_containers) == true then
-    reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can only Reglue or Edit one container at a time.", 0)
+    reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can only Reglue or Edit one container at a time.", 0)
     setResetItemSelectionSet()
     return true
   end
@@ -266,7 +258,7 @@ function recursiveContainerIsBeingGlued(glued_containers, open_containers)
       this_open_container_num = string.match(this_container_num, open_container_name_prefix)
       
       if this_glued_container_num == this_open_container_num then
-        reaper.ShowMessageBox(msg_change_selected_items, "Glue (Reversible) can't glue a pooled, glued container item to an open copy of itself!", 0)
+        reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can't glue a pooled, glued container item to an open copy of itself, or you could destroy the universe!", 0)
         setResetItemSelectionSet()
         return true
       end
@@ -293,7 +285,7 @@ function pureMIDIItemsAreSelected(selected_item_count, source_track)
   end
 
   if midi_item_is_selected and track_has_virtual_instrument == -1 then
-    reaper.ShowMessageBox("Add a virtual instrument to render audio into the glued container or try a different item selection.", "Glue (Reversible) can't glue pure MIDI without a virtual instrument.", 0)
+    reaper.ShowMessageBox("Add a virtual instrument to render audio into the glued container or try a different item selection.", "Glue-Reversible can't glue pure MIDI without a virtual instrument.", 0)
     return true
   end
 end
@@ -416,9 +408,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     i = i + 1
   end
 
-
   deselectAll()
-
 
   -- convert to audio takes, store state, and check for dependencies
   item_states = ''
@@ -497,7 +487,6 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     reaper.Main_OnCommand(40362, 0)
   end
   
-  
   -- store ref to new glued item
   glued_item = reaper.GetSelectedMediaItem(0, 0)
 
@@ -518,7 +507,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   -- insert stored states into ProjExtState
   reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num, item_states)
 
-  -- if being called from an 'updateSources' nested call, dependencies haven't been changed, so don't bother with this part
+  -- update pooled copies, unless being called from updateSources() nested call
   if not ignore_depends then
 
     r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", '')
@@ -590,33 +579,28 @@ function setItemParams(glued_item, container)
 end
 
 
-function setItemImage(item)
+function setItemImage(item, remove)
   local script_path, img_path 
 
   script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
-  img_path = script_path.."gr-bg.png"
+  if not remove then
+    img_path = script_path.."gr-bg.png"
+  else
+    img_path = ""
+  end
 
   reaper.BR_SetMediaItemImageResource(item, img_path, 1)
 end
 
 
 function doReglueReversible(source_track, source_item, this_container_num, container, obey_time_selection)
-
-  local glued_item, new_src, pos, length, old_pos, pos_delta, r, original_state_key, original_state, take
+  local glued_item, original_state_key, pos, length, new_src, r, original_state, take
+  
   -- get original state that open item was in
-  -- TODO - use ExtState to store it and key it to a particular container that was inserted on Edit - original Matthew comment
-
   glued_item, original_state_key, pos, length = doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, container)
 
   -- store updated src
   new_src = getItemWavSrc(glued_item)
-
--- log(tostring(new_src))
-  -- old_pos = reaper.GetMediaItemInfo_Value(container, "D_POSITION")
-      -- logV(pos)
-  
-      -- log(tostring(getSetItemName(source_item)))
-      -- pos_delta = pos - old_pos
 
   -- if there is a key in container's name, find it in ProjExtState and delete it from item
   if original_state_key then
@@ -647,7 +631,6 @@ function doReglueReversible(source_track, source_item, this_container_num, conta
   updateDependents(this_container_num, new_src, length, pos_delta, obey_time_selection)
 
   return glued_item
-
 end
 
 
@@ -664,7 +647,6 @@ end
 
 
 function getSetObjectState(obj, state, minimal)
-
   minimal = minimal or false
 
   local fastStr = reaper.SNM_CreateFastString(state)
@@ -678,12 +660,10 @@ function getSetObjectState(obj, state, minimal)
   reaper.SNM_DeleteFastString(fastStr)
   
   return state
-
 end
 
 
 function getSetItemName(item, name, add_or_remove)
-
   if reaper.GetMediaItemNumTakes(item) < 1 then return end
 
   local take = reaper.GetActiveTake(item)
@@ -974,10 +954,9 @@ end
 
 
 function restoreItems( this_container_num, track, position, dont_restore_take, dont_offset )
-
   deselectAll()
 
-  -- get stored items
+  -- get items stored during last glue
   local r, stored_items = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num, '')
 
   local splits = string.split(stored_items, "|||")
@@ -985,35 +964,48 @@ function restoreItems( this_container_num, track, position, dont_restore_take, d
   local restored_items = {}
   local key, val, restored_item, container, item, return_item, left_most, pos, i
 
-  for key,val in ipairs(splits) do
-
+  -- parse stored items data
+  for key, val in ipairs(splits) do
     if val then
 
+      -- add item back into track
       restored_item = reaper.AddMediaItemToTrack(track)
       getSetObjectState(restored_item, val)
 
+      -- restored_item is the open container?
       if string.find(val, "grc:") then 
         container = restored_item
       elseif not return_item then
         return_item = restored_item
       end
 
+      -- set to true in calculateUpdates() for some reason
       if not dont_restore_take then restoreOriginalTake(restored_item) end
 
+      -- set group ID
       reaper.SetMediaItemInfo_Value(restored_item, "I_GROUPID", 0)
 
+      -- set items' bg image
+      setItemImage(restored_item)
+
+-- moving position later does not save prev pos, but moving earlier DOES
+-- log(reaper.GetMediaItemInfo_Value(container, "D_POSITION"))
+
+      -- get position of left-most pooled copy
       if not left_most then
         left_most = reaper.GetMediaItemInfo_Value(restored_item, "D_POSITION")
       else
         left_most = math.min(reaper.GetMediaItemInfo_Value(restored_item, "D_POSITION"), left_most)
       end
 
+      -- populate new array
       restored_items[key] = restored_item
     end
   end
 
   offset = position - left_most
 
+  -- do position offset if this container is later than earliest positioned pooled copy
   for i, item in ipairs(restored_items) do
     reaper.SetMediaItemSelected(item, true)
 
@@ -1106,7 +1098,7 @@ function reselect( items )
 end
 
 
-function initEditGlueReversible()
+function initEditGluedContainer()
   local selected_item_count, glued_containers, open_containers, noncontainers, item, this_container_num
 
   selected_item_count = initAction("edit")
@@ -1116,14 +1108,14 @@ function initEditGlueReversible()
 
   glued_containers, open_containers, noncontainers = getContainers(selected_item_count)
 
-  if notSingleGluedContainer(#glued_containers) == true then return end
+  if isNotSingleGluedContainer(#glued_containers) == true then return end
   
   selectDeselectItems(noncontainers, false)
-  doEditGlueReversible()
+  doEditGluedContainer()
 end
 
 
-function notSingleGluedContainer(glued_container_num)
+function isNotSingleGluedContainer(glued_container_num)
   local multiitem_result
 
   if glued_container_num == 0 then
@@ -1149,7 +1141,7 @@ function selectDeselectItems(items, toggle)
 end
 
 
-function doEditGlueReversible()
+function doEditGluedContainer()
   local item, this_container_num
 
   -- only get first selected item. no Edit of multiple items (yet)
@@ -1159,13 +1151,13 @@ function doEditGlueReversible()
   if item then this_container_num = getGluedContainerName(item) end
 
   if this_container_num and item then
-    processEditGlueReversibleData(item, this_container_num)
+    processEditGluedContainer(item, this_container_num)
     cleanUpAction("Edit-Reversible")
   end
 end
 
 
-function processEditGlueReversibleData(item, this_container_num)
+function processEditGluedContainer(item, this_container_num)
   local original_item_state, original_item_pos, original_item_track, _, container, original_item_state_key
 
   original_item_state, original_item_pos, original_item_track = storeOriginalItemState(item)
@@ -1174,10 +1166,8 @@ function processEditGlueReversibleData(item, this_container_num)
 
   _, container = restoreItems(this_container_num, original_item_track, original_item_pos)
 
-  setItemImage(container)
-
   -- create a unique key for original state, and store it in container's name, space it out of sight then store it in ProjExtState
-  original_item_state_key = "original_item_state:"..this_container_num..":"..os.time()*7
+  original_item_state_key = "original_state:"..this_container_num..":"..os.time()*7
   getSetItemName(container, "                                                                                                      "..original_item_state_key, 1)
   reaper.SetProjExtState(0, "GLUE_GROUPS", original_item_state_key, original_item_state)
 
@@ -1219,7 +1209,7 @@ function initSmartAction(obey_time_selection)
     return
   end
 
-  reaper.Undo_EndBlock("Toggle Glue/Unglue (Reversible)", -1)
+  reaper.Undo_EndBlock("Smart Glue/Unglue", -1)
 end
 
 
@@ -1259,7 +1249,7 @@ function doGlueUnglueAction(selected_item_count, obey_time_selection)
   glue_reversible_action = getSmartAction(selected_item_count)
 
   if glue_reversible_action == "edit" then
-    initEditGlueReversible()
+    initEditGluedContainer()
   elseif glue_reversible_action == "glue" then
     initGlueReversible(obey_time_selection)
   elseif glue_reversible_action == "glue/abort" then
