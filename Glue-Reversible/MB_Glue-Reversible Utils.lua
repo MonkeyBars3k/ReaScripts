@@ -1154,7 +1154,7 @@ function otherPooledInstanceIsOpen(this_pool_num)
       scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
       reaper.Main_OnCommand(scroll_action_id, 0)
 
-      reaper.ShowMessageBox("Reglue the open container item from pool "..tostring(this_pool_num).." (selected automatically) before trying to edit this glued container item.", "Glue-Reversible Edit can't edit more than one glued container item belonging to the same pool.", 0)
+      reaper.ShowMessageBox("Reglue the open container item from pool "..tostring(this_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Glue-Reversible Edit can only edit one glued container item belonging to the same pool at a time.", 0)
       return true
     end
   end
