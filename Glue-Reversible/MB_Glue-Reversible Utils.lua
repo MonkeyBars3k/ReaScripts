@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.37
--- @changelog Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)
+-- @version 1.38
+-- @changelog Creating new pool from old container causes position error on reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/82)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Glue-Reversible scripts
@@ -1102,7 +1102,7 @@ end
 
 
 function initEditGluedContainer()
-  local selected_item_count, glued_containers, open_containers, noncontainers
+  local selected_item_count, glued_containers, open_containers, noncontainers, this_pool_num
 
   selected_item_count = initAction("edit")
   if selected_item_count == false then return end
@@ -1112,6 +1112,9 @@ function initEditGluedContainer()
   glued_containers, open_containers, noncontainers = getContainers(selected_item_count)
 
   if isNotSingleGluedContainer(#glued_containers) == true then return end
+
+  this_pool_num = getGluedContainerName(glued_containers[1])
+  if otherPooledInstanceIsOpen(this_pool_num) == true then return end
   
   selectDeselectItems(noncontainers, false)
   doEditGluedContainer()
@@ -1122,15 +1125,38 @@ function isNotSingleGluedContainer(glued_container_num)
   local multiitem_result
 
   if glued_container_num == 0 then
-    reaper.ShowMessageBox(msg_change_selected_items, "Edit (Reversible) can only Edit previously glued container items." , 0)
+    reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible Edit can only Edit previously glued container items." , 0)
     return true
   elseif glued_container_num > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first (earliest) selected container item only?", "Edit (Reversible) can only Edit a single glued container item at a time.", 1)
+    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first (earliest) selected container item only?", "Glue-Reversible Edit can only Edit a single glued container item at a time.", 1)
     if multiitem_result == 2 then
       return true
     end
   else
     return false
+  end
+end
+
+
+function otherPooledInstanceIsOpen(this_pool_num)
+  local num_all_items, i, this_item, scroll_action_id
+
+  num_all_items = reaper.CountMediaItems(0)
+
+  for i = 0, num_all_items-1 do
+    this_item = reaper.GetMediaItem(0, i)
+
+    if getItemType(this_item) == "open" then
+      deselectAll()
+      reaper.SetMediaItemSelected(this_item, true)
+      selectAllItemsInGroups()
+      -- scroll to selected item
+      scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
+      reaper.Main_OnCommand(scroll_action_id, 0)
+
+      reaper.ShowMessageBox("Reglue the open container item from pool "..tostring(this_pool_num).." (selected automatically) before trying to edit this glued container item.", "Glue-Reversible Edit can't edit more than one glued container item belonging to the same pool.", 0)
+      return true
+    end
   end
 end
 
