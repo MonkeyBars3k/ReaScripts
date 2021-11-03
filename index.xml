@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="a8b54d1b88e50fcbb517987a22ca929064b86bd4">
+<index version="1" name="MonkeyBars-ReaScripts" commit="d87f1a2748c3246f311ca6210ad6e6847c37bb5b">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -107,7 +107,7 @@
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
-{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 Glue (Reversible)\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Code for Glue-Reversible scripts\par}
 }
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
@@ -135,6 +135,14 @@
       <version name="1.35" author="MonkeyBars" time="2021-10-30T21:15:44Z">
         <changelog><![CDATA[Fix container detection]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/a8b54d1b88e50fcbb517987a22ca929064b86bd4/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      </version>
+      <version name="1.36" author="MonkeyBars" time="2021-10-31T19:45:48Z">
+        <changelog><![CDATA[Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/7d3720ac291a76ec887b0731f22a91f1965caad7/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      </version>
+      <version name="1.37" author="MonkeyBars" time="2021-11-03T05:47:38Z">
+        <changelog><![CDATA[Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/12b8e792198e8f243646dc14cf9ae980ae23c236/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
       </version>
     </reapack>
   </category>
