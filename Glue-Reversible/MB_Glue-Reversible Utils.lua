@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.38
--- @changelog Creating new pool from old container causes position error on reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/82)
+-- @version 1.39
+-- @changelog Fix open container check logic
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Glue-Reversible scripts
@@ -882,7 +882,6 @@ function updateSource(glued_item, item, this_container_name, this_container_num,
     current_src = getItemWavSrc(item)
 
     if current_src ~= new_src then
-
       retval, this_item_guid = reaper.GetSetMediaItemInfo_String(item, "GUID", "", false)
       this_item_current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
       retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
@@ -1138,23 +1137,24 @@ function isNotSingleGluedContainer(glued_container_num)
 end
 
 
-function otherPooledInstanceIsOpen(this_pool_num)
-  local num_all_items, i, this_item, scroll_action_id
+function otherPooledInstanceIsOpen(edit_pool_num)
+  local num_all_items, i, item, item_pool_num, scroll_action_id
 
   num_all_items = reaper.CountMediaItems(0)
 
   for i = 0, num_all_items-1 do
-    this_item = reaper.GetMediaItem(0, i)
+    item = reaper.GetMediaItem(0, i)
+    item_pool_num = getContainerName(item)
 
-    if getItemType(this_item) == "open" then
+    if getItemType(item) == "open" and item_pool_num == edit_pool_num then
       deselectAll()
-      reaper.SetMediaItemSelected(this_item, true)
+      reaper.SetMediaItemSelected(item, true)
       selectAllItemsInGroups()
       -- scroll to selected item
       scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
       reaper.Main_OnCommand(scroll_action_id, 0)
 
-      reaper.ShowMessageBox("Reglue the open container item from pool "..tostring(this_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Glue-Reversible Edit can only edit one glued container item belonging to the same pool at a time.", 0)
+      reaper.ShowMessageBox("Reglue the open container item from pool "..tostring(edit_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Glue-Reversible Edit can only edit one glued container item belonging to the same pool at a time.", 0)
       return true
     end
   end

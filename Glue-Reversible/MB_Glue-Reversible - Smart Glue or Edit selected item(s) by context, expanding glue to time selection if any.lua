@@ -1,6 +1,6 @@
 -- @description MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any
 -- @author MonkeyBars
--- @version 1.33
+-- @version 1.39
 -- @changelog metadata update
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
