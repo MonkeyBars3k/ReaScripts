@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.36
--- @changelog Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41); add bg image to all contained items
+-- @version 1.37
+-- @changelog Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Glue-Reversible scripts
@@ -596,7 +596,6 @@ end
 function doReglueReversible(source_track, source_item, this_container_num, container, obey_time_selection)
   local glued_item, original_state_key, pos, length, new_src, r, original_state, take
   
-  -- get original state that open item was in
   glued_item, original_state_key, pos, length = doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, container)
 
   -- store updated src
@@ -628,7 +627,7 @@ function doReglueReversible(source_track, source_item, this_container_num, conta
   -- sort dependents update_table by how nested they are
   sortUpdates()
   -- do actual updates now
-  updateDependents(this_container_num, new_src, length, pos_delta, obey_time_selection)
+  updateDependents(glued_item, this_container_num, new_src, length, obey_time_selection)
 
   return glued_item
 end
@@ -697,7 +696,6 @@ end
 
 
 function setToAudioTake(item)
-  
   local num_takes = reaper.GetMediaItemNumTakes(item)
   if num_takes > 0 then
     
@@ -728,7 +726,6 @@ end
 
 
 function restoreOriginalTake(item)
-
   local num_takes = reaper.GetMediaItemNumTakes(item)
   
   if num_takes > 0 then
@@ -764,7 +761,6 @@ end
 
 
 function cleanNullTakes(item, force)
-
   state = getSetObjectState(item)
 
   if string.find(state, "TAKE NULL") or force then
@@ -775,7 +771,6 @@ end
 
 
 function setItemGlueGroup(item, item_name_ending, not_container)
-
   local key = "grc:"
   if not_container then key = "gr:" end
 
@@ -813,9 +808,11 @@ function getContainerName(item, not_container)
   return string.match(name, key)
 end
 
+
 function getGluedContainerName(item)
   return getContainerName(item, true)
 end
+
 
 function getItemType(item)
   local name, take_name, is_open_container, is_glued_container
@@ -840,35 +837,10 @@ function getItemType(item)
 end
 
 
-function updateSource(item, this_container_name, new_src, length, pos_delta)
-  local take_name, current_src, current_pos, take, new_pos
-
-  -- get take name and see if it matches currently updated glue group
-  take_name, take = getSetItemName(item)
-
-  if take_name and string.find(take_name, this_container_name) then
-    
-    current_src = getItemWavSrc(item)
-    -- current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-    --new_pos = current_pos + pos_delta
-
-    if current_src ~= new_src or current_pos ~= new_pos then
-      reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
-      --reaper.SetMediaItemInfo_Value(item, "D_POSITION", new_pos)
-      reaper.SetMediaItemInfo_Value(item, "D_LENGTH", length)
-      reaper.ClearPeakCache()
-
-      return current_src
-    end
-  end
-end
-
-
-function updateSources(new_src, this_container_num, length, pos_delta)
+function updateSources(glued_item, this_container_num, new_src, length)
+  local selected_item_count, this_container_name, i, this_item, old_src, old_srcs
 
   deselectAll()
-
-  local selected_item_count, this_container_name, i, this_item, old_src, old_srcs
 
   this_container_name = "gr:"..this_container_num
 
@@ -881,7 +853,7 @@ function updateSources(new_src, this_container_num, length, pos_delta)
   i = 0
   while i < selected_item_count do
     this_item = reaper.GetMediaItem(0, i)
-    old_src = updateSource(this_item, this_container_name, new_src, length, pos_delta)
+    old_src = updateSource(glued_item, this_item, this_container_name, this_container_num, new_src, length)
 
     if old_src then old_srcs[old_src] = true end
 
@@ -894,6 +866,40 @@ function updateSources(new_src, this_container_num, length, pos_delta)
     os.remove(old_src..'.reapeaks')
   end
 
+end
+
+
+function updateSource(glued_item, item, this_container_name, this_container_num, new_src, length)
+  local take_name, take, retval, glued_item_guid, glued_item_current_pos, this_item_guid, current_src, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
+
+  -- get take name and see if it matches currently updated glue group
+  take_name, take = getSetItemName(item)
+
+  retval, glued_item_guid = reaper.GetSetMediaItemInfo_String(glued_item, "GUID", "", false)
+  glued_item_current_pos = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
+
+  if take_name and string.find(take_name, this_container_name) then
+    current_src = getItemWavSrc(item)
+
+    if current_src ~= new_src then
+
+      retval, this_item_guid = reaper.GetSetMediaItemInfo_String(item, "GUID", "", false)
+      this_item_current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+      retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
+      pos_delta = glued_item_current_pos - glued_item_preglue_pos 
+      new_pos = this_item_current_pos + pos_delta
+
+      if this_item_guid ~= glued_item_guid then
+        reaper.SetMediaItemInfo_Value(item, "D_POSITION", new_pos)
+      end
+
+      reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
+      reaper.SetMediaItemInfo_Value(item, "D_LENGTH", length)
+      reaper.ClearPeakCache()
+
+      return current_src
+    end
+  end
 end
 
 
@@ -988,9 +994,6 @@ function restoreItems( this_container_num, track, position, dont_restore_take, d
       -- set items' bg image
       setItemImage(restored_item)
 
--- moving position later does not save prev pos, but moving earlier DOES
--- log(reaper.GetMediaItemInfo_Value(container, "D_POSITION"))
-
       -- get position of left-most pooled copy
       if not left_most then
         left_most = reaper.GetMediaItemInfo_Value(restored_item, "D_POSITION")
@@ -1050,7 +1053,6 @@ end
 
 -- convert update_table to a numeric array then sort by nesting value
 function sortUpdates()
-  
   local i, v
 
   for i,v in pairs(update_table) do
@@ -1062,11 +1064,12 @@ end
 
 
 -- do the actual updates of the dependent groups
-function updateDependents( this_container_num, src, length, pos_delta, obey_time_selection )
+function updateDependents(glued_item, this_container_num, src, length, obey_time_selection)
 
   -- update items with just one level of nesting now that they are exposed
-  updateSources(src, this_container_num, length, pos_delta)
+  updateSources(glued_item, this_container_num, src, length)
 
+  -- this is pretty weird, declaring local var with same name as argument coming in above?
   local glued_item, i, dependent, new_src
 
   -- loop thru dependents and update them in order
@@ -1080,7 +1083,7 @@ function updateDependents( this_container_num, src, length, pos_delta, obey_time
 
     -- update all instances of this group, including any in other more deeply nested dependent groups which are exposed and waiting to be updated
     new_src = getItemWavSrc(glued_item)
-    updateSources(new_src, dependent.this_container_num, length, pos_delta)
+    updateSources(glued_item, dependent.this_container_num, new_src, length)
 
     -- delete glue track
     reaper.DeleteTrack(dependent.track)
@@ -1099,7 +1102,7 @@ end
 
 
 function initEditGluedContainer()
-  local selected_item_count, glued_containers, open_containers, noncontainers, item, this_container_num
+  local selected_item_count, glued_containers, open_containers, noncontainers
 
   selected_item_count = initAction("edit")
   if selected_item_count == false then return end
@@ -1170,6 +1173,9 @@ function processEditGluedContainer(item, this_container_num)
   original_item_state_key = "original_state:"..this_container_num..":"..os.time()*7
   getSetItemName(container, "                                                                                                      "..original_item_state_key, 1)
   reaper.SetProjExtState(0, "GLUE_GROUPS", original_item_state_key, original_item_state)
+
+  -- store preglue container position for reglue
+  reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos", original_item_pos)
 
   reaper.DeleteTrackMediaItem(original_item_track, item)
 end
