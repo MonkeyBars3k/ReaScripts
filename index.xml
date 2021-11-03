@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="25f5a5b6dcfe487187129203936ae0d334c456bf">
+<index version="1" name="MonkeyBars-ReaScripts" commit="2bf64b031dbde99578b9af34e70cb2b815c272b7">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -80,6 +80,10 @@
         <changelog><![CDATA[metadata update]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
       </version>
+      <version name="1.39" author="MonkeyBars" time="2021-11-03T21:04:23Z">
+        <changelog><![CDATA[metadata update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/2bf64b031dbde99578b9af34e70cb2b815c272b7/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
+      </version>
     </reapack>
     <reapack name="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, ignoring time selection.lua" type="script" desc="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, ignoring time selection">
       <metadata>
@@ -99,6 +103,10 @@
       <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
         <changelog><![CDATA[metadata update]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
+      </version>
+      <version name="1.39" author="MonkeyBars" time="2021-11-03T21:04:23Z">
+        <changelog><![CDATA[metadata update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/2bf64b031dbde99578b9af34e70cb2b815c272b7/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Glue-Reversible Utils.lua" type="script" desc="MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality">
@@ -147,6 +155,10 @@
       <version name="1.38" author="MonkeyBars" time="2021-11-03T16:24:04Z">
         <changelog><![CDATA[Creating new pool from old container causes position error on reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/82)]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/25f5a5b6dcfe487187129203936ae0d334c456bf/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      </version>
+      <version name="1.39" author="MonkeyBars" time="2021-11-03T21:04:23Z">
+        <changelog><![CDATA[Fix open container check logic]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/2bf64b031dbde99578b9af34e70cb2b815c272b7/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
       </version>
     </reapack>
   </category>
