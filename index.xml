@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="d87f1a2748c3246f311ca6210ad6e6847c37bb5b">
+<index version="1" name="MonkeyBars-ReaScripts" commit="25f5a5b6dcfe487187129203936ae0d334c456bf">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -143,6 +143,10 @@
       <version name="1.37" author="MonkeyBars" time="2021-11-03T05:47:38Z">
         <changelog><![CDATA[Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/12b8e792198e8f243646dc14cf9ae980ae23c236/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      </version>
+      <version name="1.38" author="MonkeyBars" time="2021-11-03T16:24:04Z">
+        <changelog><![CDATA[Creating new pool from old container causes position error on reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/82)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/25f5a5b6dcfe487187129203936ae0d334c456bf/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
       </version>
     </reapack>
   </category>
