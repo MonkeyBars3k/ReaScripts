@@ -17,7 +17,7 @@ function initGlueReversible(obey_time_selection)
   selected_item_count = initAction("glue")
   if selected_item_count == false then return end
 
-  -- find open item if present
+  -- find open container item if present
   this_container_num, container = checkSelectionForContainer(selected_item_count)
 
   source_item, source_track = getSourceSelections()
@@ -110,7 +110,7 @@ function checkSelectionForContainer(selected_item_count)
     item = reaper.GetSelectedMediaItem(0, i)
     new_container_num = getContainerName(item)
 
-    -- if glue group found on this item
+    -- if pool ID found on this item
     if new_container_num then
       -- if this search has already found another container
       if this_container_num then
@@ -349,7 +349,6 @@ function cleanUpAction(undo_block_string)
 end
 
 
-
 function refreshUI()
   reaper.PreventUIRefresh(-1)
   reaper.UpdateTimeline()
@@ -361,9 +360,9 @@ end
 function doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, existing_container, ignore_depends)
   local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, open_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
 
-  -- make a new this_container_num id from group id if this is a new group and name glue_track accordingly
+  -- make a new this_container_num id from pool ID if this is a new pool and name glue_track accordingly
   if not this_container_num then
-    r, last_container_num = reaper.GetProjExtState(0, "GLUE_GROUPS", "last", '')
+    r, last_container_num = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", "last", '')
     if r > 0 and last_container_num then
       last_container_num = tonumber( last_container_num )
       this_container_num = math.floor(last_container_num + 1)
@@ -372,8 +371,8 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     end
   end
 
-  -- store this glue group id so next group can increment up
-  reaper.SetProjExtState(0, "GLUE_GROUPS", "last", this_container_num)
+  -- store this pool ID so next pooled item can increment up
+  reaper.SetProjExtState(0, "GLUE-REVERSIBLE", "last", this_container_num)
 
 
   -- count items to be added
@@ -429,7 +428,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
 
       item_container_name = getContainerName(item, true)
       if item_container_name then
-        -- keep track of this items glue group to set up dependencies later
+        -- keep track of this item's pool to set up dependencies later
         dependencies_table[item_container_name] = item_container_name
       end
     end
@@ -465,8 +464,8 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   -- otherwise this is a new glue, create container that will be resized and stored after glue is done
   else
     container = reaper.AddMediaItemToTrack(source_track)
-    -- set container's name to point to this glue group
-    setItemGlueGroup(container, this_container_num)
+    -- set container's name to point to this pool
+    setItemPool(container, this_container_num)
   end
 
   -- reselect
@@ -490,14 +489,14 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   -- store ref to new glued item
   glued_item = reaper.GetSelectedMediaItem(0, 0)
 
-  -- store a reference to this glue group in glued item
+  -- store a reference to this pool in glued item
   if item_name_addl_count and item_name_addl_count > 0 then
     item_name_addl_count = " +"..(selected_item_count-1).. " more"
   else
     item_name_addl_count = ""
   end 
   glued_item_init_name = this_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
-  setItemGlueGroup(glued_item, glued_item_init_name, true)
+  setItemPool(glued_item, glued_item_init_name, true)
 
   new_length, item_position = setItemParams(glued_item, container)
 
@@ -505,51 +504,51 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   item_states = item_states..getSetObjectState(container)
 
   -- insert stored states into ProjExtState
-  reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num, item_states)
+  reaper.SetProjExtState(0, "GLUE-REVERSIBLE", this_container_num, item_states)
 
   -- update pooled copies, unless being called from updateSources() nested call
   if not ignore_depends then
 
-    r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", '')
+    r, old_dependencies = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", this_container_num..":dependencies", '')
     if r < 1 then old_dependencies = "" end
 
     dependencies = ""
     dependent = "|"..this_container_num.."|"
 
-    -- store a reference to this glue group for all the nested glue groups so if any of them get updated, they can check and update this group
+    -- store a reference to this pool for all the nested container items so if any of them get updated, they can check and update this pool
     for item_container_name, r in pairs(dependencies_table) do
       
-      -- make a key for nested glue group to keep track of which groups are dependent on it
+      -- make a key for nested container items to keep track of which pools are dependent on it
       key = item_container_name..":dependents"
-      -- see if nested glue group already has a list of dependents
-      r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", key, '')
+      -- see if nested container item already has a list of dependents
+      r, dependents = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", key, '')
       if r == 0 then dependents = "" end
-      -- if this glue group isn't already in list, add it
+      -- if this pool isn't already in list, add it
       if not string.find(dependents, dependent) then
         dependents = dependents..dependent
-        reaper.SetProjExtState(0, "GLUE_GROUPS", key, dependents)
+        reaper.SetProjExtState(0, "GLUE-REVERSIBLE", key, dependents)
       end
 
-      -- now keep track of these glue groups dependencies
+      -- now keep track of these pool dependencies
       dependency = "|"..item_container_name.."|"
       dependencies = dependencies..dependency
       -- remove this dependency from old_dependencies string
       old_dependencies = string.gsub(old_dependencies, dependency, "")
     end
 
-    -- store this glue groups dependencies list
-    reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", dependencies)
+    -- store this pool's dependencies list
+    reaper.SetProjExtState(0, "GLUE-REVERSIBLE", this_container_num..":dependencies", dependencies)
 
     -- have the dependencies changed?
     if string.len(old_dependencies) > 0 then
       -- loop thru all the dependencies no longer needed
       for dependency in string.gmatch(old_dependencies, "%d+") do 
-        -- remove this glue group from the other glue groups dependents list
+        -- remove this pool from the other pool's dependents list
         key = dependency..":dependents"
-        r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", key, '')
+        r, dependents = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", key, '')
         if r > 0 and string.find(dependents, dependent) then
           dependents = string.gsub(dependents, dependent, "")
-          reaper.SetProjExtState(0, "GLUE_GROUPS", key, dependents)
+          reaper.SetProjExtState(0, "GLUE-REVERSIBLE", key, dependents)
         end
 
       end
@@ -603,7 +602,7 @@ function doReglueReversible(source_track, source_item, this_container_num, conta
 
   -- if there is a key in container's name, find it in ProjExtState and delete it from item
   if original_state_key then
-    r, original_state = reaper.GetProjExtState(0, "GLUE_GROUPS", original_state_key, '')
+    r, original_state = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", original_state_key, '')
 
     if r > 0 and original_state then
       -- reapply original state to glued item
@@ -618,11 +617,11 @@ function doReglueReversible(source_track, source_item, this_container_num, conta
       reaper.SetMediaItemInfo_Value(glued_item, "D_LENGTH", length)
 
       -- remove original state data, not needed anymore
-      reaper.SetProjExtState(0, "GLUE_GROUPS", original_state_key, '')
+      reaper.SetProjExtState(0, "GLUE-REVERSIBLE", original_state_key, '')
     end
   end
 
-  -- calculate dependents, create an update_table with a nicely ordered sequence and re-insert the items of each glue group into temp tracks so they can be updated
+  -- calculate dependents, create an update_table with a nicely ordered sequence and re-insert the items of each pool into temp tracks so they can be updated
   calculateUpdates(this_container_num)
   -- sort dependents update_table by how nested they are
   sortUpdates()
@@ -770,7 +769,7 @@ function cleanNullTakes(item, force)
 end
 
 
-function setItemGlueGroup(item, item_name_ending, not_container)
+function setItemPool(item, item_name_ending, not_container)
   local key = "grc:"
   if not_container then key = "gr:" end
 
@@ -872,7 +871,7 @@ end
 function updateSource(glued_item, item, this_container_name, this_container_num, new_src, length)
   local take_name, take, retval, glued_item_guid, glued_item_current_pos, this_item_guid, current_src, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
 
-  -- get take name and see if it matches currently updated glue group
+  -- get take name and see if it matches currently updated pool
   take_name, take = getSetItemName(item)
 
   retval, glued_item_guid = reaper.GetSetMediaItemInfo_String(glued_item, "GUID", "", false)
@@ -885,7 +884,7 @@ function updateSource(glued_item, item, this_container_name, this_container_num,
 
       retval, this_item_guid = reaper.GetSetMediaItemInfo_String(item, "GUID", "", false)
       this_item_current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-      retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
+      retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", this_container_num.."-pos")
       pos_delta = glued_item_current_pos - glued_item_preglue_pos 
       new_pos = this_item_current_pos + pos_delta
 
@@ -914,25 +913,25 @@ function calculateUpdates(this_container_num, nesting_level)
   if not update_table then update_table = {} end
   if not nesting_level then nesting_level = 1 end
 
-  local r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependents", '')
+  local r, dependents = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", this_container_num..":dependents", '')
 
   if r > 0 and string.len(dependents) > 0 then
 
-    local track, dependent_group, restored_items, item, container, glued_item, new_src, i, v, update_item, current_entry
+    local track, dependent_pool, restored_items, item, container, glued_item, new_src, i, v, update_item, current_entry
 
-    for dependent_group in string.gmatch(dependents, "%d+") do 
+    for dependent_pool in string.gmatch(dependents, "%d+") do 
 
-      dependent_group = math.floor(tonumber(dependent_group))
+      dependent_pool = math.floor(tonumber(dependent_pool))
 
-      -- check if an entry for this group already exists
-      if update_table[dependent_group] then
+      -- check if an entry for this pool already exists
+      if update_table[dependent_pool] then
         -- keep track of how deeply nested this item is
-        update_table[dependent_group].nesting_level = math.max(nesting_level, update_table[dependent_group].nesting_level)
+        update_table[dependent_pool].nesting_level = math.max(nesting_level, update_table[dependent_pool].nesting_level)
 
       else 
-      -- this is the first time this group has come up. set up for update loop
+      -- this is the first time this pool has come up. set up for update loop
         current_entry = {}
-        current_entry.this_container_num = dependent_group
+        current_entry.this_container_num = dependent_pool
         current_entry.nesting_level = nesting_level
 
         -- make track for this item's updates
@@ -940,7 +939,7 @@ function calculateUpdates(this_container_num, nesting_level)
         track = reaper.GetTrack(0, 0)
 
         -- restore items into newly made empty track
-        item, container, restored_items = restoreItems(dependent_group, track, 0, true, true)
+        item, container, restored_items = restoreItems(dependent_pool, track, 0, true, true)
 
         -- store references to temp track and items
         current_entry.track = track
@@ -949,10 +948,10 @@ function calculateUpdates(this_container_num, nesting_level)
         current_entry.restored_items = restored_items
 
         -- store this item in update_table
-        update_table[dependent_group] = current_entry
+        update_table[dependent_pool] = current_entry
 
-        -- check if this group also has dependents
-        calculateUpdates(dependent_group, nesting_level + 1)
+        -- check if this pool also has dependents
+        calculateUpdates(dependent_pool, nesting_level + 1)
       end
     end
   end
@@ -963,7 +962,7 @@ function restoreItems( this_container_num, track, position, dont_restore_take, d
   deselectAll()
 
   -- get items stored during last glue
-  local r, stored_items = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num, '')
+  local r, stored_items = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", this_container_num, '')
 
   local splits = string.split(stored_items, "|||")
 
@@ -1063,7 +1062,7 @@ function sortUpdates()
 end
 
 
--- do the actual updates of the dependent groups
+-- do the actual updates of the dependent pools
 function updateDependents(glued_item, this_container_num, src, length, obey_time_selection)
 
   -- update items with just one level of nesting now that they are exposed
@@ -1081,7 +1080,7 @@ function updateDependents(glued_item, this_container_num, src, length, obey_time
     
     glued_item = doGlueReversible(dependent.track, dependent.item, obey_time_selection, dependent.this_container_num, dependent.container, true)
 
-    -- update all instances of this group, including any in other more deeply nested dependent groups which are exposed and waiting to be updated
+    -- update all instances of this pool, including any in other more deeply nested dependent pools which are exposed and waiting to be updated
     new_src = getItemWavSrc(glued_item)
     updateSources(glued_item, dependent.this_container_num, new_src, length)
 
@@ -1198,10 +1197,10 @@ function processEditGluedContainer(item, this_container_num)
   -- create a unique key for original state, and store it in container's name, space it out of sight then store it in ProjExtState
   original_item_state_key = "original_state:"..this_container_num..":"..os.time()*7
   getSetItemName(container, "                                                                                                      "..original_item_state_key, 1)
-  reaper.SetProjExtState(0, "GLUE_GROUPS", original_item_state_key, original_item_state)
+  reaper.SetProjExtState(0, "GLUE-REVERSIBLE", original_item_state_key, original_item_state)
 
   -- store preglue container position for reglue
-  reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos", original_item_pos)
+  reaper.SetProjExtState(0, "GLUE-REVERSIBLE", this_container_num.."-pos", original_item_pos)
 
   reaper.DeleteTrackMediaItem(original_item_track, item)
 end
