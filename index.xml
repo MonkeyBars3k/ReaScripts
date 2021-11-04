@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="2bf64b031dbde99578b9af34e70cb2b815c272b7">
+<index version="1" name="MonkeyBars-ReaScripts" commit="58f51e88340601d66c9a34e9d96602c0607388f1">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -159,6 +159,10 @@
       <version name="1.39" author="MonkeyBars" time="2021-11-03T21:04:23Z">
         <changelog><![CDATA[Fix open container check logic]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/2bf64b031dbde99578b9af34e70cb2b815c272b7/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      </version>
+      <version name="1.40" author="MonkeyBars" time="2021-11-04T05:14:46Z">
+        <changelog><![CDATA[Dragging pooled item moves other pooled instances (https://github.com/MonkeyBars3k/ReaScripts/issues/84)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/58f51e88340601d66c9a34e9d96602c0607388f1/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
       </version>
     </reapack>
   </category>
