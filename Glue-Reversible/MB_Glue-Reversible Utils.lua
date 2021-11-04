@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.39
--- @changelog Fix open container check logic
+-- @version 1.40
+-- @changelog Dragging pooled item moves other pooled instances (https://github.com/MonkeyBars3k/ReaScripts/issues/84)
 -- @provides [nomain] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Glue-Reversible scripts
@@ -507,7 +507,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   -- insert stored states into ProjExtState
   reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num, item_states)
 
-  -- update pooled copies, unless being called from updateSources() nested call
+  -- update pooled copies, unless being called from updatePooledItems() nested call
   if not ignore_depends then
 
     r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", '')
@@ -837,8 +837,8 @@ function getItemType(item)
 end
 
 
-function updateSources(glued_item, this_container_num, new_src, length)
-  local selected_item_count, this_container_name, i, this_item, old_src, old_srcs
+function updatePooledItems(glued_item, this_container_num, new_src, length)
+  local this_container_name, old_srcs, selected_item_count, i, this_item, old_src, position_change_answer, new_pos
 
   deselectAll()
 
@@ -849,17 +849,28 @@ function updateSources(glued_item, this_container_num, new_src, length)
   -- count all items
   selected_item_count = reaper.CountMediaItems(0)
 
-  -- loop through and update wav srcs
+  -- loop through selected items
   i = 0
   while i < selected_item_count do
     this_item = reaper.GetMediaItem(0, i)
-    old_src = updateSource(glued_item, this_item, this_container_name, this_container_num, new_src, length)
+    old_src, new_pos = updatePooledItem(glued_item, this_item, this_container_name, this_container_num, new_src, length)
 
+    if new_pos and new_pos ~= false then
+      if not position_change_answer then
+        position_change_answer = reaper.ShowMessageBox("Do you want to propagate this position change to the rest of the pooled container items?", "The earliest item position has changed since you started Editing your contained items!", 4)
+      end
+
+      -- User answered "YES"
+      if position_change_answer == 6 then
+        reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+      end
+    end
+    
     if old_src then old_srcs[old_src] = true end
-
     i = i + 1
   end
 
+  -- shouldn't we reset i before doing this?
   -- delete old srcs, dont need em
   for old_src, i in pairs(old_srcs) do
     os.remove(old_src)
@@ -869,35 +880,44 @@ function updateSources(glued_item, this_container_num, new_src, length)
 end
 
 
-function updateSource(glued_item, item, this_container_name, this_container_num, new_src, length)
-  local take_name, take, retval, glued_item_guid, glued_item_current_pos, this_item_guid, current_src, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
+function updatePooledItem(glued_item, this_item, this_container_name, this_container_num, new_src, length)
+  local take_name, take, current_src, new_pos
 
-  -- get take name and see if it matches currently updated glue group
-  take_name, take = getSetItemName(item)
+  take_name, take = getSetItemName(this_item)
+
+  -- see if take matches currently updated glue group
+  if take_name and string.find(take_name, this_container_name) then
+    current_src = getItemWavSrc(this_item)
+
+    if current_src ~= new_src then
+      new_pos = checkPooledItemPositions(glued_item, this_item, this_container_num)
+
+      reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
+      reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", length)
+      reaper.ClearPeakCache()
+
+      return current_src, new_pos
+    end
+  end
+end
+
+
+function checkPooledItemPositions(glued_item, this_item, this_container_num)
+  local retval, glued_item_guid, glued_item_current_pos, this_item_guid, current_src, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
 
   retval, glued_item_guid = reaper.GetSetMediaItemInfo_String(glued_item, "GUID", "", false)
   glued_item_current_pos = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
-
-  if take_name and string.find(take_name, this_container_name) then
-    current_src = getItemWavSrc(item)
-
-    if current_src ~= new_src then
-      retval, this_item_guid = reaper.GetSetMediaItemInfo_String(item, "GUID", "", false)
-      this_item_current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-      retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
-      pos_delta = glued_item_current_pos - glued_item_preglue_pos 
-      new_pos = this_item_current_pos + pos_delta
-
-      if this_item_guid ~= glued_item_guid then
-        reaper.SetMediaItemInfo_Value(item, "D_POSITION", new_pos)
-      end
-
-      reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
-      reaper.SetMediaItemInfo_Value(item, "D_LENGTH", length)
-      reaper.ClearPeakCache()
-
-      return current_src
-    end
+  glued_item_current_pos = tostring(glued_item_current_pos)
+  retval, this_item_guid = reaper.GetSetMediaItemInfo_String(this_item, "GUID", "", false)
+  this_item_current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
+  retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
+  pos_delta = glued_item_current_pos - glued_item_preglue_pos
+  new_pos = this_item_current_pos + pos_delta
+  
+  if this_item_guid ~= glued_item_guid and pos_delta ~= 0 then
+    return new_pos
+  else
+    return false
   end
 end
 
@@ -1066,7 +1086,7 @@ end
 function updateDependents(glued_item, this_container_num, src, length, obey_time_selection)
 
   -- update items with just one level of nesting now that they are exposed
-  updateSources(glued_item, this_container_num, src, length)
+  updatePooledItems(glued_item, this_container_num, src, length)
 
   -- this is pretty weird, declaring local var with same name as argument coming in above?
   local glued_item, i, dependent, new_src
@@ -1082,7 +1102,7 @@ function updateDependents(glued_item, this_container_num, src, length, obey_time
 
     -- update all instances of this group, including any in other more deeply nested dependent groups which are exposed and waiting to be updated
     new_src = getItemWavSrc(glued_item)
-    updateSources(glued_item, dependent.this_container_num, new_src, length)
+    updatePooledItems(glued_item, dependent.this_container_num, new_src, length)
 
     -- delete glue track
     reaper.DeleteTrack(dependent.track)
@@ -1127,7 +1147,7 @@ function isNotSingleGluedContainer(glued_container_num)
     reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible Edit can only Edit previously glued container items." , 0)
     return true
   elseif glued_container_num > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first (earliest) selected container item only?", "Glue-Reversible Edit can only Edit a single glued container item at a time.", 1)
+    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first (earliest) selected container item only?", "Glue-Reversible Edit can only open one glued container item per action call.", 1)
     if multiitem_result == 2 then
       return true
     end
@@ -1154,7 +1174,7 @@ function otherPooledInstanceIsOpen(edit_pool_num)
       scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
       reaper.Main_OnCommand(scroll_action_id, 0)
 
-      reaper.ShowMessageBox("Reglue the open container item from pool "..tostring(edit_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Glue-Reversible Edit can only edit one glued container item belonging to the same pool at a time.", 0)
+      reaper.ShowMessageBox("Reglue the other open container item from pool "..tostring(edit_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Only one glued container item per pool can be Edited at a time.", 0)
       return true
     end
   end
