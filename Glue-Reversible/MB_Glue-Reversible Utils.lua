@@ -1,8 +1,9 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.40
+-- @version 1.41
 -- @changelog Dragging pooled item moves other pooled instances (https://github.com/MonkeyBars3k/ReaScripts/issues/84)
 -- @provides [nomain] .
+-- gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Glue-Reversible scripts
 
