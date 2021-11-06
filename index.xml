@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="4921bf61e5c968e7f14a86a7ae7d2495519950c8">
+<index version="1" name="MonkeyBars-ReaScripts" commit="549041a9f1b36dc64248f236c2f3b3c18bcb0379">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -188,6 +188,12 @@
       <version name="1.0" author="MonkeyBars" time="2021-11-06T19:07:43Z">
         <changelog><![CDATA[Initial commit]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/4921bf61e5c968e7f14a86a7ae7d2495519950c8/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB_Select child tracks &amp; deselect selected parent folder.lua" type="script" desc="Select child tracks &amp; deselect selected parent folder">
+      <version name="1.0" author="MonkeyBars" time="2021-11-06T19:09:37Z">
+        <changelog><![CDATA[Initial commit]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/549041a9f1b36dc64248f236c2f3b3c18bcb0379/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
       </version>
     </reapack>
   </category>
