@@ -1,7 +1,7 @@
 -- @description MB_Glue-Reversible - Edit container item, retaining container holder
 -- @author MonkeyBars
--- @version 1.33
--- @changelog metadata update
+-- @version 1.34
+-- @changelog version fix
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
