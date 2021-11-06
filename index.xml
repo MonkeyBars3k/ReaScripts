@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="bb993063eac0a830693e09a4fcdbe54feeab4276">
+<index version="1" name="MonkeyBars-ReaScripts" commit="b1c2755ec9c00b23c91e469fc16854c63e8bb9e0">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -19,6 +19,10 @@
       <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
         <changelog><![CDATA[metadata update]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Edit%20container%20item,%20retaining%20container%20holder.lua</source>
+      </version>
+      <version name="1.34" author="MonkeyBars" time="2021-11-06T16:45:20Z">
+        <changelog><![CDATA[version fix]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b1c2755ec9c00b23c91e469fc16854c63e8bb9e0/Glue-Reversible/MB_Glue-Reversible%20-%20Edit%20container%20item,%20retaining%20container%20holder.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Glue-Reversible - Glue selected item(s) into pooled container item, expanding to time selection if any.lua" type="script" desc="MB_Glue-Reversible - Glue selected item(s) into pooled container item, expanding to time selection if any">
