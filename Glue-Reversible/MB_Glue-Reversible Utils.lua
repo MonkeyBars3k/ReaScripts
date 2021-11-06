@@ -1,9 +1,9 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.42
+-- @version 1.43
 -- @changelog Fix image provides
 -- @provides [nomain] .
--- [main] . > gr-bg.png
+--   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Glue-Reversible scripts
 
