@@ -1,10 +1,28 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.41
+-- @version 1.44
 -- @changelog Ungrouping contained items breaks Glue-Reversible [4] (https://github.com/MonkeyBars3k/ReaScripts/issues/69)
 -- @provides [nomain] .
+--   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Glue-Reversible scripts
+
+
+-- TESTING FUNCTION
+function logAllSelectedItemsPoolIDs()
+  local selected_item_count = getSelectedItemsCount()
+  local i, this_item, r, this_item_pool_id
+
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(0, i)
+    r, this_item_pool_id = reaper.GetSetMediaItemInfo_String(this_item, "P_EXT:glue-reversible_pool-id", "", false)
+
+    if this_item_pool_id then
+      log(this_item_pool_id)
+    end
+  end
+end
+
 
 
 
@@ -12,21 +30,35 @@ local msg_change_selected_items = "Change the items selected and try again."
 
 
 function initGlueReversible(obey_time_selection)
-  local selected_item_count, this_container_num, container, source_item, source_track, glued_item
+  local selected_item_count,  glued_containers, open_containers, this_container_num, container, source_item, source_track, this_open_container_num, glued_item
 
   selected_item_count = initAction("glue")
   if selected_item_count == false then return end
 
-  -- find open container item if present
   this_container_num, container = checkSelectionForContainer(selected_item_count)
+
+  glued_containers, open_containers = getContainers(selected_item_count)
+
+  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count,  glued_containers, open_containers) == true then return end
 
   source_item, source_track = getSourceSelections()
 
-  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
+  if pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
 
-  markSelectedItemsToPool(this_container_num, selected_item_count)
+  this_open_container_num = getFirstOpenContainerNum(selected_item_count)
+
+  if (this_open_container_num) then
+    setUnsetSelectedItemsToPool(this_open_container_num, selected_item_count, true)
+    selectAllItemsInPool(this_open_container_num)
+  end
+
+log("2: "..getSelectedItemsCount())
+
   glued_item = triggerGlueReversible(this_container_num, source_track, source_item, container, obey_time_selection)
   exclusiveSelectItem(glued_item)
+
+  setUnsetSelectedItemsToPool(this_container_num, selected_item_count, false)
+
   cleanUpAction("Glue-Reversible")
 end
 
@@ -37,11 +69,7 @@ function initAction(action)
   selected_item_count = doPreGlueChecks()
   if selected_item_count == false then return false end
 
-  prepareGlueState(action)
-  
-  -- refresh in case item selection changed
-  selected_item_count = getSelectedItemsCount()
-  if itemsAreSelected(selected_item_count) == false then return false end
+  prepareGlueState(action, selected_item_count)
 
   return selected_item_count
 end
@@ -51,25 +79,39 @@ function doPreGlueChecks()
   local selected_item_count
 
   if renderPathIsValid() == false then return false end
-  selected_item_count = getSelectedItemsCount()  
+  selected_item_count = getSelectedItemsCount()
   if itemsAreSelected(selected_item_count) == false then return false end
 
   return selected_item_count
 end
 
 
-function getSelectedItemsCount()
-  return reaper.CountSelectedMediaItems(0)
-end
+function prepareGlueState(action, selected_item_count)
+  local current_pool_id
 
-
-function prepareGlueState(action)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
 
   if action == "glue" then
-    setResetItemSelectionSet(true)
+    storeRecallItemSelectionSet(true)
+log("1: "..getSelectedItemsCount())
   end
+end
+
+
+function storeRecallItemSelectionSet(set)
+  if set == true then
+    -- save selected item selection set to slot 10
+    reaper.Main_OnCommand(41238, 0)
+  else
+    -- reset item selection from selection set slot 10
+    reaper.Main_OnCommand(41248, 0)
+  end
+end
+
+
+function getSelectedItemsCount()
+  return reaper.CountSelectedMediaItems(0)
 end
 
 
@@ -108,6 +150,9 @@ function checkSelectionForContainer(selected_item_count)
   for i = 0, selected_item_count-1 do
     item = reaper.GetSelectedMediaItem(0, i)
     new_container_num = getContainerName(item)
+    -- refresh in case item selection changed
+    selected_item_count = getSelectedItemsCount()
+    if itemsAreSelected(selected_item_count) == false then return false end
 
     -- if pool ID found on this item
     if new_container_num then
@@ -150,19 +195,8 @@ function getOriginalTrack(source_item)
 end
 
 
-function setResetItemSelectionSet(set)
-  if set == true then
-    -- save selected item selection set to slot 10
-    reaper.Main_OnCommand(41238, 0)
-  else
-    -- reset item selection from selection set slot 10
-    reaper.Main_OnCommand(41248, 0)
-  end
-end
-
-
 function selectAllItemsInPool(current_pool_id, num_all_items)
-  local i, this_item, this_item_pool_id
+  local i, this_item, r, this_item_pool_id
 
   if not num_all_items then
     num_all_items = reaper.CountMediaItems(0)
@@ -170,9 +204,11 @@ function selectAllItemsInPool(current_pool_id, num_all_items)
 
   for i = 0, num_all_items-1 do
     this_item = reaper.GetMediaItem(0, i)
-    this_item_pool_id = reaper.GetSetMediaItemInfo_String(this_item, "P_EXT:glue-reversible_pool-id", "", false)
+    r, this_item_pool_id = reaper.GetSetMediaItemInfo_String(this_item, "P_EXT:glue-reversible_pool-id", "", false)
 
     if this_item_pool_id == current_pool_id then
+-- log(tostring(current_pool_id))
+-- log(tostring(this_item_pool_id))
       reaper.SetMediaItemSelected(this_item, true)
     end
   end
@@ -220,12 +256,10 @@ function isDifferent(value1, value2)
 end
 
 
-function openContainersAreInvalid(selected_item_count)
-  local glued_containers, open_containers = getContainers(selected_item_count)
-
+function openContainersAreInvalid(selected_item_count, glued_containers, open_containers)
   if #open_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, open_containers) == true then
     reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can only Reglue or Edit one container at a time.", 0)
-    setResetItemSelectionSet()
+    storeRecallItemSelectionSet()
     return true
   end
 end
@@ -262,6 +296,7 @@ function recursiveContainerIsBeingGlued(glued_containers, open_containers)
     glued_container_name_prefix = "^gr:(%d+)"
     this_glued_container_num = string.match(this_container_num, glued_container_name_prefix)
 
+    -- this iterator declaration should be unnecessary as it's declared in the for loop
     j = 1
     for j = 1, #open_containers do
       this_container_num = getSetItemName(open_containers[j])
@@ -269,8 +304,8 @@ function recursiveContainerIsBeingGlued(glued_containers, open_containers)
       this_open_container_num = string.match(this_container_num, open_container_name_prefix)
       
       if this_glued_container_num == this_open_container_num then
-        reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can't glue a pooled, glued container item to an open copy of itself, or you could destroy the universe!", 0)
-        setResetItemSelectionSet()
+        reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can't glue a pooled, glued container item to an open copy of itself, as it could destroy the universe!", 0)
+        storeRecallItemSelectionSet()
         return true
       end
     end
@@ -322,20 +357,47 @@ function isMIDIItem(item)
 end
 
 
-function markSelectedItemsToPool(this_container_num, selected_item_count)
+function getFirstOpenContainerNum(selected_item_count)
+  local num_all_items, i, item, item_pool_num
+
+  num_all_items = reaper.CountMediaItems(0)
+
+  for i = 0, num_all_items-1 do
+    item = reaper.GetMediaItem(0, i)
+    item_pool_num = getContainerName(item)
+
+    if getItemType(item) == "open" then
+      return item_pool_num
+    end
+  end
+end
+
+
+
+function setUnsetSelectedItemsToPool(this_container_num, selected_item_count, set_unset)
   local i, selected_item
 
   if not selected_item_count then
     selected_item_count = reaper.CountSelectedMediaItems(0)
   end
-
+log("selected_item_count: "..selected_item_count)
   for i = 0, selected_item_count-1 do
     selected_item = reaper.GetSelectedMediaItem(0, i)
 
-    if this_container_num == false then
-      reaper.GetSetMediaItemInfo_String(selected_item, "P_EXT:glue-reversible_pool-id", "", true)
+    if set_unset == true then
+      reaper.GetSetMediaItemInfo_String(selected_item, "P_EXT:glue-reversible_is-open", "true", true)
+
+      if this_container_num == false then
+        reaper.GetSetMediaItemInfo_String(selected_item, "P_EXT:glue-reversible_pool-id", "", true)
+      else
+        reaper.GetSetMediaItemInfo_String(selected_item, "P_EXT:glue-reversible_pool-id", tostring(this_container_num), true)
+      end
+
+      -- local r, this_item_pool_id = reaper.GetSetMediaItemInfo_String(selected_item, "P_EXT:glue-reversible_pool-id", "", false)
+      -- log(this_item_pool_id)
     else
-      reaper.GetSetMediaItemInfo_String(selected_item, "P_EXT:glue-reversible_pool-id", tostring(this_container_num), true)
+      log("i="..i.."selected_item: "..tostring(selected_item))
+      -- reaper.GetSetMediaItemInfo_String(selected_item, "P_EXT:glue-reversible_is-open", "false", true)
     end
   end
 end
@@ -407,10 +469,10 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
 
   -- store this pool ID so next pooled item can increment up
   reaper.SetProjExtState(0, "GLUE-REVERSIBLE", "last", this_container_num)
-
-
+log("3: "..getSelectedItemsCount())
   -- count items to be added
   selected_item_count = reaper.CountSelectedMediaItems(0)
+log("4: "..selected_item_count)
   
   original_items = {}
   is_nested_container = false
@@ -425,7 +487,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
 
       is_nested_container = string.match(first_item_name, "^grc:")
 
-    -- in nested containers the 1st noncontainer item comes after the container
+    -- in nested containers, the 1st noncontainer item comes after the container
     elseif i == 1 and is_nested_container then
       first_item_take = reaper.GetActiveTake(original_items[i])
       first_item_name = reaper.GetTakeName(first_item_take)
@@ -440,17 +502,18 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
 
     i = i + 1
   end
-
+log("5: original_items="..#original_items)
   deselectAll()
 
   -- convert to audio takes, store state, and check for dependencies
   item_states = ''
   dependencies_table = {}
   has_non_container_items = false
+
   i = 0
   while i < selected_item_count do
     item = original_items[i]
-
+log("existing_container: "..tostring(existing_container))
     if item ~= existing_container then
 
       has_non_container_items = true
@@ -482,6 +545,8 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     
     -- select open_container too; it will be absorbed in the glue
     reaper.SetMediaItemSelected(open_container, true)
+
+log("6: "..getSelectedItemsCount())
     
     -- resize and reposition new open_container to match existing container
     container_length = reaper.GetMediaItemInfo_Value(container, "D_LENGTH")
@@ -508,6 +573,8 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     reaper.SetMediaItemSelected(original_items[i], true)
     i = i + 1
   end
+
+  -- logAllSelectedItemsPoolIDs()
 
   -- deselect original container
   reaper.SetMediaItemSelected(container, false)
@@ -943,8 +1010,8 @@ function checkPooledItemPositions(glued_item, this_item, this_container_num)
   glued_item_current_pos = tostring(glued_item_current_pos)
   retval, this_item_guid = reaper.GetSetMediaItemInfo_String(this_item, "GUID", "", false)
   this_item_current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
-  retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
-  pos_delta = glued_item_current_pos - glued_item_preglue_pos
+  retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE-REVERSIBLE", this_container_num.."-pos")
+  pos_delta = glued_item_current_pos - glued_item_preglue_pos + 0
   new_pos = this_item_current_pos + pos_delta
   
   if this_item_guid ~= glued_item_guid and pos_delta ~= 0 then
@@ -960,7 +1027,6 @@ update_table = {}
 -- numeric version
 iupdate_table = {}
 --
-
 function calculateUpdates(this_container_num, nesting_level)
 
   if not update_table then update_table = {} end
@@ -1041,7 +1107,7 @@ function restoreItems( this_container_num, track, position, dont_restore_take, d
       -- set to true in calculateUpdates() for some reason
       if not dont_restore_take then restoreOriginalTake(restored_item) end
 
-      markSelectedItemsToPool(false)
+      setUnsetSelectedItemsToPool(false, nil, true)
 
       -- set items' bg image
       setItemImage(restored_item)
@@ -1070,7 +1136,7 @@ function restoreItems( this_container_num, track, position, dont_restore_take, d
     end
   end
 
-  markSelectedItemsToPool(this_container_num)
+  setUnsetSelectedItemsToPool(this_container_num, nil, true)
 
   return return_item, container, restored_items
 end
@@ -1201,7 +1267,7 @@ function otherPooledInstanceIsOpen(edit_pool_num)
     if getItemType(item) == "open" and item_pool_num == edit_pool_num then
       deselectAll()
       reaper.SetMediaItemSelected(item, true)
-      selectAllItemsInPool(this_pool_num, num_all_items)
+      selectAllItemsInPool(edit_pool_num, num_all_items)
       -- scroll to selected item
       scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
       reaper.Main_OnCommand(scroll_action_id, 0)
@@ -1291,7 +1357,7 @@ function initSmartAction(obey_time_selection)
 
   if doGlueUnglueAction(selected_item_count, obey_time_selection) == false then 
     reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
-    setResetItemSelectionSet()
+    storeRecallItemSelectionSet()
     return
   end
 
@@ -1341,7 +1407,7 @@ function doGlueUnglueAction(selected_item_count, obey_time_selection)
   elseif glue_reversible_action == "glue/abort" then
     glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an open container and glued container(s).", 1)
     if glue_abort_dialog == 2 then
-      setResetItemSelectionSet()
+      storeRecallItemSelectionSet()
       return
     else
       initGlueReversible(obey_time_selection)
