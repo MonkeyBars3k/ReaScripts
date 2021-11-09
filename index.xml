@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="549041a9f1b36dc64248f236c2f3b3c18bcb0379">
+<index version="1" name="MonkeyBars-ReaScripts" commit="6e8a9258dde86a0ae2e78cfb3c29031f6d469b8f">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -180,6 +180,11 @@
         <changelog><![CDATA[Fix image provides]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/bb993063eac0a830693e09a4fcdbe54feeab4276/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
         <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/bb993063eac0a830693e09a4fcdbe54feeab4276/Glue-Reversible/gr-bg.png</source>
+      </version>
+      <version name="1.44" author="MonkeyBars" time="2021-11-09T20:39:27Z">
+        <changelog><![CDATA[Iterate version for image update]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/6e8a9258dde86a0ae2e78cfb3c29031f6d469b8f/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6e8a9258dde86a0ae2e78cfb3c29031f6d469b8f/Glue-Reversible/gr-bg.png</source>
       </version>
     </reapack>
   </category>
