@@ -360,14 +360,14 @@ end
 
 
 function doGlueReversible(source_track, source_item, obey_time_selection, this_open_container_num, existing_container, ignore_depends)
-  local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, open_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
+  local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, open_container, i, r, container_length, container_position, item_position, new_length, glued_item, all_items_num, item_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
 
   if not this_open_container_num then
     this_open_container_num = incrementPoolID()
   end
 
   selected_item_count = reaper.CountSelectedMediaItems(0)  
-  original_items, first_item_name, item_name_addl_count = applyItemLabels(selected_item_count)
+  original_items, first_item_name = applyItemLabels(selected_item_count)
   
   deselectAll()
 
@@ -395,12 +395,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_o
   -- store ref to new glued item
   glued_item = reaper.GetSelectedMediaItem(0, 0)
 
-  if selected_item_count > 0 then
-    item_name_addl_count = " +"..(selected_item_count-1).. " more"
-  else
-    item_name_addl_count = ""
-  end
-  glued_item_init_name = this_open_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
+  glued_item_init_name = handleAddtionalItemCountName(original_items, selected_item_count, this_open_container_num, first_item_name)
 
   -- store a reference to this glue group in glued item
   setItemGlueGroup(glued_item, glued_item_init_name, true)
@@ -489,39 +484,33 @@ end
 
 
 function applyItemLabels(selected_item_count)
-  local original_items, is_nested_container, i, first_item_take, first_item_name, nested_container_label
+  local original_items, nested_container_is_in_selection, this_item, i, first_item_take, first_item_name, nested_container_label
 
   original_items = {}
-  is_nested_container = false
   
-  i = 0
-  while i < selected_item_count do
+  for i = 0, selected_item_count do
     original_items[i] = reaper.GetSelectedMediaItem(0, i)
+    this_item = original_items[i]
 
-    -- get first selected item name
     if i == 0 then
-      first_item_take = reaper.GetActiveTake(original_items[i])
-      first_item_name = reaper.GetTakeName(first_item_take)
+      first_item_name, first_item_take = getSetItemName(this_item)
+      nested_container_is_in_selection = string.match(first_item_name, "^grc:")
 
-      is_nested_container = string.match(first_item_name, "^grc:")
-
-    -- in nested containers the 1st noncontainer item comes after the container
-    elseif i == 1 and is_nested_container then
-      first_item_take = reaper.GetActiveTake(original_items[i])
-      first_item_name = reaper.GetTakeName(first_item_take)
+    elseif i == 1 and nested_container_is_in_selection then
+      -- in nested containers, the 1st noncontainer item comes after the container
+      first_item_name, first_item_take = getSetItemName(this_item)
 
     elseif i == 1 then
       -- if this item is to be a nested container, remove *its* first item name & item count
       nested_container_label = string.match(first_item_name, "^gr:%d+")
+      
       if nested_container_label then
         first_item_name = nested_container_label
       end
     end
-
-    i = i + 1
   end
 
-  return original_items, first_item_name, item_name_addl_count
+  return original_items, first_item_name
 end
 
 
@@ -564,6 +553,18 @@ function glueSelectedItems(obey_time_selection)
   else
     reaper.Main_OnCommand(40362, 0)
   end
+end
+
+
+function handleAddtionalItemCountName(original_items, selected_item_count, this_open_container_num, first_item_name)
+  if #original_items > 0 then
+    item_name_addl_count = " +"..(selected_item_count-1).. " more"
+  else
+    item_name_addl_count = ""
+  end
+  glued_item_init_name = this_open_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
+
+  return glued_item_init_name
 end
 
 
