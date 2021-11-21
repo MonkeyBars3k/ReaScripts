@@ -359,83 +359,19 @@ function refreshUI()
 end
 
 
-function doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, existing_container, ignore_depends)
+function doGlueReversible(source_track, source_item, obey_time_selection, this_open_container_num, existing_container, ignore_depends)
   local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, open_container, i, r, container_length, container_position, item_position, new_length, glued_item, item_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
 
-  -- make a new this_container_num id from group id if this is a new group and name glue_track accordingly
-  if not this_container_num then
-    r, last_container_num = reaper.GetProjExtState(0, "GLUE_GROUPS", "last", '')
-    if r > 0 and last_container_num then
-      last_container_num = tonumber( last_container_num )
-      this_container_num = math.floor(last_container_num + 1)
-    else
-      this_container_num = 1
-    end
+  if not this_open_container_num then
+    this_open_container_num = incrementPoolID()
   end
 
-  -- store this glue group id so next group can increment up
-  reaper.SetProjExtState(0, "GLUE_GROUPS", "last", this_container_num)
-
-
-  -- count items to be added
-  selected_item_count = reaper.CountSelectedMediaItems(0)
+  selected_item_count = reaper.CountSelectedMediaItems(0)  
+  original_items, first_item_name = applyItemLabels(selected_item_count)
   
-  original_items = {}
-  is_nested_container = false
-  i = 0
-  while i < selected_item_count do
-    original_items[i] = reaper.GetSelectedMediaItem(0, i)
-
-    -- get first selected item name
-    if i == 0 then
-      first_item_take = reaper.GetActiveTake(original_items[i])
-      first_item_name = reaper.GetTakeName(first_item_take)
-
-      is_nested_container = string.match(first_item_name, "^grc:")
-
-    -- in nested containers the 1st noncontainer item comes after the container
-    elseif i == 1 and is_nested_container then
-      first_item_take = reaper.GetActiveTake(original_items[i])
-      first_item_name = reaper.GetTakeName(first_item_take)
-
-    elseif i == 1 then
-      -- if this item is to be a nested container, remove *its* first item name & item count
-      nested_container_label = string.match(first_item_name, "^gr:%d+")
-      if nested_container_label then
-        first_item_name = nested_container_label
-      end
-    end
-
-    i = i + 1
-  end
-
   deselectAll()
 
-  -- convert to audio takes, store state, and check for dependencies
-  item_states = ''
-  dependencies_table = {}
-  has_non_container_items = false
-  i = 0
-  while i < selected_item_count do
-    item = original_items[i]
-
-    if item ~= existing_container then
-
-      has_non_container_items = true
-
-      setToAudioTake(item)
-      
-      item_states = item_states..getSetObjectState(item)
-      item_states = item_states.."|||"
-
-      item_container_name = getContainerName(item, true)
-      if item_container_name then
-        -- keep track of this items glue group to set up dependencies later
-        dependencies_table[item_container_name] = item_container_name
-      end
-    end
-    i = i + 1
-  end
+  item_states, dependencies_table, has_non_container_items, item_container_name = handleItemStates(selected_item_count, original_items, existing_container)
 
   -- if we're attempting to glue a bunch of containers and nothing else
   if not has_non_container_items then return end
@@ -467,7 +403,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   else
     container = reaper.AddMediaItemToTrack(source_track)
     -- set container's name to point to this glue group
-    setItemGlueGroup(container, this_container_num)
+    setItemGlueGroup(container, this_open_container_num)
   end
 
   -- reselect
@@ -497,7 +433,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   else
     item_name_addl_count = ""
   end 
-  glued_item_init_name = this_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
+  glued_item_init_name = this_open_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
   setItemGlueGroup(glued_item, glued_item_init_name, true)
 
   new_length, item_position = setItemParams(glued_item, container)
@@ -506,16 +442,16 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   item_states = item_states..getSetObjectState(container)
 
   -- insert stored states into ProjExtState
-  reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num, item_states)
+  reaper.SetProjExtState(0, "GLUE_GROUPS", this_open_container_num, item_states)
 
   -- update pooled copies, unless being called from updatePooledItems() nested call
   if not ignore_depends then
 
-    r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", '')
+    r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", this_open_container_num..":dependencies", '')
     if r < 1 then old_dependencies = "" end
 
     dependencies = ""
-    dependent = "|"..this_container_num.."|"
+    dependent = "|"..this_open_container_num.."|"
 
     -- store a reference to this glue group for all the nested glue groups so if any of them get updated, they can check and update this group
     for item_container_name, r in pairs(dependencies_table) do
@@ -539,7 +475,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     end
 
     -- store this glue groups dependencies list
-    reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", dependencies)
+    reaper.SetProjExtState(0, "GLUE_GROUPS", this_open_container_num..":dependencies", dependencies)
 
     -- have the dependencies changed?
     if string.len(old_dependencies) > 0 then
@@ -560,6 +496,96 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   reaper.DeleteTrackMediaItem(source_track, container)
 
   return glued_item, original_state_key, item_position, new_length
+end
+
+
+function incrementPoolID()
+  local r, last_container_num, this_open_container_num
+  
+  -- make a new pool id from group id if this is a new group and name glue_track accordingly
+  r, last_container_num = reaper.GetProjExtState(0, "GLUE_GROUPS", "last", '')
+
+  if r > 0 and last_container_num then
+    last_container_num = tonumber( last_container_num )
+    this_open_container_num = math.floor(last_container_num + 1)
+  else
+    this_open_container_num = 1
+  end
+
+  -- store this glue group id so next group can increment up
+  reaper.SetProjExtState(0, "GLUE_GROUPS", "last", this_open_container_num)
+
+  return this_open_container_num
+end
+
+
+function applyItemLabels(selected_item_count)
+  local original_items, is_nested_container, i, first_item_take, first_item_name, nested_container_label
+
+  original_items = {}
+  is_nested_container = false
+  
+  i = 0
+  while i < selected_item_count do
+    original_items[i] = reaper.GetSelectedMediaItem(0, i)
+
+    -- get first selected item name
+    if i == 0 then
+      first_item_take = reaper.GetActiveTake(original_items[i])
+      first_item_name = reaper.GetTakeName(first_item_take)
+
+      is_nested_container = string.match(first_item_name, "^grc:")
+
+    -- in nested containers the 1st noncontainer item comes after the container
+    elseif i == 1 and is_nested_container then
+      first_item_take = reaper.GetActiveTake(original_items[i])
+      first_item_name = reaper.GetTakeName(first_item_take)
+
+    elseif i == 1 then
+      -- if this item is to be a nested container, remove *its* first item name & item count
+      nested_container_label = string.match(first_item_name, "^gr:%d+")
+      if nested_container_label then
+        first_item_name = nested_container_label
+      end
+    end
+
+    i = i + 1
+  end
+
+  return original_items, first_item_name
+end
+
+
+function handleItemStates(selected_item_count, original_items, existing_container)
+  local item_states, dependencies_table, has_non_container_items, item, item_container_name
+
+  -- convert to audio takes, store state, and check for dependencies
+  item_states = ''
+  dependencies_table = {}
+  has_non_container_items = false
+  i = 0
+  while i < selected_item_count do
+    item = original_items[i]
+
+    if item ~= existing_container then
+
+      has_non_container_items = true
+
+      setToAudioTake(item)
+      
+      item_states = item_states..getSetObjectState(item)
+      item_states = item_states.."|||"
+
+      item_container_name = getContainerName(item, true)
+      if item_container_name then
+        -- keep track of this items glue group to set up dependencies later
+        dependencies_table[item_container_name] = item_container_name
+      end
+    end
+    i = i + 1
+  end
+
+  return item_states, dependencies_table, has_non_container_items, item_container_name
 end
 
 
