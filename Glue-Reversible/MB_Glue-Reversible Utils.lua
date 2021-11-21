@@ -367,7 +367,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_o
   end
 
   selected_item_count = reaper.CountSelectedMediaItems(0)  
-  original_items, first_item_name = applyItemLabels(selected_item_count)
+  original_items, first_item_name, item_name_addl_count = applyItemLabels(selected_item_count)
   
   deselectAll()
 
@@ -376,64 +376,33 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_o
   -- if we're attempting to glue a bunch of containers and nothing else
   if not has_non_container_items then return end
 
-  -- if we're regluing
   if existing_container then
-    -- existing container will be used for state storage/resizing later
-    container = existing_container
-
-    -- store reference to a new empty container for gluing purposes only
-    open_container = reaper.AddMediaItemToTrack(source_track)
-    
-    -- select open_container too; it will be absorbed in the glue
-    reaper.SetMediaItemSelected(open_container, true)
-    
-    -- resize and reposition new open_container to match existing container
-    container_length = reaper.GetMediaItemInfo_Value(container, "D_LENGTH")
-    container_position = reaper.GetMediaItemInfo_Value(container, "D_POSITION")
-    reaper.SetMediaItemInfo_Value(open_container, "D_LENGTH", container_length)
-    reaper.SetMediaItemInfo_Value(open_container, "D_POSITION", container_position)
-    
-    -- does this container have a reference to an original state of item that was open?
-    container_name = getSetItemName(container)
-    original_state_key = string.match(container_name, "original_state:%d+:%d+")
-    -- get rid of original state key from container, not needed anymore
-    getSetItemName(container, "%s+original_state:%d+:%d+", -1)
-  
-  -- otherwise this is a new glue, create container that will be resized and stored after glue is done
+    container = reglueContainer(existing_container, source_track)
   else
-    container = reaper.AddMediaItemToTrack(source_track)
+    -- new glue: create container that will be resized and stored after glue is done
+    container, original_state_key = reaper.AddMediaItemToTrack(source_track)
     -- set container's name to point to this glue group
     setItemGlueGroup(container, this_open_container_num)
   end
 
-  -- reselect
-  i = 0
-  while i < selected_item_count do
-    reaper.SetMediaItemSelected(original_items[i], true)
-    i = i + 1
-  end
+  selectDeselectItems(original_items, true, selected_item_count)
 
   -- deselect original container
   reaper.SetMediaItemSelected(container, false)
 
-  -- glue selected items
-  if obey_time_selection == true then
-    reaper.Main_OnCommand(41588, 0)
-  else
-    -- glue ignoring time selection
-    reaper.Main_OnCommand(40362, 0)
-  end
+  glueSelectedItems(obey_time_selection)
   
   -- store ref to new glued item
   glued_item = reaper.GetSelectedMediaItem(0, 0)
 
-  -- store a reference to this glue group in glued item
-  if item_name_addl_count and item_name_addl_count > 0 then
+  if selected_item_count > 0 then
     item_name_addl_count = " +"..(selected_item_count-1).. " more"
   else
     item_name_addl_count = ""
-  end 
+  end
   glued_item_init_name = this_open_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
+
+  -- store a reference to this glue group in glued item
   setItemGlueGroup(glued_item, glued_item_init_name, true)
 
   new_length, item_position = setItemParams(glued_item, container)
@@ -552,7 +521,7 @@ function applyItemLabels(selected_item_count)
     i = i + 1
   end
 
-  return original_items, first_item_name
+  return original_items, first_item_name, item_name_addl_count
 end
 
 
@@ -586,6 +555,43 @@ function handleItemStates(selected_item_count, original_items, existing_containe
   end
 
   return item_states, dependencies_table, has_non_container_items, item_container_name
+end
+
+
+function glueSelectedItems(obey_time_selection)
+  if obey_time_selection == true then
+    reaper.Main_OnCommand(41588, 0)
+  else
+    reaper.Main_OnCommand(40362, 0)
+  end
+end
+
+
+function reglueContainer(existing_container, source_track)
+  local container, open_container, container_length, container_position, container_name, original_state_key
+
+  -- existing container will be used for state storage/resizing later
+  container = existing_container
+
+  -- store reference to a new empty container for gluing purposes only
+  open_container = reaper.AddMediaItemToTrack(source_track)
+  
+  -- select open_container too; it will be absorbed in the glue
+  reaper.SetMediaItemSelected(open_container, true)
+  
+  -- resize and reposition new open_container to match existing container
+  container_length = reaper.GetMediaItemInfo_Value(container, "D_LENGTH")
+  container_position = reaper.GetMediaItemInfo_Value(container, "D_POSITION")
+  reaper.SetMediaItemInfo_Value(open_container, "D_LENGTH", container_length)
+  reaper.SetMediaItemInfo_Value(open_container, "D_POSITION", container_position)
+  
+  -- does this container have a reference to an original state of item that was open?
+  container_name = getSetItemName(container)
+  original_state_key = string.match(container_name, "original_state:%d+:%d+")
+  -- get rid of original state key from container, not needed anymore
+  getSetItemName(container, "%s+original_state:%d+:%d+", -1)
+
+  return container, original_state_key
 end
 
 
@@ -1208,10 +1214,14 @@ function otherPooledInstanceIsOpen(edit_pool_num)
 end
 
 
-function selectDeselectItems(items, toggle)
+function selectDeselectItems(items, toggle, count)
   local i
 
-  for i = 1, #items do
+  if not count then
+    count = #items
+  end
+
+  for i = 0, count-1 do
     reaper.SetMediaItemSelected(items[i], toggle)
   end
 end
