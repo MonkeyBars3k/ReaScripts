@@ -350,7 +350,6 @@ function cleanUpAction(undo_block_string)
 end
 
 
-
 function refreshUI()
   reaper.PreventUIRefresh(-1)
   reaper.UpdateTimeline()
@@ -366,8 +365,8 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     this_container_num = incrementPoolID()
   end
 
-  selected_item_count = reaper.CountSelectedMediaItems(0)  
-  original_items, first_item_name = applyItemLabels(selected_item_count)
+  selected_item_count = reaper.CountSelectedMediaItems(0)
+  original_items, first_item_name = getOriginalSelectedItems(selected_item_count)
   
   deselectAll()
 
@@ -377,7 +376,7 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   if not has_non_container_items then return end
 
   if existing_container then
-    container = reglueContainer(existing_container, source_track)
+    container = prepareReglue(existing_container, source_track)
   else
     -- new glue: create container that will be resized and stored after glue is done
     container, original_state_key = reaper.AddMediaItemToTrack(source_track)
@@ -385,11 +384,10 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
     setItemGlueGroup(container, this_container_num)
   end
 
-  selectDeselectItems(original_items, true, selected_item_count)
+  selectDeselectItems(original_items, true)
 
-  -- deselect original container
+  -- deselect open container
   reaper.SetMediaItemSelected(container, false)
-  selected_item_count = reaper.CountSelectedMediaItems(0)
 
   glueSelectedItems(obey_time_selection)
   
@@ -436,29 +434,26 @@ function incrementPoolID()
 end
 
 
-function applyItemLabels(selected_item_count)
-  local original_items, nested_container_is_in_selection, this_item, i, first_item_take, first_item_name, nested_container_label
+function getOriginalSelectedItems(selected_item_count)
+  local original_items, i, this_item, this_item_name, this_item_take, first_item_take, first_item_name, this_is_open_container, nested_container_label
 
   original_items = {}
   
-  for i = 0, selected_item_count do
-    original_items[i] = reaper.GetSelectedMediaItem(0, i)
-    this_item = original_items[i]
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(0, i)
+    this_item_name, this_item_take = getSetItemName(this_item)
+    this_is_open_container = string.match(this_item_name, "^grc:")
+    nested_container_label = string.match(this_item_name, "^gr:%d+")
 
-    if i == 0 then
-      first_item_name, first_item_take = getSetItemName(this_item)
-      nested_container_is_in_selection = string.match(first_item_name, "^grc:")
+    if not this_is_open_container then
+      table.insert(original_items, this_item)
 
-    elseif i == 1 and nested_container_is_in_selection then
-      -- in nested containers, the 1st noncontainer item comes after the container
-      first_item_name, first_item_take = getSetItemName(this_item)
-
-    elseif i == 1 then
-      -- if this item is to be a nested container, remove *its* first item name & item count
-      nested_container_label = string.match(first_item_name, "^gr:%d+")
-      
-      if nested_container_label then
-        first_item_name = nested_container_label
+      if not first_item_name then
+        if nested_container_label then
+          first_item_name = nested_container_label
+        else
+          first_item_name = this_item_name
+        end
       end
     end
   end
@@ -474,8 +469,8 @@ function handleItemStates(selected_item_count, original_items, existing_containe
   item_states = ''
   dependencies_table = {}
   has_non_container_items = false
-  i = 0
-  while i < selected_item_count do
+
+  for i = 1, getTableSize(original_items) do
     item = original_items[i]
 
     if item ~= existing_container then
@@ -488,15 +483,44 @@ function handleItemStates(selected_item_count, original_items, existing_containe
       item_states = item_states.."|||"
 
       item_container_name = getContainerName(item, true)
+
       if item_container_name then
         -- keep track of this items glue group to set up dependencies later
         dependencies_table[item_container_name] = item_container_name
       end
     end
-    i = i + 1
   end
 
   return item_states, dependencies_table, has_non_container_items, item_container_name
+end
+
+
+function prepareReglue(existing_container, source_track)
+  local container, open_container, container_length, container_position, container_name, original_state_key
+
+  -- existing container will be used for state storage/resizing later
+  container = existing_container
+
+  -- store reference to a new empty container for gluing purposes only
+  open_container = reaper.AddMediaItemToTrack(source_track)
+  
+  -- select open_container too; it will be absorbed in the glue
+  reaper.SetMediaItemSelected(open_container, true)
+  
+  -- resize and reposition new open_container to match existing container
+  container_length = reaper.GetMediaItemInfo_Value(container, "D_LENGTH")
+  container_position = reaper.GetMediaItemInfo_Value(container, "D_POSITION")
+  reaper.SetMediaItemInfo_Value(open_container, "D_LENGTH", container_length)
+  reaper.SetMediaItemInfo_Value(open_container, "D_POSITION", container_position)
+  
+  -- does this container have a reference to an original state of item that was open?
+  container_name = getSetItemName(container)
+  original_state_key = string.match(container_name, "original_state:%d+:%d+")
+
+  -- get rid of original state key from container, not needed anymore
+  getSetItemName(container, "%s+original_state:%d+:%d+", -1)
+
+  return container, original_state_key
 end
 
 
@@ -510,11 +534,16 @@ end
 
 
 function handleAddtionalItemCountLabel(original_items, selected_item_count, this_container_num, first_item_name)
-  if selected_item_count > 1 then
-    item_name_addl_count = " +"..(selected_item_count-1).. " more"
+  local original_items_num, item_name_addl_count, glued_item_init_name
+
+  original_items_num = getTableSize(original_items)
+
+  if original_items_num > 1 then
+    item_name_addl_count = " +"..(original_items_num-1).. " more"
   else
     item_name_addl_count = ""
   end
+
   glued_item_init_name = this_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
 
   return glued_item_init_name
@@ -577,34 +606,6 @@ function updatedPooledCopies(this_container_num, item_container_name, dependenci
 
     end
   end
-end
-
-
-function reglueContainer(existing_container, source_track)
-  local container, open_container, container_length, container_position, container_name, original_state_key
-
-  -- existing container will be used for state storage/resizing later
-  container = existing_container
-
-  -- store reference to a new empty container for gluing purposes only
-  open_container = reaper.AddMediaItemToTrack(source_track)
-  
-  -- select open_container too; it will be absorbed in the glue
-  reaper.SetMediaItemSelected(open_container, true)
-  
-  -- resize and reposition new open_container to match existing container
-  container_length = reaper.GetMediaItemInfo_Value(container, "D_LENGTH")
-  container_position = reaper.GetMediaItemInfo_Value(container, "D_POSITION")
-  reaper.SetMediaItemInfo_Value(open_container, "D_LENGTH", container_length)
-  reaper.SetMediaItemInfo_Value(open_container, "D_POSITION", container_position)
-  
-  -- does this container have a reference to an original state of item that was open?
-  container_name = getSetItemName(container)
-  original_state_key = string.match(container_name, "original_state:%d+:%d+")
-  -- get rid of original state key from container, not needed anymore
-  getSetItemName(container, "%s+original_state:%d+:%d+", -1)
-
-  return container, original_state_key
 end
 
 
@@ -1227,14 +1228,12 @@ function otherPooledInstanceIsOpen(edit_pool_num)
 end
 
 
-function selectDeselectItems(items, toggle, count)
-  local i
+function selectDeselectItems(items, toggle)
+  local i, count
 
-  if not count then
-    count = #items
-  end
+  count = getTableSize(items)
 
-  for i = 0, count-1 do
+  for i = 1, count do
     reaper.SetMediaItemSelected(items[i], toggle)
   end
 end
@@ -1368,13 +1367,13 @@ function doGlueUnglueAction(selected_item_count, obey_time_selection)
 end
 
 
--- function getTableSize(t)
---     local count = 0
---     for _, __ in pairs(t) do
---         count = count + 1
---     end
---     return count
--- end
+function getTableSize(t)
+    local count = 0
+    for _, __ in pairs(t) do
+        count = count + 1
+    end
+    return count
+end
 
 
 function log(...)
