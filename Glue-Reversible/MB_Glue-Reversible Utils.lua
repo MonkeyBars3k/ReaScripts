@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.44
--- @changelog Iterate version for image update
+-- @version 1.45
+-- @changelog Refactor doGlueReversible() and doReglueReversible()
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -359,11 +359,11 @@ function refreshUI()
 end
 
 
-function doGlueReversible(source_track, source_item, obey_time_selection, this_open_container_num, existing_container, ignore_depends)
+function doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, existing_container, ignore_depends)
   local selected_item_count, original_items, is_nested_container, nested_container_label, item, item_states, container, open_container, i, r, container_length, container_position, item_position, new_length, glued_item, all_items_num, item_container_name, key, dependencies_table, dependencies, dependency, dependents, dependent, original_state_key, container_name, first_item_take, first_item_name, item_name_addl_count, glued_item_init_name
 
-  if not this_open_container_num then
-    this_open_container_num = incrementPoolID()
+  if not this_container_num then
+    this_container_num = incrementPoolID()
   end
 
   selected_item_count = reaper.CountSelectedMediaItems(0)  
@@ -382,79 +382,32 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_o
     -- new glue: create container that will be resized and stored after glue is done
     container, original_state_key = reaper.AddMediaItemToTrack(source_track)
     -- set container's name to point to this glue group
-    setItemGlueGroup(container, this_open_container_num)
+    setItemGlueGroup(container, this_container_num)
   end
 
   selectDeselectItems(original_items, true, selected_item_count)
 
   -- deselect original container
   reaper.SetMediaItemSelected(container, false)
+  selected_item_count = reaper.CountSelectedMediaItems(0)
 
   glueSelectedItems(obey_time_selection)
   
   -- store ref to new glued item
   glued_item = reaper.GetSelectedMediaItem(0, 0)
 
-  glued_item_init_name = handleAddtionalItemCountName(original_items, selected_item_count, this_open_container_num, first_item_name)
+  glued_item_init_name = handleAddtionalItemCountLabel(original_items, selected_item_count, this_container_num, first_item_name)
 
   -- store a reference to this glue group in glued item
   setItemGlueGroup(glued_item, glued_item_init_name, true)
 
   new_length, item_position = setItemParams(glued_item, container)
 
-  -- add container to stored states
-  item_states = item_states..getSetObjectState(container)
+  updatePoolStates(item_states, container, this_container_num)
 
-  -- insert stored states into ProjExtState
-  reaper.SetProjExtState(0, "GLUE_GROUPS", this_open_container_num, item_states)
-
-  -- update pooled copies, unless being called from updatePooledItems() nested call
+  -- not updatePooledItems() nested call?
   if not ignore_depends then
-
-    r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", this_open_container_num..":dependencies", '')
-    if r < 1 then old_dependencies = "" end
-
-    dependencies = ""
-    dependent = "|"..this_open_container_num.."|"
-
-    -- store a reference to this glue group for all the nested glue groups so if any of them get updated, they can check and update this group
-    for item_container_name, r in pairs(dependencies_table) do
-      
-      -- make a key for nested glue group to keep track of which groups are dependent on it
-      key = item_container_name..":dependents"
-      -- see if nested glue group already has a list of dependents
-      r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", key, '')
-      if r == 0 then dependents = "" end
-      -- if this glue group isn't already in list, add it
-      if not string.find(dependents, dependent) then
-        dependents = dependents..dependent
-        reaper.SetProjExtState(0, "GLUE_GROUPS", key, dependents)
-      end
-
-      -- now keep track of these glue groups dependencies
-      dependency = "|"..item_container_name.."|"
-      dependencies = dependencies..dependency
-      -- remove this dependency from old_dependencies string
-      old_dependencies = string.gsub(old_dependencies, dependency, "")
-    end
-
-    -- store this glue groups dependencies list
-    reaper.SetProjExtState(0, "GLUE_GROUPS", this_open_container_num..":dependencies", dependencies)
-
-    -- have the dependencies changed?
-    if string.len(old_dependencies) > 0 then
-      -- loop thru all the dependencies no longer needed
-      for dependency in string.gmatch(old_dependencies, "%d+") do 
-        -- remove this glue group from the other glue groups dependents list
-        key = dependency..":dependents"
-        r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", key, '')
-        if r > 0 and string.find(dependents, dependent) then
-          dependents = string.gsub(dependents, dependent, "")
-          reaper.SetProjExtState(0, "GLUE_GROUPS", key, dependents)
-        end
-
-      end
-    end
+    updatedPooledCopies(this_container_num, item_container_name, dependencies_table)
   end
 
   reaper.DeleteTrackMediaItem(source_track, container)
@@ -464,22 +417,22 @@ end
 
 
 function incrementPoolID()
-  local r, last_container_num, this_open_container_num
+  local r, last_container_num, this_container_num
   
   -- make a new pool id from group id if this is a new group and name glue_track accordingly
   r, last_container_num = reaper.GetProjExtState(0, "GLUE_GROUPS", "last", '')
 
   if r > 0 and last_container_num then
     last_container_num = tonumber( last_container_num )
-    this_open_container_num = math.floor(last_container_num + 1)
+    this_container_num = math.floor(last_container_num + 1)
   else
-    this_open_container_num = 1
+    this_container_num = 1
   end
 
   -- store this glue group id so next group can increment up
-  reaper.SetProjExtState(0, "GLUE_GROUPS", "last", this_open_container_num)
+  reaper.SetProjExtState(0, "GLUE_GROUPS", "last", this_container_num)
 
-  return this_open_container_num
+  return this_container_num
 end
 
 
@@ -556,15 +509,74 @@ function glueSelectedItems(obey_time_selection)
 end
 
 
-function handleAddtionalItemCountName(original_items, selected_item_count, this_open_container_num, first_item_name)
-  if #original_items > 0 then
+function handleAddtionalItemCountLabel(original_items, selected_item_count, this_container_num, first_item_name)
+  if selected_item_count > 1 then
     item_name_addl_count = " +"..(selected_item_count-1).. " more"
   else
     item_name_addl_count = ""
   end
-  glued_item_init_name = this_open_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
+  glued_item_init_name = this_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
 
   return glued_item_init_name
+end
+
+
+function updatePoolStates(item_states, container, this_container_num)
+  -- add container to stored states
+  item_states = item_states..getSetObjectState(container)
+  -- insert stored states into ProjExtState
+  reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num, item_states)
+end
+
+
+function updatedPooledCopies(this_container_num, item_container_name, dependencies_table)
+  local r, old_dependencies, dependencies, dependent, key, dependents, dependency
+
+  r, old_dependencies = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", '')
+  
+  if r < 1 then old_dependencies = "" end
+
+  dependencies = ""
+  dependent = "|"..this_container_num.."|"
+
+  -- store a reference to this glue group for all the nested glue groups so if any of them get updated, they can check and update this group
+  for item_container_name, r in pairs(dependencies_table) do
+    
+    -- make a key for nested glue group to keep track of which groups are dependent on it
+    key = item_container_name..":dependents"
+    -- see if nested glue group already has a list of dependents
+    r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", key, '')
+    if r == 0 then dependents = "" end
+    -- if this glue group isn't already in list, add it
+    if not string.find(dependents, dependent) then
+      dependents = dependents..dependent
+      reaper.SetProjExtState(0, "GLUE_GROUPS", key, dependents)
+    end
+
+    -- now keep track of these glue groups dependencies
+    dependency = "|"..item_container_name.."|"
+    dependencies = dependencies..dependency
+    -- remove this dependency from old_dependencies string
+    old_dependencies = string.gsub(old_dependencies, dependency, "")
+  end
+
+  -- store this glue groups dependencies list
+  reaper.SetProjExtState(0, "GLUE_GROUPS", this_container_num..":dependencies", dependencies)
+
+  -- have the dependencies changed?
+  if string.len(old_dependencies) > 0 then
+    -- loop thru all the dependencies no longer needed
+    for dependency in string.gmatch(old_dependencies, "%d+") do 
+      -- remove this glue group from the other glue groups dependents list
+      key = dependency..":dependents"
+      r, dependents = reaper.GetProjExtState(0, "GLUE_GROUPS", key, '')
+      if r > 0 and string.find(dependents, dependent) then
+        dependents = string.gsub(dependents, dependent, "")
+        reaper.SetProjExtState(0, "GLUE_GROUPS", key, dependents)
+      end
+
+    end
+  end
 end
 
 
