@@ -757,32 +757,15 @@ end
 
 
 function doReglueReversible(source_track, source_item, this_container_num, container, edited_container_num, obey_time_selection)
-  local glued_item, original_state_key, pos, length, new_src, r, original_state, take
+  local glued_item, original_state_key, pos, length, new_src
   
   glued_item, original_state_key, pos, length = doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, container)
 
   -- store updated src
   new_src = getItemWavSrc(glued_item)
 
-  -- if there is a key in container's name, find it in ProjExtState and delete it from item
   if original_state_key then
-    r, original_state = reaper.GetProjExtState(0, "GLUE_GROUPS", original_state_key, '')
-
-    if r > 0 and original_state then
-      -- reapply original state to glued item
-      getSetObjectState(glued_item, original_state)
-
-      -- reapply new src because original state would have old one
-      take = reaper.GetActiveTake(glued_item)
-      reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
-
-      -- set new position & length in case of differences from last glue
-      reaper.SetMediaItemInfo_Value(glued_item, "D_POSITION", pos)
-      reaper.SetMediaItemInfo_Value(glued_item, "D_LENGTH", length)
-
-      -- remove original state data, not needed anymore
-      reaper.SetProjExtState(0, "GLUE_GROUPS", original_state_key, '')
-    end
+    glued_item = updateItemInfo(original_state_key, glued_item, new_src, pos, length)
   end
 
   -- calculate dependents, create an update_table with a nicely ordered sequence and re-insert the items of each glue group into temp tracks so they can be updated
@@ -796,20 +779,18 @@ function doReglueReversible(source_track, source_item, this_container_num, conta
 end
 
 
-function duplicateItem(item, selected)
-  local track, state, duplicate
+function updateItemInfo(original_state_key, glued_item, new_src, pos, length)
+  local r, original_state
 
-  track = reaper.GetMediaItemTrack(item)
-  state = getSetObjectState(item)
-  duplicate = reaper.AddMediaItemToTrack(track)
-  
-  getSetObjectState(duplicate, state)
+  -- if there is a key in container's name, find it in ProjExtState and delete it from item
+  r, original_state = reaper.GetProjExtState(0, "GLUE_GROUPS", original_state_key, '')
 
-  if selected then
-    reaper.SetMediaItemSelected(duplicate, true)
+  if r > 0 and original_state then
+    getSetObjectState(glued_item, original_state)
+    updateItemData(original_state_key, glued_item, new_src, pos, length)
   end
-  
-  return duplicate
+
+  return glued_item
 end
 
 
@@ -829,6 +810,35 @@ function getSetObjectState(obj, state, minimal)
   reaper.SNM_DeleteFastString(fastStr)
   
   return new_state
+end
+
+
+function updateItemData(original_state_key, glued_item, new_src, pos, length)
+  updateItemSrc(glued_item)
+  updateItemValues(glued_item, pos, length)
+  removeOldItemState(original_state_key)
+end
+
+
+function updateItemSrc(glued_item)
+  local take
+
+  -- reapply new src because original state would have old one
+  take = reaper.GetActiveTake(glued_item)
+  reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
+end
+
+
+function updateItemValues(glued_item, pos, length)
+  -- set new position & length in case of differences from last glue
+  reaper.SetMediaItemInfo_Value(glued_item, "D_POSITION", pos)
+  reaper.SetMediaItemInfo_Value(glued_item, "D_LENGTH", length)
+end
+
+
+function removeOldItemState(original_state_key)
+  -- remove original state data, not needed anymore
+  reaper.SetProjExtState(0, "GLUE_GROUPS", original_state_key, '')
 end
 
 
@@ -1128,7 +1138,6 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
 
     if new_pos and new_pos ~= false then
 
-    -- log("new_pos = "..new_pos)
       if not position_change_answer then
         position_change_answer = reaper.ShowMessageBox("Do you want to propagate this position change to all the other unnested container items in the same pool?", "The left edge position of your reglued container item has changed since you started Editing!", 4)
       end
@@ -1165,10 +1174,6 @@ function updatePooledItem(glued_item, this_item, this_container_name, this_conta
 
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
 
--- log("this_container_num = "..this_container_num)
--- log("edited_container_pool_id = "..tostring(edited_container_pool_id))
-
-      -- ADD?: doesn't compare currently nested container
       if this_container_num == edited_container_pool_id then
         reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", length)
       end
@@ -1458,3 +1463,24 @@ function logV(name, val)
   val = val or ""
   reaper.ShowConsoleMsg(name.."="..val.."\n")
 end
+
+
+
+
+
+-- INHERITED THIS FUNCTION FROM GLUEGROUPS UNUSED...
+-- function duplicateItem(item, selected)
+--   local track, state, duplicate
+
+--   track = reaper.GetMediaItemTrack(item)
+--   state = getSetObjectState(item)
+--   duplicate = reaper.AddMediaItemToTrack(track)
+  
+--   getSetObjectState(duplicate, state)
+
+--   if selected then
+--     reaper.SetMediaItemSelected(duplicate, true)
+--   end
+  
+--   return duplicate
+-- end
