@@ -352,7 +352,7 @@ end
 
 function triggerGlueReversible(this_container_num, source_track, source_item, container, obey_time_selection)
   local glued_item
-log(tostring(this_container_num))
+  
   if this_container_num then
     glued_item = doReglueReversible(source_track, source_item, this_container_num, container, this_container_num, obey_time_selection)
   else
@@ -1006,7 +1006,7 @@ function calculateDependentUpdates(this_container_num, nesting_level)
 end
 
 
-function restoreItems( this_container_num, track, position, dont_restore_take, dont_offset )
+function restoreItems(this_container_num, track, position, dont_restore_take, dont_offset)
   local r, stored_items, splits, restored_items, key, val, restored_item, container, item, return_item, left_most, pos, i
 
   deselectAll()
@@ -1106,17 +1106,20 @@ function updateDependents(glued_item, this_container_num, edited_container_num, 
     -- delete glue track
     reaper.DeleteTrack(dependent.track)
   end
+
+  reaper.ClearPeakCache()
 end
 
 
 function updatePooledItems(glued_item, this_container_num, edited_container_pool_id, new_src, length)
-  local this_container_name, old_srcs, num_all_items, i, this_item, old_src, position_change_answer, new_pos
+  local num_all_items, this_container_name, old_srcs, i, this_item, old_src, position_change_answer, new_pos, old_src_val
 
   deselectAll()
 
+  num_all_items = reaper.CountMediaItems(0)
   this_container_name = "gr:"..this_container_num
   old_srcs = {}
-  num_all_items = reaper.CountMediaItems(0)
+
   i = 0
   while i < num_all_items do
     this_item = reaper.GetMediaItem(0, i)
@@ -1124,6 +1127,8 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
     old_src, new_pos = updatePooledItem(glued_item, this_item, this_container_name, this_container_num, edited_container_pool_id, new_src, length)
 
     if new_pos and new_pos ~= false then
+
+    -- log("new_pos = "..new_pos)
       if not position_change_answer then
         position_change_answer = reaper.ShowMessageBox("Do you want to propagate this position change to all the other unnested container items in the same pool?", "The left edge position of your reglued container item has changed since you started Editing!", 4)
       end
@@ -1138,9 +1143,8 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
     i = i + 1
   end
 
-  -- should change this var from "i" to "old_src_val" for clarity probably
-  -- delete old srcs, dont need em
-  for old_src, i in pairs(old_srcs) do
+  -- delete old srcs, dont need 'em
+  for old_src, old_src_val in pairs(old_srcs) do
     os.remove(old_src)
     os.remove(old_src..'.reapeaks')
   end
@@ -1160,15 +1164,14 @@ function updatePooledItem(glued_item, this_item, this_container_name, this_conta
       new_pos = getPooledItemPosition(glued_item, this_item, this_container_num)
 
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
-        -- log("this_container_num = "..this_container_num)
-        -- log("edited_container_pool_id = "..tostring(edited_container_pool_id))
+
+-- log("this_container_num = "..this_container_num)
+-- log("edited_container_pool_id = "..tostring(edited_container_pool_id))
 
       -- ADD?: doesn't compare currently nested container
       if this_container_num == edited_container_pool_id then
         reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", length)
       end
-      
-      reaper.ClearPeakCache()
 
       return current_src, new_pos
     end
@@ -1185,14 +1188,12 @@ function getPooledItemPosition(glued_item, this_item, this_container_num)
   retval, this_item_guid = reaper.GetSetMediaItemInfo_String(this_item, "GUID", "", false)
   this_item_current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
   retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
-
-  -- THIS SHOULD PROBABLY NEVER OCCUR AND IS A SIGN OF NESTED CONTAINER UPDATE, SO HEAD THIS CASE OFF EARLIER BY CHECKING WHETHER THE POSITION CHANGE HAS ACTUALLY HAPPENED ON THE ITEM IN QUESTION 
-  if glued_item_preglue_pos == "" then
-    glued_item_preglue_pos = 0
-  end
+  glued_item_preglue_pos = tonumber(glued_item_preglue_pos)
   
-  pos_delta = glued_item_current_pos - glued_item_preglue_pos
-  new_pos = this_item_current_pos + pos_delta
+  if glued_item_preglue_pos then
+    pos_delta = glued_item_current_pos - glued_item_preglue_pos
+    new_pos = this_item_current_pos + pos_delta
+  end
   
   if this_item_guid ~= glued_item_guid and pos_delta ~= 0 then
     return new_pos
