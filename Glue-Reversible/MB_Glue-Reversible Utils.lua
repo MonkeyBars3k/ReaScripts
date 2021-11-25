@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.46
--- @changelog Add check for required libs (https://github.com/MonkeyBars3k/ReaScripts/issues/90)
+-- @version 1.47
+-- @changelog Finally fix math for position change detection with proper LUA rounding function
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -1194,22 +1194,26 @@ function getPooledItemPosition(glued_item, this_item, this_container_num)
   local retval, glued_item_guid, glued_item_current_pos, this_item_guid, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
 
   retval, glued_item_guid = reaper.GetSetMediaItemInfo_String(glued_item, "GUID", "", false)
-  glued_item_current_pos = tonumber(reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION"))
+  glued_item_current_pos = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
   retval, this_item_guid = reaper.GetSetMediaItemInfo_String(this_item, "GUID", "", false)
-  this_item_current_pos = tonumber(reaper.GetMediaItemInfo_Value(this_item, "D_POSITION"))
+  this_item_current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
   retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
   glued_item_preglue_pos = tonumber(glued_item_preglue_pos)
 
   if glued_item_preglue_pos then
-    pos_delta = tonumber(glued_item_current_pos - glued_item_preglue_pos)
+    pos_delta = glued_item_current_pos - glued_item_preglue_pos
+    log(glued_item_preglue_pos)
+    log(glued_item_current_pos)
+    log(pos_delta)
+    pos_delta = round(pos_delta, 13)
     new_pos = this_item_current_pos + pos_delta
+
+    if this_item_guid ~= glued_item_guid and pos_delta ~= 0 then
+      return new_pos
+    end
   end
 
-  if this_item_guid ~= glued_item_guid and pos_delta ~= 0 then
-    return new_pos
-  else
-    return false
-  end
+  return false
 end
 
 
@@ -1452,6 +1456,11 @@ function getTableSize(t)
         count = count + 1
     end
     return count
+end
+
+
+function round(what, precision)
+   return math.floor(what*(10^precision)+0.5) / 10^precision
 end
 
 
