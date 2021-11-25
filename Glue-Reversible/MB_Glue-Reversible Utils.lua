@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.45
--- @changelog Refactor doGlueReversible() [8] (https://github.com/MonkeyBars3k/ReaScripts/issues/4); Refactor doReglueReversible() [5] (https://github.com/MonkeyBars3k/ReaScripts/issues/46)
+-- @version 1.46
+-- @changelog Add check for required libs (https://github.com/MonkeyBars3k/ReaScripts/issues/90)
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -54,26 +54,13 @@ function doPreGlueChecks()
   local selected_item_count
 
   if renderPathIsValid() == false then return false end
-  selected_item_count = getSelectedItemsCount()  
+
+  selected_item_count = getSelectedItemsCount()
+  
   if itemsAreSelected(selected_item_count) == false then return false end
+  if requiredLibsAreInstalled() == false then return false end
 
   return selected_item_count
-end
-
-
-function getSelectedItemsCount()
-  return reaper.CountSelectedMediaItems(0)
-end
-
-
-function prepareGlueState(action)
-  reaper.Undo_BeginBlock()
-  reaper.PreventUIRefresh(1)
-
-  if action == "glue" then
-    setResetItemSelectionSet(true)
-    selectAllItemsInGroups()
-  end
 end
 
 
@@ -95,12 +82,42 @@ function renderPathIsValid()
 end
 
 
+function getSelectedItemsCount()
+  return reaper.CountSelectedMediaItems(0)
+end
+
+
 function itemsAreSelected(selected_item_count)
   -- gluing single item is enabled. change to "< 2" to disable
   if not selected_item_count or selected_item_count < 1 then 
     return false
   else
     return true
+  end
+end
+
+
+function requiredLibsAreInstalled()
+  local sws_version
+
+  if reaper.CF_GetSWSVersion ~= nil then
+    sws_version = reaper.CF_GetSWSVersion()
+  end
+
+  if not sws_version then
+    reaper.ShowMessageBox("Please install the SWS/S&M Extension at https://standingwaterstudios.com/ and try again!", "Glue-Reversible needs the SWS plugin extension to work.", 0)
+    return false
+  end
+end
+
+
+function prepareGlueState(action)
+  reaper.Undo_BeginBlock()
+  reaper.PreventUIRefresh(1)
+
+  if action == "glue" then
+    setResetItemSelectionSet(true)
+    selectAllItemsInGroups()
   end
 end
 
