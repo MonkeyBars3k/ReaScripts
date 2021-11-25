@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="e98acea5c25ca9168e76433634fabd5227ce8185">
+<index version="1" name="MonkeyBars-ReaScripts" commit="bbc94e99f39d2a6e8e84dea64f283e388c05ba25">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -200,6 +200,11 @@
         <changelog><![CDATA[Finally fix math for position change detection with proper LUA rounding function]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e98acea5c25ca9168e76433634fabd5227ce8185/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
         <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e98acea5c25ca9168e76433634fabd5227ce8185/Glue-Reversible/gr-bg.png</source>
+      </version>
+      <version name="1.48" author="MonkeyBars" time="2021-11-25T05:58:32Z">
+        <changelog><![CDATA[Remove logs]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/bbc94e99f39d2a6e8e84dea64f283e388c05ba25/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/bbc94e99f39d2a6e8e84dea64f283e388c05ba25/Glue-Reversible/gr-bg.png</source>
       </version>
     </reapack>
   </category>
