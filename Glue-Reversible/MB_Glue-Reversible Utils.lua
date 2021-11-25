@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
 -- @version 1.45
--- @changelog Refactor doGlueReversible() and doReglueReversible()
+-- @changelog Refactor doGlueReversible() [8] (https://github.com/MonkeyBars3k/ReaScripts/issues/4); Refactor doReglueReversible() [5] (https://github.com/MonkeyBars3k/ReaScripts/issues/46)
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -26,7 +26,9 @@ function initGlueReversible(obey_time_selection)
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
 
   groupSelectedItems()
+
   glued_item = triggerGlueReversible(this_container_num, source_track, source_item, container, obey_time_selection)
+  
   exclusiveSelectItem(glued_item)
   cleanUpAction("Glue-Reversible")
 end
@@ -81,7 +83,7 @@ function renderPathIsValid()
   platform = reaper.GetOS()
   proj_renderpath = reaper.GetProjectPath(0)
   is_win = string.match(platform, "^Win")
-  is_win_absolute_path = string.match(proj_renderpath, "^%u:\\")
+  is_win_absolute_path = string.match(proj_renderpath, "^%u:\\\\")
   is_nix_absolute_path = string.match(proj_renderpath, "^/")
   
   if (is_win and not is_win_absolute_path) or (not is_win and not is_nix_absolute_path) then
