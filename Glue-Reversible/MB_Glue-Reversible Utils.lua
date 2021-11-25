@@ -1134,17 +1134,7 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
     this_item = reaper.GetMediaItem(0, i)
     old_src, new_pos = updatePooledItem(glued_item, this_item, this_container_name, this_container_num, edited_container_pool_id, new_src, length)
 
-    if new_pos and new_pos ~= false then
-  
-      if not position_change_answer then
-        position_change_answer = reaper.ShowMessageBox("Do you want to propagate this change by adjusting all the other unnested container items' left edge positions from the same pool in the same way?", "The left edge location of the container item you're regluing has changed!", 4)
-      end
-
-      -- User answered "YES"
-      if position_change_answer == 6 then
-        reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
-      end
-    end
+    position_change_answer = doPositionChangePropagateDialog(new_pos, position_change_answer, this_item)
     
     if old_src then
       old_srcs[old_src] = true
@@ -1185,19 +1175,14 @@ function getPooledItemPosition(glued_item, this_item, this_container_num)
   local retval, glued_item_guid, glued_item_current_pos, this_item_guid, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
 
   retval, glued_item_guid = reaper.GetSetMediaItemInfo_String(glued_item, "GUID", "", false)
-  glued_item_current_pos = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
-  glued_item_current_pos = tonumber(glued_item_current_pos)
-
+  glued_item_current_pos = tonumber(reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION"))
   retval, this_item_guid = reaper.GetSetMediaItemInfo_String(this_item, "GUID", "", false)
-  this_item_current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
-  this_item_current_pos = tonumber(this_item_current_pos)
-
+  this_item_current_pos = tonumber(reaper.GetMediaItemInfo_Value(this_item, "D_POSITION"))
   retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
   glued_item_preglue_pos = tonumber(glued_item_preglue_pos)
 
   if glued_item_preglue_pos then
-    pos_delta = glued_item_current_pos - glued_item_preglue_pos
-    pos_delta = tonumber(pos_delta)
+    pos_delta = tonumber(glued_item_current_pos - glued_item_preglue_pos)
     new_pos = this_item_current_pos + pos_delta
   end
 
@@ -1206,6 +1191,23 @@ function getPooledItemPosition(glued_item, this_item, this_container_num)
   else
     return false
   end
+end
+
+
+function doPositionChangePropagateDialog(new_pos, position_change_answer, this_item)
+  if new_pos and new_pos ~= false then
+  
+    if not position_change_answer then
+      position_change_answer = reaper.ShowMessageBox("Do you want to propagate this change by adjusting all the other unnested container items' left edge positions from the same pool in the same way?", "The left edge location of the container item you're regluing has changed!", 4)
+    end
+
+    -- User answered "YES"
+    if position_change_answer == 6 then
+      reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+    end
+  end
+
+  return position_change_answer
 end
 
 
