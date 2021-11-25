@@ -1096,10 +1096,10 @@ end
 
 
 function updateDependents(glued_item, this_container_num, edited_container_num, src, length, obey_time_selection)
-  local dependent_glued_item, i, dependent, new_src
+  local position_change_answer, dependent_glued_item, i, dependent, new_src
 
   -- update items with just one level of nesting now that they are exposed
-  updatePooledItems(glued_item, this_container_num, edited_container_num, src, length, this_container_num)
+  position_change_answer = updatePooledItems(glued_item, this_container_num, edited_container_num, src, length)
 
   -- loop thru dependents and update them in order
   for i, dependent in ipairs(iupdate_table) do
@@ -1111,7 +1111,7 @@ function updateDependents(glued_item, this_container_num, edited_container_num, 
     -- update all instances of this group, including any in other more deeply nested dependent groups which are exposed and waiting to be updated
     new_src = getItemWavSrc(dependent_glued_item)
 
-    updatePooledItems(dependent_glued_item, dependent.this_container_num, edited_container_num, new_src, length)
+    updatePooledItems(dependent_glued_item, dependent.this_container_num, edited_container_num, new_src, length, position_change_answer)
 
     -- delete glue track
     reaper.DeleteTrack(dependent.track)
@@ -1121,8 +1121,8 @@ function updateDependents(glued_item, this_container_num, edited_container_num, 
 end
 
 
-function updatePooledItems(glued_item, this_container_num, edited_container_pool_id, new_src, length)
-  local num_all_items, this_container_name, old_srcs, i, this_item, old_src, position_change_answer, new_pos, old_src_val
+function updatePooledItems(glued_item, this_container_num, edited_container_pool_id, new_src, length, position_change_answer)
+  local num_all_items, this_container_name, old_srcs, i, this_item, old_src, new_pos, old_src_val
 
   deselectAll()
 
@@ -1130,16 +1130,14 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
   this_container_name = "gr:"..this_container_num
   old_srcs = {}
 
-  i = 0
-  while i < num_all_items do
+  for i = 0, num_all_items-1 do
     this_item = reaper.GetMediaItem(0, i)
-
     old_src, new_pos = updatePooledItem(glued_item, this_item, this_container_name, this_container_num, edited_container_pool_id, new_src, length)
 
     if new_pos and new_pos ~= false then
-
+  
       if not position_change_answer then
-        position_change_answer = reaper.ShowMessageBox("Do you want to propagate this position change to all the other unnested container items in the same pool?", "The left edge position of your reglued container item has changed since you started Editing!", 4)
+        position_change_answer = reaper.ShowMessageBox("Do you want to propagate this change by adjusting all the other unnested container items' left edge positions from the same pool in the same way?", "The left edge location of the container item you're regluing has changed!", 4)
       end
 
       -- User answered "YES"
@@ -1148,15 +1146,14 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
       end
     end
     
-    if old_src then old_srcs[old_src] = true end
-    i = i + 1
+    if old_src then
+      old_srcs[old_src] = true
+    end
   end
 
-  -- delete old srcs, dont need 'em
-  for old_src, old_src_val in pairs(old_srcs) do
-    os.remove(old_src)
-    os.remove(old_src..'.reapeaks')
-  end
+  deleteOldSrcs(old_srcs)
+
+  return position_change_answer
 end
 
 
@@ -1170,9 +1167,9 @@ function updatePooledItem(glued_item, this_item, this_container_name, this_conta
     current_src = getItemWavSrc(this_item)
 
     if current_src ~= new_src then
-      new_pos = getPooledItemPosition(glued_item, this_item, this_container_num)
-
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
+
+      new_pos = getPooledItemPosition(glued_item, this_item, this_container_num)
 
       if this_container_num == edited_container_pool_id then
         reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", length)
@@ -1185,25 +1182,39 @@ end
 
 
 function getPooledItemPosition(glued_item, this_item, this_container_num)
-  local retval, glued_item_guid, glued_item_current_pos, this_item_guid, current_src, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
+  local retval, glued_item_guid, glued_item_current_pos, this_item_guid, this_item_current_pos, glued_item_preglue_pos, pos_delta, new_pos
 
   retval, glued_item_guid = reaper.GetSetMediaItemInfo_String(glued_item, "GUID", "", false)
   glued_item_current_pos = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
-  glued_item_current_pos = tostring(glued_item_current_pos)
+  glued_item_current_pos = tonumber(glued_item_current_pos)
+
   retval, this_item_guid = reaper.GetSetMediaItemInfo_String(this_item, "GUID", "", false)
   this_item_current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
+  this_item_current_pos = tonumber(this_item_current_pos)
+
   retval, glued_item_preglue_pos = reaper.GetProjExtState(0, "GLUE_GROUPS", this_container_num.."-pos")
   glued_item_preglue_pos = tonumber(glued_item_preglue_pos)
-  
+
   if glued_item_preglue_pos then
     pos_delta = glued_item_current_pos - glued_item_preglue_pos
+    pos_delta = tonumber(pos_delta)
     new_pos = this_item_current_pos + pos_delta
   end
-  
+
   if this_item_guid ~= glued_item_guid and pos_delta ~= 0 then
     return new_pos
   else
     return false
+  end
+end
+
+
+function deleteOldSrcs(old_srcs)
+  local old_src, old_src_val
+
+  for old_src, old_src_val in pairs(old_srcs) do
+    os.remove(old_src)
+    os.remove(old_src..'.reapeaks')
   end
 end
 
