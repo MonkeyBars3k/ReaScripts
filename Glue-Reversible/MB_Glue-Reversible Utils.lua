@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.48
--- @changelog Remove logs
+-- @version 1.49
+-- @changelog Position check doesn't detect if there are no other containers in pool (https://github.com/MonkeyBars3k/ReaScripts/issues/86)
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -16,11 +16,10 @@ function initGlueReversible(obey_time_selection)
   local selected_item_count, this_container_num, container, source_item, source_track, glued_item
 
   selected_item_count = initAction("glue")
+
   if selected_item_count == false then return end
 
-  -- find open item if present
   this_container_num, container = checkSelectionForContainer(selected_item_count)
-
   source_item, source_track = getSourceSelections()
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
@@ -226,7 +225,6 @@ function detectItemsOnMultipleTracks(selected_item_count)
   for i = 0, selected_item_count-1 do
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
     item = selected_items[i]
-
     item_track = reaper.GetMediaItemTrack(item)
     itemsOnMultipleTracksDetected = isDifferent(item_track, prev_item_track)
     
@@ -1115,10 +1113,10 @@ end
 
 
 function updateDependents(glued_item, this_container_num, edited_container_num, src, length, obey_time_selection)
-  local position_change_answer, dependent_glued_item, i, dependent, new_src
+  local position_change_response, dependent_glued_item, i, dependent, new_src
 
   -- update items with just one level of nesting now that they are exposed
-  position_change_answer = updatePooledItems(glued_item, this_container_num, edited_container_num, src, length)
+  position_change_response = updatePooledItems(glued_item, this_container_num, edited_container_num, src, length)
 
   -- loop thru dependents and update them in order
   for i, dependent in ipairs(iupdate_table) do
@@ -1130,7 +1128,7 @@ function updateDependents(glued_item, this_container_num, edited_container_num, 
     -- update all instances of this group, including any in other more deeply nested dependent groups which are exposed and waiting to be updated
     new_src = getItemWavSrc(dependent_glued_item)
 
-    updatePooledItems(dependent_glued_item, dependent.this_container_num, edited_container_num, new_src, length, position_change_answer)
+    updatePooledItems(dependent_glued_item, dependent.this_container_num, edited_container_num, new_src, length, position_change_response)
 
     -- delete glue track
     reaper.DeleteTrack(dependent.track)
@@ -1140,7 +1138,9 @@ function updateDependents(glued_item, this_container_num, edited_container_num, 
 end
 
 
-function updatePooledItems(glued_item, this_container_num, edited_container_pool_id, new_src, length, position_change_answer)
+local pooled_item_count = 0
+
+function updatePooledItems(glued_item, this_container_num, edited_container_pool_id, new_src, length, position_change_response)
   local num_all_items, this_container_name, old_srcs, i, this_item, old_src, new_pos, old_src_val
 
   deselectAll()
@@ -1151,9 +1151,8 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
 
   for i = 0, num_all_items-1 do
     this_item = reaper.GetMediaItem(0, i)
-    old_src, new_pos = updatePooledItem(glued_item, this_item, this_container_name, this_container_num, edited_container_pool_id, new_src, length)
 
-    position_change_answer = doPositionChangePropagateDialog(new_pos, position_change_answer, this_item)
+    old_src, new_pos, position_change_response = updatePooledItem(glued_item, this_item, this_container_name, this_container_num, edited_container_pool_id, new_src, length, position_change_response)
     
     if old_src then
       old_srcs[old_src] = true
@@ -1162,29 +1161,34 @@ function updatePooledItems(glued_item, this_container_num, edited_container_pool
 
   deleteOldSrcs(old_srcs)
 
-  return position_change_answer
+  return position_change_response
 end
 
 
-function updatePooledItem(glued_item, this_item, this_container_name, this_container_num, edited_container_pool_id, new_src, length)
-  local take_name, take, current_src, new_pos
+function updatePooledItem(glued_item, this_item, this_container_name, this_container_num, edited_container_pool_id, new_src, length, position_change_response)
+  local take_name, take, item_is_in_pool, current_src, new_pos
 
   take_name, take = getSetItemName(this_item)
+  item_is_in_pool = take_name and string.find(take_name, this_container_name)
 
-  -- see if take matches currently updated glue group
-  if take_name and string.find(take_name, this_container_name) then
+  if item_is_in_pool then
+    new_pos = getPooledItemPosition(glued_item, this_item, this_container_num)
+    pooled_item_count = pooled_item_count + 1
+
+    if not position_change_response and pooled_item_count > 1 then
+      position_change_response = doPositionChangePropagateDialog(new_pos, position_change_response, this_item)
+    end
+
     current_src = getItemWavSrc(this_item)
 
     if current_src ~= new_src then
       reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
 
-      new_pos = getPooledItemPosition(glued_item, this_item, this_container_num)
-
       if this_container_num == edited_container_pool_id then
         reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", length)
       end
 
-      return current_src, new_pos
+      return current_src, new_pos, position_change_response
     end
   end
 end
@@ -1213,20 +1217,20 @@ function getPooledItemPosition(glued_item, this_item, this_container_num)
 end
 
 
-function doPositionChangePropagateDialog(new_pos, position_change_answer, this_item)
+function doPositionChangePropagateDialog(new_pos, position_change_response, this_item)
   if new_pos and new_pos ~= false then
-  
-    if not position_change_answer then
-      position_change_answer = reaper.ShowMessageBox("Do you want to propagate this change by adjusting all the other unnested container items' left edge positions from the same pool in the same way?", "The left edge location of the container item you're regluing has changed!", 4)
+
+    if not position_change_response then
+      position_change_response = reaper.ShowMessageBox("Do you want to propagate this change by adjusting all the other unnested container items' left edge positions from the same pool in the same way?", "The left edge location of the container item you're regluing has changed!", 4)
     end
 
     -- User answered "YES"
-    if position_change_answer == 6 then
+    if position_change_response == 6 then
       reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
     end
   end
 
-  return position_change_answer
+  return position_change_response
 end
 
 
