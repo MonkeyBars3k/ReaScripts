@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.47
--- @changelog Finally fix math for position change detection with proper LUA rounding function
+-- @version 1.48
+-- @changelog Remove logs
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -1201,11 +1201,7 @@ function getPooledItemPosition(glued_item, this_item, this_container_num)
   glued_item_preglue_pos = tonumber(glued_item_preglue_pos)
 
   if glued_item_preglue_pos then
-    pos_delta = glued_item_current_pos - glued_item_preglue_pos
-    log(glued_item_preglue_pos)
-    log(glued_item_current_pos)
-    log(pos_delta)
-    pos_delta = round(pos_delta, 13)
+    pos_delta = round((glued_item_current_pos - glued_item_preglue_pos), 13)
     new_pos = this_item_current_pos + pos_delta
 
     if this_item_guid ~= glued_item_guid and pos_delta ~= 0 then
