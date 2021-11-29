@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.50
--- @changelog Undo breaks container items data (https://github.com/MonkeyBars3k/ReaScripts/issues/37); Undo breaks pool logic (https://github.com/MonkeyBars3k/ReaScripts/issues/105); Pooled item position doesn't update consistently (https://github.com/MonkeyBars3k/ReaScripts/issues/106)
+-- @version 1.51
+-- @changelog Ungrouping contained items breaks Glue-Reversible [7] (https://github.com/MonkeyBars3k/ReaScripts/issues/69)
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -26,7 +26,7 @@ function initGlueReversible(obey_time_selection)
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
 
-  groupSelectedItems()
+  storeContainerInstanceData(selected_item_count)
 
   glued_item = triggerGlueReversible(this_container_num, source_item, source_track, container, obey_time_selection)
   
@@ -41,7 +41,7 @@ function initAction(action)
   selected_item_count = doPreGlueChecks()
   if selected_item_count == false then return false end
 
-  prepareGlueState(action)
+  prepareGlueState(action, selected_item_count)
   
   -- refresh in case item selection changed
   selected_item_count = getSelectedItemsCount()
@@ -112,13 +112,13 @@ function requiredLibsAreInstalled()
 end
 
 
-function prepareGlueState(action)
+function prepareGlueState(action, selected_item_count)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
 
   if action == "glue" then
-    setResetItemSelectionSet(true)
-    selectAllItemsInGroups()
+    loadSaveItemSelectionSet(true)
+    selectOtherItemsInContainerInstance(selected_item_count)
   end
 end
 
@@ -191,20 +191,62 @@ function getOriginalTrack(source_item)
 end
 
 
-function setResetItemSelectionSet(set)
+function loadSaveItemSelectionSet(set, slot_num)
+  local selection_set_cmds = {}
+  selection_set_cmds["9"] = {}
+  selection_set_cmds["10"] = {}
+  selection_set_cmds["9"]["save"] = 41237
+  selection_set_cmds["9"]["load"] = 41247
+  selection_set_cmds["10"]["save"] = 41238
+  selection_set_cmds["10"]["load"] = 41248
+
+  if not slot_num then
+    slot_num = "10"
+  end
+
   if set == true then
-    -- save selected item selection set to slot 10
-    reaper.Main_OnCommand(41238, 0)
+    reaper.Main_OnCommand(selection_set_cmds[slot_num]["save"], 0)
   else
-    -- reset item selection from selection set slot 10
-    reaper.Main_OnCommand(41248, 0)
+    reaper.Main_OnCommand(selection_set_cmds[slot_num]["load"], 0)
   end
 end
 
 
-function selectAllItemsInGroups()
-  -- select all items in group (if in one)
-  reaper.Main_OnCommand(40034, 0)
+-- function selectRestOfItemsInGroups()
+--   reaper.Main_OnCommand(40034, 0)
+-- end
+
+function selectOtherItemsInContainerInstance(selected_item_count)
+  local data_param_name, i, this_item, retval, container_instance_guid, items_in_container_instance, separator, j, this_item_in_container_instance
+
+  data_param_name = "container-instance"
+
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(0, i)
+    retval, container_instance_guid = reaper.GetSetMediaItemInfo_String(this_item, data_param_name, "", false)
+
+    if container_instance_guid and container_instance_guid ~= "" then
+      items_in_container_instance = getSetContainerInstanceState(container_instance_guid)
+
+      if items_in_container_instance and items_in_container_instance ~= "" then
+        separator = ","
+
+        -- compile string list into table
+        items_in_container_instance = string.split(items_in_container_instance, separator)
+
+        for j = 1, #items_in_container_instance do
+          this_item_in_container_instance = items_in_container_instance[j]
+          reaper.SetMediaItemSelected(this_item_in_container_instance, true)
+        end
+
+      -- abort after first container instance found; no multiple instance editing allowed
+      else
+        break
+      end
+      
+      break
+    end
+  end
 end
 
 
@@ -253,7 +295,7 @@ function openContainersAreInvalid(selected_item_count)
 
   if #open_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, open_containers) == true then
     reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can only Reglue or Edit one container at a time.", 0)
-    setResetItemSelectionSet()
+    loadSaveItemSelectionSet()
     return true
   end
 end
@@ -321,7 +363,7 @@ function recursiveContainerIsBeingGlued(glued_containers, open_containers)
       
       if this_glued_container_num == this_open_container_num then
         reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can't glue a pooled, glued container item to an open copy of itself, or you could destroy the universe!", 0)
-        setResetItemSelectionSet()
+        loadSaveItemSelectionSet()
         return true
       end
     end
@@ -364,8 +406,86 @@ function isMIDIItem(item)
 end
 
 
-function groupSelectedItems()
-  reaper.Main_OnCommand(40032, 0)
+-- function groupSelectedItems()
+--   reaper.Main_OnCommand(40032, 0)
+-- end
+
+function storeContainerInstanceData(selected_item_count)
+  local items, i, this_item, container_instance_guid
+
+  items = {}
+
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(0, i)
+    items[i] = this_item
+    container_instance_guid = reaper.genGuid()
+
+    getSetItemContainerInstance(this_item, container_instance_guid)
+  end
+
+  getSetContainerInstanceState(items)
+end
+
+
+function getSetItemContainerInstance(item, container_instance_guid)
+  local retval, data_param, data_param_script_prefix, data_param_name, data_param_fullname
+
+  data_param = "P_EXT:"
+  data_param_script_prefix = "GR_"
+  data_param_name = "container-instance"
+  data_param_fullname = data_param..data_param_script_prefix..data_param_name
+
+  if not container_instance_guid then
+    retval, container_instance_guid = reaper.GetSetMediaItemInfo_String(item, data_param_fullname, "", false)
+
+    return container_instance_guid
+  else
+    reaper.GetSetMediaItemInfo_String(item, data_param_fullname, container_instance_guid, true)
+  end
+end
+
+
+-- INSTEAD OF NAMING INSTANCE DATA INDIVIDUALLY, COULD STORE THEM ALL IN A SERIALIZED TABLE? https://github.com/bakpakin/binser
+function getSetContainerInstanceState(container_instance_guid_or_items)
+  local get_set, data_param_name, container_instance_guid, container_instance_name
+  
+  get_set = type(container_instance_guid_or_items) == "table"
+  data_param_name = "container-instance"
+
+  if get_set == 0 then
+    container_instance_guid = container_instance_guid_or_items
+    container_instance_name = data_param_name..container_instance_guid
+
+    return getSetStateData(container_instance_name)
+  else
+    populateContainerInstanceState(container_instance_guid_or_items)
+  end
+end
+
+
+function populateContainerInstanceState(items)
+  local container_instance_val, data_param_name_prefix, separator, i, this_item, container_instance_guid, container_instance_name, this_item_guid
+
+  container_instance_val = ""
+  data_param_name_prefix = "container-instance-"
+  separator = ","
+  
+  for i = 0, #items do
+    this_item = items[i]
+    container_instance_guid = reaper.genGuid()
+    -- log(container_instance_guid)
+    container_instance_name = data_param_name_prefix..container_instance_guid
+    this_item_guid = reaper.BR_GetMediaItemGUID(this_item)
+
+    if container_instance_val == "" then
+      container_instance_val = this_item_guid
+    else
+      container_instance_val = container_instance_val..separator..this_item_guid
+    end
+  end
+
+-- log(tostring(container_instance_name))
+  getSetStateData(container_instance_name, container_instance_val)
 end
 
 
@@ -689,8 +809,8 @@ function updatePoolStates(item_states, container, this_container_num, item_conta
   -- save stored state
   getSetStateData(this_container_num, item_states)
 
+  -- i.e., not called by updatePooledItems()
   if not ignore_depends then
-    -- i.e., not called by updatePooledItems()
     updatePooledCopies(this_container_num, item_container_name, dependencies_table)
   end
 end
@@ -1083,7 +1203,7 @@ end
 
 
 function restoreItems(this_container_num, track, position, dont_restore_take, dont_offset)
-  local r, stored_items, splits, restored_items, key, val, restored_item, container, item, return_item, left_most, pos, i
+  local r, stored_items, splits, restored_items, key, val, restored_item, container, item, return_item, left_most, pos, i, selected_item_count
 
   deselectAll()
 
@@ -1142,8 +1262,9 @@ function restoreItems(this_container_num, track, position, dont_restore_take, do
     end
   end
 
-  -- Group Items
-  reaper.Main_OnCommand(40032, 0)
+  selected_item_count = getSelectedItemsCount()
+
+  storeContainerInstanceData(selected_item_count)
 
   return return_item, container, restored_items
 end
@@ -1297,7 +1418,7 @@ function otherPooledInstanceIsOpen(edit_pool_num)
     if getItemType(item) == "open" and item_pool_num == edit_pool_num then
       deselectAll()
       reaper.SetMediaItemSelected(item, true)
-      selectAllItemsInGroups()
+      selectOtherItemsInContainerInstance()
       -- scroll to selected item
       scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
       reaper.Main_OnCommand(scroll_action_id, 0)
@@ -1363,7 +1484,7 @@ function initSmartAction(obey_time_selection)
   selected_item_count = doPreGlueChecks()
   if selected_item_count == false then return end
 
-  prepareGlueState("glue")
+  prepareGlueState("glue", selected_item_count)
   
   -- refresh in case item selection changed
   selected_item_count = getSelectedItemsCount()
@@ -1376,7 +1497,7 @@ function initSmartAction(obey_time_selection)
 
   if doGlueUnglueAction(selected_item_count, obey_time_selection) == false then 
     reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
-    setResetItemSelectionSet()
+    loadSaveItemSelectionSet()
     return
   end
 
@@ -1426,7 +1547,7 @@ function doGlueUnglueAction(selected_item_count, obey_time_selection)
   elseif glue_reversible_action == "glue/abort" then
     glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to glue them?", "You have selected both an open container and glued container(s).", 1)
     if glue_abort_dialog == 2 then
-      setResetItemSelectionSet()
+      loadSaveItemSelectionSet()
       return
     else
       initGlueReversible(obey_time_selection)
