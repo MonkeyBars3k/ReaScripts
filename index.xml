@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="7779aedb5607db88bb4d7dea57bdab048621a043">
+<index version="1" name="MonkeyBars-ReaScripts" commit="5d1b17696e37b69cf73937080adc428828938f62">
   <category name="Glue-Reversible">
     <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
       <metadata>
@@ -215,6 +215,11 @@
         <changelog><![CDATA[Undo breaks container items data (https://github.com/MonkeyBars3k/ReaScripts/issues/37); Undo breaks pool logic (https://github.com/MonkeyBars3k/ReaScripts/issues/105); Pooled item position doesn't update consistently (https://github.com/MonkeyBars3k/ReaScripts/issues/106)]]></changelog>
         <source>https://github.com/MonkeyBars3k/ReaScripts/raw/4ad4fb52f40d39ba558536ba3da2c0a3e4aad886/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
         <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/4ad4fb52f40d39ba558536ba3da2c0a3e4aad886/Glue-Reversible/gr-bg.png</source>
+      </version>
+      <version name="1.51" author="MonkeyBars" time="2021-12-01T06:50:26Z">
+        <changelog><![CDATA[Ungrouping contained items breaks Glue-Reversible [7] (https://github.com/MonkeyBars3k/ReaScripts/issues/69)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/5d1b17696e37b69cf73937080adc428828938f62/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5d1b17696e37b69cf73937080adc428828938f62/Glue-Reversible/gr-bg.png</source>
       </version>
     </reapack>
   </category>
