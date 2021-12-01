@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
--- @version 1.50
--- @changelog Undo breaks container items data (https://github.com/MonkeyBars3k/ReaScripts/issues/37); Undo breaks pool logic (https://github.com/MonkeyBars3k/ReaScripts/issues/105); Pooled item position doesn't update consistently (https://github.com/MonkeyBars3k/ReaScripts/issues/106)
+-- @version 1.51
+-- @changelog Ungrouping contained items breaks Glue-Reversible [7] (https://github.com/MonkeyBars3k/ReaScripts/issues/69)
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -25,8 +25,6 @@ function initGlueReversible(obey_time_selection)
   source_item, source_track = getSourceSelections()
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
-
-  groupSelectedItems()
 
   glued_item = triggerGlueReversible(this_container_num, source_item, source_track, container, obey_time_selection)
   
@@ -118,7 +116,6 @@ function prepareGlueState(action)
 
   if action == "glue" then
     setResetItemSelectionSet(true)
-    selectAllItemsInGroups()
   end
 end
 
@@ -131,7 +128,7 @@ function checkSelectionForContainer(selected_item_count)
     item = reaper.GetSelectedMediaItem(0, i)
     new_container_num = getContainerName(item)
 
-    -- if glue group found on this item
+    -- if pool found on this item
     if new_container_num then
       -- if this search has already found another container
       if this_container_num then
@@ -199,12 +196,6 @@ function setResetItemSelectionSet(set)
     -- reset item selection from selection set slot 10
     reaper.Main_OnCommand(41248, 0)
   end
-end
-
-
-function selectAllItemsInGroups()
-  -- select all items in group (if in one)
-  reaper.Main_OnCommand(40034, 0)
 end
 
 
@@ -364,11 +355,6 @@ function isMIDIItem(item)
 end
 
 
-function groupSelectedItems()
-  reaper.Main_OnCommand(40032, 0)
-end
-
-
 function triggerGlueReversible(this_container_num, source_item, source_track, container, obey_time_selection)
   local glued_item
   
@@ -447,7 +433,7 @@ end
 function incrementPoolID()
   local r, last_container_num, this_container_num
   
-  -- make a new pool id from group id if this is a new group and name glue_track accordingly
+  -- make a new pool id from last pool id if this is a new pool and name glue_track accordingly
   r, last_container_num = getSetStateData("last-pool-num")
 
   if r == true and last_container_num then
@@ -457,7 +443,7 @@ function incrementPoolID()
     this_container_num = 1
   end
 
-  -- store this glue group id so next group can increment up
+  -- store this pool id so next pool can increment up
   getSetStateData("last-pool-num", this_container_num)
 
   return this_container_num
@@ -548,7 +534,7 @@ function handleItemStates(selected_item_count, original_items, existing_containe
       item_container_name = getContainerName(item, true)
 
       if item_container_name then
-        -- keep track of this items glue group to set up dependencies later
+        -- store this item's pool to set up dependencies later
         dependencies_table[item_container_name] = item_container_name
       end
     end
@@ -566,8 +552,8 @@ function prepareGlue(existing_container, source_track, this_container_num, origi
   else
     -- new glue: create container that will be resized and stored after glue is done
     container, original_state_key = reaper.AddMediaItemToTrack(source_track)
-    -- set container's name to point to this glue group
-    setItemGlueGroup(container, this_container_num)
+    -- set container's name to point to this pool
+    setItemPool(container, this_container_num)
   end
 
   selectDeselectItems(original_items, true)
@@ -606,7 +592,7 @@ function prepareReglue(existing_container, source_track)
 end
 
 
-function setItemGlueGroup(item, item_name_ending, not_container)
+function setItemPool(item, item_name_ending, not_container)
   local key, name, take, source
 
   if not_container then
@@ -650,7 +636,7 @@ function executeGlue(obey_time_selection, original_items, selected_item_count, t
   glued_item = reaper.GetSelectedMediaItem(0, 0)
   glued_item_init_name = handleAddtionalItemCountLabel(original_items, selected_item_count, this_container_num, first_item_name)
   
-  setItemGlueGroup(glued_item, glued_item_init_name, true)
+  setItemPool(glued_item, glued_item_init_name, true)
 
   return glued_item, glued_item_init_name
 end
@@ -708,19 +694,19 @@ function updatePooledCopies(this_container_num, item_container_name, dependencie
   dependencies = ""
   dependent = "|"..this_container_num.."|"
 
-  -- store a reference to this glue group for all the nested glue groups so if any of them get updated, they can check and update this group
+  -- store a reference to this pool for all the nested pools so if any get updated, they can check and update this pool
   for item_container_name, r in pairs(dependencies_table) do
     dependencies, old_dependencies = storePoolReference(item_container_name, dependent, dependencies, old_dependencies)
   end
 
-  -- store this glue groups dependencies list
+  -- store this pool's dependencies list
   getSetStateData(this_container_num..":dependencies", dependencies)
 
   -- have the dependencies changed? - CHANGE CONDITION TO VAR dependencies_have_changed
   if string.len(old_dependencies) > 0 then
     -- loop thru all the dependencies no longer needed
     for dependency in string.gmatch(old_dependencies, "%d+") do 
-      -- remove this glue group from the other glue groups dependents list
+      -- remove this pool from the other pools' dependents list
       removePoolFromDependents(dependency, dependent)
     end
   end
@@ -730,23 +716,23 @@ end
 function storePoolReference(item_container_name, dependent, dependencies, old_dependencies)
   local key, r, dependents, dependency
 
-  -- make a key for nested glue group to keep track of which groups are dependent on it
+  -- make a key for nested pool to store which pools are dependent on it
   key = item_container_name..":dependents"
   
-  -- see if nested glue group already has a list of dependents
+  -- see if nested pool already has a list of dependents
   r, dependents = getSetStateData(key)
   
   if r == false then
     dependents = "" 
   end
 
-  -- if this glue group isn't already in list, add it
+  -- if this pool isn't already in list, add it
   if not string.find(dependents, dependent) then
     dependents = dependents..dependent
     getSetStateData(key, dependents)
   end
 
-  -- now keep track of these glue groups dependencies
+  -- now store of these pools' dependencies
   dependency = "|"..item_container_name.."|"
   dependencies = dependencies..dependency
 
@@ -829,7 +815,7 @@ function doReglueReversible(source_track, source_item, this_container_num, conta
     position_change_response = launchPropagatePositionDialog()
   end
 
-  -- calculate dependents, create an update_table with a nicely ordered sequence and re-insert the items of each glue group into temp tracks so they can be updated
+  -- calculate dependents, create an update_table with a nicely ordered sequence and re-insert the items of each pool into temp tracks so they can be updated
   calculateDependentUpdates(this_container_num)
   -- sort dependents update_table by how nested they are
   sortDependentUpdates()
@@ -1036,7 +1022,7 @@ local update_table = {}
 local iupdate_table = {}
 
 function calculateDependentUpdates(this_container_num, nesting_level)
-  local track, dependent_group, restored_items, item, container, glued_item, new_src, i, v, update_item, current_entry
+  local track, dependent_pool, restored_items, item, container, glued_item, new_src, i, v, update_item, current_entry
 
   if not update_table then update_table = {} end
   if not nesting_level then nesting_level = 1 end
@@ -1044,18 +1030,18 @@ function calculateDependentUpdates(this_container_num, nesting_level)
   r, dependents = getSetStateData(this_container_num..":dependents")
 
   if r == true and string.len(dependents) > 0 then
-    for dependent_group in string.gmatch(dependents, "%d+") do 
-      dependent_group = math.floor(tonumber(dependent_group))
+    for dependent_pool in string.gmatch(dependents, "%d+") do 
+      dependent_pool = math.floor(tonumber(dependent_pool))
 
-      -- check if an entry for this group already exists
-      if update_table[dependent_group] then
-        -- keep track of how deeply nested this item is
-        update_table[dependent_group].nesting_level = math.max(nesting_level, update_table[dependent_group].nesting_level)
+      -- check if an entry for this pool already exists
+      if update_table[dependent_pool] then
+        -- store how deeply nested this item is
+        update_table[dependent_pool].nesting_level = math.max(nesting_level, update_table[dependent_pool].nesting_level)
 
       else 
-      -- this is the first time this group has come up. set up for update loop
+      -- this is the first time this pool has come up. set up for update loop
         current_entry = {}
-        current_entry.this_container_num = dependent_group
+        current_entry.this_container_num = dependent_pool
         current_entry.nesting_level = nesting_level
 
         -- make track for this item's updates
@@ -1063,7 +1049,7 @@ function calculateDependentUpdates(this_container_num, nesting_level)
         track = reaper.GetTrack(0, 0)
 
         -- restore items into newly made empty track
-        item, container, restored_items = restoreItems(dependent_group, track, 0, true, true)
+        item, container, restored_items = restoreItems(dependent_pool, track, 0, true, true)
 
         -- store references to temp track and items
         current_entry.track = track
@@ -1072,10 +1058,10 @@ function calculateDependentUpdates(this_container_num, nesting_level)
         current_entry.restored_items = restored_items
 
         -- store this item in update_table
-        update_table[dependent_group] = current_entry
+        update_table[dependent_pool] = current_entry
 
-        -- check if this group also has dependents
-        calculateDependentUpdates(dependent_group, nesting_level + 1)
+        -- check if this pool also has dependents
+        calculateDependentUpdates(dependent_pool, nesting_level + 1)
       end
     end
   end
@@ -1112,9 +1098,6 @@ function restoreItems(this_container_num, track, position, dont_restore_take, do
         restoreOriginalTake(restored_item) 
       end
 
-      -- set group ID
-      reaper.SetMediaItemInfo_Value(restored_item, "I_GROUPID", 0)
-
       -- set items' bg image
       setItemImage(restored_item)
 
@@ -1141,9 +1124,6 @@ function restoreItems(this_container_num, track, position, dont_restore_take, do
       reaper.SetMediaItemInfo_Value(item, "D_POSITION", pos)
     end
   end
-
-  -- Group Items
-  reaper.Main_OnCommand(40032, 0)
 
   return return_item, container, restored_items
 end
@@ -1174,7 +1154,7 @@ function updateDependents(glued_item, source_item, edited_pool_id, src, length, 
 
     dependent_glued_item = doGlueReversible(dependent.track, source_item, obey_time_selection, dependent.this_container_num, dependent.container, true)
 
-    -- update all instances of this group, including any in other more deeply nested dependent groups which are exposed and waiting to be updated
+    -- update all instances of this pool, including any in other more deeply nested dependent pools which are exposed and waiting to be updated
     new_src = getItemWavSrc(dependent_glued_item)
 
     updatePooledItems(dependent_glued_item, dependent.this_container_num, new_src, length)
@@ -1297,15 +1277,20 @@ function otherPooledInstanceIsOpen(edit_pool_num)
     if getItemType(item) == "open" and item_pool_num == edit_pool_num then
       deselectAll()
       reaper.SetMediaItemSelected(item, true)
-      selectAllItemsInGroups()
-      -- scroll to selected item
-      scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
-      reaper.Main_OnCommand(scroll_action_id, 0)
+      
+      scrollToSelectedItem()
 
       reaper.ShowMessageBox("Reglue the other open container item from pool "..tostring(edit_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Only one glued container item per pool can be Edited at a time.", 0)
       return true
     end
   end
+end
+
+
+function scrollToSelectedItem()
+  scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
+
+  reaper.Main_OnCommand(scroll_action_id, 0)
 end
 
 
