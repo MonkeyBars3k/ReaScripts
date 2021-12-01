@@ -26,7 +26,7 @@ function initGlueReversible(obey_time_selection)
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
 
-  storeContainerInstanceData(selected_item_count)
+  storeContainerInstanceData(selected_item_count, this_container_num)
 
   glued_item = triggerGlueReversible(this_container_num, source_item, source_track, container, obey_time_selection)
   
@@ -118,7 +118,7 @@ function prepareGlueState(action, selected_item_count)
 
   if action == "glue" then
     loadSaveItemSelectionSet(true)
-    selectOtherItemsInContainerInstance(selected_item_count)
+    -- selectOtherItemsInContainerInstance(selected_item_count)
   end
 end
 
@@ -212,41 +212,120 @@ function loadSaveItemSelectionSet(set, slot_num)
 end
 
 
--- function selectRestOfItemsInGroups()
---   reaper.Main_OnCommand(40034, 0)
+-- THIS IS NOT NECESSARY; USER MUST SELECT ALL ITEMS FOR REGLUE
+-- function selectOtherItemsInContainerInstance(selected_item_count)
+--   local data_param, data_param_script_prefix, data_param_elem, data_param_fullname, i, this_item, retval, container_instance_guid, items_in_container_instance, separator, j, this_item_in_container_instance
+
+--   data_param = "P_EXT:"
+--   data_param_script_prefix = "GR_"
+--   data_param_elem = "container-instance"
+--   data_param_fullname = data_param..data_param_script_prefix..data_param_elem
+
+--   for i = 0, selected_item_count-1 do
+--     this_item = reaper.GetSelectedMediaItem(0, i)
+
+--     retval, container_instance_guid = reaper.GetSetMediaItemInfo_String(this_item, data_param_fullname, "", false)
+
+--     if container_instance_guid and container_instance_guid ~= "" then
+--       items_in_container_instance = getSetContainerInstanceState(container_instance_guid)
+
+--       if items_in_container_instance and items_in_container_instance ~= "" then
+--         separator = ","
+
+--         -- compile string list into table
+--         items_in_container_instance = string.split(items_in_container_instance, separator)
+        
+--         for j = 1, #items_in_container_instance do
+--           this_item_in_container_instance = items_in_container_instance[j]
+--           reaper.SetMediaItemSelected(this_item_in_container_instance, true)
+--         end
+
+--       -- abort after first container instance found; no multiple instance editing allowed
+--       else
+--         break
+--       end
+--     end
+--   end
 -- end
 
-function selectOtherItemsInContainerInstance(selected_item_count)
-  local data_param_name, i, this_item, retval, container_instance_guid, items_in_container_instance, separator, j, this_item_in_container_instance
 
-  data_param_name = "container-instance"
+-- Instead of naming instance data individually, could store them all in a serialized table? https://github.com/bakpakin/binser OR https://github.com/pkulchenko/serpent/blob/master/src/serpent.lua
+function getSetContainerInstanceState(container_instance_guid_or_items)
+  local get_set, data_param, data_param_script_prefix, data_param_elem, data_param_fullname, container_instance_guid, container_instance_name, retval, items_in_container_instance, items
+  
+  get_set = type(container_instance_guid_or_items) == "table"
 
-  for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(0, i)
-    retval, container_instance_guid = reaper.GetSetMediaItemInfo_String(this_item, data_param_name, "", false)
+  -- get
+  if get_set == false then
+    data_param = "P_EXT:"
+    data_param_script_prefix = "GR_"
+    data_param_elem = "container-instance-"
+    data_param_fullname = data_param..data_param_script_prefix..data_param_elem
+    container_instance_guid = container_instance_guid_or_items
+    container_instance_name = data_param_fullname..container_instance_guid
+    retval, items_in_container_instance = getSetStateData(container_instance_name)
 
-    if container_instance_guid and container_instance_guid ~= "" then
-      items_in_container_instance = getSetContainerInstanceState(container_instance_guid)
+    return items_in_container_instance
+  
+  -- set
+  else
+    items = container_instance_guid_or_items
 
-      if items_in_container_instance and items_in_container_instance ~= "" then
-        separator = ","
+    populateContainerInstanceState(items)
+  end
+end
 
-        -- compile string list into table
-        items_in_container_instance = string.split(items_in_container_instance, separator)
 
-        for j = 1, #items_in_container_instance do
-          this_item_in_container_instance = items_in_container_instance[j]
-          reaper.SetMediaItemSelected(this_item_in_container_instance, true)
-        end
+local master_track = reaper.GetMasterTrack(0)
+-- save state data in master track tempo envelope because changes get saved in undo points and it can't be deactivated
+local master_track_tempo_env = reaper.GetTrackEnvelope(master_track, 0)
 
-      -- abort after first container instance found; no multiple instance editing allowed
-      else
-        break
-      end
-      
-      break
+function getSetStateData(key, val)
+  local get_set, data_param, data_param_prefix, retval, state_data_val
+
+  -- set
+  if val then
+    get_set = true
+
+  -- get
+  else
+    val = ""
+    get_set = false
+  end
+
+  data_param = "P_EXT:"
+  data_param_script_prefix = "GR_"
+  retval, state_data_val = reaper.GetSetEnvelopeInfo_String(master_track_tempo_env, data_param..data_param_script_prefix..key, val, get_set)
+
+log("getSetStateData() get_set: "..tostring(get_set).."; state_data_val = "..state_data_val)
+
+  return retval, state_data_val
+end
+
+
+function populateContainerInstanceState(items)
+  local container_instance_val, data_param_elem_prefix, separator, i, this_item, container_instance_name, container_instance_guid, pool_id, this_item_guid
+
+  container_instance_val = ""
+  data_param_elem_prefix = "container-instance-"
+  separator = ","
+  
+  for i = 0, #items do
+    this_item = items[i]
+    container_instance_guid, pool_id = getSetItemMetadata(this_item)
+    container_instance_name = data_param_elem_prefix..container_instance_guid
+    this_item_guid = reaper.BR_GetMediaItemGUID(this_item)
+
+    if container_instance_val == "" then
+      container_instance_val = this_item_guid
+    else
+      container_instance_val = container_instance_val..separator..this_item_guid
     end
   end
+
+log("populateContainerInstanceState() container_instance_name = ".. container_instance_name.."; container_instance_val = "..container_instance_val)
+
+  getSetStateData(container_instance_name, container_instance_val)
 end
 
 
@@ -406,12 +485,8 @@ function isMIDIItem(item)
 end
 
 
--- function groupSelectedItems()
---   reaper.Main_OnCommand(40032, 0)
--- end
-
-function storeContainerInstanceData(selected_item_count)
-  local items, i, this_item, container_instance_guid
+function storeContainerInstanceData(selected_item_count, pool_id)
+  local items, i, this_item, container_instance_guid, empty_container
 
   items = {}
 
@@ -420,72 +495,41 @@ function storeContainerInstanceData(selected_item_count)
     items[i] = this_item
     container_instance_guid = reaper.genGuid()
 
-    getSetItemContainerInstance(this_item, container_instance_guid)
+    getSetItemMetadata(this_item, pool_id, container_instance_guid)
+  end
+
+  empty_container = otherPooledInstanceIsOpen(pool_id)
+
+  if empty_container ~= false then
+    table.insert(items, empty_container)
   end
 
   getSetContainerInstanceState(items)
 end
 
 
-function getSetItemContainerInstance(item, container_instance_guid)
-  local retval, data_param, data_param_script_prefix, data_param_name, data_param_fullname
+function getSetItemMetadata(item, pool_id, container_instance_guid)
+  local data_param, data_param_script_prefix, data_param_container_instance_name, data_param_container_instance_key, data_param_pool_name, data_param_pool_key, retval
 
   data_param = "P_EXT:"
   data_param_script_prefix = "GR_"
-  data_param_name = "container-instance"
-  data_param_fullname = data_param..data_param_script_prefix..data_param_name
+  data_param_container_instance_name = "container-instance"
+  data_param_container_instance_key = data_param..data_param_script_prefix..data_param_container_instance_name
+  data_param_pool_name = "pool"
+  data_param_pool_key = data_param..data_param_script_prefix..data_param_pool_name
 
-  if not container_instance_guid then
-    retval, container_instance_guid = reaper.GetSetMediaItemInfo_String(item, data_param_fullname, "", false)
+  -- get
+  if not pool_id or not container_instance_guid then
+    retval, container_instance_guid = reaper.GetSetMediaItemInfo_String(item, data_param_container_instance_key, "", false)
+    retval, pool_id = reaper.GetSetMediaItemInfo_String(item, data_param_pool_key, "", false)
 
-    return container_instance_guid
+    return container_instance_guid, pool_id
+
+  -- set
   else
-    reaper.GetSetMediaItemInfo_String(item, data_param_fullname, container_instance_guid, true)
+    reaper.GetSetMediaItemInfo_String(item, data_param_container_instance_key, container_instance_guid, true)
+    reaper.GetSetMediaItemInfo_String(item, data_param_pool_key, pool_id, true)
   end
-end
-
-
--- INSTEAD OF NAMING INSTANCE DATA INDIVIDUALLY, COULD STORE THEM ALL IN A SERIALIZED TABLE? https://github.com/bakpakin/binser
-function getSetContainerInstanceState(container_instance_guid_or_items)
-  local get_set, data_param_name, container_instance_guid, container_instance_name
-  
-  get_set = type(container_instance_guid_or_items) == "table"
-  data_param_name = "container-instance"
-
-  if get_set == 0 then
-    container_instance_guid = container_instance_guid_or_items
-    container_instance_name = data_param_name..container_instance_guid
-
-    return getSetStateData(container_instance_name)
-  else
-    populateContainerInstanceState(container_instance_guid_or_items)
-  end
-end
-
-
-function populateContainerInstanceState(items)
-  local container_instance_val, data_param_name_prefix, separator, i, this_item, container_instance_guid, container_instance_name, this_item_guid
-
-  container_instance_val = ""
-  data_param_name_prefix = "container-instance-"
-  separator = ","
-  
-  for i = 0, #items do
-    this_item = items[i]
-    container_instance_guid = reaper.genGuid()
-    -- log(container_instance_guid)
-    container_instance_name = data_param_name_prefix..container_instance_guid
-    this_item_guid = reaper.BR_GetMediaItemGUID(this_item)
-
-    if container_instance_val == "" then
-      container_instance_val = this_item_guid
-    else
-      container_instance_val = container_instance_val..separator..this_item_guid
-    end
-  end
-
--- log(tostring(container_instance_name))
-  getSetStateData(container_instance_name, container_instance_val)
 end
 
 
@@ -581,28 +625,6 @@ function incrementPoolID()
   getSetStateData("last-pool-num", this_container_num)
 
   return this_container_num
-end
-
-
-local master_track = reaper.GetMasterTrack(0)
--- save state data in master track tempo envelope because changes get saved in undo points and it can't be deactivated
-local master_track_tempo_env = reaper.GetTrackEnvelope(master_track, 0)
-
-function getSetStateData(key, val)
-  local get_set, data_param, data_param_prefix, retval, state_data_val
-
-  if val then
-    get_set = true
-  else
-    val = ""
-    get_set = false
-  end
-
-  data_param = "P_EXT:"
-  data_param_script_prefix = "GR_"
-  retval, state_data_val = reaper.GetSetEnvelopeInfo_String(master_track_tempo_env, data_param..data_param_script_prefix..key, val, get_set)
-
-  return retval, state_data_val
 end
 
 
@@ -1377,7 +1399,8 @@ function initEditGluedContainer()
   if isNotSingleGluedContainer(#glued_containers) == true then return end
 
   this_pool_num = getItemPoolId(glued_containers[1])
-  if otherPooledInstanceIsOpen(this_pool_num) == true then return end
+
+  if otherPooledInstanceIsOpen(this_pool_num, selected_item_count, true) ~= false then return end
   
   selectDeselectItems(noncontainers, false)
   doEditGluedContainer()
@@ -1390,11 +1413,14 @@ function isNotSingleGluedContainer(glued_container_num)
   if glued_container_num == 0 then
     reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible Edit can only Edit previously glued container items." , 0)
     return true
+
   elseif glued_container_num > 1 then
     multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first (earliest) selected container item only?", "Glue-Reversible Edit can only open one glued container item per action call.", 1)
+
     if multiitem_result == 2 then
       return true
     end
+
   else
     return false
   end
@@ -1406,8 +1432,8 @@ function getItemPoolId(item)
 end
 
 
-function otherPooledInstanceIsOpen(edit_pool_num)
-  local num_all_items, i, item, item_pool_num, scroll_action_id
+function otherPooledInstanceIsOpen(edit_pool_num, selected_item_count, launch_warning)
+  local num_all_items, i, item, item_pool_num
 
   num_all_items = reaper.CountMediaItems(0)
 
@@ -1416,17 +1442,32 @@ function otherPooledInstanceIsOpen(edit_pool_num)
     item_pool_num = getContainerName(item)
 
     if getItemType(item) == "open" and item_pool_num == edit_pool_num then
-      deselectAll()
-      reaper.SetMediaItemSelected(item, true)
-      selectOtherItemsInContainerInstance()
-      -- scroll to selected item
-      scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
-      reaper.Main_OnCommand(scroll_action_id, 0)
 
-      reaper.ShowMessageBox("Reglue the other open container item from pool "..tostring(edit_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Only one glued container item per pool can be Edited at a time.", 0)
-      return true
+      if launch_warning == true then
+        reselectItems(item, selected_item_count)
+        launchMultiplePoolEditWarning(edit_pool_num)
+      end
+
+      return item
     end
   end
+    
+  return false
+end
+
+
+function reselectItems(item, selected_item_count)
+  deselectAll()
+  reaper.SetMediaItemSelected(item, true)
+  -- selectOtherItemsInContainerInstance(selected_item_count)
+end
+
+
+function launchMultiplePoolEditWarning(edit_pool_num)
+  local action_scroll_to_selected_items_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
+
+  reaper.Main_OnCommand(action_scroll_to_selected_items_id, 0)
+  reaper.ShowMessageBox("Reglue the other open container item from pool "..tostring(edit_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Only one glued container item per pool can be Edited at a time.", 0)
 end
 
 
