@@ -1,7 +1,7 @@
 -- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
 -- @author MonkeyBars
 -- @version 1.52
--- @changelog Edit doesn't detect container length edits done since last Glue (https://github.com/MonkeyBars3k/ReaScripts/issues/85); Canceling render dialog spits out error (https://github.com/MonkeyBars3k/ReaScripts/issues/96)
+-- @changelog Edit doesn't detect container length edits done since last Glue (https://github.com/MonkeyBars3k/ReaScripts/issues/85); Canceling render dialog spits out error (https://github.com/MonkeyBars3k/ReaScripts/issues/96); Fix position detect logic in light of glued edits (https://github.com/MonkeyBars3k/ReaScripts/issues/111)
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -424,8 +424,8 @@ function doGlueReversible(source_track, source_item, obey_time_selection, this_c
   glued_item, glued_item_init_name = executeGlue(obey_time_selection, original_items, selected_item_count, this_container_num, first_item_name)
   new_length, item_position = setItemParams(glued_item, container, this_container_num)
 
+  getSetGluedContainerData(this_container_num, glued_item)
   updatePoolStates(item_states, container, this_container_num, item_container_name, dependencies_table, ignore_depends)
-  getSetGluedContainerData(this_container_num, container)
   reaper.DeleteTrackMediaItem(source_track, container)
 
   return glued_item, original_state_key, item_position, new_length
@@ -458,7 +458,7 @@ local master_track = reaper.GetMasterTrack(0)
 local master_track_tempo_env = reaper.GetTrackEnvelope(master_track, 0)
 
 function getSetStateData(key, val)
-  local get_set, data_param, data_param_prefix, retval, state_data_val
+  local get_set, data_param, data_param_script_prefix, data_param_key, retval, state_data_val
 
   if val then
     get_set = true
@@ -469,7 +469,8 @@ function getSetStateData(key, val)
 
   data_param = "P_EXT:"
   data_param_script_prefix = "GR_"
-  retval, state_data_val = reaper.GetSetEnvelopeInfo_String(master_track_tempo_env, data_param..data_param_script_prefix..key, val, get_set)
+  data_param_key = data_param..data_param_script_prefix..key
+  retval, state_data_val = reaper.GetSetEnvelopeInfo_String(master_track_tempo_env, data_param_key, val, get_set)
 
   return retval, state_data_val
 end
@@ -755,6 +756,7 @@ function removePoolFromDependents(dependency, dependent)
 
   if r == true and string.find(dependents, dependent) then
     dependents = string.gsub(dependents, dependent, "")
+
     getSetStateData(key, dependents)
   end
 end
@@ -802,6 +804,7 @@ function setItemImage(item, remove)
 end
 
 
+
 local position_changed
 
 function doReglueReversible(source_track, source_item, this_container_num, container, obey_time_selection)
@@ -816,10 +819,7 @@ function doReglueReversible(source_track, source_item, this_container_num, conta
     glued_item = updateItemInfo(original_state_key, glued_item, new_src, pos, length)
   end
 
-  -- calculate dependents, create an update_table with a nicely ordered sequence and re-insert the items of each pool into temp tracks so they can be updated
   calculateDependentUpdates(this_container_num)
-
-  -- sort dependents update_table by how nested they are
   sortDependentUpdates()
 
   if pos_delta and pos_delta ~= 0 then
@@ -1029,6 +1029,7 @@ local update_table = {}
 -- numeric version
 local iupdate_table = {}
 
+-- create an update_table with a nicely ordered sequence and re-insert the items of each pool into temp tracks so they can be updated
 function calculateDependentUpdates(this_container_num, nesting_level)
   local track, dependent_pool, restored_items, item, container, glued_item, new_src, i, v, update_item, current_entry
 
@@ -1056,8 +1057,10 @@ function calculateDependentUpdates(this_container_num, nesting_level)
         reaper.InsertTrackAtIndex(0, false)
         track = reaper.GetTrack(0, 0)
 
+        deselectAll()
+
         -- restore items into newly made empty track
-        item, container, restored_items = restoreItems(dependent_pool, track, 0, true, true)
+        item, container, restored_items = restoreItems(nil, dependent_pool, track, nil, 0, nil, true, true)
 
         -- store references to temp track and items
         current_entry.track = track
@@ -1076,10 +1079,8 @@ function calculateDependentUpdates(this_container_num, nesting_level)
 end
 
 
-function restoreItems(this_container_num, track, position, dont_restore_take, dont_offset)
+function restoreItems(this_container_num, track, position, original_item_offset, original_item_length, dont_restore_take, dont_offset)
   local r, stored_items, splits, restored_items, key, val, restored_item, container, item, return_item, left_most, pos, i
-
-  deselectAll()
 
   -- get items stored during last glue
   r, stored_items = getSetStateData(this_container_num)
@@ -1093,6 +1094,7 @@ function restoreItems(this_container_num, track, position, dont_restore_take, do
 
       -- add item back into track
       restored_item = reaper.AddMediaItemToTrack(track)
+
       getSetObjectState(restored_item, val)
 
       -- restored_item is the open container?
@@ -1102,15 +1104,14 @@ function restoreItems(this_container_num, track, position, dont_restore_take, do
         return_item = restored_item
       end
 
-      -- "dont_restore_take" is set to true in calculateUpdates()
+      -- NB: "dont_restore_take" is set to true in calculateUpdates()
       if not dont_restore_take then
         restoreOriginalTake(restored_item) 
       end
 
-      -- set items' bg image
       setItemImage(restored_item)
 
-      -- get position of left-most pooled copy
+      -- get position of left-most pooled instance
       if not left_most then
         left_most = reaper.GetMediaItemInfo_Value(restored_item, "D_POSITION")
       else
@@ -1123,22 +1124,40 @@ function restoreItems(this_container_num, track, position, dont_restore_take, do
   end
 
   offset = position - left_most
-  restored_items = offsetEditedItems(restored_items, offset, dont_offset)
+  restored_items = offsetEditedItems(this_container_num, restored_items, offset, original_item_offset, original_item_length, dont_offset)
 
   return return_item, container, restored_items
 end
 
 
-function offsetEditedItems(restored_items, offset, dont_offset)
-  local i, item, pos
+function offsetEditedItems(this_container_num, restored_items, offset, original_item_offset, original_item_length, dont_offset)
+  local i, this_item, is_empty_container, glued_container_source_offset, glued_container_length, current_pos, new_pos, new_length
 
-  for i, item in ipairs(restored_items) do
-    reaper.SetMediaItemSelected(item, true)
+  for i, this_item in ipairs(restored_items) do
+    reaper.SetMediaItemSelected(this_item, true)
 
     if not dont_offset then
-      -- do position offset if this container is later than earliest positioned pooled copy
-      pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION") + offset
-      reaper.SetMediaItemInfo_Value(item, "D_POSITION", pos)
+      offsetItemFromEarliestPooledInstance(this_item, offset)
+    end
+
+    is_empty_container = i == #restored_items
+    glued_container_source_offset, glued_container_length = getSetGluedContainerData(this_container_num)
+    glued_container_source_offset = tonumber(glued_container_source_offset)
+    glued_container_length = tonumber(glued_container_length)
+    original_item_length = tonumber(original_item_length)
+    current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
+
+    if original_item_offset ~= 0 then
+      if not is_empty_container then
+        new_pos = current_pos - original_item_offset
+
+        reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+      
+      elseif is_empty_container and original_item_length ~= glued_container_length then
+        new_length = original_item_length
+
+        reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", new_length)
+      end
     end
   end
 
@@ -1146,7 +1165,14 @@ function offsetEditedItems(restored_items, offset, dont_offset)
 end
 
 
--- convert update_table to a numeric array then sort by nesting value
+function offsetItemFromEarliestPooledInstance(item, offset)
+  local pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION") + offset
+  
+  reaper.SetMediaItemInfo_Value(item, "D_POSITION", pos)
+end
+
+
+-- sort dependents update_table by how nested they are: convert update_table to a numeric array then sort by nesting value
 function sortDependentUpdates()
   local i, v
 
@@ -1201,10 +1227,10 @@ end
 
 
 
-local other_pooled_items_are_present, position_change_response
+local position_change_response, other_pooled_items_are_present
 
 function updatePooledItem(glued_item, this_item, this_container_name, edited_pool_id, new_src, length)
-  local take_name, take, this_item_is_glued, this_item_pool_id, item_is_in_edited_pool, this_is_glued_item, glued_containers, open_containers, current_src, current_pos
+  local take_name, take, this_item_is_glued, this_item_pool_id, item_is_in_edited_pool, this_is_glued_item, current_pos, current_src
 
   take_name, take = getSetItemName(this_item)
   this_item_is_glued = take_name and string.find(take_name, this_container_name)
@@ -1348,7 +1374,6 @@ function doEditGluedContainer()
   glued_container = item
 
   if item_is_glued_container then
-    getSetGluedContainerData(pool_id)
     processEditGluedContainer(glued_container, pool_id)
     cleanUpAction("MB Edit Glue-Reversible")
   end
@@ -1360,15 +1385,17 @@ function getSetGluedContainerData(pool_id, glued_container)
 
   get_set = glued_container
   pool_key_prefix = "pool-"
-  source_offset_prefix = "D_STARTOFFS-"
-  source_offset_key = pool_key_prefix..source_offset_prefix
-  length_prefix = "D_LENGTH-"
-  length_key = pool_key_prefix..length_prefix
+  source_offset_prefix = "_D_STARTOFFS"
+  source_offset_key = pool_key_prefix..pool_id..source_offset_prefix
+  length_prefix = "_D_LENGTH"
+  length_key = pool_key_prefix..pool_id..length_prefix
 
   -- get
   if not get_set then
     retval, glued_container_source_offset = getSetStateData(source_offset_key)
     retval, glued_container_length = getSetStateData(length_key)
+    
+    return glued_container_source_offset, glued_container_length
 
   -- set
   else
@@ -1383,13 +1410,13 @@ end
 
 
 function processEditGluedContainer(item, this_container_num)
-  local original_item_state, original_item_pos, original_item_track, _, container, original_item_state_key
+  local glued_container_source_offset, glued_container_length, original_item_state, original_item_pos, original_item_track, original_item_source_offset, original_item_length, _, container, original_item_state_key
 
-  original_item_state, original_item_pos, original_item_track = getOriginalItemState(item)
+  original_item_state, original_item_pos, original_item_offset, original_item_length, original_item_track = getOriginalItemState(item)
 
   deselectAll()
-
-  _, container = restoreItems(this_container_num, original_item_track, original_item_pos)
+  
+  _, container, restored_items = restoreItems(this_container_num, original_item_track, original_item_pos, original_item_offset, original_item_length)
 
   -- create a unique key for original state, and store it in container's name, space it out of sight then store it
   original_item_state_key = "original_state:"..this_container_num..":"..os.time()*7
@@ -1405,13 +1432,16 @@ end
 
 
 function getOriginalItemState(item)
-  local original_item_state, original_item_pos, original_item_track
+  local original_item_state, original_item_pos, original_item_take, original_item_offset, original_item_length, original_item_track
 
   original_item_state = getSetObjectState(item)
   original_item_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+  original_item_take = reaper.GetActiveTake(item)
+  original_item_offset = reaper.GetMediaItemTakeInfo_Value(original_item_take, "D_STARTOFFS")
+  original_item_length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
   original_item_track = reaper.GetMediaItemTrack(item)
 
-  return original_item_state, original_item_pos, original_item_track
+  return original_item_state, original_item_pos, original_item_offset, original_item_length, original_item_track
 end
 
 
