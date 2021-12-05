@@ -1,7 +1,7 @@
--- @description MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality
+-- @description MB_Glue-Reversible Utils: Codebase for MB_Glue-Reversible scripts' functionality
 -- @author MonkeyBars
--- @version 1.52
--- @changelog Edit doesn't detect container length edits done since last Glue (https://github.com/MonkeyBars3k/ReaScripts/issues/85); Canceling render dialog spits out error (https://github.com/MonkeyBars3k/ReaScripts/issues/96); Fix pooled instances' position/length detect logic in light of glued edits (https://github.com/MonkeyBars3k/ReaScripts/issues/111)
+-- @version 1.53
+-- @changelog Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Nested pooled containers no longer update (https://github.com/MonkeyBars3k/ReaScripts/issues/114)
 -- @provides [nomain] .
 --   gr-bg.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -15,20 +15,20 @@ local msg_change_selected_items = "Change the items selected and try again."
 
 
 function initGlueReversible(obey_time_selection)
-  local selected_item_count, this_container_num, container, source_item, source_track, glued_item
+  local selected_item_count, pool_id, empty_container, first_selected_item, first_selected_item_track, glued_container
 
   selected_item_count = initAction("glue")
 
   if selected_item_count == false then return end
 
-  this_container_num, container = checkSelectionForContainer(selected_item_count)
-  source_item, source_track = getSourceSelections()
+  pool_id, empty_container = getEmptyContainerFromSelection(selected_item_count)
+  first_selected_item, first_selected_item_track = getInitialSelections()
 
-  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or openContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, source_track) == true then return end
+  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or emptyContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track) == true then return end
 
-  glued_item = triggerGlueReversible(this_container_num, source_item, source_track, container, obey_time_selection)
+  glued_container = triggerGlueReversible(pool_id, first_selected_item, first_selected_item_track, empty_container, obey_time_selection)
   
-  exclusiveSelectItem(glued_item)
+  exclusiveSelectItem(glued_container)
   cleanUpAction("MB Glue-Reversible")
 end
 
@@ -37,12 +37,14 @@ function initAction(action)
   local selected_item_count
 
   selected_item_count = doPreGlueChecks()
+
   if selected_item_count == false then return false end
 
-  prepareGlueState(action)
+  prepareGlue(action)
   
   -- refresh in case item selection changed
   selected_item_count = getSelectedItemsCount()
+
   if itemsAreSelected(selected_item_count) == false then return false end
 
   return selected_item_count
@@ -64,16 +66,18 @@ end
 
 
 function renderPathIsValid()
-  local platform, proj_renderpath, is_win, is_win_absolute_path, is_nix_absolute_path
+  local platform, proj_renderpath, is_win, is_win_absolute_path, is_win_local_path, is_nix_absolute_path, is_other_local_path
 
   platform = reaper.GetOS()
   proj_renderpath = reaper.GetProjectPath(0)
   is_win = string.match(platform, "^Win")
   is_win_absolute_path = string.match(proj_renderpath, "^%u%:\\")
+  is_win_local_path = is_win and not is_win_absolute_path
   is_nix_absolute_path = string.match(proj_renderpath, "^/")
+  is_other_local_path = not is_win and not is_nix_absolute_path
   
-  if (is_win and not is_win_absolute_path) or (not is_win and not is_nix_absolute_path) then
-    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "Glue-Reversible needs a file render path.", 0)
+  if is_win_local_path or is_other_local_path then
+    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "Glue-Reversible needs a valid file render path.", 0)
     return false
   else
     return true
@@ -81,14 +85,10 @@ function renderPathIsValid()
 end
 
 
-function getSelectedItemsCount()
-  return reaper.CountSelectedMediaItems(0)
-end
-
-
 function itemsAreSelected(selected_item_count)
-  -- gluing single item is enabled. change to "< 2" to disable
-  if not selected_item_count or selected_item_count < 1 then 
+  local no_items_are_selected = selected_item_count < 1
+
+  if not selected_item_count or no_items_are_selected then 
     return false
   else
     return true
@@ -97,20 +97,22 @@ end
 
 
 function requiredLibsAreInstalled()
-  local sws_version
+  local can_get_sws_version, sws_version
 
-  if reaper.CF_GetSWSVersion ~= nil then
+  can_get_sws_version = reaper.CF_GetSWSVersion ~= nil
+
+  if can_get_sws_version then
     sws_version = reaper.CF_GetSWSVersion()
   end
 
-  if not sws_version then
+  if not can_get_sws_version or not sws_version then
     reaper.ShowMessageBox("Please install SWS at https://standingwaterstudios.com/ and try again.", "Glue-Reversible requires the SWS plugin extension to work.", 0)
     return false
   end
 end
 
 
-function prepareGlueState(action)
+function prepareGlue(action)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
 
@@ -120,46 +122,56 @@ function prepareGlueState(action)
 end
 
 
--- get open container info from selection
-function checkSelectionForContainer(selected_item_count)
-  local i, item, this_container_num, new_container_num, container
+function setResetItemSelectionSet(set_reset)
+  -- set
+  if set_reset == true then
+    -- save selected item selection set to slot 10
+    reaper.Main_OnCommand(41238, 0)
 
-  for i = 0, selected_item_count-1 do
-    item = reaper.GetSelectedMediaItem(0, i)
-    new_container_num = getContainerName(item)
-
-    -- if pool found on this item
-    if new_container_num then
-      -- if this search has already found another container
-      if this_container_num then
-        return false
-      else
-        container = item
-        this_container_num = new_container_num
-      end
-
-    -- if we don't have a non-container item yet
-    elseif not non_container_item then
-      non_container_item = item
-    end
+  -- reset
+  else
+    -- reset item selection from selection set slot 10
+    reaper.Main_OnCommand(41248, 0)
   end
-
-  -- make sure we have all 3 needed items
-  if not this_container_num or not container or not non_container_item then return end
-
-  return this_container_num, container
 end
 
 
--- gets container item name prefix
-function getContainerName(item, not_container)
+function getEmptyContainerFromSelection(selected_item_count)
+  local i, item, pool_id, new_pool_id, empty_container
 
-  local key, name, take
+  for i = 0, selected_item_count-1 do
 
-  key = "grc:(%d+)"
-  if not_container then key = "gr:(%d+)" end
-  
+    item = reaper.GetSelectedMediaItem(0, i)
+    new_pool_id = getPoolId(item)
+
+    if new_pool_id then
+
+      if pool_id then
+        return false
+      else
+        empty_container = item
+        pool_id = new_pool_id
+      end
+    end
+  end
+
+  if not pool_id or not empty_container then return end
+
+  return pool_id, empty_container
+end
+
+
+function getPoolId(item, is_glued_container)
+  local take, key, name
+
   take = reaper.GetActiveTake(item)
+
+  if is_glued_container then
+    key = "gr:(%d+)"
+  else
+    key = "grc:(%d+)"
+  end
+
   if take then 
     name = reaper.GetTakeName(take)
   else
@@ -170,41 +182,30 @@ function getContainerName(item, not_container)
 end
 
 
-function getSourceSelections()
-  local source_item, source_track
+function getInitialSelections()
+  local first_selected_item, first_selected_item_track
 
-  source_item = getOriginalItem()
-  source_track = getOriginalTrack(source_item)
+  first_selected_item = getFirstSelectedItem()
+  first_selected_item_track = getUserSelectedTrack(first_selected_item)
 
-  return source_item, source_track
+  return first_selected_item, first_selected_item_track
 end
 
 
-function getOriginalItem()
+function getFirstSelectedItem()
   return reaper.GetSelectedMediaItem(0, 0)
 end
 
 
-function getOriginalTrack(source_item)
-  return reaper.GetMediaItemTrack(source_item)
-end
-
-
-function setResetItemSelectionSet(set)
-  if set == true then
-    -- save selected item selection set to slot 10
-    reaper.Main_OnCommand(41238, 0)
-  else
-    -- reset item selection from selection set slot 10
-    reaper.Main_OnCommand(41248, 0)
-  end
+function getUserSelectedTrack(first_selected_item)
+  return reaper.GetMediaItemTrack(first_selected_item)
 end
 
 
 function itemsOnMultipleTracksAreSelected(selected_item_count)
-  local itemsOnMultipleTracksDetected = detectItemsOnMultipleTracks(selected_item_count)
+  local items_on_multiple_tracks_are_detected = detectItemsOnMultipleTracks(selected_item_count)
 
-  if itemsOnMultipleTracksDetected == true then 
+  if items_on_multiple_tracks_are_detected == true then 
       reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible and Edit container item only work on items on a single track.", 0)
       return true
   end
@@ -212,39 +213,34 @@ end
 
 
 function detectItemsOnMultipleTracks(selected_item_count)
-  local i, selected_items, item, item_track, prev_item_track, itemsOnMultipleTracksDetected
+  local i, selected_items, this_item, this_item_track, prev_item_track, items_on_multiple_tracks_are_detected
 
   selected_items = {}
-  itemsOnMultipleTracksDetected = false
+  items_on_multiple_tracks_are_detected = false
 
   for i = 0, selected_item_count-1 do
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
-    item = selected_items[i]
-    item_track = reaper.GetMediaItemTrack(item)
-    itemsOnMultipleTracksDetected = isDifferent(item_track, prev_item_track)
-    
-    if itemsOnMultipleTracksDetected == true then
-      return itemsOnMultipleTracksDetected
+    this_item = selected_items[i]
+    this_item_track = reaper.GetMediaItemTrack(this_item)
+    items_on_multiple_tracks_are_detected = this_item_track and prev_item_track and this_item_track ~= prev_item_track
+  
+    if items_on_multiple_tracks_are_detected == true then
+      return items_on_multiple_tracks_are_detected
     end
     
-    prev_item_track = item_track
+    prev_item_track = this_item_track
   end
 end
 
 
-function isDifferent(value1, value2)
-  if value1 and value2 and value1 ~= value2 then
-    return true
-  else
-    return false
-  end
-end
+function emptyContainersAreInvalid(selected_item_count)
+  local glued_containers, empty_containers, multiple_empty_containers_are_selected, recursive_container_is_being_glued
 
+  glued_containers, empty_containers = getContainers(selected_item_count)
+  multiple_empty_containers_are_selected = #empty_containers > 1
+  recursive_container_is_being_glued = recursiveContainerIsBeingGlued(glued_containers, empty_containers) == true
 
-function openContainersAreInvalid(selected_item_count)
-  local glued_containers, open_containers = getContainers(selected_item_count)
-
-  if #open_containers > 1 or recursiveContainerIsBeingGlued(glued_containers, open_containers) == true then
+  if multiple_empty_containers_are_selected or recursive_container_is_being_glued then
     reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can only Reglue or Edit one container at a time.", 0)
     setResetItemSelectionSet()
     return true
@@ -253,25 +249,25 @@ end
 
 
 function getContainers(selected_item_count)
-  local glued_containers, open_containers, noncontainers, i, item
+  local glued_containers, empty_containers, noncontainers, i, this_item
 
   glued_containers = {}
-  open_containers = {}
+  empty_containers = {}
   noncontainers = {}
 
   for i = 0, selected_item_count-1 do
-    item = reaper.GetSelectedMediaItem(0, i)
+    this_item = reaper.GetSelectedMediaItem(0, i)
 
-    if getItemType(item) == "glued" then
-      table.insert(glued_containers, item)
-    elseif getItemType(item) == "open" then
-      table.insert(open_containers, item)
-    elseif getItemType(item) == "noncontainer" then
-      table.insert(noncontainers, item)
+    if getItemType(this_item) == "glued" then
+      table.insert(glued_containers, this_item)
+    elseif getItemType(this_item) == "open" then
+      table.insert(empty_containers, this_item)
+    elseif getItemType(this_item) == "noncontainer" then
+      table.insert(noncontainers, this_item)
     end
   end
 
-  return glued_containers, open_containers, noncontainers
+  return glued_containers, empty_containers, noncontainers
 end
 
 
@@ -279,14 +275,14 @@ function getItemType(item)
   local name, take_name, is_open_container, is_glued_container
 
   take = reaper.GetActiveTake(item)
+  is_open_container = "^grc:(%d+)"
+  is_glued_container = "^gr:(%d+)"
+
   if take then 
     name = reaper.GetTakeName(take)
   else
     return
   end
-
-  is_open_container = "^grc:(%d+)"
-  is_glued_container = "^gr:(%d+)"
 
   if string.match(name, is_open_container) then
     return "open"
@@ -298,22 +294,22 @@ function getItemType(item)
 end
 
 
-function recursiveContainerIsBeingGlued(glued_containers, open_containers)
-  local i, j, this_container_num, this_glued_container_num, glued_container_name_prefix, open_container_name_prefix
+function recursiveContainerIsBeingGlued(glued_containers, empty_containers)
+  local i, j, pool_id, glued_container_name_prefix, this_glued_pool_id, empty_container_name_prefix, this_open_pool_id
 
   for i = 1, #glued_containers do
-    this_container_num = getSetItemName(glued_containers[i])
+    pool_id = getSetItemName(glued_containers[i])
     glued_container_name_prefix = "^gr:(%d+)"
-    this_glued_container_num = string.match(this_container_num, glued_container_name_prefix)
+    this_glued_pool_id = string.match(pool_id, glued_container_name_prefix)
 
     j = 1
-    for j = 1, #open_containers do
-      this_container_num = getSetItemName(open_containers[j])
-      open_container_name_prefix = "^grc:(%d+)"
-      this_open_container_num = string.match(this_container_num, open_container_name_prefix)
+    for j = 1, #empty_containers do
+      pool_id = getSetItemName(empty_containers[j])
+      empty_container_name_prefix = "^grc:(%d+)"
+      this_open_pool_id = string.match(pool_id, empty_container_name_prefix)
       
-      if this_glued_container_num == this_open_container_num then
-        reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can't glue a pooled, glued container item to an open copy of itself, or you could destroy the universe!", 0)
+      if this_glued_pool_id == this_open_pool_id then
+        reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible can't glue a glued container item to an instance from the same pool being Edited – or you could destroy the universe!", 0)
         setResetItemSelectionSet()
         return true
       end
@@ -322,24 +318,59 @@ function recursiveContainerIsBeingGlued(glued_containers, open_containers)
 end
 
 
-function pureMIDIItemsAreSelected(selected_item_count, source_track)
-  local selected_items, item, track_has_virtual_instrument, this_item_is_MIDI, midi_item_is_selected, i
+function getSetItemName(item, new_name, add_or_remove)
+  local item_has_no_takes, take, current_name
+
+  item_has_no_takes = reaper.GetMediaItemNumTakes(item) < 1
+
+  if item_has_no_takes then return end
+
+  take = reaper.GetActiveTake(item)
+
+  if take then
+    current_name = reaper.GetTakeName(take)
+
+    -- set
+    if new_name then
+
+      if add_or_remove == "add" then
+        new_name = current_name.." "..new_name
+
+      elseif add_or_remove == "remove" then
+        new_name = string.gsub(current_name, new_name, "")
+      end
+
+      reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", new_name, true)
+
+      return new_name, take
+
+    -- get
+    else
+      return current_name, take
+    end
+  end
+end
+
+
+function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track)
+  local selected_items, track_has_no_virtual_instrument, midi_item_is_selected, i, this_item, this_item_is_MIDI
 
   selected_items = {}
-  track_has_virtual_instrument = reaper.TrackFX_GetInstrument(source_track)
+  track_has_no_virtual_instrument = reaper.TrackFX_GetInstrument(first_selected_item_track) == -1
   midi_item_is_selected = false
 
   for i = 0, selected_item_count-1 do
     selected_items[i] = reaper.GetSelectedMediaItem(0, i)
-    item = selected_items[i]
+    this_item = selected_items[i]
 
-    this_item_is_MIDI = isMIDIItem(item)    
+    this_item_is_MIDI = isMIDIItem(this_item)
+
     if this_item_is_MIDI == true then
       midi_item_is_selected = true
     end
   end
 
-  if midi_item_is_selected and track_has_virtual_instrument == -1 then
+  if midi_item_is_selected and track_has_no_virtual_instrument then
     reaper.ShowMessageBox("Add a virtual instrument to render audio into the glued container or try a different item selection.", "Glue-Reversible can't glue pure MIDI without a virtual instrument.", 0)
     return true
   end
@@ -347,9 +378,12 @@ end
 
 
 function isMIDIItem(item)
-  local active_take = reaper.GetActiveTake(item)
+  local active_take, this_take_is_midi
 
-  if active_take and reaper.TakeIsMIDI(active_take) then
+  active_take = reaper.GetActiveTake(item)
+  this_take_is_midi = reaper.TakeIsMIDI(active_take)
+
+  if active_take and this_take_is_midi then
     return true
   else
     return false
@@ -357,39 +391,29 @@ function isMIDIItem(item)
 end
 
 
-function triggerGlueReversible(this_container_num, source_item, source_track, container, obey_time_selection)
-  local glued_item
+function triggerGlueReversible(pool_id, first_selected_item, first_selected_item_track, empty_container, obey_time_selection)
+  local glued_container
   
-  if this_container_num then
-    glued_item = doReglueReversible(source_track, source_item, this_container_num, container, obey_time_selection)
+  if pool_id then
+    glued_container = reglueContainer(first_selected_item_track, first_selected_item, pool_id, empty_container, obey_time_selection)
   else
-    glued_item = doGlueReversible(source_track, source_item, obey_time_selection)
+    glued_container = createGluedContainer(first_selected_item_track, first_selected_item, obey_time_selection)
   end
 
-  return glued_item
+  return glued_container
 end
 
 
 function exclusiveSelectItem(item)
   if item then
-    deselectAll()
+    deselectAllItems()
     reaper.SetMediaItemSelected(item, true)
   end
 end
 
 
-function deselectAll()
-  local num = reaper.CountSelectedMediaItems(0)
-  
-  if not num or num < 1 then return end
-  
-  local i = 0
-  while i < num do
-    reaper.SetMediaItemSelected( reaper.GetSelectedMediaItem(0, 0), false)
-    i = i + 1
-  end
-
-  num = reaper.CountSelectedMediaItems(0)
+function deselectAllItems()
+  reaper.Main_OnCommand(40289, 0)
 end
 
 
@@ -407,61 +431,73 @@ function refreshUI()
 end
 
 
-function doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, existing_container, ignore_depends)
-  local selected_item_count, original_items, item_states, container, new_length, item_position, glued_item, item_container_name, dependencies_table, original_state_key, first_item_name, glued_item_init_name
+function createGluedContainer(first_selected_item_track, first_selected_item, obey_time_selection, pool_id, empty_container, ignore_dependencies)
+  local selected_item_count, user_selected_items, first_user_selected_item_name, user_selected_item_states, pool_dependencies_table, has_glued_containers_or_noncontainers, new_pool_id, glue_placeholder_item, glued_item, glued_item_length, glued_item_position
 
-  if not this_container_num then
-    this_container_num = incrementPoolID()
+  if not pool_id then
+    pool_id = handlePoolId()
   end
 
-  selected_item_count, original_items, first_item_name = handleGlueItemSelections()
-  item_states, dependencies_table, has_non_container_items, item_container_name = handleItemStates(selected_item_count, original_items, existing_container)
+  selected_item_count = getSelectedItemsCount()
+  user_selected_items, first_user_selected_item_name = getUserSelectedItems(selected_item_count)
 
-  -- if we're attempting to glue a bunch of containers and nothing else, we're done
-  if not has_non_container_items then return end
-
-  container, original_state_key = prepareGlue(existing_container, source_track, this_container_num, original_items, container)
-  glued_item, glued_item_init_name = executeGlue(obey_time_selection, original_items, selected_item_count, this_container_num, first_item_name)
-  new_length, item_position = setItemParams(glued_item, container, this_container_num)
-
-  getSetGluedContainerData(this_container_num, glued_item)
-  updatePoolStates(item_states, container, this_container_num, item_container_name, dependencies_table, ignore_depends)
-  reaper.DeleteTrackMediaItem(source_track, container)
-
-  return glued_item, original_state_key, item_position, new_length
-end
-
-
-function incrementPoolID()
-  local r, last_container_num, this_container_num
+  deselectAllItems()
   
-  -- make a new pool id from last pool id if this is a new pool and name glue_track accordingly
-  r, last_container_num = getSetStateData("last-pool-num")
+  user_selected_item_states, pool_dependencies_table, has_glued_containers_or_noncontainers, new_pool_id = createUserSelectedItemStates(selected_item_count, user_selected_items, empty_container)
 
-  if r == true and last_container_num then
-    last_container_num = tonumber( last_container_num )
-    this_container_num = math.floor(last_container_num + 1)
-  else
-    this_container_num = 1
-  end
+  if not has_glued_containers_or_noncontainers then return end
 
-  -- store this pool id so next pool can increment up
-  getSetStateData("last-pool-num", this_container_num)
+  glue_placeholder_item = createGluePlaceholder(empty_container, first_selected_item_track, pool_id, user_selected_items)
+  glued_item = glueSelectedItemsIntoContainer(obey_time_selection, user_selected_items, selected_item_count, pool_id, first_user_selected_item_name)
+  glued_item_length, glued_item_position = setGluedContainerParams(glued_item, glue_placeholder_item, pool_id)
 
-  return this_container_num
+  getSetGluedContainerData(pool_id, glued_item)
+  updatePoolStates(user_selected_item_states, glue_placeholder_item, pool_id, new_pool_id, pool_dependencies_table, ignore_dependencies)
+  deletePlaceholder(first_selected_item_track, glue_placeholder_item)
+
+  return glued_item, glued_item_position, glued_item_length
 end
 
 
+function handlePoolId()
+  local retval, last_pool_id, new_pool_id
+  
+  retval, last_pool_id = getSetStateData("last-pool-id")
+  new_pool_id = incrementPoolId(last_pool_id)
 
+  getSetStateData("last-pool-id", new_pool_id)
+
+  return new_pool_id
+end
+
+
+function incrementPoolId(last_pool_id)
+  local new_pool_id
+
+  if last_pool_id and last_pool_id ~= "" then
+    last_pool_id = tonumber(last_pool_id)
+    new_pool_id = math.floor(last_pool_id + 1)
+  else
+    new_pool_id = 1
+  end
+
+  return new_pool_id
+end
+
+
+-- outside function since getSetStateData() gets called a lot
 local master_track = reaper.GetMasterTrack(0)
--- save state data in master track tempo envelope because changes get saved in undo points and it can't be deactivated
+-- save state data in master track tempo envelope because changes get saved in undo points and it can't be deactivated (i.e., data removed)
 local master_track_tempo_env = reaper.GetTrackEnvelope(master_track, 0)
 
 function getSetStateData(key, val)
   local get_set, data_param, data_param_script_prefix, data_param_key, retval, state_data_val
 
+  -- set
   if val then
     get_set = true
+
+  -- get
   else
     val = ""
     get_set = false
@@ -476,174 +512,221 @@ function getSetStateData(key, val)
 end
 
 
-function handleGlueItemSelections()
-  local selected_item_count, original_items, first_item_name
-
-  selected_item_count = reaper.CountSelectedMediaItems(0)
-  original_items, first_item_name = getOriginalSelectedItems(selected_item_count)
-
-  deselectAll()
-
-  return selected_item_count, original_items, first_item_name
+function getSelectedItemsCount()
+  return reaper.CountSelectedMediaItems(0)
 end
 
 
-function getOriginalSelectedItems(selected_item_count)
-  local original_items, i, this_item, this_item_name, this_item_take, first_item_name, this_is_open_container, nested_container_label
+function getUserSelectedItems(selected_item_count)
+  local user_selected_items, i, this_item, this_item_name, this_item_take, first_user_selected_item_name, this_is_empty_container, nested_container_label
 
-  original_items = {}
+  user_selected_items = {}
   
   for i = 0, selected_item_count-1 do
     this_item = reaper.GetSelectedMediaItem(0, i)
     this_item_name, this_item_take = getSetItemName(this_item)
-    this_is_open_container = string.match(this_item_name, "^grc:")
+    this_is_empty_container = string.match(this_item_name, "^grc:")
     nested_container_label = string.match(this_item_name, "^gr:%d+")
 
-    if not this_is_open_container then
-      table.insert(original_items, this_item)
+    if not this_is_empty_container then
+      table.insert(user_selected_items, this_item)
 
-      if not first_item_name then
+      if not first_user_selected_item_name then
         if nested_container_label then
-          first_item_name = nested_container_label
+          first_user_selected_item_name = nested_container_label
         else
-          first_item_name = this_item_name
+          first_user_selected_item_name = this_item_name
         end
       end
     end
   end
 
-  return original_items, first_item_name
+  return user_selected_items, first_user_selected_item_name
 end
 
 
-function handleItemStates(selected_item_count, original_items, existing_container)
-  local item_states, dependencies_table, has_non_container_items, i, item, item_container_name
+function createUserSelectedItemStates(selected_item_count, user_selected_items, empty_container)
+  local user_selected_item_count, user_selected_item_states, pool_dependencies_table, has_glued_containers_or_noncontainers, i, this_item, this_item_is_not_empty_container, new_pool_id
 
-  -- convert to audio takes, store state, and check for dependencies
-  item_states = ''
-  dependencies_table = {}
-  has_non_container_items = false
+  user_selected_item_count = getTableSize(user_selected_items)
+  user_selected_item_states = ""
+  pool_dependencies_table = {}
+  has_glued_containers_or_noncontainers = false
 
-  for i = 1, getTableSize(original_items) do
-    item = original_items[i]
+  for i = 1, user_selected_item_count do
+    this_item = user_selected_items[i]
+    this_item_is_not_empty_container = this_item ~= empty_container
 
-    if item ~= existing_container then
-      has_non_container_items = true
-
-      setToAudioTake(item)
+    if this_item_is_not_empty_container then
+      convertMidiItemToAudio(this_item)
       
-      item_states = item_states..getSetObjectState(item)
-      item_states = item_states.."|||"
+      user_selected_item_states = user_selected_item_states..getSetObjectState(this_item).."|||"
+      has_glued_containers_or_noncontainers = true
+      new_pool_id = getPoolId(this_item, true)
 
-      item_container_name = getContainerName(item, true)
-
-      if item_container_name then
-        -- store this item's pool to set up dependencies later
-        dependencies_table[item_container_name] = item_container_name
+      if new_pool_id then
+        pool_dependencies_table[new_pool_id] = new_pool_id
       end
     end
   end
 
-  return item_states, dependencies_table, has_non_container_items, item_container_name
+  return user_selected_item_states, pool_dependencies_table, has_glued_containers_or_noncontainers, new_pool_id
 end
 
 
-function prepareGlue(existing_container, source_track, this_container_num, original_items, container)
-  local container, original_state_keythis_container_num
+function convertMidiItemToAudio(item)
+  local item_takes_count, active_take, this_take_is_midi, active_take_num, new_take_name
 
-  if existing_container then
-    container = prepareReglue(existing_container, source_track)
+  item_takes_count = reaper.GetMediaItemNumTakes(item)
+
+  if item_takes_count > 0 then
+    
+    active_take = reaper.GetActiveTake(item)
+    this_take_is_midi = active_take and reaper.TakeIsMIDI(active_take)
+
+    if this_take_is_midi then
+      active_take_num = getTakeNum(active_take)
+
+      reaper.SetMediaItemSelected(item, 1)
+      renderFxToItem()
+
+      active_take = setLastTakeActive(item, item_takes_count)
+      new_take_name = "glue_reversible_render:"..math.floor(active_take_num)
+
+      reaper.GetSetMediaItemTakeInfo_String(active_take, "P_NAME", new_take_name, true)
+      reaper.SetMediaItemSelected(item, 0)
+      cleanNullTakes(item)
+    end
+  end
+end
+
+
+function getTakeNum(take)
+  return reaper.GetMediaItemTakeInfo_Value(take, "IP_TAKENUMBER")
+end
+
+
+function renderFxToItem()
+  reaper.Main_OnCommand(40209, 0)
+end
+
+
+function setLastTakeActive(item, item_takes_count)
+  local last_take = reaper.GetTake(item, item_takes_count)
+
+  reaper.SetActiveTake(last_take)
+
+  return last_take
+end
+
+
+function cleanNullTakes(item, force)
+  local item_state = getSetObjectState(item)
+
+  if string.find(item_state, "TAKE NULL") or force then
+    item_state = string.gsub(state, "TAKE NULL", "")
+
+    reaper.getSetObjectState(item, item_state)
+  end
+end
+
+
+function createGluePlaceholder(empty_container, first_selected_item_track, pool_id, user_selected_items)
+  local glue_placeholder_item
+
+  -- reglue
+  if empty_container then
+    glue_placeholder_item = prepareRegluePlaceholder(empty_container, first_selected_item_track)
+
+  -- new glue
   else
-    -- new glue: create container that will be resized and stored after glue is done
-    container, original_state_key = reaper.AddMediaItemToTrack(source_track)
+    glue_placeholder_item = reaper.AddMediaItemToTrack(first_selected_item_track)
 
-    -- set container's name to point to this pool
-    setItemPool(container, this_container_num)
+    setContainerItemName(glue_placeholder_item, pool_id)
+    setTakeSource(glue_placeholder_item)
   end
 
-  selectDeselectItems(original_items, true)
-  reaper.SetMediaItemSelected(container, false)
+  selectDeselectItems(user_selected_items, true)
+  reaper.SetMediaItemSelected(glue_placeholder_item, false)
 
-  return container, original_state_key
+  return glue_placeholder_item
 end
 
 
-function prepareReglue(existing_container, source_track)
-  local container, open_container, container_length, container_position, container_name, original_state_key
+function setContainerItemName(item, item_name_ending, is_glued_item)
+  local item_name_prefix, new_item_name, take
 
-  -- existing container will be used for state storage/resizing later
-  container = existing_container
-
-  -- store reference to a new empty container for gluing purposes only
-  open_container = reaper.AddMediaItemToTrack(source_track)
-  
-  -- select open_container too; it will be absorbed in the glue
-  reaper.SetMediaItemSelected(open_container, true)
-  
-  -- resize and reposition new open_container to match existing container
-  container_length = reaper.GetMediaItemInfo_Value(container, "D_LENGTH")
-  container_position = reaper.GetMediaItemInfo_Value(container, "D_POSITION")
-  reaper.SetMediaItemInfo_Value(open_container, "D_LENGTH", container_length)
-  reaper.SetMediaItemInfo_Value(open_container, "D_POSITION", container_position)
-  
-  -- does this container have a reference to an original state of item that was open?
-  container_name = getSetItemName(container)
-  original_state_key = string.match(container_name, "original_state:%d+:%d+")
-
-  -- get rid of original state key from container, not needed anymore
-  getSetItemName(container, "%s+original_state:%d+:%d+", -1)
-
-  return container, original_state_key
-end
-
-
-function setItemPool(item, item_name_ending, not_container)
-  local key, name, take, source
-
-  if not_container then
-    key = "gr:"
+  if is_glued_item then
+    item_name_prefix = "gr:"
   else
-    key = "grc:"
+    item_name_prefix = "grc:"
   end
 
-  name = key..item_name_ending
+  new_item_name = item_name_prefix..item_name_ending
   take = reaper.GetActiveTake(item)
+
+  reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", new_item_name, true)
+end
+
+
+function setTakeSource(item)
+  local take, take_source
+
+  take = reaper.GetActiveTake(item)
+  take_source = reaper.PCM_Source_CreateFromType("")
 
   if not take then
     take = reaper.AddTakeToMediaItem(item)
   end
 
-  if not not_container then
-    source = reaper.PCM_Source_CreateFromType("")
-    reaper.SetMediaItemTake_Source(take, source)
-  end
-
-  reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", name, true)
+  reaper.SetMediaItemTake_Source(take, take_source)
 end
 
 
-function selectDeselectItems(items, toggle)
+function selectDeselectItems(items, select_deselect)
   local i, count
 
   count = getTableSize(items)
 
   for i = 1, count do
-    reaper.SetMediaItemSelected(items[i], toggle)
+    reaper.SetMediaItemSelected(items[i], select_deselect)
   end
 end
 
 
-function executeGlue(obey_time_selection, original_items, selected_item_count, this_container_num, first_item_name)
-  local glued_item, glued_item_init_name
+function prepareRegluePlaceholder(empty_container, first_selected_item_track)
+  local reglue_placeholder_item, temp_marker_item, reglue_placeholder_item_length, reglue_placeholder_item_position, reglue_placeholder_item_name
+
+  reglue_placeholder_item = empty_container
+  temp_marker_item = reaper.AddMediaItemToTrack(first_selected_item_track)
+  
+  reaper.SetMediaItemSelected(temp_marker_item, true)
+  
+  reglue_placeholder_item_length = reaper.GetMediaItemInfo_Value(reglue_placeholder_item, "D_LENGTH")
+  reglue_placeholder_item_position = reaper.GetMediaItemInfo_Value(reglue_placeholder_item, "D_POSITION")
+
+  reaper.SetMediaItemInfo_Value(temp_marker_item, "D_LENGTH", reglue_placeholder_item_length)
+  reaper.SetMediaItemInfo_Value(temp_marker_item, "D_POSITION", reglue_placeholder_item_position)
+  
+  reglue_placeholder_item_name = getSetItemName(reglue_placeholder_item)
+
+  getSetItemName(reglue_placeholder_item, "%s+original_state:%d+:%d+", "remove")
+
+  return reglue_placeholder_item
+end
+
+
+function glueSelectedItemsIntoContainer(obey_time_selection, user_selected_items, selected_item_count, pool_id, first_user_selected_item_name)
+  local glued_container, glued_container_init_name
 
   glueSelectedItems(obey_time_selection)
 
-  glued_item = reaper.GetSelectedMediaItem(0, 0)
-  glued_item_init_name = handleAddtionalItemCountLabel(original_items, selected_item_count, this_container_num, first_item_name)
+  glued_container = reaper.GetSelectedMediaItem(0, 0)
+  glued_container_init_name = handleAddtionalItemCountLabel(user_selected_items, selected_item_count, pool_id, first_user_selected_item_name)
   
-  setItemPool(glued_item, glued_item_init_name, true)
+  setContainerItemName(glued_container, glued_container_init_name, true)
 
-  return glued_item, glued_item_init_name
+  return glued_container
 end
 
 
@@ -656,56 +739,102 @@ function glueSelectedItems(obey_time_selection)
 end
 
 
-function handleAddtionalItemCountLabel(original_items, selected_item_count, this_container_num, first_item_name)
-  local original_items_num, item_name_addl_count, glued_item_init_name
+function handleAddtionalItemCountLabel(user_selected_items, selected_item_count, pool_id, first_user_selected_item_name)
+  local user_selected_item_count, multiple_user_selected_items, item_name_addl_count_str, glued_container_init_name, double_quotation_mark
 
-  original_items_num = getTableSize(original_items)
+  user_selected_item_count = getTableSize(user_selected_items)
+  multiple_user_selected_items = user_selected_item_count > 1
+  double_quotation_mark = "\u{0022}"
 
-  if original_items_num > 1 then
-    item_name_addl_count = " +"..(original_items_num-1).. " more"
+  if multiple_user_selected_items then
+    item_name_addl_count_str = " +"..(user_selected_item_count-1).. " more"
   else
-    item_name_addl_count = ""
+    item_name_addl_count_str = ""
   end
 
-  glued_item_init_name = this_container_num.." [\u{0022}"..first_item_name.."\u{0022}"..item_name_addl_count.."]"
+  glued_container_init_name = pool_id.." ["..double_quotation_mark..first_user_selected_item_name..double_quotation_mark..item_name_addl_count_str.."]"
 
-  return glued_item_init_name
+  return glued_container_init_name
 end
 
 
-function updatePoolStates(item_states, container, this_container_num, item_container_name, dependencies_table, ignore_depends)
+
+local glued_instance_pos_delta_during_edit
+
+function setGluedContainerParams(glued_container, container, pool_id)
+  local new_glued_container_length, new_glued_container_position, retval, user_selected_item_position
+
+  -- make sure container is big enough
+  new_glued_container_length = reaper.GetMediaItemInfo_Value(glued_container, "D_LENGTH")
+  reaper.SetMediaItemInfo_Value(container, "D_LENGTH", new_glued_container_length)
+
+  -- make sure container is aligned with start of items
+  new_glued_container_position = reaper.GetMediaItemInfo_Value(glued_container, "D_POSITION")
+  reaper.SetMediaItemInfo_Value(container, "D_POSITION", new_glued_container_position)
+
+  retval, user_selected_item_position = getSetStateData(pool_id.."-pos")
+  user_selected_item_position = tonumber(user_selected_item_position)
+
+  if new_glued_container_position and user_selected_item_position then
+    glued_instance_pos_delta_during_edit = round((new_glued_container_position - user_selected_item_position), 13)
+  else
+    glued_instance_pos_delta_during_edit = 0
+  end
+
+  setItemImage(glued_container)
+
+  return new_glued_container_length, new_glued_container_position
+end
+
+
+function setItemImage(item, remove)
+  local script_path, img_path 
+
+  script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
+
+  if not remove then
+    img_path = script_path.."gr-bg.png"
+  else
+    img_path = ""
+  end
+
+  reaper.BR_SetMediaItemImageResource(item, img_path, 1)
+end
+
+
+function updatePoolStates(user_selected_item_states, container, pool_id, new_pool_id, pool_dependencies_table, ignore_dependencies)
   -- add container to stored states
-  item_states = item_states..getSetObjectState(container)
+  user_selected_item_states = user_selected_item_states..getSetObjectState(container)
   
   -- save stored state
-  getSetStateData(this_container_num, item_states)
+  getSetStateData(pool_id, user_selected_item_states)
 
-  if not ignore_depends then
+  if not ignore_dependencies then
     -- i.e., not called by updatePooledItems()
-    updatePooledCopies(this_container_num, item_container_name, dependencies_table)
+    updatePooledCopies(pool_id, new_pool_id, pool_dependencies_table)
   end
 end
 
 
-function updatePooledCopies(this_container_num, item_container_name, dependencies_table)
+function updatePooledCopies(pool_id, new_pool_id, pool_dependencies_table)
   local r, old_dependencies, dependencies, dependent, dependecies_have_changed, dependency
 
-  r, old_dependencies = getSetStateData(this_container_num..":dependencies")
+  r, old_dependencies = getSetStateData(pool_id..":dependencies")
   
   if r == false then
     old_dependencies = ""
   end
 
   dependencies = ""
-  dependent = "|"..this_container_num.."|"
+  dependent = "|"..pool_id.."|"
 
   -- store a reference to this pool for all the nested pools so if any get updated, they can check and update this pool
-  for item_container_name, r in pairs(dependencies_table) do
-    dependencies, old_dependencies = storePoolReference(item_container_name, dependent, dependencies, old_dependencies)
+  for new_pool_id, r in pairs(pool_dependencies_table) do
+    dependencies, old_dependencies = storePoolReference(new_pool_id, dependent, dependencies, old_dependencies)
   end
 
   -- store this pool's dependencies list
-  getSetStateData(this_container_num..":dependencies", dependencies)
+  getSetStateData(pool_id..":dependencies", dependencies)
 
   -- have the dependencies changed? - CHANGE CONDITION TO VAR dependencies_have_changed
   if string.len(old_dependencies) > 0 then
@@ -718,11 +847,11 @@ function updatePooledCopies(this_container_num, item_container_name, dependencie
 end
 
 
-function storePoolReference(item_container_name, dependent, dependencies, old_dependencies)
+function storePoolReference(new_pool_id, dependent, dependencies, old_dependencies)
   local key, r, dependents, dependency
 
   -- make a key for nested pool to store which pools are dependent on it
-  key = item_container_name..":dependents"
+  key = new_pool_id..":dependents"
   
   -- see if nested pool already has a list of dependents
   r, dependents = getSetStateData(key)
@@ -738,7 +867,7 @@ function storePoolReference(item_container_name, dependent, dependencies, old_de
   end
 
   -- now store of these pools' dependencies
-  dependency = "|"..item_container_name.."|"
+  dependency = "|"..new_pool_id.."|"
   dependencies = dependencies..dependency
 
   -- remove this dependency from old_dependencies string
@@ -762,85 +891,50 @@ function removePoolFromDependents(dependency, dependent)
 end
 
 
-
-local glued_instance_pos_delta
-
-function setItemParams(glued_item, container, this_container_num)
-  local new_length, new_item_position, retval, source_item_position
-
-  -- make sure container is big enough
-  new_length = reaper.GetMediaItemInfo_Value(glued_item, "D_LENGTH")
-  reaper.SetMediaItemInfo_Value(container, "D_LENGTH", new_length)
-
-  -- make sure container is aligned with start of items
-  new_item_position = reaper.GetMediaItemInfo_Value(glued_item, "D_POSITION")
-  reaper.SetMediaItemInfo_Value(container, "D_POSITION", new_item_position)
-
-  retval, source_item_position = getSetStateData(this_container_num.."-pos")
-  source_item_position = tonumber(source_item_position)
-
-  if new_item_position and source_item_position and not glued_instance_pos_delta then
-    glued_instance_pos_delta = round((new_item_position - source_item_position), 13)
-  end
-
-  setItemImage(glued_item)
-
-  return new_length, new_item_position
+function deletePlaceholder(first_selected_item_track, glue_placeholder_item)
+  reaper.DeleteTrackMediaItem(first_selected_item_track, glue_placeholder_item)
 end
 
 
-function setItemImage(item, remove)
-  local script_path, img_path 
+function reglueContainer(first_selected_item_track, first_selected_item, pool_id, container, obey_time_selection)
+  local glued_container_source_offset, open_container_source_offset, open_container_length, open_container_pos, original_item_state, original_item_pos, glued_container, pos, length, new_src
 
-  script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
-
-  if not remove then
-    img_path = script_path.."gr-bg.png"
-  else
-    img_path = ""
-  end
-
-  reaper.BR_SetMediaItemImageResource(item, img_path, 1)
-end
-
-
-function doReglueReversible(source_track, source_item, this_container_num, container, obey_time_selection)
-  local glued_container_source_offset, open_container_source_offset, open_container_length, open_container_pos, original_item_state, original_item_pos, glued_item, original_state_key, pos, length, new_src
-  
-  glued_container_source_offset = getSetGluedContainerData(this_container_num)
-  open_container_source_offset, open_container_length, open_container_pos = getSetGluedContainerData("open-"..this_container_num)
+  glued_container_source_offset = getSetGluedContainerData(pool_id)
+  open_container_source_offset, open_container_length, open_container_pos = getSetGluedContainerData("open-"..pool_id)
   original_item_state, original_item_pos = getOriginalItemState(container)
-  glued_item, original_state_key, pos, length = doGlueReversible(source_track, source_item, obey_time_selection, this_container_num, container)
+  glued_container, pos, length = createGluedContainer(first_selected_item_track, first_selected_item, obey_time_selection, pool_id, container)
 
   -- store updated src
-  new_src = getItemWavSrc(glued_item)
+  new_src = getItemWavSrc(glued_container)
 
-  if original_state_key then
-    glued_item = updateItemInfo(original_state_key, glued_item, new_src, pos, length)
-  end
+  -- this never got called
+  -- if original_state_key then
+  --   glued_container = updateItemInfo(original_state_key, glued_container, new_src, pos, length)
+  -- end
 
-  calculateDependentUpdates(this_container_num)
+  calculateDependentUpdates(pool_id)
   sortDependentUpdates()
   setPositionDeltas(glued_container_source_offset, open_container_pos, original_item_pos, open_container_source_offset)
-  updateDependents(glued_item, source_item, this_container_num, new_src, length, obey_time_selection)
+  updateDependents(glued_container, first_selected_item, pool_id, new_src, length, obey_time_selection)
 
-  return glued_item
+  return glued_container
 end
 
 
-function updateItemInfo(original_state_key, glued_item, new_src, pos, length)
-  local r, original_state
+-- this never got called
+-- function updateItemInfo(original_state_key, glued_container, new_src, pos, length)
+--   local r, original_state
 
-  -- if there is a key in container's name, find it in state data and delete it from item
-  r, original_state = getSetStateData(original_state_key)
+--   -- if there is a key in container's name, find it in state data and delete it from item
+--   r, original_state = getSetStateData(original_state_key)
 
-  if r == true and original_state then
-    getSetObjectState(glued_item, original_state)
-    updateItemData(original_state_key, glued_item, new_src, pos, length)
-  end
+--   if r == true and original_state then
+--     getSetObjectState(glued_container, original_state)
+--     updateItemData(original_state_key, glued_container, new_src, pos, length)
+--   end
 
-  return glued_item
-end
+--   return glued_container
+-- end
 
 
 function getSetObjectState(obj, state, minimal)
@@ -862,59 +956,32 @@ function getSetObjectState(obj, state, minimal)
 end
 
 
-function updateItemData(original_state_key, glued_item, new_src, pos, length)
-  updateItemSrc(glued_item)
-  updateItemValues(glued_item, pos, length)
+function updateItemData(original_state_key, glued_container, new_src, pos, length)
+  updateItemSrc(glued_container)
+  updateItemValues(glued_container, pos, length)
   removeOldItemState(original_state_key)
 end
 
 
-function updateItemSrc(glued_item)
+function updateItemSrc(glued_container)
   local take
 
   -- reapply new src because original state would have old one
-  take = reaper.GetActiveTake(glued_item)
+  take = reaper.GetActiveTake(glued_container)
   reaper.BR_SetTakeSourceFromFile2(take, new_src, false, true)
 end
 
 
-function updateItemValues(glued_item, pos, length)
+function updateItemValues(glued_container, pos, length)
   -- set new position & length in case of differences from last glue
-  reaper.SetMediaItemInfo_Value(glued_item, "D_POSITION", pos)
-  reaper.SetMediaItemInfo_Value(glued_item, "D_LENGTH", length)
+  reaper.SetMediaItemInfo_Value(glued_container, "D_POSITION", pos)
+  reaper.SetMediaItemInfo_Value(glued_container, "D_LENGTH", length)
 end
 
 
 function removeOldItemState(original_state_key)
   -- remove original state data, not needed anymore
   getSetStateData(original_state_key, "")
-end
-
-
-function getSetItemName(item, name, add_or_remove)
-  local take, current_name
-
-  if reaper.GetMediaItemNumTakes(item) < 1 then return end
-
-  take = reaper.GetActiveTake(item)
-
-  if take then
-    current_name = reaper.GetTakeName(take)
-
-    if name then
-      if add_or_remove == 1 then
-        name = current_name.." "..name
-      elseif add_or_remove == -1 then
-        name = string.gsub(current_name, name, "")
-      end
-
-      reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", name, true)
-
-      return name, take
-    else
-      return current_name, take
-    end
-  end
 end
 
 
@@ -931,52 +998,21 @@ function getItemWavSrc(item, take)
 end
 
 
-function setToAudioTake(item)
-  local num_takes, active_take, active_take_number, take_name
-
-  num_takes = reaper.GetMediaItemNumTakes(item)
-
-  if num_takes > 0 then
-    
-    active_take = reaper.GetActiveTake(item)
-
-    if active_take and reaper.TakeIsMIDI(active_take) then
-      -- store ref to original active take for ungluing
-      active_take_number = reaper.GetMediaItemTakeInfo_Value(active_take, "IP_TAKENUMBER")
-
-      -- convert active MIDI item to an audio take
-      reaper.SetMediaItemSelected(item, 1)
-      reaper.Main_OnCommand(40209, 0)
-
-      reaper.SetActiveTake(reaper.GetTake(item, num_takes))
-      active_take = reaper.GetActiveTake(item)
-      
-      take_name = "glue_reversible_render:"..math.floor(active_take_number)
-
-      reaper.GetSetMediaItemTakeInfo_String(active_take, "P_NAME", take_name, true)
-      reaper.SetMediaItemSelected(item, 0)
-
-      cleanNullTakes(item)
-    end
-  end
-end
-
-
 function restoreOriginalTake(item)
-  local num_takes, active_take, take_name, take_number, old_src, original_take
+  local item_takes_count, active_take, take_name, take_num, old_src, original_take
 
-  num_takes = reaper.GetMediaItemNumTakes(item)
+  item_takes_count = reaper.GetMediaItemNumTakes(item)
   
-  if num_takes > 0 then
+  if item_takes_count > 0 then
     
     active_take = reaper.GetActiveTake(item)
     
     if active_take then
 
-      take_name =  reaper.GetTakeName(active_take)
-      take_number = string.match(take_name, "glue_reversible_render:(%d+)")
+      take_name = reaper.GetTakeName(active_take)
+      take_num = string.match(take_name, "glue_reversible_render:(%d+)")
       
-      if take_number then
+      if take_num then
         -- delete rendered midi take wav
         old_src = getItemWavSrc(item)
         
@@ -988,7 +1024,7 @@ function restoreOriginalTake(item)
         reaper.Main_OnCommand(40129, 0)
         
         -- reselect original active take
-        original_take = reaper.GetTake(item, take_number)
+        original_take = reaper.GetTake(item, take_num)
 
         if original_take then
           reaper.SetActiveTake(original_take)
@@ -1003,16 +1039,6 @@ function restoreOriginalTake(item)
 end
 
 
-function cleanNullTakes(item, force)
-  local state = getSetObjectState(item)
-
-  if string.find(state, "TAKE NULL") or force then
-    state = string.gsub(state, "TAKE NULL", "")
-    reaper.getSetObjectState(item, state)
-  end
-end
-
-
 
 -- keys
 local update_table = {}
@@ -1020,13 +1046,13 @@ local update_table = {}
 local iupdate_table = {}
 
 -- create an update_table with a nicely ordered sequence and re-insert the items of each pool into temp tracks so they can be updated
-function calculateDependentUpdates(this_container_num, nesting_level)
-  local track, dependent_pool, restored_items, item, container, glued_item, new_src, i, v, update_item, current_entry
+function calculateDependentUpdates(pool_id, nesting_level)
+  local track, dependent_pool, restored_items, item, container, glued_container, new_src, i, v, update_item, current_entry
 
   if not update_table then update_table = {} end
   if not nesting_level then nesting_level = 1 end
 
-  r, dependents = getSetStateData(this_container_num..":dependents")
+  r, dependents = getSetStateData(pool_id..":dependents")
 
   if r == true and string.len(dependents) > 0 then
     for dependent_pool in string.gmatch(dependents, "%d+") do 
@@ -1040,17 +1066,17 @@ function calculateDependentUpdates(this_container_num, nesting_level)
       else 
       -- this is the first time this pool has come up. set up for update loop
         current_entry = {}
-        current_entry.this_container_num = dependent_pool
+        current_entry.pool_id = dependent_pool
         current_entry.nesting_level = nesting_level
 
         -- make track for this item's updates
         reaper.InsertTrackAtIndex(0, false)
         track = reaper.GetTrack(0, 0)
 
-        deselectAll()
+        deselectAllItems()
 
         -- restore items into newly made empty track
-        item, container, restored_items = restoreItems(nil, dependent_pool, track, nil, 0, nil, true, true)
+        item, container, restored_items = restoreItems(dependent_pool, track, 0, 0, 0, 0, true, true)
 
         -- store references to temp track and items
         current_entry.track = track
@@ -1069,11 +1095,11 @@ function calculateDependentUpdates(this_container_num, nesting_level)
 end
 
 
-function restoreItems(this_container_num, track, position, original_item_offset, original_item_length, dont_restore_take, dont_offset)
-  local r, stored_items, splits, restored_items, key, val, restored_item, container, item, return_item, left_most, pos, i
+function restoreItems(pool_id, track, original_item_pos, original_item_offset, original_item_length, dont_restore_take, dont_offset)
+  local r, stored_items, splits, restored_items, key, val, restored_item, container, item, return_item, left_most, pos_offset_from_first_instance
 
   -- get items stored during last glue
-  r, stored_items = getSetStateData(this_container_num)
+  r, stored_items = getSetStateData(pool_id)
   splits = string.split(stored_items, "|||")
   restored_items = {}
 
@@ -1113,41 +1139,30 @@ function restoreItems(this_container_num, track, position, original_item_offset,
     end
   end
 
-  offset = position - left_most
-  restored_items = offsetEditedItems(this_container_num, restored_items, offset, original_item_offset, original_item_length, dont_offset)
+  pos_offset_from_first_instance = original_item_pos - left_most
+  restored_items = adjustRestoredItems(pool_id, restored_items, original_item_pos, pos_offset_from_first_instance, original_item_offset, original_item_length, dont_offset)
 
   return return_item, container, restored_items
 end
 
 
-function offsetEditedItems(this_container_num, restored_items, offset, original_item_offset, original_item_length, dont_offset)
-  local glued_container_length, i, this_item, is_empty_container, current_pos, new_pos, new_length
-
-  glued_container_length = tonumber(glued_container_length)
-  original_item_length = tonumber(original_item_length)
+function adjustRestoredItems(pool_id, restored_items, original_item_pos, pos_offset_from_first_instance, original_item_offset, original_item_length, dont_offset)
+  local i, this_item, is_empty_container
 
   for i, this_item in ipairs(restored_items) do
-    reaper.SetMediaItemSelected(this_item, true)
 
     if not dont_offset then
-      offsetItemFromEarliestPooledInstance(this_item, offset)
+      offsetRestoredItemFromEarliestPooledInstance(this_item, pos_offset_from_first_instance)
     end
 
     is_empty_container = i == #restored_items
-    current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
 
-    if original_item_offset ~= 0 then
+    reaper.SetMediaItemSelected(this_item, true)
 
-      if not is_empty_container then
-        new_pos = current_pos - original_item_offset
-
-        reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
-      
-      elseif is_empty_container and original_item_length ~= glued_container_length then
-        new_length = original_item_length
-
-        reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", new_length)
-      end
+    if is_empty_container then
+      adjustEmptyContainer(original_item_pos, original_item_length, this_item)
+    else
+      adjustRestoredRegularItem(this_item, original_item_pos, original_item_offset, original_item_length)
     end
   end
 
@@ -1155,10 +1170,85 @@ function offsetEditedItems(this_container_num, restored_items, offset, original_
 end
 
 
-function offsetItemFromEarliestPooledInstance(item, offset)
-  local pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION") + offset
+function offsetRestoredItemFromEarliestPooledInstance(item, pos_offset_from_first_instance)
+  local pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION") + pos_offset_from_first_instance
   
   reaper.SetMediaItemInfo_Value(item, "D_POSITION", pos)
+end
+
+
+function adjustEmptyContainer(original_item_pos, original_item_length, this_item)
+  local new_pos, new_length
+
+  new_pos = original_item_pos
+  new_length = original_item_length
+
+  reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+  reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", new_length)
+end
+
+
+function adjustRestoredRegularItem(this_item, original_item_pos, original_item_offset, original_item_length)
+  local this_item_pos, this_item_pos_delta_in_container, this_item_length, this_item_end_in_container, item_end_is_before_glued_container_pos, glued_container_pos_is_during_item_space, this_item_end, original_item_end, glued_container_length_cuts_off_item_end, item_pos_is_after_glued_container_end
+
+  this_item_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
+  this_item_pos_delta_in_container = this_item_pos - original_item_pos
+  this_item_length = reaper.GetMediaItemInfo_Value(this_item, "D_LENGTH")
+  this_item_end_in_container = this_item_pos_delta_in_container + this_item_length
+  item_end_is_before_glued_container_pos = original_item_offset > this_item_pos_delta_in_container + this_item_length
+  glued_container_pos_is_during_item_space = original_item_offset > this_item_pos_delta_in_container and original_item_offset < this_item_end_in_container
+  this_item_end = original_item_pos + this_item_pos_delta_in_container + this_item_length - original_item_offset
+  original_item_end = original_item_pos + original_item_length
+  glued_container_length_cuts_off_item_end = this_item_end > original_item_end
+  item_pos_is_after_glued_container_end = this_item_pos > original_item_end + original_item_offset
+
+  if item_end_is_before_glued_container_pos or item_pos_is_after_glued_container_end then
+    handleRestoredItemOutsideNewGlue(this_item, original_item_pos, original_item_offset, this_item_pos_delta_in_container)
+  elseif glued_container_pos_is_during_item_space then
+    handleResoredItemDuringNewGlueStart(this_item, original_item_pos, original_item_offset, this_item_pos_delta_in_container, this_item_length)
+  elseif original_item_offset ~= 0 then
+    handleOtherRestoredItem(this_item, this_item_pos, original_item_offset)
+  end
+
+  if glued_container_length_cuts_off_item_end then
+    handleRestoredItemCutOffByNewGlueEnd(this_item, this_item_length, original_item_end, this_item_end)
+  end
+end
+
+
+function handleRestoredItemOutsideNewGlue(this_item, original_item_pos, original_item_offset, this_item_pos_delta_in_container)
+  local new_pos = original_item_pos - original_item_offset + this_item_pos_delta_in_container
+
+  reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+  reaper.SetMediaItemInfo_Value(this_item, "B_MUTE", 1)
+end
+
+
+function handleResoredItemDuringNewGlueStart(this_item, original_item_pos, original_item_offset, this_item_pos_delta_in_container, this_item_length)
+  local this_item_take, new_pos, new_source_offset, new_length
+
+    this_item_take = reaper.GetActiveTake(this_item)
+    new_pos = original_item_pos
+    new_source_offset = original_item_offset - this_item_pos_delta_in_container 
+    new_length = this_item_length - new_source_offset
+
+    reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+    reaper.SetMediaItemTakeInfo_Value(this_item_take, "D_STARTOFFS", new_source_offset)
+    reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", new_length)
+end
+
+
+function handleOtherRestoredItem(this_item,this_item_pos, original_item_offset)
+  local new_pos = this_item_pos - original_item_offset
+
+  reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+end
+
+
+function handleRestoredItemCutOffByNewGlueEnd(this_item, this_item_length, original_item_end, this_item_end)
+  local new_length = this_item_length + (original_item_end - this_item_end)
+
+  reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", new_length)
 end
 
 
@@ -1175,45 +1265,43 @@ end
 
 
 
-local follower_instance_pos_delta, position_changed
+local position_changed
 
 function setPositionDeltas(glued_container_source_offset, open_container_pos, original_item_pos, open_container_source_offset)
-  if not glued_instance_pos_delta then
-    glued_instance_pos_delta = 0
-  end
-
   glued_container_source_offset = tonumber(glued_container_source_offset)
   open_container_pos = tonumber(open_container_pos)
   original_item_pos = tonumber(original_item_pos)
-  follower_instance_pos_delta = glued_instance_pos_delta + open_container_source_offset
+
+  if not glued_instance_pos_delta_during_edit then
+    glued_instance_pos_delta_during_edit = 0
+  end
 
   if open_container_pos ~= original_item_pos then
-    glued_instance_pos_delta = glued_instance_pos_delta + (open_container_pos - original_item_pos)
+    glued_instance_pos_delta_during_edit = round(open_container_pos - original_item_pos, 13)
   end
   
-  if follower_instance_pos_delta ~= 0 then
+  if glued_instance_pos_delta_during_edit ~= 0 then
     position_changed = true
   end
 end
 
 
-function updateDependents(glued_item, source_item, edited_pool_id, src, length, obey_time_selection)
-  local dependent_glued_item, i, dependent, new_src
+function updateDependents(glued_container, first_selected_item, edited_pool_id, src, length, obey_time_selection)
+  local dependent_glued_container, i, dependent, new_src
 
   -- update items with just one level of nesting now that they're exposed
-  updatePooledItems(glued_item, edited_pool_id, src, length)
+  updatePooledItems(glued_container, edited_pool_id, src, length)
 
   -- loop thru dependents and update them in order
   for i, dependent in ipairs(iupdate_table) do
-    deselectAll()
+    deselectAllItems()
     reselect(dependent.restored_items)
 
-    dependent_glued_item = doGlueReversible(dependent.track, source_item, obey_time_selection, dependent.this_container_num, dependent.container, true)
+    dependent_glued_container = createGluedContainer(dependent.track, first_selected_item, obey_time_selection, dependent.pool_id, dependent.container, true)
+    new_src = getItemWavSrc(dependent_glued_container)
 
     -- update all instances of this pool, including any in other more deeply nested dependent pools which are exposed and waiting to be updated
-    new_src = getItemWavSrc(dependent_glued_item)
-
-    updatePooledItems(dependent_glued_item, dependent.this_container_num, new_src, length)
+    updatePooledItems(dependent_glued_container, dependent.pool_id, new_src, length, dependent.nesting_level)
 
     -- delete glue track
     reaper.DeleteTrack(dependent.track)
@@ -1223,17 +1311,17 @@ function updateDependents(glued_item, source_item, edited_pool_id, src, length, 
 end
 
 
-function updatePooledItems(glued_item, edited_pool_id, new_src, length)
-  local num_all_items, this_container_name, items_in_glued_pool, i, this_item, j
+function updatePooledItems(glued_container, edited_pool_id, new_src, length, nesting_level)
+  local all_items_count, this_container_name, items_in_glued_pool, i, this_item, j
 
-  deselectAll()
+  deselectAllItems()
 
-  num_all_items = reaper.CountMediaItems(0)
+  all_items_count = reaper.CountMediaItems(0)
   this_container_name = "gr:"..edited_pool_id
   items_in_glued_pool = {}
   j = 1
 
-  for i = 0, num_all_items-1 do
+  for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(0, i)
     items_in_glued_pool[j] = getPooledItem(this_item, this_container_name, edited_pool_id)
 
@@ -1245,24 +1333,19 @@ function updatePooledItems(glued_item, edited_pool_id, new_src, length)
   for i = 1, #items_in_glued_pool do
     this_item = items_in_glued_pool[i]
 
-    updatePooledItem(#items_in_glued_pool, glued_item, this_item, new_src, length)
+    updatePooledItem(#items_in_glued_pool, edited_pool_id, glued_container, this_item, new_src, length, nesting_level)
   end
 end
 
 
-function getPooledItem(this_item, this_container_name, edited_pool_id)
-  local take_name, take, this_item_is_glued, this_item_pool_id, item_is_in_edited_pool
+function getPooledItem(this_item, this_container_name)
+  local take_name, take, this_item_is_glued
 
   take_name, take = getSetItemName(this_item)
   this_item_is_glued = take_name and string.find(take_name, this_container_name)
 
   if this_item_is_glued then
-    this_item_pool_id = getItemPoolId(this_item)
-    item_is_in_edited_pool = this_item_pool_id == edited_pool_id
-
-    if item_is_in_edited_pool then
-      return this_item
-    end
+    return this_item
   end
 end
 
@@ -1270,32 +1353,42 @@ end
 
 local position_change_response
 
-function updatePooledItem(num_items_in_glued_pool, glued_item, this_item, new_src, length)
-  local take_name, take, this_is_reglued_item, current_pos, new_pos, current_src
+function updatePooledItem(glued_pool_item_count, edited_pool_id, glued_container, this_item, new_src, length, nesting_level)
+  local this_item_pool_id, item_is_in_edited_pool, take_name, take, this_is_reglued_container, this_item_is_nested, current_pos, glued_container_pos, offset_to_glued_container, new_pos, current_src
 
+  this_item_pool_id = getItemPoolId(this_item)
+  item_is_in_edited_pool = this_item_pool_id == edited_pool_id
   current_pos = reaper.GetMediaItemInfo_Value(this_item, "D_POSITION")
-  this_is_reglued_item = glued_item == this_item
+  this_is_reglued_container = glued_container == this_item
 
-  if num_items_in_glued_pool > 1 then
+  if nesting_level then
+    this_item_is_nested = nesting_level > 0
 
-    if not position_change_response and position_changed == true then
-      position_change_response = launchPropagatePositionDialog()
-    end
-
-    -- 6 == "YES"
-    if position_change_response == 6 then
-      new_pos = current_pos + follower_instance_pos_delta
-
-      reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+    if this_item_is_nested then
+      glued_container_pos = reaper.GetMediaItemInfo_Value(glued_container, "D_POSITION")
+      offset_to_glued_container = current_pos - glued_container_pos
+      current_pos = current_pos + offset_to_glued_container
     end
   end
 
-  if this_is_reglued_item then
-    new_pos = current_pos + glued_instance_pos_delta
-    reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
-  end
+  if item_is_in_edited_pool then
 
-  reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", length)
+    if glued_pool_item_count > 1 then
+      
+      if not position_change_response and position_changed == true then
+        position_change_response = launchPropagatePositionDialog()
+      end
+
+      -- 6 == "YES"
+      if position_change_response == 6 then
+        new_pos = current_pos - glued_instance_pos_delta_during_edit
+
+        reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
+      end
+    end
+
+    reaper.SetMediaItemInfo_Value(this_item, "D_LENGTH", length)
+  end
 
   current_src = getItemWavSrc(this_item)
 
@@ -1322,22 +1415,20 @@ end
 
 
 function initEditGluedContainer()
-  local selected_item_count, glued_containers, open_containers, noncontainers, this_pool_num
+  local selected_item_count, glued_containers, empty_containers, noncontainers, this_pool_id
 
   selected_item_count = initAction("edit")
 
   if selected_item_count == false then return end
 
-  if itemsOnMultipleTracksAreSelected(selected_item_count) == true then return end
-
-  glued_containers, open_containers, noncontainers = getContainers(selected_item_count)
+  glued_containers, empty_containers, noncontainers = getContainers(selected_item_count)
 
   if isNotSingleGluedContainer(#glued_containers) == true then return end
 
-  this_pool_num = getItemPoolId(glued_containers[1])
+  this_pool_id = getItemPoolId(glued_containers[1])
 
-  if getOtherPooledInstanceStatus(this_pool_num) == "open" then
-    handleOtherOpenPooledInstance(item, edit_pool_num)
+  if getOtherPooledInstanceStatus(this_pool_id) == "open" then
+    handleOtherOpenPooledInstance(item, edit_pool_id)
 
     return
   end
@@ -1347,17 +1438,21 @@ function initEditGluedContainer()
 end
 
 
-function isNotSingleGluedContainer(glued_container_num)
+function isNotSingleGluedContainer(glued_pool_id)
   local multiitem_result
 
-  if glued_container_num == 0 then
+  if glued_pool_id == 0 then
     reaper.ShowMessageBox(msg_change_selected_items, "Glue-Reversible Edit can only Edit previously glued container items." , 0)
+
     return true
-  elseif glued_container_num > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first (earliest) selected container item only?", "Glue-Reversible Edit can only open one glued container item per action call.", 1)
+  
+  elseif glued_pool_id > 1 then
+    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first selected container item (on the top track) only?", "Glue-Reversible Edit can only open one glued container item per action call.", 1)
+
     if multiitem_result == 2 then
       return true
     end
+  
   else
     return false
   end
@@ -1365,23 +1460,23 @@ end
 
 
 function getItemPoolId(item)
-  return getContainerName(item, true)
+  return getPoolId(item, true)
 end
 
 
 -- not actually using "glued" at this time but leaving in case necessary later
-function getOtherPooledInstanceStatus(edit_pool_num, testing_item)
-  local num_all_items, i, item, item_pool_num, scroll_action_id
+function getOtherPooledInstanceStatus(edit_pool_id, testing_item)
+  local all_items_count, i, item, item_pool_id, scroll_action_id
 
-  num_all_items = reaper.CountMediaItems(0)
+  all_items_count = reaper.CountMediaItems(0)
 
-  for i = 0, num_all_items-1 do
+  for i = 0, all_items_count-1 do
     item = reaper.GetMediaItem(0, i)
-    item_pool_num = getContainerName(item)
+    item_pool_id = getPoolId(item)
 
-    if item_pool_num == edit_pool_num and getItemType(item) == "open" then
+    if item_pool_id == edit_pool_id and getItemType(item) == "open" then
       return "open"
-    elseif item_pool_num == edit_pool_num and testing_item ~= item and getItemType(item) == "glued" then
+    elseif item_pool_id == edit_pool_id and testing_item ~= item and getItemType(item) == "glued" then
       return "glued"
     else
       return false
@@ -1390,11 +1485,11 @@ function getOtherPooledInstanceStatus(edit_pool_num, testing_item)
 end
 
 
-function handleOtherOpenPooledInstance(item, edit_pool_num)
-  deselectAll()
+function handleOtherOpenPooledInstance(item, edit_pool_id)
+  deselectAllItems()
   reaper.SetMediaItemSelected(item, true)
   scrollToSelectedItem()
-  reaper.ShowMessageBox("Reglue the other open container item from pool "..tostring(edit_pool_num).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Only one glued container item per pool can be Edited at a time.", 0)
+  reaper.ShowMessageBox("Reglue the other open container item from pool "..tostring(edit_pool_id).." before trying to edit this glued container item. It will be selected and scrolled to now.", "Only one glued container item per pool can be Edited at a time.", 0)
 end
 
 
@@ -1445,7 +1540,6 @@ function getSetGluedContainerData(pool_id, glued_container)
     retval, glued_container_length = getSetStateData(length_key)
     retval, glued_container_pos = getSetStateData(pos_key)
 
-    
     return glued_container_source_offset, glued_container_length, glued_container_pos
 
   -- set
@@ -1462,23 +1556,24 @@ function getSetGluedContainerData(pool_id, glued_container)
 end
 
 
-function processEditGluedContainer(item, this_container_num)
-  local glued_container_source_offset, glued_container_length, original_item_state, original_item_pos, original_item_track, original_item_source_offset, original_item_length, _, container, original_item_state_key
+function processEditGluedContainer(item, pool_id)
+  local glued_container_source_offset, glued_container_length, original_item_state, original_item_pos, original_item_track, original_item_source_offset, original_item_length, _, container, original_item_state_key_guid, original_item_state_key
 
   original_item_state, original_item_pos, original_item_offset, original_item_length, original_item_track = getOriginalItemState(item)
 
-  deselectAll()
+  deselectAllItems()
   
-  _, container, restored_items = restoreItems(this_container_num, original_item_track, original_item_pos, original_item_offset, original_item_length)
+  _, container, restored_items = restoreItems(pool_id, original_item_track, original_item_pos, original_item_offset, original_item_length)
 
   -- create a unique key for original state, and store it in container's name, space it out of sight then store it
-  original_item_state_key = "original_state:"..this_container_num..":"..os.time()*7
+  original_item_state_key_guid = reaper.genGuid()
+  original_item_state_key = "original_state:"..pool_id..":"..original_item_state_key_guid
   
-  getSetItemName(container, "                                                                                                      "..original_item_state_key, 1)
+  getSetItemName(container, "                                                                                                      "..original_item_state_key, "add")
   getSetStateData(original_item_state_key, original_item_state)
 
   -- store preglue container position for reglue
-  getSetStateData(this_container_num.."-pos", original_item_pos)
+  getSetStateData(pool_id.."-pos", original_item_pos)
 
   reaper.DeleteTrackMediaItem(original_item_track, item)
 end
@@ -1499,25 +1594,26 @@ end
 
 
 function initSmartAction(obey_time_selection)
-  local selected_item_count, this_container_num, glue_reversible_action, glue_abort_dialog
+  local selected_item_count, pool_id, glue_reversible_action, glue_abort_dialog
 
   selected_item_count = doPreGlueChecks()
   if selected_item_count == false then return end
 
-  prepareGlueState("glue")
+  prepareGlue("glue")
   
   -- refresh in case item selection changed
   selected_item_count = getSelectedItemsCount()
   if itemsAreSelected(selected_item_count) == false then return end
 
   -- find open item if present
-  this_container_num = checkSelectionForContainer(selected_item_count)
+  pool_id = getEmptyContainerFromSelection(selected_item_count)
 
-  if openContainersAreInvalid(selected_item_count) == true then return end
+  if emptyContainersAreInvalid(selected_item_count) == true then return end
 
-  if doGlueUnglueAction(selected_item_count, obey_time_selection) == false then 
+  if doGlueOrEdit(selected_item_count, obey_time_selection) == false then 
     reaper.ShowMessageBox(msg_change_selected_items, "Toggle Glue/Unglue Reversible can't determine which script to run.", 0)
     setResetItemSelectionSet()
+
     return
   end
 
@@ -1526,16 +1622,16 @@ end
 
 
 function getSmartAction(selected_item_count)
-  local glued_containers, open_containers, num_noncontainers, singleGluedContainerIsSelected, noOpenContainersAreSelected, noNoncontainersAreSelected, gluedContainersAreSelected, noGluedContainersAreSelected, singleOpenContainerIsSelected
+  local glued_containers, empty_containers, noncontainer_count, singleGluedContainerIsSelected, noOpenContainersAreSelected, noNoncontainersAreSelected, gluedContainersAreSelected, noGluedContainersAreSelected, singleOpenContainerIsSelected
 
-  glued_containers, open_containers, num_noncontainers = getNumSelectedItemsByType(selected_item_count)
+  glued_containers, empty_containers, noncontainer_count = getNumSelectedItemsByType(selected_item_count)
   noGluedContainersAreSelected = #glued_containers == 0
   singleGluedContainerIsSelected = #glued_containers == 1
   gluedContainersAreSelected = #glued_containers > 0
-  noOpenContainersAreSelected = #open_containers == 0
-  singleOpenContainerIsSelected = #open_containers == 1
-  noNoncontainersAreSelected = num_noncontainers == 0
-  noncontainersAreSelected = num_noncontainers > 0
+  noOpenContainersAreSelected = #empty_containers == 0
+  singleOpenContainerIsSelected = #empty_containers == 1
+  noNoncontainersAreSelected = noncontainer_count == 0
+  noncontainersAreSelected = noncontainer_count > 0
 
   if singleGluedContainerIsSelected and noOpenContainersAreSelected and noNoncontainersAreSelected then
     return "edit"
@@ -1548,16 +1644,16 @@ end
 
 
 function getNumSelectedItemsByType(selected_item_count)
-  local glued_containers, open_containers, num_noncontainers = 0
+  local glued_containers, empty_containers, noncontainer_count = 0
 
-  glued_containers, open_containers = getContainers(selected_item_count)
-  num_noncontainers = selected_item_count - #glued_containers - #open_containers
+  glued_containers, empty_containers = getContainers(selected_item_count)
+  noncontainer_count = selected_item_count - #glued_containers - #empty_containers
 
-  return glued_containers, open_containers, num_noncontainers
+  return glued_containers, empty_containers, noncontainer_count
 end
 
 
-function doGlueUnglueAction(selected_item_count, obey_time_selection)
+function doGlueOrEdit(selected_item_count, obey_time_selection)
   glue_reversible_action = getSmartAction(selected_item_count)
 
   if glue_reversible_action == "edit" then
