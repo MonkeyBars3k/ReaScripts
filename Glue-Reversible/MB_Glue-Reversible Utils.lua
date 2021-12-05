@@ -22,6 +22,7 @@ function initGlueReversible(obey_time_selection)
   if selected_item_count == false then return end
 
   pool_id, empty_container = getEmptyContainerFromSelection(selected_item_count)
+log(tostring(empty_container))
   first_selected_item, first_selected_item_track = getInitialSelections()
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or emptyContainersAreInvalid(selected_item_count) == true or pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track) == true then return end
@@ -123,13 +124,16 @@ end
 
 
 function setResetItemSelectionSet(set_reset)
-  -- set
-  if set_reset == true then
+  local set, reset
+
+  set =set_reset == true
+  reset = not set_reset or set_reset == false
+
+  if set then
     -- save selected item selection set to slot 10
     reaper.Main_OnCommand(41238, 0)
 
-  -- reset
-  else
+  elseif reset then
     -- reset item selection from selection set slot 10
     reaper.Main_OnCommand(41248, 0)
   end
@@ -137,27 +141,31 @@ end
 
 
 function getEmptyContainerFromSelection(selected_item_count)
-  local i, item, pool_id, new_pool_id, empty_container
+  local i, this_item, empty_container_pool_id, this_item_pool_id, empty_container, non_empty_container_item, required_item_missing
 
   for i = 0, selected_item_count-1 do
 
-    item = reaper.GetSelectedMediaItem(0, i)
-    new_pool_id = getPoolId(item)
+    this_item = reaper.GetSelectedMediaItem(0, i)
+    this_item_pool_id = getPoolId(this_item)
 
-    if new_pool_id then
-
-      if pool_id then
+    if this_item_pool_id then
+      if empty_container_pool_id then
         return false
       else
-        empty_container = item
-        pool_id = new_pool_id
+        empty_container = this_item
+        empty_container_pool_id = this_item_pool_id
       end
+
+    elseif not non_empty_container_item then
+      non_empty_container_item = item
     end
   end
 
-  if not pool_id or not empty_container then return end
+  required_item_missing = not empty_container_pool_id or not empty_container or not non_empty_container_item
 
-  return pool_id, empty_container
+  if required_item_missing then return end
+
+  return empty_container_pool_id, empty_container
 end
 
 
@@ -319,7 +327,10 @@ end
 
 
 function getSetItemName(item, new_name, add_or_remove)
-  local item_has_no_takes, take, current_name
+  local set, get, item_has_no_takes, take, current_name
+
+  set = new_name
+  get = not new_name
 
   item_has_no_takes = reaper.GetMediaItemNumTakes(item) < 1
 
@@ -330,8 +341,7 @@ function getSetItemName(item, new_name, add_or_remove)
   if take then
     current_name = reaper.GetTakeName(take)
 
-    -- set
-    if new_name then
+    if set then
 
       if add_or_remove == "add" then
         new_name = current_name.." "..new_name
@@ -344,8 +354,7 @@ function getSetItemName(item, new_name, add_or_remove)
 
       return new_name, take
 
-    -- get
-    else
+    elseif get then
       return current_name, take
     end
   end
@@ -491,22 +500,22 @@ local master_track = reaper.GetMasterTrack(0)
 local master_track_tempo_env = reaper.GetTrackEnvelope(master_track, 0)
 
 function getSetStateData(key, val)
-  local get_set, data_param, data_param_script_prefix, data_param_key, retval, state_data_val
+  local set, get, get_or_set, data_param, data_param_script_prefix, data_param_key, retval, state_data_val
 
-  -- set
-  if val then
-    get_set = true
+  set = val
+  get = not val
 
-  -- get
-  else
+  if set then
+    get_or_set = true
+  elseif get then
     val = ""
-    get_set = false
+    get_or_set = false
   end
 
   data_param = "P_EXT:"
   data_param_script_prefix = "GR_"
   data_param_key = data_param..data_param_script_prefix..key
-  retval, state_data_val = reaper.GetSetEnvelopeInfo_String(master_track_tempo_env, data_param_key, val, get_set)
+  retval, state_data_val = reaper.GetSetEnvelopeInfo_String(master_track_tempo_env, data_param_key, val, get_or_set)
 
   return retval, state_data_val
 end
@@ -632,18 +641,19 @@ end
 
 
 function createGluePlaceholder(empty_container, first_selected_item_track, pool_id, user_selected_items)
-  local glue_placeholder_item
+  local reglue, new_glue, glue_placeholder_item
 
-  -- reglue
-  if empty_container then
+  reglue = empty_container
+  new_glue = not empty_container
+
+  if reglue then
     glue_placeholder_item = prepareRegluePlaceholder(empty_container, first_selected_item_track)
 
-  -- new glue
-  else
+  elseif new_glue then
     glue_placeholder_item = reaper.AddMediaItemToTrack(first_selected_item_track)
 
-    setContainerItemName(glue_placeholder_item, pool_id)
     setTakeSource(glue_placeholder_item)
+    setContainerItemName(glue_placeholder_item, pool_id)
   end
 
   selectDeselectItems(user_selected_items, true)
@@ -654,11 +664,13 @@ end
 
 
 function setContainerItemName(item, item_name_ending, is_glued_item)
-  local item_name_prefix, new_item_name, take
+  local is_empty_container, item_name_prefix, new_item_name, take
+
+  is_empty_container = not is_glued_item
 
   if is_glued_item then
     item_name_prefix = "gr:"
-  else
+  elseif is_empty_container then
     item_name_prefix = "grc:"
   end
 
@@ -759,42 +771,40 @@ end
 
 
 
-local glued_instance_pos_delta_during_edit
+local glued_instance_pos_delta_while_open
 
-function setGluedContainerParams(glued_container, container, pool_id)
-  local new_glued_container_length, new_glued_container_position, retval, user_selected_item_position
+function setGluedContainerParams(glued_container, glue_placeholder_item, pool_id)
+  local new_glued_container_length, new_glued_container_position, retval, first_selected_item_position
 
-  -- make sure container is big enough
   new_glued_container_length = reaper.GetMediaItemInfo_Value(glued_container, "D_LENGTH")
-  reaper.SetMediaItemInfo_Value(container, "D_LENGTH", new_glued_container_length)
-
-  -- make sure container is aligned with start of items
   new_glued_container_position = reaper.GetMediaItemInfo_Value(glued_container, "D_POSITION")
-  reaper.SetMediaItemInfo_Value(container, "D_POSITION", new_glued_container_position)
+  retval, first_selected_item_position = getSetStateData(pool_id.."-pos")
+  first_selected_item_position = tonumber(first_selected_item_position)
 
-  retval, user_selected_item_position = getSetStateData(pool_id.."-pos")
-  user_selected_item_position = tonumber(user_selected_item_position)
-
-  if new_glued_container_position and user_selected_item_position then
-    glued_instance_pos_delta_during_edit = round((new_glued_container_position - user_selected_item_position), 13)
+  if new_glued_container_position and first_selected_item_position then
+    glued_instance_pos_delta_while_open = round((new_glued_container_position - first_selected_item_position), 13)
   else
-    glued_instance_pos_delta_during_edit = 0
+    glued_instance_pos_delta_while_open = 0
   end
 
-  setItemImage(glued_container)
+  reaper.SetMediaItemInfo_Value(glue_placeholder_item, "D_LENGTH", new_glued_container_length)
+  reaper.SetMediaItemInfo_Value(glue_placeholder_item, "D_POSITION", new_glued_container_position)
+  addRemoveItemImage(glued_container)
 
   return new_glued_container_length, new_glued_container_position
 end
 
 
-function setItemImage(item, remove)
-  local script_path, img_path 
+function addRemoveItemImage(item, add_or_remove)
+  local script_path, img_path, add, remove
 
+  add = not add_or_remove
+  remove = add_or_remove == "remove"
   script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 
-  if not remove then
+  if add then
     img_path = script_path.."gr-bg.png"
-  else
+  elseif remove then
     img_path = ""
   end
 
@@ -1125,7 +1135,7 @@ function restoreItems(pool_id, track, original_item_pos, original_item_offset, o
         restoreOriginalTake(restored_item) 
       end
 
-      setItemImage(restored_item)
+      addRemoveItemImage(restored_item)
 
       -- get position of left-most pooled instance
       if not left_most then
@@ -1272,15 +1282,15 @@ function setPositionDeltas(glued_container_source_offset, open_container_pos, or
   open_container_pos = tonumber(open_container_pos)
   original_item_pos = tonumber(original_item_pos)
 
-  if not glued_instance_pos_delta_during_edit then
-    glued_instance_pos_delta_during_edit = 0
+  if not glued_instance_pos_delta_while_open then
+    glued_instance_pos_delta_while_open = 0
   end
 
   if open_container_pos ~= original_item_pos then
-    glued_instance_pos_delta_during_edit = round(open_container_pos - original_item_pos, 13)
+    glued_instance_pos_delta_while_open = round(open_container_pos - original_item_pos, 13)
   end
   
-  if glued_instance_pos_delta_during_edit ~= 0 then
+  if glued_instance_pos_delta_while_open ~= 0 then
     position_changed = true
   end
 end
@@ -1381,7 +1391,8 @@ function updatePooledItem(glued_pool_item_count, edited_pool_id, glued_container
 
       -- 6 == "YES"
       if position_change_response == 6 then
-        new_pos = current_pos - glued_instance_pos_delta_during_edit
+-- WRONG VALUE HERE AS THIS FUNCTION IS PART OF GLUE PROCESS NOT EDIT
+        new_pos = current_pos - glued_instance_pos_delta_while_open
 
         reaper.SetMediaItemInfo_Value(this_item, "D_POSITION", new_pos)
       end
@@ -1523,9 +1534,10 @@ end
 
 
 function getSetGluedContainerData(pool_id, glued_container)
-  local get_set, pool_key_prefix, source_offset_prefix, source_offset_key, length_prefix, length_key, pos_prefix, pos_key, retval, glued_container_source_offset, glued_container_length, glued_container_pos, glued_container_take
+  local get, set, pool_key_prefix, source_offset_prefix, source_offset_key, length_prefix, length_key, pos_prefix, pos_key, retval, glued_container_source_offset, glued_container_length, glued_container_pos, glued_container_take
 
-  get_set = glued_container
+  get = not glued_container
+  set = container
   pool_key_prefix = "pool-"
   source_offset_prefix = "_D_STARTOFFS"
   source_offset_key = pool_key_prefix..pool_id..source_offset_prefix
@@ -1534,16 +1546,14 @@ function getSetGluedContainerData(pool_id, glued_container)
   pos_prefix = "_D_POSITION"
   pos_key = pool_key_prefix..pool_id..pos_prefix
 
-  -- get
-  if not get_set then
+  if get then
     retval, glued_container_source_offset = getSetStateData(source_offset_key)
     retval, glued_container_length = getSetStateData(length_key)
     retval, glued_container_pos = getSetStateData(pos_key)
 
     return glued_container_source_offset, glued_container_length, glued_container_pos
 
-  -- set
-  else
+  elseif set then
     glued_container_take = reaper.GetActiveTake(glued_container)
     glued_container_source_offset = reaper.GetMediaItemTakeInfo_Value(glued_container_take, "D_STARTOFFS")
     glued_container_length = reaper.GetMediaItemInfo_Value(glued_container, "D_LENGTH")
