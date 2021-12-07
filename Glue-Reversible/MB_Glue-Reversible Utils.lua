@@ -11,7 +11,7 @@
 -- dofile(reaper.GetResourcePath().."/UserPlugins/ultraschall_api.lua")
 
 
-local _global_script_prefix, _glued_container_name_prefix, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _peak_data_filename_extension, _sizing_region_key_guid, _pool_data_key_prefix, _glued_container_pool_id_key, _restored_item_pool_id_key, _last_pool_id_key, _active_take_num_key, _glue_data_key_suffix, _edit_data_key_suffix, _position_data_key_suffix, _dependents_data_key_suffix, _item_preglue_state_key, _api_data_key, _api_project_region_guid_key. _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_null_takes_val, _msg_change_selected_items, _master_track, _master_track_tempo_env, _glued_instance_position_delta_while_open, _keyed_dependents, _numeric_dependents, _position_changed_during_edit, _position_change_response
+local _global_script_prefix, _glued_container_name_prefix, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _peak_data_filename_extension, _sizing_region_key_guid, _pool_data_key_prefix, _glued_container_pool_id_key, _restored_item_pool_id_key, _last_pool_id_key, _active_take_num_key, _glue_data_key_suffix, _edit_data_key_suffix, _position_data_key_suffix, _dependents_data_key_suffix, _item_preglue_state_key, _api_data_key, _api_project_region_guid_key, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_null_takes_val, _msg_change_selected_items, _master_track, _master_track_tempo_env, _glued_instance_position_delta_while_open, _keyed_dependents, _numeric_dependents, _position_changed_during_edit, _position_change_response
 
 _global_script_prefix = "GR_"
 _glued_container_name_prefix = "gr:"
@@ -58,7 +58,8 @@ function initGlueReversible(obey_time_selection)
   if selected_item_count == false then return end
 
   pool_id = getFirstPoolIdFromSelectedItems(selected_item_count)
-  first_selected_item, first_selected_item_track = getInitialSelections()
+  first_selected_item = getFirstSelectedItem()
+  first_selected_item_track = reaper.GetMediaItemTrack(first_selected_item)
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or 
     containerSelectionIsInvalid(selected_item_count) == true or 
@@ -194,8 +195,8 @@ function getFirstPoolIdFromSelectedItems(selected_item_count)
   local i, this_item
 
   for i = 0, selected_item_count-1 do
-    this_item = selected_item_count[i]
-    this_item_pool = getSetItemState(this_item, _restored_item_pool_id_key)
+    this_item = reaper.GetSelectedMediaItem(0, i)
+    this_item_pool = getSetItemData(this_item, _restored_item_pool_id_key)
 
     if this_item_pool ~= "" then
       return this_item_pool
@@ -203,16 +204,6 @@ function getFirstPoolIdFromSelectedItems(selected_item_count)
   end
 
   return false
-end
-
-
-function getInitialSelections()
-  local first_selected_item, first_selected_item_track
-
-  first_selected_item = getFirstSelectedItem()
-  first_selected_item_track = reaper.GetMediaItemTrack(first_selected_item)
-
-  return first_selected_item, first_selected_item_track
 end
 
 
@@ -232,19 +223,17 @@ end
 
 
 function detectSelectedItemsOnMultipleTracks(selected_item_count)
-  local selected_items, items_on_multiple_tracks_are_selected, i, this_item, this_item_track, prev_item_track
+  local item_is_on_different_track_than_previous, i, this_item, this_item_track, prev_item_track
 
-  selected_items = {}
-  items_on_multiple_tracks_are_selected = false
+  item_is_on_different_track_than_previous = false
 
   for i = 0, selected_item_count-1 do
-    selected_items[i] = reaper.GetSelectedMediaItem(0, i)
-    this_item = selected_items[i]
+    this_item = reaper.GetSelectedMediaItem(0, i)
     this_item_track = reaper.GetMediaItemTrack(this_item)
-    items_on_multiple_tracks_are_selected = this_item_track and prev_item_track and this_item_track ~= prev_item_track
+    item_is_on_different_track_than_previous = this_item_track and prev_item_track and this_item_track ~= prev_item_track
   
-    if items_on_multiple_tracks_are_selected == true then
-      return items_on_multiple_tracks_are_selected
+    if item_is_on_different_track_than_previous == true then
+      return item_is_on_different_track_than_previous
     end
     
     prev_item_track = this_item_track
@@ -262,6 +251,7 @@ function containerSelectionIsInvalid(selected_item_count)
   if multiple_instances_from_same_pool_are_selected or recursive_container_is_being_glued then
     reaper.ShowMessageBox(_msg_change_selected_items, "Glue-Reversible can only Reglue or Edit one container at a time.", 0)
     setResetItemSelectionSet()
+
     return true
   end
 end
@@ -310,11 +300,11 @@ function recursiveContainerIsBeingGlued(glued_containers, restored_items)
 
   for i = 1, #glued_containers do
     this_glued_container = glued_containers[i]
-    this_glued_container_instance_pool_id = getSetItemState(this_item, _glued_container_pool_id_key)
+    this_glued_container_instance_pool_id = getSetItemData(this_item, _glued_container_pool_id_key)
 
     for j = 1, #restored_items do
       this_restored_item = restored_items[i]
-      this_restored_item_parent_pool_id = getSetItemState(this_restored_item, _glued_container_pool_id_key)
+      this_restored_item_parent_pool_id = getSetItemData(this_restored_item, _glued_container_pool_id_key)
       
       if this_glued_container_instance_pool_id == this_restored_item_parent_pool_id then
         reaper.ShowMessageBox(_msg_change_selected_items, "Glue-Reversible can't glue a glued container item to an instance from the same pool being Edited – or you could destroy the universe!", 0)
@@ -386,12 +376,12 @@ end
 
 
 function midiItemIsSelected(item)
-  local active_take, this_take_is_midi
+  local active_take, active_take_is_midi
 
   active_take = reaper.GetActiveTake(item)
-  this_take_is_midi = reaper.TakeIsMIDI(active_take)
+  active_take_is_midi = reaper.TakeIsMIDI(active_take)
 
-  if active_take and this_take_is_midi then
+  if active_take and active_take_is_midi then
     return true
   else
     return false
@@ -439,10 +429,9 @@ function refreshUI()
 end
 
 
-function createGluedContainer(first_selected_item_track, first_selected_item, obey_time_selection, active_pool_id, ignore_dependencies)
+function createGluedContainer(first_selected_item_track, first_selected_item, active_pool_id, obey_time_selection, ignore_dependencies)
   local this_is_reglue, selected_item_count, user_selected_items, first_user_selected_item_name, user_selected_item_states, pool_dependencies_table, new_pool_id, glue_placeholder_item, sizing_region_guid, glued_item, glued_item_length, glued_item_position
 
-  this_is_reglue = false
   selected_item_count = getSelectedItemsCount()
   user_selected_items, first_user_selected_item_name = getUserSelectedItems(selected_item_count)
 
@@ -452,10 +441,13 @@ function createGluedContainer(first_selected_item_track, first_selected_item, ob
 
   if not active_pool_id then
     active_pool_id = handlePoolId()
+    this_is_reglue = false
+
+  else
     this_is_reglue = true
   end
 
-  glue_placeholder_item, sizing_region_guid = createGluePlaceholder(first_selected_item_track, active_pool_id, user_selected_item, this_is_reglue)
+  glue_placeholder_item, sizing_region_guid = createGluePlaceholder(first_selected_item_track, active_pool_id, user_selected_items, this_is_reglue)
   glued_item = glueSelectedItemsIntoContainer(obey_time_selection, user_selected_items, selected_item_count, active_pool_id, first_user_selected_item_name)
   glued_item_length, glued_item_position = setGluedContainerParams(glued_item, glue_placeholder_item, active_pool_id)
 
@@ -548,7 +540,7 @@ function createUserSelectedItemStates(selected_item_count, user_selected_items)
     convertMidiItemToAudio(this_item)
     
     user_selected_item_states = user_selected_item_states..getSetItemState(this_item)..user_selected_items_separator
-    new_pool_id = getSetItemState(this_item, _restored_item_pool_id_key)
+    new_pool_id = getSetItemData(this_item, _restored_item_pool_id_key)
 
     if new_pool_id then
       pool_dependencies_table[new_pool_id] = new_pool_id
@@ -1203,7 +1195,7 @@ function restoreItems(pool_id, track, original_item_position, original_item_offs
     if val then
       this_restored_item = reaper.AddMediaItemToTrack(track)
 
-      getSetItemState(this_restored_item, val)
+      getSetItemData(this_restored_item, val)
 
       if not dont_restore_take then
         restoreOriginalTake(this_restored_item) 
@@ -1487,7 +1479,7 @@ function initEditGluedContainer()
 
   if isNotSingleGluedContainer(#glued_containers) == true then return end
 
-  this_pool_id = getSetItemState(glued_containers[1], _restored_item_pool_id_key)
+  this_pool_id = getSetItemData(glued_containers[1], _restored_item_pool_id_key)
 
   if otherPooledInstanceIsOpen(this_pool_id) then
     handleOtherOpenPooledInstance(item, edit_pool_id)
@@ -1528,7 +1520,7 @@ function otherPooledInstanceIsOpen(edit_pool_id)
 
   for i = 0, all_items_count-1 do
     item = reaper.GetMediaItem(0, i)
-    restored_item_pool_id = getSetItemState(item, _restored_item_pool_id_key)
+    restored_item_pool_id = getSetItemData(item, _restored_item_pool_id_key)
 
     if restored_item_pool_id == edit_pool_id then
       return true
