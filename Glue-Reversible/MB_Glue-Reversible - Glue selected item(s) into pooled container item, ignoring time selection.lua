@@ -10,4 +10,4 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 require("MB_Glue-Reversible Utils")
 
-initGlueReversible(false)
+initGlue(false)
