@@ -470,18 +470,13 @@ function handleGlue(first_selected_item_track, first_selected_item, pool_id, siz
   glued_container = glueSelectedItemsIntoContainer(obey_time_selection)
   glued_container_init_name = handleAddtionalItemCountLabel(user_selected_items, selected_item_count, pool_id, first_user_selected_item_name)
   
-  setGluedContainerName(glued_container, glued_container_init_name, true)
-  calcGluedContainerPositionChangeWhileOpen(glued_container, pool_id)
-
-  addRemoveItemImage(glued_container, true)
-  storeRetrieveGluedContainerParams(pool_id, _post_glue_action_step, glued_container)
-  storeRetrieveItemData(glued_container, _glued_container_pool_id_key_suffix, pool_id)
+  handlePostGlueContainer(glued_container, glued_container_init_name, pool_id)
 
   if not ignore_dependencies then
     updatePooledCopies(pool_id, pool_dependencies_table)
   end
 
-  return glued_container, glued_container_position, glued_container_length, sizing_region_position
+  return glued_container, sizing_region_position
 end
 
 
@@ -839,7 +834,16 @@ function handleAddtionalItemCountLabel(user_selected_items, selected_item_count,
 end
 
 
-function calcGluedContainerPositionChangeWhileOpen(glued_container, pool_id)
+function handlePostGlueContainer(glued_container, glued_container_init_name, pool_id)
+  setGluedContainerName(glued_container, glued_container_init_name, true)
+  setGluedContainerPositionChangeWhileOpen(glued_container, pool_id)
+  addRemoveItemImage(glued_container, true)
+  storeRetrieveGluedContainerParams(pool_id, _post_glue_action_step, glued_container)
+  storeRetrieveItemData(glued_container, _glued_container_pool_id_key_suffix, pool_id)
+end
+
+
+function setGluedContainerPositionChangeWhileOpen(glued_container, pool_id)
   local glued_container_preedit_params, glued_container_postglue_params, position_comparison_values_are_valid
 
   glued_container_preedit_params = storeRetrieveGluedContainerParams(pool_id, _pre_edit_action_step)
@@ -1003,11 +1007,12 @@ function handleReglue(first_selected_item_track, first_selected_item, restored_i
   glued_container_last_glue_params = storeRetrieveGluedContainerParams(restored_items_pool_id, _pre_edit_action_step)
   sizing_region_guid_key = _sizing_region_guid_key_prefix..restored_items_pool_id.._sizing_region_guid_key_suffix
   retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key)
-  glued_container, glued_container_position, glued_container_length, sizing_region_position = handleGlue(first_selected_item_track, first_selected_item, restored_items_pool_id, sizing_region_guid, obey_time_selection)
+  glued_container, sizing_region_position = handleGlue(first_selected_item_track, first_selected_item, restored_items_pool_id, sizing_region_guid, obey_time_selection)
+  glued_container_params = getItemParams(glued_container)
   new_src = getItemAudioSrcFileName(glued_container)
-  glued_container = restoreContainerState(glued_container, restored_items_pool_id, new_src, glued_container_position, glued_container_length)
+  glued_container = restoreContainerState(glued_container, restored_items_pool_id, new_src, glued_container_params)
   
-  setRegluePositionDeltas(--[[glued_container_last_glue_source_offset, --]]glued_container_position, glued_container_position, glued_container_length, sizing_region_position)
+  setRegluePositionDeltas(glued_container_params, sizing_region_position)
   calculateDependentUpdates(restored_items_pool_id)
   sortDependentUpdates()
   updateDependents(glued_container, first_selected_item, restored_items_pool_id, new_src, glued_container_length, obey_time_selection)
@@ -1016,7 +1021,7 @@ function handleReglue(first_selected_item_track, first_selected_item, restored_i
 end
 
 
-function restoreContainerState(glued_container, pool_id, new_src, glued_container_position, length)
+function restoreContainerState(glued_container, pool_id, new_src, glued_container_params)
   local retval, original_state
 
   retval, original_state = storeRetrieveProjectData(pool_id.._item_preglue_state_suffix)
@@ -1024,7 +1029,7 @@ function restoreContainerState(glued_container, pool_id, new_src, glued_containe
   if retval == true and original_state then
     getSetItemStateChunk(glued_container, original_state)
     updateItemSrc(glued_container, new_src)
-    updateItemValues(glued_container, glued_container_position, length)
+    updateItemValues(glued_container, glued_container_params.position, glued_container_params.length)
   end
 
   return glued_container
@@ -1117,18 +1122,19 @@ function calculateDependentUpdates(pool_id, nesting_level)
 end
 
 
-function restorePreviouslyGluedItems(pool_id, track, glued_container_preedit_params, is_dependent_update)
-  local pool_item_states_key, retval, stored_items, restored_items, glued_container_postglue_params, stored_item, stored_item_state, restored_item, this_restored_item_position, restored_items_current_position_offset_from_first_instance
+function restorePreviouslyGluedItems(pool_id, glued_container_preedit_params, is_dependent_update)
+  local pool_item_states_key, retval, stored_items, stored_items_table, active_track, restored_items, glued_container_postglue_params, stored_item, stored_item_state, restored_item
 
   pool_item_states_key = _pool_key_prefix..pool_id.._pool_item_states_key_suffix
   retval, stored_items = storeRetrieveProjectData(pool_item_states_key)
   retval, stored_items_table = serpent.load(stored_items)
+  active_track = reaper.BR_GetMediaTrackByGUID(0, glued_container_preedit_params.track_guid)
   restored_items = {}
   glued_container_postglue_params = storeRetrieveGluedContainerParams(pool_id, _post_glue_action_step)
 
-  for stored_item, stored_item_state in ipairs(stored_items) do
+  for stored_item, stored_item_state in ipairs(stored_items_table) do
     if stored_item_state then
-      restored_item = restoreItem(track, stored_item_state, is_dependent_update)
+      restored_item = restoreItem(active_track, stored_item_state, is_dependent_update)
       restored_item = adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_postglue_params, is_dependent_update)
       restored_items[stored_item] = restored_item
     end
@@ -1208,8 +1214,8 @@ function adjustRestoredItem(this_item, glued_container_preedit_params, glued_con
   this_restored_item_params = getItemParams(this_item)
 
   if not is_dependent_update then
-    this_restored_item_params = offsetPositionFromEarliestPooledInstance(this_restored_item_params)
-    this_restored_item_params = shiftRestoredItemFromLastGlue(this_restored_item_params, glued_container_preedit_params, glued_container_last_glue_params)
+    this_restored_item_params = offsetPositionFromEarliestPooledInstance(this_restored_item_params, glued_container_preedit_params)
+    this_restored_item_params = shiftRestoredItemFromLastGlue(this_item, this_restored_item_params, glued_container_preedit_params, glued_container_last_glue_params)
   end
 
   -- glued_container_position_delta_since_last_glue = glued_container_preedit_params.offset
@@ -1253,7 +1259,7 @@ function adjustRestoredItem(this_item, glued_container_preedit_params, glued_con
 end
 
 
-function offsetPositionFromEarliestPooledInstance(this_restored_item_params)
+function offsetPositionFromEarliestPooledInstance(this_restored_item_params, glued_container_preedit_params)
   local restored_items_current_position_offset_from_first_instance, new_item_position
 
   if not _earliest_pooled_instance_item_position then
@@ -1269,14 +1275,14 @@ function offsetPositionFromEarliestPooledInstance(this_restored_item_params)
 end
 
 
-function shiftRestoredItemFromLastGlue(this_item, this_item_position, this_item_position_delta_in_container, glued_container_preedit_params, glued_container_last_glue_position--[[, this_item_preglue_delta_in_container--]])
+function shiftRestoredItemFromLastGlue(this_item, this_restored_item_params, glued_container_preedit_params, glued_container_last_glue_params)
   local is_edit_after_fresh_glue, is_edit_after_reglue, glued_container_delta_from_last_glue, this_item_preglue_delta_in_container, this_item_new_position
 
   -- this_item_preglue_delta_in_container = storeRetrieveItemData(this_item, _item_preglue_offset_to_container_position_key_suffix)
   -- this_is_edit_after_reglue = this_item_preglue_delta_in_container and this_item_preglue_delta_in_container ~= ""
   -- this_is_first_edit_of_pool = not this_item_preglue_delta_in_container or this_item_preglue_delta_in_container == ""
-  is_edit_after_fresh_glue = not glued_container_last_glue_position or glued_container_last_glue_position == ""
-  is_edit_after_reglue = glued_container_last_glue_position and glued_container_last_glue_position ~= ""
+  is_edit_after_fresh_glue = not glued_container_last_glue_params.position or glued_container_last_glue_params.position == ""
+  is_edit_after_reglue = glued_container_last_glue_params.position and glued_container_last_glue_params.position ~= ""
 
   -- if this_is_edit_after_reglue then
     -- this_item_preglue_delta_in_container = tonumber(this_item_preglue_delta_in_container)
@@ -1289,11 +1295,11 @@ function shiftRestoredItemFromLastGlue(this_item, this_item_position, this_item_
     -- this_item_preglue_delta_in_container = 0
   elseif is_edit_after_reglue then
     glued_container_last_glue_position = tonumber(glued_container_last_glue_position)
-    glued_container_delta_from_last_glue = glued_container_preedit_params.position - glued_container_last_glue_position + this_item_position_delta_in_container--[[ + this_item_preglue_delta_in_container--]]
+    glued_container_delta_from_last_glue = glued_container_preedit_params.position - glued_container_last_glue_params.position + this_item_position_delta_in_container--[[ + this_item_preglue_delta_in_container--]]
     -- this_item_preglue_delta_in_container = tonumber(this_item_preglue_delta_in_container)
   end
 
-  this_item_new_position = this_item_position + glued_container_delta_from_last_glue --[[- this_item_preglue_delta_in_container--]]
+  this_item_new_position = this_restored_item_params.position + glued_container_delta_from_last_glue --[[- this_item_preglue_delta_in_container--]]
 
   reaper.SetMediaItemPosition(this_item, this_item_new_position, false)
 
@@ -1349,16 +1355,16 @@ function sortDependentUpdates()
 end
 
 
-function setRegluePositionDeltas(--[[glued_container_last_glue_source_offset, --]]glued_container_position, glued_container_position, glued_container_length, sizing_region_position)
+function setRegluePositionDeltas(glued_container_params, sizing_region_position)
   -- glued_container_last_glue_source_offset = tonumber(glued_container_last_glue_source_offset)
-  glued_container_position = tonumber(glued_container_position)
+  glued_container_params.position = tonumber(glued_container_params.position)
 
   if not _glued_instance_position_delta_while_open then
     _glued_instance_position_delta_while_open = 0
   end
   
-  if sizing_region_position ~= glued_container_position then
-    _glued_instance_position_delta_while_open = round(sizing_region_position - glued_container_position, 13)
+  if sizing_region_position ~= glued_container_params.position then
+    _glued_instance_position_delta_while_open = round(sizing_region_position - glued_container_params.position, 13)
   end
   
   if _glued_instance_position_delta_while_open ~= 0 then
@@ -1508,7 +1514,7 @@ function initEdit()
     return
   end
   
-  handleEdit()
+  handleEdit(this_pool_id)
 end
 
 
@@ -1566,11 +1572,10 @@ function scrollToSelectedItem()
 end
 
 
-function handleEdit()
-  local glued_container, pool_id
+function handleEdit(pool_id)
+  local glued_container
 
   glued_container = getFirstSelectedItem()
-  pool_id = storeRetrieveItemData(glued_container, _glued_container_pool_id_key_suffix)
 
   storeRetrieveGluedContainerParams(pool_id, _pre_edit_action_step, glued_container)
   processEditGluedContainer(glued_container, pool_id)
