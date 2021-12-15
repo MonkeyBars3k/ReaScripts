@@ -274,19 +274,20 @@ end
 
 
 function containerSelectionIsInvalid(selected_item_count)
-  local glued_containers, restored_items, last_restored_item_parent_pool_id, i, this_restored_item, this_restored_item_parent_pool_id, multiple_instances_from_same_pool_are_selected, recursive_container_is_being_glued
+  local glued_containers, restored_items, last_restored_item_parent_pool_id, i, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, multiple_instances_from_same_pool_are_selected, recursive_container_is_being_glued
 
   glued_containers, restored_items = getSelectedGlueReversibleItems(selected_item_count)
   multiple_instances_from_same_pool_are_selected = false
 
-  for i = 1,#restored_items do
+  for i = 1, #restored_items do
     this_restored_item = restored_items[i]
     this_restored_item_parent_pool_id = storeRetrieveItemData(this_restored_item, _restored_item_pool_id_key_suffix)
     this_is_2nd_or_later_restored_item_with_pool_id = last_restored_item_parent_pool_id and last_restored_item_parent_pool_id ~= ""
+    this_item_belongs_to_different_pool_than_active_edit = this_restored_item_parent_pool_id ~= last_restored_item_parent_pool_id
 
     if this_is_2nd_or_later_restored_item_with_pool_id then
 
-      if this_restored_item_parent_pool_id ~= last_restored_item_parent_pool_id then
+      if this_item_belongs_to_different_pool_than_active_edit then
         multiple_instances_from_same_pool_are_selected = true
 
         break
@@ -299,7 +300,9 @@ function containerSelectionIsInvalid(selected_item_count)
   
   recursive_container_is_being_glued = recursiveContainerIsBeingGlued(glued_containers, restored_items) == true
 
-  if multiple_instances_from_same_pool_are_selected or recursive_container_is_being_glued then
+  if recursive_container_is_being_glued then return true end
+
+  if multiple_instances_from_same_pool_are_selected then
     reaper.ShowMessageBox(_msg_change_selected_items, "Glue-Reversible can only Reglue or Edit one container at a time.", 0)
     setResetItemSelectionSet()
 
@@ -355,7 +358,7 @@ function recursiveContainerIsBeingGlued(glued_containers, restored_items)
 
     for j = 1, #restored_items do
       this_restored_item = restored_items[i]
-      this_restored_item_parent_pool_id = storeRetrieveItemData(this_restored_item, _glued_container_pool_id_key_suffix)
+      this_restored_item_parent_pool_id = storeRetrieveItemData(this_restored_item, _restored_item_pool_id_key_suffix)
       
       if this_glued_container_instance_pool_id == this_restored_item_parent_pool_id then
         reaper.ShowMessageBox(_msg_change_selected_items, "Glue-Reversible can't glue a glued container item to an instance from the same pool being Edited – or you could destroy the universe!", 0)
@@ -1463,7 +1466,7 @@ function isNotSingleGluedContainer(glued_containers_count)
     return true
   
   elseif glued_containers_count > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first selected container item (on the top track) only?", "Glue-Reversible Edit can only open one glued container item per action call.", 1)
+    multiitem_result = reaper.ShowMessageBox("Would you like to Edit the first selected container item from the top track only?", "Glue-Reversible Edit can only open one glued container item per action call.", 1)
     user_wants_to_edit_1st_container = multiitem_result == 2
 
     if user_wants_to_edit_1st_container then
