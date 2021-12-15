@@ -36,6 +36,7 @@ To edit your glued items, the **Edit** script opens the created container item; 
 - **Using just the pooled audio item feature:** Feel free to glue a single audio item and make copies of that! Since every glued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Edit any one of the pooled glue containers and reglue after.
 
 ### Notes
+- Requires Reaper v6.43
 - Requires **SWS Plugin Extension**, of course!
 - Don't **Clean current project directory** after gluing, or you'll lose your original items!
 - When you **Edit**, a new empty item "grc" is visible under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances!
