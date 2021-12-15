@@ -13,7 +13,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _container_post_glue_params_key_suffix, _dependents_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _msg_change_selected_items, _data_storage_track, _glued_instance_position_delta_while_open, _keyed_dependents, _numeric_dependents, _position_changed_during_edit, _position_change_response, _earliest_pooled_instance_item_position
+local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _container_post_glue_params_key_suffix, _dependents_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _msg_change_selected_items, _data_storage_track, _glued_instance_position_delta_while_open, _keyed_dependents, _numeric_dependents, _position_changed_during_edit, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _item_bg_img_path = _script_path .. "gr-bg.png"
@@ -60,7 +60,6 @@ _keyed_dependents = {}
 _numeric_dependents = {}
 _position_changed_during_edit = false
 _position_change_response = nil
-_earliest_pooled_instance_item_position = nil
 
 
 
@@ -1129,7 +1128,7 @@ function calculateDependentUpdates(pool_id, nesting_level)
         deselectAllItems()
 
         -- restore items into newly made empty track
-        restored_items = restorePreviouslyGluedItems(dependent_pool, track, nil, true)
+        restored_items = restorePreviouslyGluedItems(dependent_pool, nil, true)
 
         -- store references to temp track and items
         current_entry.track = track
@@ -1149,18 +1148,19 @@ end
 
 
 function restorePreviouslyGluedItems(pool_id, glued_container_preedit_params, is_dependent_update)
-  local pool_item_states_key, retval, stored_items, stored_items_table, restored_items, glued_container_postglue_params, stored_item, stored_item_state, restored_item
+  local pool_item_states_key, retval, stored_items, stored_items_table, active_track, restored_items, glued_container_postglue_params, stored_item, stored_item_state, restored_item
 
   pool_item_states_key = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
   retval, stored_items = storeRetrieveProjectData(pool_item_states_key)
-  stored_items_table = retrieveItemParams(stored_items)
+  stored_items_table = retrieveStoredItemStates(stored_items)
+  active_track = reaper.BR_GetMediaTrackByGUID(0, glued_container_preedit_params.track_guid)
   restored_items = {}
   glued_container_postglue_params = storeRetrieveGluedContainerParams(pool_id, _postglue_action_step)
 
   for stored_item, stored_item_state in ipairs(stored_items_table) do
     if stored_item_state then
-      restored_item = restoreItem(glued_container_postglue_params.track, stored_item_state, is_dependent_update)
-      restored_item = adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_postglue_params, is_dependent_update)
+      restored_item = restoreItem(active_track, stored_item_state, is_dependent_update)
+      restored_item = adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_postglue_params, pool_id, is_dependent_update)
       restored_items[stored_item] = restored_item
     end
   end
@@ -1169,7 +1169,7 @@ function restorePreviouslyGluedItems(pool_id, glued_container_preedit_params, is
 end
 
 
-function retrieveItemParams(items)
+function retrieveStoredItemStates(items)
   local retval, items_table
 
   retval, items_table = serpent.load(items)
@@ -1241,100 +1241,31 @@ function deleteActiveTakeFromItems()
 end
 
 
-function adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_last_glue_params, is_dependent_update)
-  local restored_item_params, is_edit_after_fresh_glue, is_edit_after_reglue, new_restored_item_position, restored_items_current_position_offset_from_first_instance, this_item_length, glued_container_position_delta_since_last_glue, this_restored_item_position_delta_in_container, this_is_edit_after_reglue, this_is_first_edit_of_pool, this_item_prev_delta_in_container, this_item_end_in_container, item_end_is_before_glued_container_position, glued_container_position_is_during_item_space, this_item_end, glued_container_last_glue_end, glued_container_length_cuts_off_item_end, item_position_is_after_glued_container_end
-
-  reaper.SetMediaItemSelected(restored_item, true)
+function adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_last_glue_params, pool_id, is_dependent_update)
+  local restored_item_params
 
   restored_item_params = getItemParams(restored_item)
-  this_item_prev_delta_in_container = storeRetrieveItemData(restored_item, _item_offset_to_container_position_key_suffix)
-  is_edit_after_fresh_glue = not this_item_prev_delta_in_container or this_item_prev_delta_in_container == ""
-  is_edit_after_reglue = this_item_prev_delta_in_container
-
-  if is_edit_after_fresh_glue then
-    this_item_prev_delta_in_container = 0
-  elseif is_edit_after_reglue then
-    this_item_prev_delta_in_container = tonumber(this_item_prev_delta_in_container)
-  end
 
   if not is_dependent_update then
-    restored_item_params = offsetPositionFromEarliestPooledInstance(restored_item_params, glued_container_preedit_params)
-    restored_item_params = shiftRestoredItemPositionSinceLastGlue(restored_item_params, this_item_prev_delta_in_container, glued_container_last_glue_params)
+    restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item_params.position, glued_container_preedit_params, glued_container_last_glue_params)
   end
 
   reaper.SetMediaItemPosition(restored_item, restored_item_params.position, false)
   reaper.SetMediaItemLength(restored_item, restored_item_params.length, false)
+  reaper.SetMediaItemSelected(restored_item, true)
 
   return restored_item
 end
 
 
-function offsetPositionFromEarliestPooledInstance(restored_item_params, glued_container_preedit_params)
-  local restored_items_current_position_offset_from_first_instance, new_item_position
-
-  if not _earliest_pooled_instance_item_position then
-    _earliest_pooled_instance_item_position = restored_item_params.position
-  else
-    _earliest_pooled_instance_item_position = math.min(restored_item_params.position, _earliest_pooled_instance_item_position)
-  end
-
-  restored_items_current_position_offset_from_first_instance = glued_container_preedit_params.position - _earliest_pooled_instance_item_position
-  new_item_position = restored_item_params.position + restored_items_current_position_offset_from_first_instance
+function shiftRestoredItemPositionSinceLastGlue(restored_item_params_position, glued_container_preedit_params, glued_container_last_glue_params)
+  local this_instance_delta_to_last_glued_instance = glued_container_preedit_params.position - glued_container_last_glue_params.position - glued_container_preedit_params.source_offset
   
-  return restored_item_params
+  restored_item_params_position = restored_item_params_position + this_instance_delta_to_last_glued_instance 
+
+  return restored_item_params_position
 end
 
-
-function shiftRestoredItemPositionSinceLastGlue(restored_item_params, this_item_prev_delta_in_container, glued_container_last_glue_params)
-  restored_item_params.position = glued_container_last_glue_params.position + this_item_prev_delta_in_container
-
-  return restored_item_params
-end
-
-
-function handleRestoredItemOutsideNewGlue(restored_item, restored_item_params, glued_container_preedit_params, this_item_position_delta_in_container)
-  local new_restored_item_position = glued_container_preedit_params.position - glued_container_preedit_params.source_offset + this_item_position_delta_in_container
-
-  restored_item_params.position = new_restored_item_position
-
--- could optionally mute items outside instance boundaries in future
-  -- reaper.SetMediaItemInfo_Value(restored_item, _api_mute_key, 1)
-
-  return restored_item_params
-end
-
-
--- function handleResoredItemDuringNewGlueStart(restored_item_params, glued_container_preedit_params, this_item_position_delta_in_container, this_item_length)
---   local restored_item_take, new_source_offset, new_length
-
---   restored_item_take = reaper.GetActiveTake(restored_item)
---   new_source_offset = glued_container_preedit_params.source_offset - this_item_position_delta_in_container 
---   new_length = this_item_length - new_source_offset
-
---   reaper.SetMediaItemInfo_Value(restored_item, _api_position_key, glued_container_preedit_params.position)
---   reaper.SetMediaItemTakeInfo_Value(restored_item_take, _api_src_offset_key, new_source_offset)
---   reaper.SetMediaItemInfo_Value(restored_item, _api_length_key, new_length)
-
---   return restored_item_params
--- end
-
-
--- function handleRestoredItemInsideContainer(restored_item_params, this_item_position, glued_container_preedit_params)
---   local new_position = this_item_position - glued_container_preedit_params.source_offset
-
---   reaper.SetMediaItemInfo_Value(restored_item, _api_position_key, new_position)
-
---   return restored_item_params
--- end
-
-
--- function handleRestoredItemCutOffByNewGlueEnd(restored_item_params, this_item_length, glued_container_last_glue_end, this_item_end)
---   local new_length = this_item_length + (glued_container_last_glue_end - this_item_end)
-
---   reaper.SetMediaItemInfo_Value(restored_item, _api_length_key, new_length)
-
---   return restored_item_params
--- end
 
 
 -- sort dependents _keyed_dependents by how nested they are: convert _keyed_dependents to a numeric array then sort by nesting value
