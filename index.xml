@@ -270,7 +270,8 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab You can expand the {\b empty container} "grc" to create silence at the start and end of the glued wav, or just expand the time selection before reglue.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the pooled audio item feature:} Feel free to glue a single audio item and make copies of that! Since every glued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Edit any one of the pooled glue containers and reglue after.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension}, of course!\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b Reaper v6.43} or newer\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension}!\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Don't {\b Clean current project directory} after gluing, or you'll lose your original items!\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When you {\b Edit}, a new empty item "grc" is visible under the original items. This item has the data to recall which group these items came from \u8211- don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances!\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes/names to keep track of which container item items belong in. {\b Never delete "gr:1" or "grc:1" from items' names}, as the code depends on that label to find it! You can add text to notes/names AFTER \u8211- e.g. "gr:1 - My extra text"\par}
