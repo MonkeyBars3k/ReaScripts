@@ -461,13 +461,7 @@ function handleGlue(first_selected_item_track, first_selected_item, pool_id, siz
     sizing_region_params = setUpReglue(sizing_region_guid, first_selected_item_track)
   end
 
-  setUserSelectedItemsData(user_selected_items, pool_id, sizing_region_params)
-  
-  user_selected_item_states, pool_dependencies_table = createUserSelectedItemStates(selected_item_count, user_selected_items, pool_id)
-
-  storeGluedItemStates(pool_id, user_selected_item_states)
-  selectDeselectItems(user_selected_items, true)
-
+  user_selected_item_states, pool_dependencies_table = handleUserSelectedItems(user_selected_items, selected_item_count, pool_id, sizing_region_params, pool_dependencies_table)
   glued_container = glueSelectedItemsIntoContainer(obey_time_selection)
   glued_container_init_name = handleAddtionalItemCountLabel(user_selected_items, pool_id, first_user_selected_item_name)
   
@@ -588,13 +582,12 @@ end
 
 
 function createUserSelectedItemStates(selected_item_count, user_selected_items, pool_id)
-  local user_selected_item_count, user_selected_item_states, user_selected_items_separator, pool_dependencies_table, i, this_item, is_last_user_selected_item
+  local i, item, user_selected_item_states, user_selected_items_separator, pool_dependencies_table, i, this_item, is_last_user_selected_item
 
-  user_selected_item_count = getTableSize(user_selected_items)
   user_selected_item_states = {}
   pool_dependencies_table = {}
 
-  for i = 1, user_selected_item_count do
+  for i, item in ipairs(user_selected_items) do
     this_item = user_selected_items[i]
 
     convertMidiItemToAudio(this_item)
@@ -721,12 +714,10 @@ end
 
 
 function selectDeselectItems(items, select_deselect)
-  local i, count
+  local i, item
 
-  count = getTableSize(items)
-
-  for i = 1, count do
-    reaper.SetMediaItemSelected(items[i], select_deselect)
+  for i, item in ipairs(items) do
+    reaper.SetMediaItemSelected(item, select_deselect)
   end
 end
 
@@ -748,6 +739,20 @@ function makeEmptySpacingItem(active_track, sizing_region_params)
   reaper.SetMediaItemPosition(empty_spacing_item, sizing_region_params.position, false)
   reaper.SetMediaItemLength(empty_spacing_item, sizing_region_params.length, false)
   reaper.SetMediaItemSelected(empty_spacing_item, true)
+end
+
+
+function handleUserSelectedItems(user_selected_items, selected_item_count, pool_id, sizing_region_params, pool_dependencies_table)
+  local user_selected_item_states, pool_dependencies_table
+
+  setUserSelectedItemsData(user_selected_items, pool_id, sizing_region_params)
+  
+  user_selected_item_states, pool_dependencies_table = createUserSelectedItemStates(selected_item_count, user_selected_items, pool_id)
+
+  storeGluedItemStates(pool_id, user_selected_item_states)
+  selectDeselectItems(user_selected_items, true)
+
+  return user_selected_item_states, pool_dependencies_table
 end
 
 
@@ -1243,7 +1248,6 @@ function adjustRestoredItem(restored_item, glued_container_preedit_params, glued
 
   restored_item_params = getItemParams(restored_item)
   this_item_prev_delta_in_container = storeRetrieveItemData(restored_item, _item_offset_to_container_position_key_suffix)
--- log(tostring(this_item_prev_delta_in_container))
   is_edit_after_fresh_glue = not this_item_prev_delta_in_container or this_item_prev_delta_in_container == ""
   is_edit_after_reglue = this_item_prev_delta_in_container
 
@@ -1256,44 +1260,6 @@ function adjustRestoredItem(restored_item, glued_container_preedit_params, glued
   if not is_dependent_update then
     restored_item_params = offsetPositionFromEarliestPooledInstance(restored_item_params, glued_container_preedit_params)
     restored_item_params = shiftRestoredItemPositionSinceLastGlue(restored_item_params, this_item_prev_delta_in_container, glued_container_last_glue_params)
-  end
-
-  -- glued_container_position_delta_since_last_glue = glued_container_preedit_params.offset
-  -- this_item_prev_delta_in_container = storeRetrieveItemData(restored_item, _item_offset_to_container_position_key_suffix)
-  -- restored_item_params.position_delta_in_container = this_item_prev_delta_in_container --restored_item_params.position - glued_container_preedit_params.position - glued_container_position_delta_since_last_glue
-
-  
-  
-  -- if this_item_prev_delta_in_container and this_item_prev_delta_in_container ~= "" then
-  --   this_item_prev_delta_in_container = tonumber(this_item_prev_delta_in_container)
-  -- end
-
-  -- log(tostring(this_item_prev_delta_in_container))
-  -- log(tostring(restored_item_params.position))
-  -- log(tostring(glued_container_preedit_params.position))
-  -- log(tostring(glued_container_preedit_params.offset))
-
-  -- this_item_end_in_container = this_restored_item_position_delta_in_container + this_item_length
-  item_end_is_before_glued_container_position = glued_container_preedit_params.source_offset > (this_item_prev_delta_in_container + restored_item_params.length)
-  -- glued_container_position_is_during_item_space = glued_container_preedit_params.offset > this_restored_item_position_delta_in_container and glued_container_preedit_params.offset < this_item_end_in_container
-  -- this_item_end = glued_container_preedit_params.position + this_restored_item_position_delta_in_container + this_item_length - glued_container_preedit_params.offset
-  glued_container_last_glue_params.end_point = glued_container_preedit_params.position + glued_container_preedit_params.length
-  -- glued_container_length_cuts_off_item_end = this_item_end > glued_container_last_glue_end
-  item_position_is_after_glued_container_end = restored_item_params.position > glued_container_last_glue_params.end_point + glued_container_preedit_params.source_offset
-
-  if item_end_is_before_glued_container_position or item_position_is_after_glued_container_end then
-    -- restored_item_params = handleRestoredItemOutsideNewGlue(restored_item_params, glued_container_preedit_params, this_restored_item_position_delta_in_container)
-    -- reaper.SetMediaItemInfo_Value(restored_item, _api_mute_key, 1)
-
-  -- elseif glued_container_position_is_during_item_space then
-  --   restored_item_params = handleResoredItemDuringNewGlueStart(restored_item_params, glued_container_preedit_params, this_restored_item_position_delta_in_container)
-  
-  -- elseif glued_container_preedit_params.offset ~= 0 then
-  --   restored_item_params = handleRestoredItemInsideContainer(restored_item_params, glued_container_preedit_params)
-  -- end
-
-  -- if glued_container_length_cuts_off_item_end then
-  --   restored_item_params = handleRestoredItemCutOffByNewGlueEnd(restored_item_params, glued_container_last_glue_params.end_point)
   end
 
   reaper.SetMediaItemPosition(restored_item, restored_item_params.position, false)
@@ -1326,46 +1292,49 @@ function shiftRestoredItemPositionSinceLastGlue(restored_item_params, this_item_
 end
 
 
-function handleRestoredItemOutsideNewGlue(restored_item_params, glued_container_preedit_params, this_item_position_delta_in_container)
+function handleRestoredItemOutsideNewGlue(restored_item, restored_item_params, glued_container_preedit_params, this_item_position_delta_in_container)
   local new_restored_item_position = glued_container_preedit_params.position - glued_container_preedit_params.source_offset + this_item_position_delta_in_container
 
   restored_item_params.position = new_restored_item_position
 
-  return restored_item_params
-end
-
-
-function handleResoredItemDuringNewGlueStart(restored_item_params, glued_container_preedit_params, this_item_position_delta_in_container, this_item_length)
-  local restored_item_take, new_source_offset, new_length
-
-  restored_item_take = reaper.GetActiveTake(restored_item)
-  new_source_offset = glued_container_preedit_params.source_offset - this_item_position_delta_in_container 
-  new_length = this_item_length - new_source_offset
-
-  reaper.SetMediaItemInfo_Value(restored_item, _api_position_key, glued_container_preedit_params.position)
-  reaper.SetMediaItemTakeInfo_Value(restored_item_take, _api_src_offset_key, new_source_offset)
-  reaper.SetMediaItemInfo_Value(restored_item, _api_length_key, new_length)
+-- could optionally mute items outside instance boundaries in future
+  -- reaper.SetMediaItemInfo_Value(restored_item, _api_mute_key, 1)
 
   return restored_item_params
 end
 
 
-function handleRestoredItemInsideContainer(restored_item_params, this_item_position, glued_container_preedit_params)
-  local new_position = this_item_position - glued_container_preedit_params.source_offset
+-- function handleResoredItemDuringNewGlueStart(restored_item_params, glued_container_preedit_params, this_item_position_delta_in_container, this_item_length)
+--   local restored_item_take, new_source_offset, new_length
 
-  reaper.SetMediaItemInfo_Value(restored_item, _api_position_key, new_position)
+--   restored_item_take = reaper.GetActiveTake(restored_item)
+--   new_source_offset = glued_container_preedit_params.source_offset - this_item_position_delta_in_container 
+--   new_length = this_item_length - new_source_offset
 
-  return restored_item_params
-end
+--   reaper.SetMediaItemInfo_Value(restored_item, _api_position_key, glued_container_preedit_params.position)
+--   reaper.SetMediaItemTakeInfo_Value(restored_item_take, _api_src_offset_key, new_source_offset)
+--   reaper.SetMediaItemInfo_Value(restored_item, _api_length_key, new_length)
+
+--   return restored_item_params
+-- end
 
 
-function handleRestoredItemCutOffByNewGlueEnd(restored_item_params, this_item_length, glued_container_last_glue_end, this_item_end)
-  local new_length = this_item_length + (glued_container_last_glue_end - this_item_end)
+-- function handleRestoredItemInsideContainer(restored_item_params, this_item_position, glued_container_preedit_params)
+--   local new_position = this_item_position - glued_container_preedit_params.source_offset
 
-  reaper.SetMediaItemInfo_Value(restored_item, _api_length_key, new_length)
+--   reaper.SetMediaItemInfo_Value(restored_item, _api_position_key, new_position)
 
-  return restored_item_params
-end
+--   return restored_item_params
+-- end
+
+
+-- function handleRestoredItemCutOffByNewGlueEnd(restored_item_params, this_item_length, glued_container_last_glue_end, this_item_end)
+--   local new_length = this_item_length + (glued_container_last_glue_end - this_item_end)
+
+--   reaper.SetMediaItemInfo_Value(restored_item, _api_length_key, new_length)
+
+--   return restored_item_params
+-- end
 
 
 -- sort dependents _keyed_dependents by how nested they are: convert _keyed_dependents to a numeric array then sort by nesting value
