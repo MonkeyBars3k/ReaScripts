@@ -13,7 +13,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _dependents_data_key_suffix, _dependencies_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _msg_change_selected_items, _data_storage_track, _glued_instance_position_delta_while_open, _keyed_dependents, _numeric_dependents, _position_changed_during_edit, _position_change_response
+local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _dependents_data_key_suffix, _dependencies_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_change_selected_items, _data_storage_track, _glued_instance_position_delta_while_open, _keyed_dependents, _numeric_dependents, _position_changed_during_edit, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _item_bg_img_path = _script_path .. "gr-bg.png"
@@ -53,6 +53,9 @@ _item_preglue_state_suffix = "preglue-state-chunk"
 _item_offset_to_container_position_key_suffix = "glued-container-offset"
 _postglue_action_step = "postglue"
 _preedit_action_step = "preedit"
+_container_name_default_prefix = "^gr%:%d+"
+_nested_item_default_name = '%[".+%]'
+_double_quotation_mark = "\u{0022}"
 _msg_change_selected_items = "Change the items selected and try again."
 -- Using Master Track to store project-wide GR script data in because its changes are saved in Reaper's Undo Points
 _data_storage_track = reaper.GetMasterTrack(0)
@@ -467,7 +470,7 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
   glued_container = glueSelectedItemsIntoContainer(obey_time_selection)
   glued_container_init_name = handleAddtionalItemCountLabel(user_selected_items, pool_id, first_user_selected_item_name)
 
-  handlePostGlueContainer(glued_container, glued_container_init_name, pool_id, this_is_reglue)
+  handleContainerPostGlue(glued_container, glued_container_init_name, pool_id, this_is_reglue)
 
   if not ignore_dependencies then
     updatePooledCopies(pool_id, pool_dependencies_table)
@@ -821,26 +824,31 @@ end
 
 
 function handleAddtionalItemCountLabel(user_selected_items, pool_id, first_user_selected_item_name)
-  local user_selected_item_count, multiple_user_selected_items, other_user_selected_items_count, double_quotation_mark, item_name_addl_count_str, glued_container_init_name
+  local user_selected_item_count, multiple_user_selected_items, other_user_selected_items_count, is_nested_container_name, has_nested_item_name, item_name_addl_count_str, glued_container_init_name
 
   user_selected_item_count = getTableSize(user_selected_items)
   multiple_user_selected_items = user_selected_item_count > 1
   other_user_selected_items_count = user_selected_item_count - 1
-  double_quotation_mark = "\u{0022}"
-
+  is_nested_container_name = string.find(first_user_selected_item_name, _container_name_default_prefix)
+  has_nested_item_name = string.find(first_user_selected_item_name, _nested_item_default_name)
+  
   if multiple_user_selected_items then
     item_name_addl_count_str = " +" .. other_user_selected_items_count ..  " more"
   else
     item_name_addl_count_str = ""
   end
 
-  glued_container_init_name = pool_id .. " [" .. double_quotation_mark .. first_user_selected_item_name .. double_quotation_mark .. item_name_addl_count_str .. "]"
+  if is_nested_container_name and has_nested_item_name then
+    first_user_selected_item_name = string.match(first_user_selected_item_name, _container_name_default_prefix)
+  end
+
+  glued_container_init_name = pool_id .. " [" .. _double_quotation_mark .. first_user_selected_item_name .. _double_quotation_mark .. item_name_addl_count_str .. "]"
 
   return glued_container_init_name
 end
 
 
-function handlePostGlueContainer(glued_container, glued_container_init_name, pool_id, this_is_reglue)
+function handleContainerPostGlue(glued_container, glued_container_init_name, pool_id, this_is_reglue)
   local glued_container_preglue_state_key, glued_container_state
 
   glued_container_preglue_state_key = _pool_key_prefix .. pool_id .. _item_preglue_state_suffix
@@ -1359,10 +1367,9 @@ end
 
 
 function updatePooledInstancesNestedUpTo1Level(glued_container, glued_container_params)
-  local all_items_count,--[[ this_container_name,--]] old_srcs, i, this_item, old_src
+  local all_items_count, old_srcs, i, this_item, old_src
 
   all_items_count = reaper.CountMediaItems(0)
-  -- this_container_name = _glued_container_name_prefix .. glued_container_params.pool_id
   old_srcs = {}
 
   for i = 0, all_items_count-1 do
@@ -1391,7 +1398,7 @@ function updateSource(item, glued_container_params)
 
   if this_glued_container_pool_id == glued_container_params.pool_id then
     current_src = getItemAudioSrcFileName(item)
-    
+
     if current_src ~= glued_container_params.new_src then
       take_name, take = getSetItemName(item)
 
@@ -1459,7 +1466,7 @@ function updateInstanceAudio(instance, active_container_params)
 
   if current_src ~= active_container_params.new_src then
     take_name, take = getSetItemName(instance)
--- log(active_container_params.new_src)
+
     reaper.BR_SetTakeSourceFromFile2(take, active_container_params.new_src, false, true)
   end
 end
