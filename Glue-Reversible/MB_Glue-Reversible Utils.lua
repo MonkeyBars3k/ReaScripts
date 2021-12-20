@@ -811,7 +811,7 @@ function createUserSelectedItemStates(user_selected_items, active_pool_id)
 
     table.insert(user_selected_item_states, this_item_state)
 
-    if this_glued_container_pool_id then
+    if this_glued_container_pool_id and this_glued_container_pool_id ~= "" then
       pool_dependencies_table[this_glued_container_pool_id] = this_glued_container_pool_id
     end
   end
@@ -1015,7 +1015,8 @@ function updatePooledCopies(pool_id, pool_dependencies_table)
   -- have the dependencies changed? - CHANGE CONDITION TO VAR dependencies_have_changed
   if string.len(old_dependencies) > 0 then
     -- loop thru all the dependencies no longer needed
-    for dependency in string.gmatch(old_dependencies, "%d+") do 
+    for dependency in string.gmatch(old_dependencies, "%d+") do
+
       -- remove this pool from the other pools' dependents list
       removePoolFromDependents(dependency, dependent)
     end
@@ -1069,22 +1070,23 @@ end
 
 
 function handleReglue(first_selected_item_track, restored_items_pool_id, obey_time_selection)
-  local glued_container_last_glue_params, sizing_region_guid_key_label, retval, sizing_region_guid, glued_container, glued_container_params, new_src
+  local glued_container_last_glue_params, sizing_region_guid_key_label, retval, sizing_region_guid, glued_container, glued_container_params
 
   glued_container_last_glue_params = storeRetrieveGluedContainerParams(restored_items_pool_id, _postglue_action_step)
   sizing_region_guid_key_label = _sizing_region_guid_key_prefix .. restored_items_pool_id .. _sizing_region_guid_key_suffix
   retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key_label)
   glued_container = handleGlue(first_selected_item_track, restored_items_pool_id, sizing_region_guid, obey_time_selection)
   glued_container_params = getItemParams(glued_container)
-  new_src = getItemAudioSrcFileName(glued_container)
-  glued_container_params.new_src = new_src
-  glued_container = restoreContainerState(glued_container, restored_items_pool_id, new_src, glued_container_params)
+  glued_container_params.new_src = getItemAudioSrcFileName(glued_container)
+  glued_container_params.pool_id = restored_items_pool_id
+  glued_container = restoreContainerState(glued_container, glued_container_params)
   
-  setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params, restored_items_pool_id)
-  calculateDependentUpdates(restored_items_pool_id)
+  setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params)
+  calculateDependentUpdates(glued_container_params.pool_id)
   sortDependentUpdates()
   deselectAllItems()
-  updateDependents(glued_container, restored_items_pool_id, glued_container_params, sizing_region_guid, obey_time_selection)
+  updateDependents(glued_container, glued_container_params, sizing_region_guid, obey_time_selection)
+  reaper.ClearPeakCache()
 
   return glued_container
 end
@@ -1104,15 +1106,15 @@ function getItemAudioSrcFileName(item, take)
 end
 
 
-function restoreContainerState(glued_container, pool_id, new_src, glued_container_params)
+function restoreContainerState(glued_container, glued_container_params)
   local glued_container_preglue_state_key_label, retval, original_state
 
-  glued_container_preglue_state_key_label = _pool_key_prefix .. pool_id .. _item_preglue_state_suffix
+  glued_container_preglue_state_key_label = _pool_key_prefix .. glued_container_params.pool_id .. _item_preglue_state_suffix
   retval, original_state = storeRetrieveProjectData(glued_container_preglue_state_key_label)
 
   if retval == true and original_state then
     getSetItemStateChunk(glued_container, original_state)
-    updateItemSrc(glued_container, new_src)
+    updateItemSrc(glued_container, glued_container_params.new_src)
     updateItemValues(glued_container, glued_container_params)
   end
 
@@ -1135,14 +1137,13 @@ function updateItemValues(glued_container, glued_container_params)
 end
 
 
-function setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params, pool_id)
+function setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params)
   local glued_container_preedit_params, glued_container_position_changed_during_edit, glued_container_position_changed_after_last_glue
 
-  glued_container_preedit_params = storeRetrieveGluedContainerParams(pool_id, _preedit_action_step)
+  glued_container_preedit_params = storeRetrieveGluedContainerParams(glued_container_params.pool_id, _preedit_action_step)
   glued_container_params, glued_container_preedit_params, glued_container_last_glue_params = numberizeElements({glued_container_params, glued_container_preedit_params, glued_container_last_glue_params}, {"position", "source_offset"})
   glued_container_position_changed_during_edit = glued_container_params.position ~= glued_container_preedit_params.position
   glued_container_position_changed_after_last_glue = glued_container_params.position ~= glued_container_last_glue_params.position
-
 
   if glued_container_position_changed_during_edit then
     _glued_instance_position_delta_while_open = round(glued_container_preedit_params.position - glued_container_params.position, 13)
@@ -1160,7 +1161,7 @@ end
 
 -- populate _keyed_dependents with a nicely ordered sequence and reinsert the items of each pool into temp tracks so they can be updated
 function calculateDependentUpdates(pool_id, nesting_depth)
-  local dependents_data_key_label, retval, dependents, track, dependent_pool, restored_items, item, container, glued_container, new_src, i, v, update_item, current_entry
+  local dependents_data_key_label, retval, dependents, track, dependent_pool, item, restored_items, container, glued_container, new_src, i, v, update_item, current_entry
 
   dependents_data_key_label = _pool_key_prefix .. pool_id .. _dependents_data_key_suffix
   retval, dependents = storeRetrieveProjectData(dependents_data_key_label)
@@ -1171,7 +1172,7 @@ function calculateDependentUpdates(pool_id, nesting_depth)
 
   if retval == true and string.len(dependents) > 0 then
 
-    for dependent_pool in string.gmatch(dependents, "%d+") do 
+    for dependent_pool in string.gmatch(dependents, "%d+") do
       dependent_pool = math.floor(tonumber(dependent_pool))
 
       -- check if an entry for this pool already exists
@@ -1197,8 +1198,8 @@ function calculateDependentUpdates(pool_id, nesting_depth)
 
         -- store references to temp track and items
         current_entry.track = track
-        current_entry.item = item
-        current_entry.container = container
+        -- current_entry.item = item
+        -- current_entry.container = container
         current_entry.restored_items = restored_items
 
         -- store this item in _keyed_dependents
@@ -1217,12 +1218,12 @@ function restorePreviouslyGluedItems(pool_id, active_track, glued_container_pree
 
   pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
   retval, stored_items = storeRetrieveProjectData(pool_item_states_key_label)
+
   stored_items_table = retrieveStoredItemStates(stored_items)
   restored_items = {}
   glued_container_postglue_params = storeRetrieveGluedContainerParams(pool_id, _postglue_action_step)
 
   for stored_item, stored_item_state in ipairs(stored_items_table) do
-
     if stored_item_state then
       restored_item = restoreItem(active_track, stored_item_state, is_dependent_update)
       restored_item = adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_postglue_params, is_dependent_update)
@@ -1341,73 +1342,87 @@ function sortDependentUpdates()
 
     table.insert(_numeric_dependents, v)
   end
-  
+
   table.sort( _numeric_dependents, function(a, b) return a.nesting_depth < b.nesting_depth end)
 end
 
 
-function updateDependents(glued_container, edited_pool_id, glued_container_params, sizing_region_guid, obey_time_selection)
+function updateDependents(glued_container, glued_container_params, sizing_region_guid, obey_time_selection)
   local i, dependent
-
-  glued_container_params.pool_id = edited_pool_id
 
   updatePooledInstancesNestedUpTo1Level(glued_container, glued_container_params)
 
   for i, dependent in ipairs(_numeric_dependents) do
     handlePooledInstancesNested2PlusLevels(dependent, obey_time_selection, glued_container_params.length, sizing_region_guid)
   end
-
-  reaper.ClearPeakCache()
 end
 
 
 function updatePooledInstancesNestedUpTo1Level(glued_container, glued_container_params)
-  local all_items_count, this_container_name, items_in_glued_pool, i, this_item, this_instance, this_instance_is_not_active_glued_container
+  local all_items_count,--[[ this_container_name,--]] old_srcs, i, this_item, old_src
 
   all_items_count = reaper.CountMediaItems(0)
-  this_container_name = _glued_container_name_prefix .. glued_container_params.pool_id
-  items_in_glued_pool = {}
+  -- this_container_name = _glued_container_name_prefix .. glued_container_params.pool_id
+  old_srcs = {}
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(0, i)
-    this_instance = getPooledInstance(this_item, glued_container_params.pool_id)
 
-    if this_instance then
-      table.insert(items_in_glued_pool, this_instance)
+    old_src = updateSource(this_item, glued_container_params)
+
+    if old_src then
+      old_srcs[old_src] = true 
+    end
+
+    for old_src, i in pairs(old_srcs) do
+      os.remove(old_src)
+      os.remove(old_src..'.reapeaks')
     end
   end
+end
 
-  for i = 1, #items_in_glued_pool do
-    this_instance = items_in_glued_pool[i]
-    this_instance_is_not_active_glued_container = this_instance ~= glued_container
 
-    if this_instance_is_not_active_glued_container then
-      updatePooledInstance(#items_in_glued_pool, glued_container, this_instance, glued_container_params)
+function updateSource(item, glued_container_params)
+  local this_glued_container_pool_id, current_src
+
+  glued_container_params.pool_id = tonumber(glued_container_params.pool_id)
+  this_glued_container_pool_id = storeRetrieveItemData(item, _glued_container_pool_id_key_suffix)
+  this_glued_container_pool_id = tonumber(this_glued_container_pool_id)
+
+  if this_glued_container_pool_id == glued_container_params.pool_id then
+    current_src = getItemAudioSrcFileName(item)
+    
+    if current_src ~= glued_container_params.new_src then
+      take_name, take = getSetItemName(item)
+
+      reaper.BR_SetTakeSourceFromFile2(take, glued_container_params.new_src, false, true)
+      
+      return current_src
     end
   end
 end
 
 
 function getPooledInstance(this_instance, edited_pool_id)
-  local glued_container_pool_id, is_glued_container_in_pool
+  local glued_container_pool_id, glued_container_is_in_pool
 
   glued_container_pool_id = storeRetrieveItemData(this_instance, _glued_container_pool_id_key_suffix)
-  is_glued_container_in_pool = glued_container_pool_id and glued_container_pool_id ~= ""
+  glued_container_is_in_pool = glued_container_pool_id and glued_container_pool_id ~= ""
 
-  if is_glued_container_in_pool then
+  if glued_container_is_in_pool then
     return this_instance
   end
 end
 
 
-function updatePooledInstance(glued_pool_item_count, glued_container, instance, instance_params)
-  local this_instance_current_position, there_are_multiple_glued_pooled_items, this_instance_is_nested, glued_container_position, offset_to_glued_container, user_wants_position_change, new_position, current_src, take_name, take
+function updatePooledInstance(glued_pool_item_count, glued_container, instance, active_container_params)
+  local this_instance_current_position, there_are_multiple_glued_pooled_items, this_instance_is_nested, glued_container_position, offset_to_glued_container, user_wants_position_change, new_position
 
   this_instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_position_key)
   there_are_multiple_glued_pooled_items = glued_pool_item_count > 1
 
-  if instance_params.nesting_depth then
-    this_instance_is_nested = instance_params.nesting_depth > 0
+  if active_container_params.nesting_depth then
+    this_instance_is_nested = active_container_params.nesting_depth > 0
 
     if this_instance_is_nested then
       glued_container_position = reaper.GetMediaItemInfo_Value(glued_container, _api_position_key)
@@ -1431,14 +1446,21 @@ function updatePooledInstance(glued_pool_item_count, glued_container, instance, 
     end
   end
 
-  reaper.SetMediaItemInfo_Value(instance, _api_length_key, instance_params.length)
+  reaper.SetMediaItemInfo_Value(instance, _api_length_key, active_container_params.length)
+
+  updateInstanceAudio(instance, active_container_params)  
+end
+
+
+function updateInstanceAudio(instance, active_container_params)
+  local current_src, take_name, take
 
   current_src = getItemAudioSrcFileName(instance)
 
-  if current_src ~= instance_params.new_src then
+  if current_src ~= active_container_params.new_src then
     take_name, take = getSetItemName(instance)
-
-    reaper.BR_SetTakeSourceFromFile2(take,instance_params.new_src, false, true)
+-- log(active_container_params.new_src)
+    reaper.BR_SetTakeSourceFromFile2(take, active_container_params.new_src, false, true)
   end
 end
 
