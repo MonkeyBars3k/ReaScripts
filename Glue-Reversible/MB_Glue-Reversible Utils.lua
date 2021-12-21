@@ -13,7 +13,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _dependents_data_key_suffix, _dependencies_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_change_selected_items, _data_storage_track, _glued_instance_position_delta_while_open, _keyed_dependents, _numeric_dependents, _position_changed_during_edit, _position_change_response
+local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _dependents_data_key_suffix, _dependencies_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_change_selected_items, _data_storage_track, _glued_instance_position_delta_since_last_glue, _keyed_dependents, _numeric_dependents, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _item_bg_img_path = _script_path .. "gr-bg.png"
@@ -22,7 +22,7 @@ _scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
 _glue_undo_block_string = "MB_Glue-Reversible"
 _edit_undo_block_string = "MB_Glue-Reversible-Edit"
 _smart_glue_edit_undo_block_string = "MB_Glue-Reversible-Smart-Glue-Edit"
-_sizing_region_label = "GR SIZING: DO NOT DELETE – for Pool #"
+_sizing_region_label = "GR: DO NOT DELETE – Use to increase size – Pool #"
 _sizing_region_color = reaper.ColorToNative(255, 255, 255)|0x1000000
 _api_data_key = "P_EXT:"
 _api_project_region_guid_key_prefix = "MARKER_GUID:"
@@ -59,10 +59,10 @@ _double_quotation_mark = "\u{0022}"
 _msg_change_selected_items = "Change the items selected and try again."
 -- Using Master Track to store project-wide GR script data in because its changes are saved in Reaper's Undo Points
 _data_storage_track = reaper.GetMasterTrack(0)
-_glued_instance_position_delta_while_open = 0
+_glued_instance_position_delta_since_last_glue = 0
 _keyed_dependents = {}
 _numeric_dependents = {}
-_position_changed_during_edit = false
+_position_changed_since_last_glue = false
 _position_change_response = nil
 
 
@@ -476,7 +476,7 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
     updatePooledCopies(pool_id, pool_dependencies_table)
   end
 
-  return glued_container
+  return glued_container, sizing_region_params
 end
 
 
@@ -824,15 +824,15 @@ end
 
 
 function handleAddtionalItemCountLabel(user_selected_items, pool_id, first_user_selected_item_name)
-  local user_selected_item_count, multiple_user_selected_items, other_user_selected_items_count, is_nested_container_name, has_nested_item_name, item_name_addl_count_str, glued_container_init_name
+  local user_selected_item_count, multiple_user_items_are_selected, other_user_selected_items_count, is_nested_container_name, has_nested_item_name, item_name_addl_count_str, glued_container_init_name
 
   user_selected_item_count = getTableSize(user_selected_items)
-  multiple_user_selected_items = user_selected_item_count > 1
+  multiple_user_items_are_selected = user_selected_item_count > 1
   other_user_selected_items_count = user_selected_item_count - 1
   is_nested_container_name = string.find(first_user_selected_item_name, _container_name_default_prefix)
   has_nested_item_name = string.find(first_user_selected_item_name, _nested_item_default_name)
   
-  if multiple_user_selected_items then
+  if multiple_user_items_are_selected then
     item_name_addl_count_str = " +" .. other_user_selected_items_count ..  " more"
   else
     item_name_addl_count_str = ""
@@ -887,8 +887,8 @@ function getGluedContainerPositionChangeWhileOpen(pool_id)
   end
 
   glued_container_preedit_params, glued_container_postglue_params = numberizeElements({glued_container_preedit_params, glued_container_postglue_params}, {"position"})
-  _glued_instance_position_delta_while_open = glued_container_preedit_params.position - glued_container_preedit_params.position
-  _glued_instance_position_delta_while_open = round(_glued_instance_position_delta_while_open, 13)
+  _glued_instance_position_delta_since_last_glue = glued_container_preedit_params.position - glued_container_preedit_params.position
+  _glued_instance_position_delta_since_last_glue = round(_glued_instance_position_delta_since_last_glue, 13)
 end
 
 
@@ -1083,13 +1083,13 @@ function handleReglue(first_selected_item_track, restored_items_pool_id, obey_ti
   glued_container_last_glue_params = storeRetrieveGluedContainerParams(restored_items_pool_id, _postglue_action_step)
   sizing_region_guid_key_label = _sizing_region_guid_key_prefix .. restored_items_pool_id .. _sizing_region_guid_key_suffix
   retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key_label)
-  glued_container = handleGlue(first_selected_item_track, restored_items_pool_id, sizing_region_guid, obey_time_selection)
+  glued_container, sizing_region_params = handleGlue(first_selected_item_track, restored_items_pool_id, sizing_region_guid, obey_time_selection)
   glued_container_params = getItemParams(glued_container)
   glued_container_params.new_src = getItemAudioSrcFileName(glued_container)
   glued_container_params.pool_id = restored_items_pool_id
   glued_container = restoreContainerState(glued_container, glued_container_params)
   
-  setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params)
+  setRegluePositionDeltas(glued_container_params, sizing_region_params, glued_container_last_glue_params)
   calculateDependentUpdates(glued_container_params.pool_id)
   sortDependentUpdates()
   deselectAllItems()
@@ -1145,23 +1145,21 @@ function updateItemValues(glued_container, glued_container_params)
 end
 
 
-function setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params)
-  local glued_container_preedit_params, glued_container_position_changed_during_edit, glued_container_position_changed_after_last_glue
+function setRegluePositionDeltas(freshly_glued_container_params, sizing_region_params, glued_container_last_glue_params)
+  local glued_container_preedit_params, glued_container_offset_changed_before_edit, sizing_region_changed_during_edit, sizing_region_offset_during_edit
 
-  glued_container_preedit_params = storeRetrieveGluedContainerParams(glued_container_params.pool_id, _preedit_action_step)
-  glued_container_params, glued_container_preedit_params, glued_container_last_glue_params = numberizeElements({glued_container_params, glued_container_preedit_params, glued_container_last_glue_params}, {"position", "source_offset"})
-  glued_container_position_changed_during_edit = glued_container_params.position ~= glued_container_preedit_params.position
-  glued_container_position_changed_after_last_glue = glued_container_params.position ~= glued_container_last_glue_params.position
+  glued_container_preedit_params = storeRetrieveGluedContainerParams(freshly_glued_container_params.pool_id, _preedit_action_step)
+  freshly_glued_container_params, glued_container_preedit_params, glued_container_last_glue_params = numberizeElements({freshly_glued_container_params, glued_container_preedit_params, glued_container_last_glue_params}, {"position", "source_offset"})
+  glued_container_offset_changed_before_edit = glued_container_preedit_params.source_offset ~= 0
+  sizing_region_changed_during_edit = sizing_region_params.position ~= glued_container_preedit_params.position
+  sizing_region_offset_during_edit = sizing_region_params.position - glued_container_preedit_params.position
 
-  if glued_container_position_changed_during_edit then
-    _glued_instance_position_delta_while_open = round(glued_container_preedit_params.position - glued_container_params.position, 13)
-
-  elseif glued_container_position_changed_after_last_glue then
-    _glued_instance_position_delta_while_open = round(glued_container_last_glue_params.position - glued_container_preedit_params.position, 13)
+  if glued_container_offset_changed_before_edit or sizing_region_changed_during_edit then
+    _glued_instance_position_delta_since_last_glue = round(-glued_container_preedit_params.source_offset - sizing_region_offset_during_edit, 13)
   end
-  
-  if _glued_instance_position_delta_while_open ~= 0 then
-    _position_changed_during_edit = true
+
+  if _glued_instance_position_delta_since_last_glue ~= 0 then
+    _position_changed_since_last_glue = true
   end
 end
 
@@ -1367,107 +1365,76 @@ end
 
 
 function updatePooledInstancesNestedUpTo1Level(glued_container, glued_container_params)
-  local all_items_count, old_srcs, i, this_item, old_src
+  local all_items_count, items_in_glued_pool, i, this_item, this_instance, this_instance_is_not_active_glued_container
 
   all_items_count = reaper.CountMediaItems(0)
-  old_srcs = {}
+  -- items_in_glued_pool = {}
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(0, i)
 
-    old_src = updateSource(this_item, glued_container_params)
+    updatePooledInstance(this_item, glued_container, glued_container_params)
 
-    if old_src then
-      old_srcs[old_src] = true 
-    end
+    -- this_instance = getPooledInstance(this_item, glued_container_params.pool_id)
 
-    for old_src, i in pairs(old_srcs) do
-      os.remove(old_src)
-      os.remove(old_src..'.reapeaks')
-    end
+    -- if this_instance then
+    --   table.insert(items_in_glued_pool, this_instance)
+    -- end
   end
+
+  -- for i = 1, #items_in_glued_pool do
+  --   this_instance = items_in_glued_pool[i]
+  --   this_instance_is_not_active_glued_container = this_instance ~= glued_container
+
+  --   adjustPooledInstancePosition(#items_in_glued_pool, glued_container, this_instance, glued_container_params)
+  -- end
 end
 
 
-function updateSource(item, glued_container_params)
-  local this_glued_container_pool_id, current_src
+function updatePooledInstance(item, glued_container, glued_container_params)
+  local this_glued_container_pool_id, this_instance_belongs_to_active_pool, current_src, this_instance_is_not_active, this_instance_take_name, this_instance_take
 
   glued_container_params.pool_id = tonumber(glued_container_params.pool_id)
   this_glued_container_pool_id = storeRetrieveItemData(item, _glued_container_pool_id_key_suffix)
   this_glued_container_pool_id = tonumber(this_glued_container_pool_id)
+  this_instance_belongs_to_active_pool = this_glued_container_pool_id == glued_container_params.pool_id
+  current_src = getItemAudioSrcFileName(item)
+  this_instance_is_not_active = current_src ~= glued_container_params.new_src
 
-  if this_glued_container_pool_id == glued_container_params.pool_id then
-    current_src = getItemAudioSrcFileName(item)
+  if this_instance_belongs_to_active_pool and this_instance_is_not_active then
+    this_instance_take_name, this_instance_take = getSetItemName(item)
 
-    if current_src ~= glued_container_params.new_src then
-      take_name, take = getSetItemName(item)
-
-      reaper.BR_SetTakeSourceFromFile2(take, glued_container_params.new_src, false, true)
-      
-      return current_src
-    end
+    reaper.BR_SetTakeSourceFromFile2(take, glued_container_params.new_src, false, true)
+    adjustPooledInstancePosition(glued_container, item, glued_container_params)
   end
 end
 
 
-function getPooledInstance(this_instance, edited_pool_id)
-  local glued_container_pool_id, glued_container_is_in_pool
-
-  glued_container_pool_id = storeRetrieveItemData(this_instance, _glued_container_pool_id_key_suffix)
-  glued_container_is_in_pool = glued_container_pool_id and glued_container_pool_id ~= ""
-
-  if glued_container_is_in_pool then
-    return this_instance
-  end
-end
-
-
-function updatePooledInstance(glued_pool_item_count, glued_container, instance, active_container_params)
-  local this_instance_current_position, there_are_multiple_glued_pooled_items, this_instance_is_nested, glued_container_position, offset_to_glued_container, user_wants_position_change, new_position
+function adjustPooledInstancePosition(glued_container, instance, active_container_params)
+  local this_instance_current_position, user_wants_position_change, this_instance_is_metacontainer, this_instance_active_take, there_are_multiple_glued_pooled_items, this_instance_is_meta, glued_container_position, offset_to_glued_container, new_position
 
   this_instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_position_key)
-  there_are_multiple_glued_pooled_items = glued_pool_item_count > 1
 
-  if active_container_params.nesting_depth then
-    this_instance_is_nested = active_container_params.nesting_depth > 0
-
-    if this_instance_is_nested then
-      glued_container_position = reaper.GetMediaItemInfo_Value(glued_container, _api_position_key)
-      offset_to_glued_container = this_instance_current_position - glued_container_position
-      this_instance_current_position = this_instance_current_position + offset_to_glued_container
-    end
+  if not _position_change_response and _position_changed_since_last_glue == true then
+    _position_change_response = launchPropagatePositionDialog()
   end
 
-  if there_are_multiple_glued_pooled_items then
-    
-    if not _position_change_response and _position_changed_during_edit == true then
-      _position_change_response = launchPropagatePositionDialog()
-    end
+  user_wants_position_change = _position_change_response == 6
 
-    user_wants_position_change = _position_change_response == 6
+  if user_wants_position_change then
+    this_instance_is_metacontainer = active_container_params.nesting_depth and active_container_params.nesting_depth > 0
 
-    if user_wants_position_change then
-      new_position = this_instance_current_position - _glued_instance_position_delta_while_open
+    if this_instance_is_metacontainer then
+      this_instance_active_take = reaper.GetActiveTake(instance)
+
+      reaper.SetMediaItemTakeInfo_Value(this_instance_active_take, _api_src_offset_key, _glued_instance_position_delta_since_last_glue)
+
+    else
+      new_position = this_instance_current_position - _glued_instance_position_delta_since_last_glue
 
       reaper.SetMediaItemInfo_Value(instance, _api_position_key, new_position)
+      reaper.SetMediaItemInfo_Value(instance, _api_length_key, active_container_params.length)
     end
-  end
-
-  reaper.SetMediaItemInfo_Value(instance, _api_length_key, active_container_params.length)
-
-  updateInstanceAudio(instance, active_container_params)  
-end
-
-
-function updateInstanceAudio(instance, active_container_params)
-  local current_src, take_name, take
-
-  current_src = getItemAudioSrcFileName(instance)
-
-  if current_src ~= active_container_params.new_src then
-    take_name, take = getSetItemName(instance)
-
-    reaper.BR_SetTakeSourceFromFile2(take, active_container_params.new_src, false, true)
   end
 end
 
