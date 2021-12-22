@@ -17,9 +17,9 @@ The other option is to **Group** items. This works well if you simply want to  m
 
 ### How to use
 
-**To use Glue-Reversible**, simply select items or make a time selection with items inside and trigger either of the Glue-Reversible scripts (time selection enabled/disabled).
+**To use Glue-Reversible**, simply select items and trigger one of the Glue-Reversible Glue or Smart Glue scripts (obey time selection enabled/disabled).
 
-To edit your glued items, the **Edit** script opens the created container item; the items inside are automatically grouped for you. You can see the container item created with Glue-Reversible, but the items inside are now visible and directly editable. Continue working with them as grouped items and/or reglue them again with Glue-Reversible. 
+To edit your glued items, the **Edit** script opens the created container item, revealing the contained items once again. To reglue, just use one of the Glue scripts again. 
 
 **Smart Glue/Edit** (with time selection enabled/disabled) will intelligently determine which action is required based on your item selections.
 
@@ -30,23 +30,18 @@ To edit your glued items, the **Edit** script opens the created container item; 
 - Supports **nesting Glue-Reversible container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest – tested with 20 levels of nesting.
 
 ### Tips
-- If you want to **change items** while Editing a container, you'll need to ungroup the items inside temporarily. When you regroup them, ensure that you select the unglued container (the empty item that has "grc" in the name) so the script can keep track of the container and update all the pooled instances after reglue.
-- If you want to **add new items** to a Glue-Reversible container item, select them AND at least one of the original items to make sure they get added to the existing container item. If you only tweak the existing items, you can select any item and reglue, and the script will remember which container item it belongs to.
-- You can expand the **empty container** "grc" to create silence at the start and end of the glued wav, or just expand the time selection before reglue.
 - **Using just the pooled audio item feature:** Feel free to glue a single audio item and make copies of that! Since every glued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Edit any one of the pooled glue containers and reglue after.
+- In Edit mode, the automatically created region can be used to increase the size of your glued container item. Otherwise, the size will be determined by the items selected as with native Reaper glue.
 
 ### Notes
 - Requires **Reaper v6.43** or newer
 - Requires **SWS Plugin Extension**!
 - Don't **Clean current project directory** after gluing, or you'll lose your original items!
-- When you **Edit**, a new empty item "grc" is visible under the original items. This item has the data to recall which group these items came from – don't delete it unless you want to glue the items and make a new, unpooled group that doesnt update other instances!
-- Uses item notes/names to keep track of which container item items belong in. **Never delete "gr:1" or "grc:1" from items' names**, as the code depends on that label to find it! You can add text to notes/names AFTER – e.g. "gr:1 - My extra text"
-- When Editing a container and you ungroup to change items, you *must* regroup all the constituent items again before regluing or you will break pooling.
+- Uses item notes to set background image for easy recognition of glued container and contained items. Careful: **The background image will overwrite any item notes you already have on your glued items.** Disable this feature in the script options if you want your item notes preserved.
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
 - When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
 - When gluing with time selection, ensure your time selection includes all items being glued because of [this Reaper bug](https://forums.cockos.com/showthread.php?t=258769).
-- Uses **item selection set slot 10** at times to save and recall selected items. 
-- Some **undo bugs** may still be lurking in this script, so you should prefer ungluing and regluing to undoing. But please create an Issue [here](https://github.com/MonkeyBars3k/ReaScripts/issues/new) if you notice any bugs.
+- Uses **item selection set slot 10** at times to save and recall selected items.
  
 ### History
 
