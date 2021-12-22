@@ -9,7 +9,7 @@ The URL to import in ReaPack is https://github.com/MonkeyBars3k/ReaScripts/raw/m
 
 There are two main ways to consolidate selected items on a track natively in Reaper: **Glue** and **Groups**. Both have disadvantages. 
 
-**Glue** is permanent: once you glue items together, you cannot make edits later without cutting again. This can be problematic as you may wish to extend the length of one of the enclosed items (such as make the sound of a kick drum's tail longer, etc.). You cannot do this using Glue.
+**Glue** is permanent: once you glue items together, you cannot make edits later without cutting again. This can be problematic as you may wish make any number of changes to enclosed items (such as make the sound of a kick drum's tail longer, etc.). You cannot do this using Glue.
 
 The other option is to **Group** items. This works well if you simply want to  move items around or select multiple items by clicking one item; however, you cannot use the other benefits of Reaper items, such as quickly looping, take envelopes, etc. Grouping can become confusing because Groups are highlighted in green around the items, but *not* around the boundary of the group itself. Groups can be unwieldy to work with in many musical contexts, such as a four-bar repetition. Groups tend to create visual clutter.
 
