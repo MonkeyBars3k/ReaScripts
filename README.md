@@ -36,7 +36,7 @@ To edit your glued items, the **Edit** script opens the created container item, 
 ### Notes
 - Requires **Reaper v6.43** or newer
 - Requires **SWS Plugin Extension**!
-- Don't **Clean current project directory** after gluing, or you'll lose your original items!
+- Be _very_ careful if you want to **Clean current project directory** after gluing – you could lose your original items.
 - Uses item notes to set background image for easy recognition of glued container and contained items. Careful: **The background image will overwrite any item notes you already have on your glued items.** Disable this feature in the script options if you want your item notes preserved.
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
 - When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
