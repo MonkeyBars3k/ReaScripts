@@ -21,7 +21,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _dependents_data_key_suffix, _dependencies_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_change_selected_items, _data_storage_track, _glued_instance_position_delta_since_last_glue, _keyed_dependents, _numeric_dependents, _position_changed_since_last_glue, _position_change_response
+local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _dependents_data_key_suffix, _dependencies_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_change_selected_items, _data_storage_track, _glued_instance_offset_delta_since_last_glue, _keyed_dependents, _numeric_dependents, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _item_bg_img_path = _script_path .. "gr-bg.png"
@@ -66,7 +66,7 @@ _double_quotation_mark = "\u{0022}"
 _msg_change_selected_items = "Change the items selected and try again."
 _data_storage_track = reaper.GetMasterTrack(0)
 _sizing_region_1st_display_num = 0
-_glued_instance_position_delta_since_last_glue = 0
+_glued_instance_offset_delta_since_last_glue = 0
 _keyed_dependents = {}
 _numeric_dependents = {}
 _position_changed_since_last_glue = false
@@ -800,7 +800,9 @@ function getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, para
     elseif delete then
       reaper.DeleteProjectMarkerByIndex(0, region_idx, true)
 
-      return 0
+      retval = 0
+
+      return retval
     end
 
   else
@@ -927,8 +929,8 @@ function getGluedContainerPositionChangeWhileOpen(pool_id)
   end
 
   glued_container_preedit_params, glued_container_postglue_params = numberizeElements({glued_container_preedit_params, glued_container_postglue_params}, {"position"})
-  _glued_instance_position_delta_since_last_glue = glued_container_preedit_params.position - glued_container_preedit_params.position
-  _glued_instance_position_delta_since_last_glue = round(_glued_instance_position_delta_since_last_glue, 13)
+  _glued_instance_offset_delta_since_last_glue = glued_container_preedit_params.position - glued_container_preedit_params.position
+  _glued_instance_offset_delta_since_last_glue = round(_glued_instance_offset_delta_since_last_glue, 13)
 end
 
 
@@ -1205,10 +1207,10 @@ function setRegluePositionDeltas(freshly_glued_container_params, glued_container
   glued_container_offset = freshly_glued_container_params.position - glued_container_preedit_params.position
 
   if glued_container_offset_changed_before_edit or glued_container_offset_during_edit then
-    _glued_instance_position_delta_since_last_glue = round(-glued_container_preedit_params.source_offset - glued_container_offset, 13)
+    _glued_instance_offset_delta_since_last_glue = round(-glued_container_preedit_params.source_offset - glued_container_offset, 13)
   end
 
-  if _glued_instance_position_delta_since_last_glue ~= 0 then
+  if _glued_instance_offset_delta_since_last_glue ~= 0 then
     _position_changed_since_last_glue = true
   end
 end
@@ -1254,8 +1256,8 @@ function calculateDependentUpdates(pool_id, nesting_depth)
 
         -- store references to temp track and items
         current_entry.track = track
-        -- current_entry.item = item
-        -- current_entry.container = container
+        current_entry.item = item
+        current_entry.container = container
         current_entry.restored_items = restored_items
 
         -- store this item in _keyed_dependents
@@ -1283,6 +1285,9 @@ function restorePreviouslyGluedItems(pool_id, active_track, glued_container_pree
     if stored_item_state then
       restored_item = restoreItem(active_track, stored_item_state, is_dependent_update)
       restored_item = adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_postglue_params, is_dependent_update)
+
+      reaper.SetMediaItemSelected(restored_item, true)
+
       restored_items[stored_item] = restored_item
     end
   end
@@ -1365,7 +1370,6 @@ function adjustRestoredItem(restored_item, glued_container_preedit_params, glued
   end
 
   getSetItemParams(restored_item, restored_item_params)
-  reaper.SetMediaItemSelected(restored_item, true)
 
   return restored_item
 end
@@ -1438,7 +1442,7 @@ end
 
 
 function adjustPooledInstance(glued_container, instance, active_container_params)
-  local this_instance_current_position, user_wants_position_change, this_instance_is_metacontainer, this_instance_active_take, there_are_multiple_glued_pooled_items, this_instance_is_meta, glued_container_position, offset_to_glued_container, adjusted_pool_instance_params
+  local this_instance_current_position, user_wants_position_change, this_instance_is_a_parent_container, this_instance_active_take, this_instance_current_offset, adjusted_pool_instance_params
 
   this_instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_position_key)
 
@@ -1449,19 +1453,20 @@ function adjustPooledInstance(glued_container, instance, active_container_params
   user_wants_position_change = _position_change_response == 6
 
   if user_wants_position_change then
-    this_instance_is_metacontainer = active_container_params.nesting_depth and active_container_params.nesting_depth > 0
+    this_instance_is_a_parent_container = active_container_params.nesting_depth and active_container_params.nesting_depth > 0
 
-    if this_instance_is_metacontainer then
+    if this_instance_is_a_parent_container then
       this_instance_active_take = reaper.GetActiveTake(instance)
+      this_instance_current_offset = reaper.GetMediaItemTakeInfo_Value(this_instance_active_take, _api_src_offset_key)
 
-      reaper.SetMediaItemTakeInfo_Value(this_instance_active_take, _api_src_offset_key, _glued_instance_position_delta_since_last_glue)
+      reaper.SetMediaItemTakeInfo_Value(this_instance_active_take, _api_src_offset_key, this_instance_current_offset + _glued_instance_offset_delta_since_last_glue)
 
     else
       adjusted_pool_instance_params = {
-        ["position"] = this_instance_current_position - _glued_instance_position_delta_since_last_glue,
+        ["position"] = this_instance_current_position - _glued_instance_offset_delta_since_last_glue,
         ["length"] = active_container_params.length
       }
-
+      
       getSetItemParams(instance, adjusted_pool_instance_params)
     end
   end
@@ -1484,7 +1489,7 @@ function handleNestedInstances(dependent, obey_time_selection, length, sizing_re
   dependent.length = length
 
   deselectAllItems()
-  handlePooledInstances(dependent_glued_container, dependent)
+  handlePooledInstances(dependent_glued_container, dependent, true)
   reaper.DeleteTrack(dependent.track)
 end
 
