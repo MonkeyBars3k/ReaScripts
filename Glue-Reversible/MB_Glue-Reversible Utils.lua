@@ -457,7 +457,7 @@ function refreshUI()
 end
 
 
-function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey_time_selection, ignore_dependencies)
+function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey_time_selection, is_dependent_glue)
   local this_is_new_glue, this_is_reglue, selected_item_count, user_selected_items, first_user_selected_item_name, sizing_region_params, user_selected_item_states, pool_dependencies_table, glued_container, glued_container_init_name
 
   this_is_new_glue = not pool_id
@@ -469,7 +469,7 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
 
   if this_is_new_glue then
     pool_id = handlePoolId()
-  elseif this_is_reglue then
+  elseif this_is_reglue and not is_dependent_glue then
     sizing_region_params = setUpReglue(sizing_region_guid, first_selected_item_track)
   end
 
@@ -479,7 +479,7 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
 
   handleContainerPostGlue(glued_container, glued_container_init_name, pool_id, this_is_reglue)
 
-  if not ignore_dependencies then
+  if not is_dependent_glue then
     updatePooledCopies(pool_id, pool_dependencies_table)
   end
 
