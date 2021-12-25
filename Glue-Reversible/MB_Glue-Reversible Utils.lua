@@ -1,7 +1,7 @@
 -- @description MB_Glue-Reversible Utils: Codebase for MB_Glue-Reversible scripts' functionality
 -- @author MonkeyBars
 -- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139)
+-- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142)
 -- @provides [nomain] .
 --   serpent.lua
 --   gr-bg.png
@@ -11,8 +11,8 @@
 
 
 -- ==== GR UTILS SCRIPT NOTES ====
--- GR uses serpent, a serialization library for LUA, for table-string and string-table conversion. https://github.com/pkulchenko/serpent
 -- GR requires Reaper SWS plug-in extension. https://standingwaterstudios.com/
+-- GR uses serpent, a serialization library for LUA, for table-string and string-table conversion. https://github.com/pkulchenko/serpent
 -- GR uses Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 -- Data is also stored in media items' P_EXT.
 -- General utility functions at bottom
@@ -361,17 +361,18 @@ end
 
 
 function recursiveContainerIsBeingGlued(glued_containers, restored_items)
-  local i, this_glued_container, this_glued_container_instance_pool_id, j, this_restored_item, this_restored_item_parent_pool_id
+  local i, this_glued_container, this_glued_container_instance_pool_id, j, this_restored_item, this_restored_item_parent_pool_id, this_restored_item_is_from_same_pool_as_selected_glued_container
 
   for i = 1, #glued_containers do
     this_glued_container = glued_containers[i]
     this_glued_container_instance_pool_id = storeRetrieveItemData(this_glued_container, _glued_container_pool_id_key_suffix)
 
     for j = 1, #restored_items do
-      this_restored_item = restored_items[i]
+      this_restored_item = restored_items[j]
       this_restored_item_parent_pool_id = storeRetrieveItemData(this_restored_item, _restored_item_pool_id_key_suffix)
+      this_restored_item_is_from_same_pool_as_selected_glued_container = this_glued_container_instance_pool_id == this_restored_item_parent_pool_id
       
-      if this_glued_container_instance_pool_id == this_restored_item_parent_pool_id then
+      if this_restored_item_is_from_same_pool_as_selected_glued_container then
         reaper.ShowMessageBox(_msg_change_selected_items, "Glue-Reversible can't glue a glued container item to an instance from the same pool being Edited – or you could destroy the universe!", 0)
         setResetItemSelectionSet()
 
@@ -458,7 +459,7 @@ end
 
 
 function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey_time_selection, is_dependent_glue)
-  local this_is_new_glue, this_is_reglue, selected_item_count, user_selected_items, first_user_selected_item_name, sizing_region_params, user_selected_item_states, pool_dependencies_table, glued_container, glued_container_init_name
+  local this_is_new_glue, this_is_reglue, selected_item_count, user_selected_items, first_user_selected_item_name, sizing_region_params, user_selected_item_states, selected_container_items, glued_container, glued_container_init_name
 
   this_is_new_glue = not pool_id
   this_is_reglue = pool_id
@@ -473,14 +474,14 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
     sizing_region_params = setUpReglue(sizing_region_guid, first_selected_item_track)
   end
 
-  user_selected_item_states, pool_dependencies_table = handleUserSelectedItems(user_selected_items, pool_id, sizing_region_params)
+  user_selected_item_states, selected_container_items = handleUserSelectedItems(user_selected_items, pool_id, sizing_region_params)
   glued_container = glueSelectedItemsIntoContainer(obey_time_selection)
   glued_container_init_name = handleAddtionalItemCountLabel(user_selected_items, pool_id, first_user_selected_item_name)
 
   handleContainerPostGlue(glued_container, glued_container_init_name, pool_id, this_is_reglue)
 
   if not is_dependent_glue then
-    updatePooledCopies(pool_id, pool_dependencies_table)
+    handlePooledInstanceData(pool_id, selected_container_items)
   end
 
   return glued_container
@@ -733,16 +734,16 @@ end
 
 
 function handleUserSelectedItems(user_selected_items, pool_id, sizing_region_params)
-  local user_selected_item_states, pool_dependencies_table
+  local user_selected_item_states, selected_container_items
 
   setUserSelectedItemsData(user_selected_items, pool_id, sizing_region_params)
   
-  user_selected_item_states, pool_dependencies_table = createUserSelectedItemStates(user_selected_items, pool_id)
+  user_selected_item_states, selected_container_items = createUserSelectedItemStates(user_selected_items, pool_id)
 
   storeGluedItemStates(pool_id, user_selected_item_states)
   selectDeselectItems(user_selected_items, true)
 
-  return user_selected_item_states, pool_dependencies_table
+  return user_selected_item_states, selected_container_items
 end
 
 
@@ -841,14 +842,15 @@ end
 
 
 function createUserSelectedItemStates(user_selected_items, active_pool_id)
-  local user_selected_item_states, pool_dependencies_table, i, item, this_item, this_item_state, this_glued_container_pool_id
+  local user_selected_item_states, selected_container_items, i, item, this_item, this_item_state, this_glued_container_pool_id, this_is_glued_container
 
   user_selected_item_states = {}
-  pool_dependencies_table = {}
+  selected_container_items = {}
 
   for i, item in ipairs(user_selected_items) do
     this_item = user_selected_items[i]
     this_glued_container_pool_id = storeRetrieveItemData(this_item, _glued_container_pool_id_key_suffix)
+    this_is_glued_container = this_glued_container_pool_id and this_glued_container_pool_id ~= ""
 
     convertMidiItemToAudio(this_item)
 
@@ -856,12 +858,12 @@ function createUserSelectedItemStates(user_selected_items, active_pool_id)
 
     table.insert(user_selected_item_states, this_item_state)
 
-    if this_glued_container_pool_id and this_glued_container_pool_id ~= "" then
-      pool_dependencies_table[this_glued_container_pool_id] = this_glued_container_pool_id
+    if this_is_glued_container then
+      table.insert(selected_container_items, this_glued_container_pool_id)
     end
   end
 
-  return user_selected_item_states, pool_dependencies_table, this_glued_container_pool_id
+  return user_selected_item_states, selected_container_items, this_glued_container_pool_id
 end
 
 
@@ -1049,10 +1051,10 @@ function glueSelectedItems(obey_time_selection)
 end
 
 
-function updatePooledCopies(pool_id, pool_dependencies_table)
-  local dependencies_data_key_label, retval, old_dependencies, dependencies, separator, dependent, new_pool_id, ref, dependency
+function handlePooledInstanceData(active_pool_id, selected_container_items)
+  local dependencies_data_key_label, retval, old_dependencies, dependencies, separator, i, this_pool_id, dependent, ref, dependency
 
-  dependencies_data_key_label = _pool_key_prefix .. pool_id .. _dependencies_data_key_suffix
+  dependencies_data_key_label = _pool_key_prefix .. active_pool_id .. _dependencies_data_key_suffix
   retval, old_dependencies = storeRetrieveProjectData(dependencies_data_key_label)
 
   if retval == false then
@@ -1061,11 +1063,12 @@ function updatePooledCopies(pool_id, pool_dependencies_table)
 
   dependencies = ""
   separator = "|"
-  dependent = separator .. pool_id .. separator
+  dependent = separator .. active_pool_id .. separator
 
   -- store a reference to this pool for all the nested pools so if any get updated, they can check and update this pool
-  for new_pool_id, ref in pairs(pool_dependencies_table) do
-    dependencies, old_dependencies = storePoolReference(new_pool_id, dependent, dependencies, old_dependencies)
+  for i = 1, #selected_container_items do
+    this_pool_id = selected_container_items[i]
+    dependencies, old_dependencies = storePoolReference(this_pool_id, dependent, dependencies, old_dependencies)
   end
 
   -- store this pool's dependencies list
@@ -1080,16 +1083,19 @@ function updatePooledCopies(pool_id, pool_dependencies_table)
       removePoolFromDependents(dependency, dependent)
     end
   end
+-- logV("active_pool_id",active_pool_id)
+-- logV("dependencies",dependencies)
+-- logV("old_dependencies",old_dependencies)
 end
 
 
-function storePoolReference(new_pool_id, dependent, dependencies, old_dependencies)
+function storePoolReference(this_pool_id, dependent, dependencies, old_dependencies)
   local dependents_data_key_label, retval, dependents, dependency
 
-  -- make a key for nested pool to store which pools are dependent on it
-  dependents_data_key_label = _pool_key_prefix .. new_pool_id .. _dependents_data_key_suffix
+  -- make a key for nested container to store which items are dependent on it
+  dependents_data_key_label = _pool_key_prefix .. this_pool_id .. _dependents_data_key_suffix
   
-  -- see if nested pool already has a list of dependents
+  -- see if nested container already has a list of dependents
   retval, dependents = storeRetrieveProjectData(dependents_data_key_label)
 
   if retval == false then
@@ -1102,9 +1108,10 @@ function storePoolReference(new_pool_id, dependent, dependencies, old_dependenci
 
     storeRetrieveProjectData(dependents_data_key_label, dependents)
   end
-
-  -- now store these pools' dependencies
-  dependency = "|" .. new_pool_id .. "|"
+-- logV("this_pool_id",this_pool_id)
+-- logV("dependents",dependents)
+  -- now store this pool's dependencies
+  dependency = "|" .. this_pool_id .. "|"
   dependencies = dependencies .. dependency
 
   -- remove this dependency from old_dependencies string
@@ -1442,7 +1449,7 @@ end
 
 
 function adjustPooledInstance(glued_container, instance, active_container_params)
-  local this_instance_current_position, user_wants_position_change, this_instance_is_a_parent_container, this_instance_active_take, this_instance_current_offset, adjusted_pool_instance_params
+  local this_instance_current_position, user_wants_position_change, this_item_is_a_parent_container, this_instance_active_take, this_instance_current_offset, adjusted_pool_instance_params
 
   this_instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_position_key)
 
@@ -1453,9 +1460,9 @@ function adjustPooledInstance(glued_container, instance, active_container_params
   user_wants_position_change = _position_change_response == 6
 
   if user_wants_position_change then
-    this_instance_is_a_parent_container = active_container_params.nesting_depth and active_container_params.nesting_depth > 0
+    this_item_is_a_parent_container = active_container_params.nesting_depth and active_container_params.nesting_depth > 0
 
-    if this_instance_is_a_parent_container then
+    if this_item_is_a_parent_container then
       this_instance_active_take = reaper.GetActiveTake(instance)
       this_instance_current_offset = reaper.GetMediaItemTakeInfo_Value(this_instance_active_take, _api_src_offset_key)
 
@@ -1747,4 +1754,32 @@ end
 function logV(name, val)
   val = val or ""
   reaper.ShowConsoleMsg(name.."="..val.."\n")
+end
+
+
+
+local DebugType = 0
+
+function debug(message, value, spacesToAdd, forceMsgBox)
+    if DebugType < 0 then return end
+
+    local text = ""
+    local a = tostring(message)
+    local b = tostring(value)
+    
+    if message ~= nil then text = a end
+    if value ~= nil then text = text .. "\n" .. b end
+    
+    local space = ""
+    
+    if spacesToAdd ~= nil and spacesToAdd > 0 then 
+        for i=1, spacesToAdd do space = space .. "\n" end      
+    end
+    
+    text = space .. text
+    
+    if forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) end
+    
+    if DebugType == 0 then reaper.ShowConsoleMsg(text .. "\n") return 
+    elseif DebugType == 1 and not forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) return end
 end
