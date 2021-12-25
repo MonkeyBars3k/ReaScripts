@@ -21,7 +21,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _dependents_data_key_suffix, _dependencies_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_change_selected_items, _data_storage_track, _glued_instance_offset_delta_since_last_glue, _keyed_dependents, _numeric_dependents, _position_changed_since_last_glue, _position_change_response
+local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_name_key, _api_mute_key, _api_position_key, _api_length_key, _api_src_offset_key, _api_notes_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _parent_pools_data_key_suffix, _child_pools_data_key_suffix, _item_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_change_selected_items, _data_storage_track, _glued_instance_offset_delta_since_last_glue, _keyed_parent_pools, _numeric_parent_pools, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _item_bg_img_path = _script_path .. "gr-bg.png"
@@ -54,8 +54,8 @@ _preglue_active_take_guid_key_suffix = "preglue-active-take-guid"
 _glue_data_key_suffix = ":glue"
 _edit_data_key_suffix = ":pre-edit"
 _glued_container_params_suffix = "_glued-container-params"
-_dependents_data_key_suffix = ":dependent-pool-ids"
-_dependencies_data_key_suffix = ":existing_dependent-pool-ids"
+_parent_pools_data_key_suffix = ":parent-pool-ids"
+_child_pools_data_key_suffix = ":child-pool-ids"
 _item_preglue_state_suffix = ":preglue-state-chunk"
 _item_offset_to_container_position_key_suffix = "glued-container-offset"
 _postglue_action_step = "postglue"
@@ -67,8 +67,8 @@ _msg_change_selected_items = "Change the items selected and try again."
 _data_storage_track = reaper.GetMasterTrack(0)
 _sizing_region_1st_display_num = 0
 _glued_instance_offset_delta_since_last_glue = 0
-_keyed_dependents = {}
-_numeric_dependents = {}
+_keyed_parent_pools = {}
+_numeric_parent_pools = {}
 _position_changed_since_last_glue = false
 _position_change_response = nil
 
@@ -458,7 +458,7 @@ function refreshUI()
 end
 
 
-function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey_time_selection, is_dependent_glue)
+function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey_time_selection, is_parent_pool_glue)
   local this_is_new_glue, this_is_reglue, selected_item_count, user_selected_items, first_user_selected_item_name, sizing_region_params, user_selected_item_states, selected_container_items, glued_container, glued_container_init_name
 
   this_is_new_glue = not pool_id
@@ -470,7 +470,7 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
 
   if this_is_new_glue then
     pool_id = handlePoolId()
-  elseif this_is_reglue and not is_dependent_glue then
+  elseif this_is_reglue and not is_parent_pool_glue then
     sizing_region_params = setUpReglue(sizing_region_guid, first_selected_item_track)
   end
 
@@ -480,8 +480,8 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
 
   handleContainerPostGlue(glued_container, glued_container_init_name, pool_id, this_is_reglue)
 
-  if not is_dependent_glue then
-    handlePooledInstanceData(pool_id, selected_container_items)
+  if not is_parent_pool_glue then
+    handlePoolInheritanceData(pool_id, selected_container_items)
   end
 
   return glued_container
@@ -1051,86 +1051,82 @@ function glueSelectedItems(obey_time_selection)
 end
 
 
-function handlePooledInstanceData(active_pool_id, selected_container_items)
-  local dependencies_data_key_label, retval, old_dependencies, dependencies, separator, i, this_pool_id, dependent, ref, dependency
+function handlePoolInheritanceData(active_pool_id, selected_container_items)
+  local child_pools_data_key_label, retval, old_child_pools, child_pools, separator, i, this_pool_id, parent_pool, ref, child_pool
 
-  dependencies_data_key_label = _pool_key_prefix .. active_pool_id .. _dependencies_data_key_suffix
-  retval, old_dependencies = storeRetrieveProjectData(dependencies_data_key_label)
+  child_pools_data_key_label = _pool_key_prefix .. active_pool_id .. _child_pools_data_key_suffix
+  retval, old_child_pools = storeRetrieveProjectData(child_pools_data_key_label)
 
   if retval == false then
-    old_dependencies = ""
+    old_child_pools = ""
   end
 
-  dependencies = ""
+  child_pools = ""
   separator = "|"
-  dependent = separator .. active_pool_id .. separator
+  parent_pool = separator .. active_pool_id .. separator
 
   -- store a reference to this pool for all the nested pools so if any get updated, they can check and update this pool
   for i = 1, #selected_container_items do
     this_pool_id = selected_container_items[i]
-    dependencies, old_dependencies = storePoolReference(this_pool_id, dependent, dependencies, old_dependencies)
+    child_pools, old_child_pools = storePoolReference(this_pool_id, parent_pool, child_pools, old_child_pools)
   end
 
-  -- store this pool's dependencies list
-  storeRetrieveProjectData(dependencies_data_key_label, dependencies)
+  -- store this pool's child_pools list
+  storeRetrieveProjectData(child_pools_data_key_label, child_pools)
 
-  -- have the dependencies changed? - CHANGE CONDITION TO VAR dependencies_have_changed
-  if string.len(old_dependencies) > 0 then
-    -- loop thru all the dependencies no longer needed
-    for dependency in string.gmatch(old_dependencies, "%d+") do
+  -- have the child_pools changed? - CHANGE CONDITION TO VAR child_pools_have_changed
+  if string.len(old_child_pools) > 0 then
+    -- loop thru all the child_pools no longer needed
+    for child_pool in string.gmatch(old_child_pools, "%d+") do
 
-      -- remove this pool from the other pools' dependents list
-      removePoolFromDependents(dependency, dependent)
+      -- remove this pool from the other pools' parent_pools list
+      removePoolFromParentPools(child_pool, parent_pool)
     end
   end
--- logV("active_pool_id",active_pool_id)
--- logV("dependencies",dependencies)
--- logV("old_dependencies",old_dependencies)
 end
 
 
-function storePoolReference(this_pool_id, dependent, dependencies, old_dependencies)
-  local dependents_data_key_label, retval, dependents, dependency
+function storePoolReference(this_pool_id, parent_pool, child_pools, old_child_pools)
+  local parent_pools_data_key_label, retval, parent_pools, child_pool
 
-  -- make a key for nested container to store which items are dependent on it
-  dependents_data_key_label = _pool_key_prefix .. this_pool_id .. _dependents_data_key_suffix
+  -- make a key for nested container to store which items are parent_pool on it
+  parent_pools_data_key_label = _pool_key_prefix .. this_pool_id .. _parent_pools_data_key_suffix
   
-  -- see if nested container already has a list of dependents
-  retval, dependents = storeRetrieveProjectData(dependents_data_key_label)
+  -- see if nested container already has a list of parent_pools
+  retval, parent_pools = storeRetrieveProjectData(parent_pools_data_key_label)
 
   if retval == false then
-    dependents = ""
+    parent_pools = ""
   end
 
   -- if this pool isn't already in list, add it
-  if not string.find(dependents, dependent) then
-    dependents = dependents .. dependent
+  if not string.find(parent_pools, parent_pool) then
+    parent_pools = parent_pools .. parent_pool
 
-    storeRetrieveProjectData(dependents_data_key_label, dependents)
+    storeRetrieveProjectData(parent_pools_data_key_label, parent_pools)
   end
--- logV("this_pool_id",this_pool_id)
--- logV("dependents",dependents)
-  -- now store this pool's dependencies
-  dependency = "|" .. this_pool_id .. "|"
-  dependencies = dependencies .. dependency
 
-  -- remove this dependency from old_dependencies string
-  old_dependencies = string.gsub(old_dependencies, dependency, "")
+  -- now store this pool's child_pools
+  child_pool = "|" .. this_pool_id .. "|"
+  child_pools = child_pools .. child_pool
 
-  return dependencies, old_dependencies
+  -- remove this child_pool from old_child_pools string
+  old_child_pools = string.gsub(old_child_pools, child_pool, "")
+
+  return child_pools, old_child_pools
 end
 
 
-function removePoolFromDependents(dependency, dependent)
-  local dependents_data_key_label, retval, dependents
+function removePoolFromParentPools(child_pool, parent_pool)
+  local parent_pools_data_key_label, retval, parent_pools
 
-  dependents_data_key_label = _pool_key_prefix .. dependency .. _dependents_data_key_suffix
-  retval, dependents = storeRetrieveProjectData(dependents_data_key_label)
+  parent_pools_data_key_label = _pool_key_prefix .. child_pool .. _parent_pools_data_key_suffix
+  retval, parent_pools = storeRetrieveProjectData(parent_pools_data_key_label)
 
-  if retval == true and string.find(dependents, dependent) then
-    dependents = string.gsub(dependents, dependent, "")
+  if retval == true and string.find(parent_pools, parent_pool) then
+    parent_pools = string.gsub(parent_pools, parent_pool, "")
 
-    storeRetrieveProjectData(dependents_data_key_label, dependents)
+    storeRetrieveProjectData(parent_pools_data_key_label, parent_pools)
   end
 end
 
@@ -1148,10 +1144,10 @@ function handleReglue(first_selected_item_track, restored_items_pool_id, obey_ti
   glued_container = restoreContainerState(glued_container, glued_container_params)
   
   setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params)
-  calculateDependentUpdates(glued_container_params.pool_id)
-  sortDependentUpdates()
+  calculateParentPoolUpdates(glued_container_params.pool_id)
+  sortParentPoolUpdates()
   deselectAllItems()
-  updateDependents(glued_container, glued_container_params, sizing_region_guid, obey_time_selection)
+  updateParentPools(glued_container, glued_container_params, sizing_region_guid, obey_time_selection)
 
   return glued_container
 end
@@ -1224,31 +1220,31 @@ end
 
 
 
--- populate _keyed_dependents with a nicely ordered sequence and reinsert the items of each pool into temp tracks so they can be updated
-function calculateDependentUpdates(pool_id, nesting_depth)
-  local dependents_data_key_label, retval, dependents, track, dependent_pool, item, restored_items, container, glued_container, new_src, i, v, update_item, current_entry
+-- populate _keyed_parent_pools with a nicely ordered sequence and reinsert the items of each pool into temp tracks so they can be updated
+function calculateParentPoolUpdates(pool_id, nesting_depth)
+  local parent_pools_data_key_label, retval, parent_pools, track, parent_pool_pool, item, restored_items, container, glued_container, new_src, i, v, update_item, current_entry
 
-  dependents_data_key_label = _pool_key_prefix .. pool_id .. _dependents_data_key_suffix
-  retval, dependents = storeRetrieveProjectData(dependents_data_key_label)
+  parent_pools_data_key_label = _pool_key_prefix .. pool_id .. _parent_pools_data_key_suffix
+  retval, parent_pools = storeRetrieveProjectData(parent_pools_data_key_label)
 
   if not nesting_depth then
     nesting_depth = 1
   end
 
-  if retval == true and string.len(dependents) > 0 then
+  if retval == true and string.len(parent_pools) > 0 then
 
-    for dependent_pool in string.gmatch(dependents, "%d+") do
-      dependent_pool = math.floor(tonumber(dependent_pool))
+    for parent_pool in string.gmatch(parent_pools, "%d+") do
+      parent_pool = math.floor(tonumber(parent_pool))
 
       -- check if an entry for this pool already exists
-      if _keyed_dependents[dependent_pool] then
+      if _keyed_parent_pools[parent_pool] then
         -- store how deeply nested this item is
-        _keyed_dependents[dependent_pool].nesting_depth = math.max(nesting_depth, _keyed_dependents[dependent_pool].nesting_depth)
+        _keyed_parent_pools[parent_pool].nesting_depth = math.max(nesting_depth, _keyed_parent_pools[parent_pool].nesting_depth)
 
       -- this is the first time this pool has come up. set up for update loop
       else
         current_entry = {
-          ["pool_id"] = dependent_pool,
+          ["pool_id"] = parent_pool,
           ["nesting_depth"] = nesting_depth
         }
 
@@ -1259,7 +1255,7 @@ function calculateDependentUpdates(pool_id, nesting_depth)
         deselectAllItems()
 
         -- restore items into newly made empty track
-        restored_items = restorePreviouslyGluedItems(dependent_pool, track, nil, true)
+        restored_items = restorePreviouslyGluedItems(parent_pool, track, nil, true)
 
         -- store references to temp track and items
         current_entry.track = track
@@ -1267,18 +1263,18 @@ function calculateDependentUpdates(pool_id, nesting_depth)
         current_entry.container = container
         current_entry.restored_items = restored_items
 
-        -- store this item in _keyed_dependents
-        _keyed_dependents[dependent_pool] = current_entry
+        -- store this item in _keyed_parent_pools
+        _keyed_parent_pools[parent_pool] = current_entry
 
-        -- check if this pool also has dependents
-        calculateDependentUpdates(dependent_pool, nesting_depth + 1)
+        -- check if this pool also has parent_pools
+        calculateParentPoolUpdates(parent_pool, nesting_depth + 1)
       end
     end
   end
 end
 
 
-function restorePreviouslyGluedItems(pool_id, active_track, glued_container_preedit_params, is_dependent_update)
+function restorePreviouslyGluedItems(pool_id, active_track, glued_container_preedit_params, is_parent_pool_update)
   local pool_item_states_key_label, retval, stored_items, stored_items_table, restored_items, glued_container_postglue_params, stored_item, stored_item_state, restored_item
 
   pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
@@ -1290,8 +1286,8 @@ function restorePreviouslyGluedItems(pool_id, active_track, glued_container_pree
 
   for stored_item, stored_item_state in ipairs(stored_items_table) do
     if stored_item_state then
-      restored_item = restoreItem(active_track, stored_item_state, is_dependent_update)
-      restored_item = adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_postglue_params, is_dependent_update)
+      restored_item = restoreItem(active_track, stored_item_state, is_parent_pool_update)
+      restored_item = adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_postglue_params, is_parent_pool_update)
 
       reaper.SetMediaItemSelected(restored_item, true)
 
@@ -1313,14 +1309,14 @@ function retrieveStoredItemStates(items)
 end
 
 
-function restoreItem(track, state, is_dependent_update)
+function restoreItem(track, state, is_parent_pool_update)
   local restored_item
 
   restored_item = reaper.AddMediaItemToTrack(track)
 
   getSetItemStateChunk(restored_item, state)
 
-  if not is_dependent_update then
+  if not is_parent_pool_update then
     restoreOriginalTake(restored_item)
   end
 
@@ -1367,12 +1363,12 @@ function deleteActiveTakeFromItems()
 end
 
 
-function adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_last_glue_params, is_dependent_update)
+function adjustRestoredItem(restored_item, glued_container_preedit_params, glued_container_last_glue_params, is_parent_pool_update)
   local restored_item_params
 
   restored_item_params = getSetItemParams(restored_item)
 
-  if not is_dependent_update then
+  if not is_parent_pool_update then
     restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item_params.position, glued_container_preedit_params, glued_container_last_glue_params)
   end
 
@@ -1392,25 +1388,25 @@ end
 
 
 
--- sort dependents _keyed_dependents by how nested they are: convert _keyed_dependents to a numeric array then sort by nesting value
-function sortDependentUpdates()
+-- sort parent_pools _keyed_parent_pools by how nested they are: convert _keyed_parent_pools to a numeric array then sort by nesting value
+function sortParentPoolUpdates()
   local i, v
 
-  for i, v in pairs(_keyed_dependents) do
-    table.insert(_numeric_dependents, v)
+  for i, v in pairs(_keyed_parent_pools) do
+    table.insert(_numeric_parent_pools, v)
   end
 
-  table.sort( _numeric_dependents, function(a, b) return a.nesting_depth < b.nesting_depth end)
+  table.sort( _numeric_parent_pools, function(a, b) return a.nesting_depth < b.nesting_depth end)
 end
 
 
-function updateDependents(glued_container, glued_container_params, sizing_region_guid, obey_time_selection)
-  local i, dependent
+function updateParentPools(glued_container, glued_container_params, sizing_region_guid, obey_time_selection)
+  local i, parent_pool
 
   handlePooledInstances(glued_container, glued_container_params)
 
-  for i, dependent in ipairs(_numeric_dependents) do
-    handleNestedInstances(dependent, obey_time_selection, glued_container_params.length, sizing_region_guid)
+  for i, parent_pool in ipairs(_numeric_parent_pools) do
+    handleNestedInstances(parent_pool, obey_time_selection, glued_container_params.length, sizing_region_guid)
   end
 
   reaper.ClearPeakCache()
@@ -1485,19 +1481,19 @@ function launchPropagatePositionDialog()
 end
 
 
-function handleNestedInstances(dependent, obey_time_selection, length, sizing_region_guid)
-  local dependent_glued_container
+function handleNestedInstances(parent_pool, obey_time_selection, length, sizing_region_guid)
+  local parent_pool_glued_container
 
   deselectAllItems()
-  selectDeselectItems(dependent.restored_items, true)
+  selectDeselectItems(parent_pool.restored_items, true)
 
-  dependent_glued_container = handleGlue(dependent.track, dependent.pool_id, sizing_region_guid, obey_time_selection, true)
-  dependent.new_src = getSetItemAudioSrc(dependent_glued_container)
-  dependent.length = length
+  parent_pool_glued_container = handleGlue(parent_pool.track, parent_pool.pool_id, sizing_region_guid, obey_time_selection, true)
+  parent_pool.new_src = getSetItemAudioSrc(parent_pool_glued_container)
+  parent_pool.length = length
 
   deselectAllItems()
-  handlePooledInstances(dependent_glued_container, dependent, true)
-  reaper.DeleteTrack(dependent.track)
+  handlePooledInstances(parent_pool_glued_container, parent_pool, true)
+  reaper.DeleteTrack(parent_pool.track)
 end
 
 
