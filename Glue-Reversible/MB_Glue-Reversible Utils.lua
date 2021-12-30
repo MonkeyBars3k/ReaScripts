@@ -1283,6 +1283,7 @@ function editParentInstances(pool_id, glued_container, children_nesting_depth)
           -- make track for this item's updates
           reaper.InsertTrackAtIndex(0, false)
           track = reaper.GetTrack(_current_project, 0)
+          reaper.GetSetMediaTrackInfo_String(track, "P_EXT:SG_dummy", "true", true)
 
           deselectAllItems()
 
@@ -1304,9 +1305,6 @@ function editParentInstances(pool_id, glued_container, children_nesting_depth)
 
           -- store this item in _keyed_parent_instances
           _keyed_parent_instances[this_parent_pool_id] = this_parent_instance_params
-
-
-Debug("editParentInstances()", "", 0, true)
 
           -- check if this pool also has parent_pool_ids
           editParentInstances(this_parent_pool_id, glued_container, children_nesting_depth + 1)
@@ -1345,7 +1343,7 @@ end
 
 
 function restorePreviouslyGluedItems(pool_id, active_track, glued_container, this_parent_instance_params, glued_container_preedit_params, this_is_parent_update)
-  local pool_item_states_key_label, retval, stored_items, stored_items_table, restored_items, glued_container_postglue_params, restored_item_position_deltas, i, stored_item_state, restored_item, restored_instance_pool_id, restored_item_position_delta_to_parent, restored_item_position_delta_params
+  local pool_item_states_key_label, retval, stored_items, stored_items_table, restored_items, glued_container_postglue_params, restored_item_position_deltas, i, stored_item_state, restored_item, this_restored_item_track_status, this_restored_item_is_child_of_pool_parent, restored_instance_pool_id, restored_item_position_delta_to_parent, restored_item_position_delta_params
 
   pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
   retval, stored_items = storeRetrieveProjectData(pool_item_states_key_label)
@@ -1361,13 +1359,19 @@ function restorePreviouslyGluedItems(pool_id, active_track, glued_container, thi
     if stored_item_state then
       restored_item = restoreItem(active_track, stored_item_state, this_is_parent_update)
       restored_item = adjustRestoredItem(restored_item, glued_container, glued_container_preedit_params, glued_container_postglue_params, this_is_parent_update)
-
-      if this_is_parent_update then
--- log(pool_id)
-        cropItemToParent(restored_item, this_parent_instance_params)
-      end
+      this_restored_item_track = reaper.GetMediaItem_Track(restored_item)
+      retval, this_restored_item_track_status = reaper.GetSetMediaTrackInfo_String(this_restored_item_track, "P_EXT:SG_dummy", "", false)
+      this_restored_item_is_child_of_pool_parent = this_restored_item_track_status == "true"
 
       reaper.SetMediaItemSelected(restored_item, true)
+
+      if this_restored_item_is_child_of_pool_parent then
+-- logV("BEFORE _api_item_position_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_position_key))
+-- logV("BEFORE _api_item_length_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_length_key))
+        restored_item = cropItemToParent(restored_item, this_parent_instance_params)
+-- logV("AFTER _api_item_position_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_position_key))
+-- logV("AFTER _api_item_length_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_length_key))
+      end
 
       restored_items[i] = restored_item
       restored_instance_pool_id = storeRetrieveItemData(restored_item, _glued_container_pool_id_key_suffix)
@@ -1462,7 +1466,8 @@ function adjustRestoredItem(restored_item, glued_container, glued_container_pree
     restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item_params.position, glued_container_preedit_params, glued_container_last_glue_params)
   
   elseif this_is_parent_update and is_restored_child_instance then
-    adjustChildInstance(glued_container, restored_item, _active_instance_params)
+-- logV("adjustRestoredItem() this_restored_instance_pool_id",this_restored_instance_pool_id)
+    restored_item_params = adjustChildInstance(glued_container, restored_item, restored_item_params)
   end
 
   getSetItemParams(restored_item, restored_item_params)
@@ -1481,24 +1486,34 @@ end
 
 
 function cropItemToParent(restored_item, this_parent_instance_params)
-  local restored_item_params, restored_item_is_before_parent, restored_item_take, restored_item_cropped_offset, restored_item_ends_later_than_parent
+  local restored_item_params, restored_item_is_before_parent, restored_item_parent_pool_id, right_hand_split_item, restored_item_ends_later_than_parent
 
   restored_item_params = getSetItemParams(restored_item)
   restored_item_is_before_parent = restored_item_params.position < this_parent_instance_params.position
-  restored_item_take = getSetItemName(restored_item)
-  restored_item_cropped_offset = restored_item_params.position - this_parent_instance_params.position
   restored_item_ends_later_than_parent = restored_item_params.end_point > this_parent_instance_params.end_point
-  end_point_delta = restored_item_params.end_point - this_parent_instance_params.end_point
-  restored_item_new_length = restored_item_params.length - end_point_delta
+
+    restored_item_parent_pool_id = storeRetrieveItemData(restored_item, _restored_item_pool_id_key_suffix)
+
 
   if restored_item_is_before_parent then
-    reaper.SetMediaItemInfo_Value(restored_item, _api_item_position_key, this_parent_instance_params.position)
-    reaper.SetMediaItemTakeInfo_Value(restored_item_take, _api_take_src_offset_key, restored_item_cropped_offset)
+    right_hand_split_item = reaper.SplitMediaItem(restored_item, this_parent_instance_params.position)
+    restored_item_params.track = reaper.BR_GetMediaTrackByGUID(_current_project, restored_item_params.track_guid)
+
+    storeRetrieveItemData(right_hand_split_item, _restored_item_pool_id_key_suffix, restored_item_parent_pool_id)
+    reaper.DeleteTrackMediaItem(restored_item_params.track, restored_item)
+    
+    restored_item = right_hand_split_item
   end
 
   if restored_item_ends_later_than_parent then
+    end_point_delta = restored_item_params.end_point - this_parent_instance_params.end_point
+    restored_item_new_length = restored_item_params.length - end_point_delta
+    
     reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
   end
+
+-- Debug("cropItemToParent() restored_item_parent_pool_id", restored_item_parent_pool_id, 0, true)
+  return restored_item
 end
 
 
@@ -1580,18 +1595,29 @@ function adjustChildInstance(glued_container, instance, this_instance_params)
 -- logV("this_instance_is_parent",tostring(this_instance_is_parent))
 
     if not this_instance_is_parent then
-      adjusted_pool_instance_params = {
-        ["position"] = this_instance_current_position + _glued_instance_offset_delta_since_last_glue,
-        ["length"] = this_instance_params.length
-      }
+
+-- logV("BEFORE _api_item_position_key",reaper.GetMediaItemInfo_Value(instance, _api_item_position_key))
+-- logV("BEFORE _api_item_length_key",reaper.GetMediaItemInfo_Value(instance, _api_item_length_key))
+-- logV("adjustChildInstance() this instance pool ID",storeRetrieveItemData(instance,_glued_container_pool_id_key_suffix))
+      -- adjusted_pool_instance_params = {
+      --   ["position"] = this_instance_current_position + _glued_instance_offset_delta_since_last_glue,
+      --   ["length"] = this_instance_params.length
+      -- }
+
+      this_instance_params.position = this_instance_current_position + _glued_instance_offset_delta_since_last_glue
     
-      getSetItemParams(instance, adjusted_pool_instance_params)
+      -- getSetItemParams(instance, adjusted_pool_instance_params)
+
+-- logV("AFTER _api_item_position_key",reaper.GetMediaItemInfo_Value(instance, _api_item_position_key))
+-- logV("AFTER _api_item_length_key",reaper.GetMediaItemInfo_Value(instance, _api_item_length_key))
 
   -- logV("BEFORE restored_item ",reaper.GetMediaItemInfo_Value(instance, _api_item_position_key))
   -- Debug("adjustChildInstance()", "", 0, true)
 
     end
   end
+
+  return this_instance_params
 end
 
 
