@@ -24,7 +24,7 @@ To edit your glued items, the **Edit** script opens the created container item, 
 **Smart Glue/Edit** (with time selection enabled/disabled) will intelligently determine which action is required based on your item selections.
 
 ### Features
-- Fills in the missing **nondestructive/reversible Glue function** in Reaper!
+- Provides the missing **nondestructive/reversible Glue feature** in Reaper!
   - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes, Pooled Audio Items
 - Currently, Glue-Reversible container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. (Yes! We have scripted the missing native **pooled audio items** feature in Reaper along with everything else!)
 - Supports **nesting Glue-Reversible container items** inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest – tested with 20 levels of nesting.
@@ -41,7 +41,7 @@ To edit your glued items, the **Edit** script opens the created container item, 
 - To create **MIDI container items**, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.
 - When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
 - When gluing with time selection, ensure your time selection includes all items being glued because of [this Reaper bug](https://forums.cockos.com/showthread.php?t=258769).
-- Uses **item selection set slot 10** at times to save and recall selected items.
+- Uses **item selection set slot 10** and **SWS time selection set slot 5**.
  
 ### History
 
