@@ -1673,7 +1673,7 @@ function adjustInstance(instance, glued_container, glued_container_params)
     -- reduce length by offset delta since last glue
     -- set take offset to negative offset delta since last glue?
     this_instance_params.position = this_instance_current_position + _glued_instance_offset_delta_since_last_glue
-    this_instance_new_length = this_instance_params.length - _glued_instance_offset_delta_since_last_glue
+    this_instance_params.length = this_instance_params.length - _glued_instance_offset_delta_since_last_glue
 -- logV("this_pool_instance_is_child",tostring(this_pool_instance_is_child))
 
     getSetItemParams(instance, this_instance_params)
