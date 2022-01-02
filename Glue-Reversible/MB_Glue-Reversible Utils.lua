@@ -1,7 +1,7 @@
 -- @description MB_Glue-Reversible Utils: Codebase for MB_Glue-Reversible scripts' functionality
 -- @author MonkeyBars
 -- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142)
+-- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151)
 -- @provides [nomain] .
 --   serpent.lua
 --   gr-bg.png
@@ -21,7 +21,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _current_project, _sizing_region_color, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _glued_container_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _parent_pool_ids_data_key_suffix, _child_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_yes, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _active_instance_params, _glued_instance_offset_delta_since_last_glue, _keyed_parent_instances, _numeric_parent_instances, _position_changed_since_last_glue, _position_change_response
+local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _edit_undo_block_string, _smart_glue_edit_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _glued_container_name_prefix, _sizing_region_guid_key_suffix, _pool_key_prefix, _pool_item_states_key_suffix, _instance_pool_id_key_suffix, _restored_item_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _glued_container_params_suffix, _parent_pool_ids_data_key_suffix, _child_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_yes, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _active_instance_params, _glued_instance_offset_delta_since_last_glue, _keyed_parent_instances, _numeric_parent_instances, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _item_bg_img_path = _script_path .. "gr-bg.png"
@@ -34,8 +34,8 @@ _glue_undo_block_string = "MB_Glue-Reversible"
 _edit_undo_block_string = "MB_Glue-Reversible-Edit"
 _smart_glue_edit_undo_block_string = "MB_Glue-Reversible-Smart-Glue-Edit"
 _sizing_region_label = "GR: DO NOT DELETE – Use to increase size – Pool #"
-_current_project = 0
 _sizing_region_color = reaper.ColorToNative(255, 255, 255)|0x1000000
+_api_current_project = 0
 _api_data_key = "P_EXT:"
 _api_project_region_guid_key_prefix = "MARKER_GUID:"
 _api_item_mute_key = "B_MUTE"
@@ -52,7 +52,7 @@ _glued_container_name_prefix = _global_script_item_name_prefix .. ":"
 _pool_key_prefix = "pool-"
 _sizing_region_guid_key_suffix = ":sizing-region-guid"
 _pool_item_states_key_suffix = ":contained-item-states"
-_glued_container_pool_id_key_suffix = "instance-pool-id"
+_instance_pool_id_key_suffix = "instance-pool-id"
 _restored_item_pool_id_key_suffix = "parent-pool-id"
 _last_pool_id_key_suffix = "last-pool-id"
 _preglue_active_take_guid_key_suffix = "preglue-active-take-guid"
@@ -73,7 +73,7 @@ _msg_type_ok_cancel = 1
 _msg_type_yes_no = 4
 _msg_response_yes = 6
 _msg_change_selected_items = "Change the items selected and try again."
-_data_storage_track = reaper.GetMasterTrack(_current_project)
+_data_storage_track = reaper.GetMasterTrack(_api_current_project)
 _active_glue_pool_id = nil
 _active_instance_params = nil
 _sizing_region_1st_display_num = 0
@@ -145,7 +145,7 @@ function renderPathIsValid()
   local platform, proj_renderpath, win_platform_regex, is_win, win_absolute_path_regex, is_win_absolute_path, is_win_local_path, nix_absolute_path_regex, is_nix_absolute_path, is_other_local_path
 
   platform = reaper.GetOS()
-  proj_renderpath = reaper.GetProjectPath(_current_project)
+  proj_renderpath = reaper.GetProjectPath(_api_current_project)
   win_platform_regex = "^Win"
   is_win = string.match(platform, win_platform_regex)
   win_absolute_path_regex = "^%u%:\\"
@@ -167,7 +167,7 @@ end
 
 
 function getSelectedItemsCount()
-  return reaper.CountSelectedMediaItems(_current_project)
+  return reaper.CountSelectedMediaItems(_api_current_project)
 end
 
 
@@ -231,7 +231,7 @@ function getFirstPoolIdFromSelectedItems(selected_item_count)
   local i, this_item, this_item_pool_id, this_item_has_stored_pool_id
 
   for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_current_project, i)
+    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
     this_item_pool_id = storeRetrieveItemData(this_item, _restored_item_pool_id_key_suffix)
     this_item_has_stored_pool_id = this_item_pool_id and this_item_pool_id ~= ""
 
@@ -263,7 +263,7 @@ end
 
 
 function getFirstSelectedItem()
-  return reaper.GetSelectedMediaItem(_current_project, 0)
+  return reaper.GetSelectedMediaItem(_api_current_project, 0)
 end
 
 
@@ -283,7 +283,7 @@ function detectSelectedItemsOnMultipleTracks(selected_item_count)
   item_is_on_different_track_than_previous = false
 
   for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_current_project, i)
+    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
     this_item_track = reaper.GetMediaItemTrack(this_item)
     item_is_on_different_track_than_previous = this_item_track and prev_item_track and this_item_track ~= prev_item_track
   
@@ -341,7 +341,7 @@ function getSelectedGlueReversibleItems(selected_item_count)
   restored_items = {}
 
   for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_current_project, i)
+    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
 
     if getItemType(this_item) == "glued" then
       table.insert(glued_containers, this_item)
@@ -357,7 +357,7 @@ end
 function getItemType(item)
   local glued_container_pool_id, is_glued_container, restored_item_pool_id, is_restored_item
   
-  glued_container_pool_id = storeRetrieveItemData(item, _glued_container_pool_id_key_suffix)
+  glued_container_pool_id = storeRetrieveItemData(item, _instance_pool_id_key_suffix)
   is_glued_container = glued_container_pool_id and glued_container_pool_id ~= ""
   restored_item_pool_id = storeRetrieveItemData(item, _restored_item_pool_id_key_suffix)
   is_restored_item = restored_item_pool_id and restored_item_pool_id ~= ""
@@ -377,7 +377,7 @@ function recursiveContainerIsBeingGlued(glued_containers, restored_items)
 
   for i = 1, #glued_containers do
     this_glued_container = glued_containers[i]
-    this_glued_container_instance_pool_id = storeRetrieveItemData(this_glued_container, _glued_container_pool_id_key_suffix)
+    this_glued_container_instance_pool_id = storeRetrieveItemData(this_glued_container, _instance_pool_id_key_suffix)
 
     for j = 1, #restored_items do
       this_restored_item = restored_items[j]
@@ -401,7 +401,7 @@ function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track
   track_has_no_virtual_instrument = reaper.TrackFX_GetInstrument(first_selected_item_track) == -1
 
   for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_current_project, i)
+    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
     midi_item_is_selected = midiItemIsSelected(this_item)
 
     if midi_item_is_selected then
@@ -471,7 +471,7 @@ end
 
 
 function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey_time_selection, this_is_parent_glue)
-  local this_is_new_glue, selected_item_count, selected_items, first_selected_item_name, sizing_params, selected_item_states, selected_container_items, glued_container, glued_container_init_name
+  local this_is_new_glue, selected_item_count, selected_items, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_container_items, glued_container, glued_container_init_name
 
   this_is_new_glue = not pool_id
   selected_item_count = getSelectedItemsCount()
@@ -483,13 +483,20 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, obey
     pool_id = handlePoolId()
 
   elseif this_is_parent_glue then
+    parent_dummy_track = first_selected_item_track
     sizing_params = _active_instance_params
+
+    for i = 1, #selected_items do
+      cropItemToParent(selected_items[i], sizing_params)
+    end
+
+    createEmptySpacingItem(parent_dummy_track, sizing_params)
 
   elseif not this_is_parent_glue then
     sizing_params = setUpReglue(sizing_region_guid, first_selected_item_track)
   end
 
-  selected_item_states, selected_container_items = handleSelectedItems(selected_items, pool_id, sizing_params, this_is_parent_glue)
+  selected_item_states, selected_container_items = handleSelectedItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_glue)
   glued_container = glueSelectedItemsIntoContainer(obey_time_selection)
   glued_container_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
 
@@ -509,7 +516,7 @@ function getSelectedItems(selected_item_count)
   selected_items = {}
   
   for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_current_project, i)
+    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
 
     table.insert(selected_items, this_item)
 
@@ -735,7 +742,7 @@ function setUpReglue(sizing_region_guid, active_track)
   is_active_container_reglue = sizing_region_params
 
   if is_active_container_reglue then
-    makeEmptySpacingItem(active_track, sizing_region_params)
+    createEmptySpacingItem(active_track, sizing_region_params)
     getSetSizingRegion(sizing_region_guid, "delete")
   end
 
@@ -743,16 +750,16 @@ function setUpReglue(sizing_region_guid, active_track)
 end
 
 
-function makeEmptySpacingItem(active_track, sizing_region_params)
-  local empty_spacing_item = reaper.AddMediaItemToTrack(active_track)
+function createEmptySpacingItem(destination_track, sizing_params)
+  local empty_spacing_item = reaper.AddMediaItemToTrack(destination_track)
 
-  getSetItemParams(empty_spacing_item, sizing_region_params)
+  getSetItemParams(empty_spacing_item, sizing_params)
   reaper.SetMediaItemSelected(empty_spacing_item, true)
 end
 
 
-function handleSelectedItems(selected_items, pool_id, sizing_params, this_is_parent_glue)
-  local selected_item_states, selected_container_items
+function handleSelectedItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_glue)
+  local selected_item_states, selected_container_items, parent_instance_track, i
 
   setSelectedItemsData(selected_items, pool_id, sizing_params)
   
@@ -762,6 +769,31 @@ function handleSelectedItems(selected_items, pool_id, sizing_params, this_is_par
   selectDeselectItems(selected_items, true)
 
   return selected_item_states, selected_container_items
+end
+
+
+function cropItemToParent(restored_item, this_parent_instance_params)
+  local restored_item_params, restored_item_starts_before_parent, restored_item_parent_pool_id, right_hand_split_item, restored_item_ends_later_than_parent
+
+  restored_item_params = getSetItemParams(restored_item)
+  restored_item_starts_before_parent = restored_item_params.position < this_parent_instance_params.position
+  restored_item_ends_later_than_parent = restored_item_params.end_point > this_parent_instance_params.end_point
+  restored_item_parent_pool_id = storeRetrieveItemData(restored_item, _restored_item_pool_id_key_suffix)
+
+  if restored_item_starts_before_parent then
+    restored_item_cropped_position_delta = this_parent_instance_params.position - restored_item_params.position 
+    restored_item_active_take = reaper.GetTake(restored_item, restored_item_params.active_take_num)
+
+    reaper.SetMediaItemPosition(restored_item, this_parent_instance_params.position, true)
+    reaper.SetMediaItemTakeInfo_Value(restored_item_active_take, _api_take_src_offset_key, restored_item_cropped_position_delta)
+  end
+
+  if restored_item_ends_later_than_parent then
+    end_point_delta = restored_item_params.end_point - this_parent_instance_params.end_point
+    restored_item_new_length = restored_item_params.length - end_point_delta
+    
+    reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
+  end
 end
 
 
@@ -802,7 +834,7 @@ function getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, para
   delete = params_or_delete == "delete"
   sizing_region_guid = sizing_region_guid_or_pool_id
   sizing_region_api_key = _api_project_region_guid_key_prefix .. region_idx
-  stored_guid_retval, this_region_guid = reaper.GetSetProjectInfo_String(_current_project, sizing_region_api_key, "", false)
+  stored_guid_retval, this_region_guid = reaper.GetSetProjectInfo_String(_api_current_project, sizing_region_api_key, "", false)
   this_region_belongs_to_active_pool = this_region_guid == sizing_region_guid
 
   if this_region_belongs_to_active_pool then
@@ -811,13 +843,13 @@ function getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, para
         ["idx"] = region_idx
       }
 
-      retval, is_region, sizing_region_params.position, sizing_region_params.end_point = reaper.EnumProjectMarkers3(_current_project, region_idx)
+      retval, is_region, sizing_region_params.position, sizing_region_params.end_point = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
       sizing_region_params.length = sizing_region_params.end_point - sizing_region_params.position
 
       return retval, sizing_region_params
 
     elseif delete then
-      reaper.DeleteProjectMarkerByIndex(_current_project, region_idx, true)
+      reaper.DeleteProjectMarkerByIndex(_api_current_project, region_idx, true)
 
       retval = 0
 
@@ -837,17 +869,17 @@ function addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region
   params.end_point = params.position + params.length
   pool_id = sizing_region_guid_or_pool_id
   sizing_region_name = _sizing_region_label .. pool_id
-  sizing_region_label_num = reaper.AddProjectMarker2(_current_project, true, params.position, params.end_point, sizing_region_name, _sizing_region_1st_display_num, _sizing_region_color)
+  sizing_region_label_num = reaper.AddProjectMarker2(_api_current_project, true, params.position, params.end_point, sizing_region_name, _sizing_region_1st_display_num, _sizing_region_color)
   sizing_region_guid_key_label = _pool_key_prefix .. pool_id .. _sizing_region_guid_key_suffix
 
-  retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num = reaper.EnumProjectMarkers3(_current_project, region_idx)
+  retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
       
   if is_region then
     this_region_is_active = this_region_label_num == sizing_region_label_num
 
     if this_region_is_active then
       sizing_region_api_key = _api_project_region_guid_key_prefix .. region_idx
-      stored_guid_retval, sizing_region_guid = reaper.GetSetProjectInfo_String(_current_project, sizing_region_api_key, "", false)
+      stored_guid_retval, sizing_region_guid = reaper.GetSetProjectInfo_String(_api_current_project, sizing_region_api_key, "", false)
       storeRetrieveProjectData(sizing_region_guid_key_label, sizing_region_guid)
 
       return retval, sizing_region_guid
@@ -867,7 +899,7 @@ function createSelectedItemStates(selected_items, active_pool_id)
 
   for i, item in ipairs(selected_items) do
     this_item = selected_items[i]
-    this_glued_container_pool_id = storeRetrieveItemData(this_item, _glued_container_pool_id_key_suffix)
+    this_glued_container_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
     this_is_glued_container = this_glued_container_pool_id and this_glued_container_pool_id ~= ""
 
     convertMidiItemToAudio(this_item)
@@ -920,7 +952,7 @@ function handleContainerPostGlue(glued_container, glued_container_init_name, poo
 
   addRemoveItemImage(glued_container, true)
   storeRetrieveGluedContainerParams(pool_id, _postglue_action_step, glued_container)
-  storeRetrieveItemData(glued_container, _glued_container_pool_id_key_suffix, pool_id)
+  storeRetrieveItemData(glued_container, _instance_pool_id_key_suffix, pool_id)
   storeRetrieveItemData(glued_container, glued_container_preglue_state_key, glued_container_state)
 end
 
@@ -938,7 +970,7 @@ function storeRetrieveGluedContainerParams(pool_id, action_step, glued_container
     retval, glued_container_params = serpent.load(glued_container_params)
 
     if glued_container_params then
-      glued_container_params.track = reaper.BR_GetMediaTrackByGUID(_current_project, glued_container_params.track_guid)
+      glued_container_params.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, glued_container_params.track_guid)
     end
 
     return glued_container_params
@@ -953,7 +985,7 @@ end
 
 
 function getSetItemParams(item, params)
-  local get, set, track, retval, track_guid, active_take, item_params
+  local get, set, track, retval, track_guid, active_take, active_take_num, item_params
 
   get = not params
   set = params
@@ -962,14 +994,15 @@ function getSetItemParams(item, params)
     track = reaper.GetMediaItemTrack(item)
     retval, track_guid = reaper.GetSetMediaTrackInfo_String(track, "GUID", "", false)
     active_take = reaper.GetActiveTake(item)
+    active_take_num = reaper.GetMediaItemTakeInfo_Value(active_take, _api_takenumber_key)
     item_params = {
       ["state"] = getSetItemStateChunk(item),
       ["track_guid"] = track_guid,
+      ["active_take_num"] = active_take_num,
       ["position"] = reaper.GetMediaItemInfo_Value(item, _api_item_position_key),
       ["source_offset"] = reaper.GetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key),
       ["length"] = reaper.GetMediaItemInfo_Value(item, _api_item_length_key),
     }
-
     item_params.end_point = item_params.position + item_params.length
 
     return item_params
@@ -1161,7 +1194,7 @@ function handleReglue(first_selected_item_track, restored_items_pool_id, obey_ti
   glued_container_params.new_src = getSetItemAudioSrc(glued_container)
   glued_container_params.pool_id = restored_items_pool_id
   glued_container = restoreContainerState(glued_container, glued_container_params)
-  
+
   setRegluePositionDeltas(glued_container_params, glued_container_last_glue_params)
   editParentInstances(glued_container_params.pool_id, glued_container)
   sortParentUpdates()
@@ -1270,44 +1303,39 @@ function editParentInstances(pool_id, glued_container, children_nesting_depth)
         -- this is the first time this pool has come up. set up for update loop
         else
           this_parent_instance_params = getFirstPoolInstanceParams(this_parent_pool_id)
-          no_parent_instances_were_found = this_parent_instance_params == false
 
-          if no_parent_instances_were_found then
--- REMOVE POOL FROM TABLE HERE?
-            this_parent_instance_params = {}
+-- REMOVE POOL FROM TABLE IF NONE FOUND HERE? -- PROBABLY NOT NECESSARY SINCE DATA GETS REFRESHED ON REGLUE
+          if this_parent_instance_params then
+          --   this_parent_instance_params = {}
+          -- end
+
+            this_parent_instance_params.pool_id = this_parent_pool_id
+            this_parent_instance_params.children_nesting_depth = children_nesting_depth
+
+            -- make track for this item's updates
+            reaper.InsertTrackAtIndex(0, false)
+            track = reaper.GetTrack(_api_current_project, 0)
+            -- reaper.GetSetMediaTrackInfo_String(track, "P_EXT:SG_dummy", "true", true)
+-- FOR TESTING
+-- reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", "2", true)
+
+            deselectAllItems()
+
+            -- restore items into newly made empty track
+            restored_items, restored_item_position_deltas = restorePreviouslyGluedItems(this_parent_pool_id, track, glued_container, this_parent_instance_params, nil, true)
+
+            -- store references to temp track and items
+            this_parent_instance_params.track = track
+            this_parent_instance_params.restored_items = restored_items
+
+            this_parent_instance_params.restored_item_position_deltas = restored_item_position_deltas
+
+            -- store this item in _keyed_parent_instances
+            _keyed_parent_instances[this_parent_pool_id] = this_parent_instance_params
+
+            -- check if this pool also has parent_pool_ids
+            editParentInstances(this_parent_pool_id, glued_container, children_nesting_depth + 1)
           end
-
-          this_parent_instance_params.pool_id = this_parent_pool_id
-          this_parent_instance_params.children_nesting_depth = children_nesting_depth
-
-          -- make track for this item's updates
-          reaper.InsertTrackAtIndex(0, false)
-          track = reaper.GetTrack(_current_project, 0)
-          reaper.GetSetMediaTrackInfo_String(track, "P_EXT:SG_dummy", "true", true)
-
-          deselectAllItems()
-
-          -- restore items into newly made empty track
-          restored_items, restored_item_position_deltas = restorePreviouslyGluedItems(this_parent_pool_id, track, glued_container, this_parent_instance_params, nil, true)
-
---           if this_parent_instance_params.position and this_parent_instance_params.length then
---             cropParentInstanceRestoredItems(this_parent_instance_params)
-
--- for i = 1, #restored_items do
---   logV("AFTER restored_item "..i,reaper.GetMediaItemInfo_Value(restored_items[i], _api_item_position_key))
--- end
---           end
-          -- store references to temp track and items
-          this_parent_instance_params.track = track
-          this_parent_instance_params.restored_items = restored_items
-
-          this_parent_instance_params.restored_item_position_deltas = restored_item_position_deltas
-
-          -- store this item in _keyed_parent_instances
-          _keyed_parent_instances[this_parent_pool_id] = this_parent_instance_params
-
-          -- check if this pool also has parent_pool_ids
-          editParentInstances(this_parent_pool_id, glued_container, children_nesting_depth + 1)
         end
       end
 
@@ -1320,16 +1348,15 @@ end
 function getFirstPoolInstanceParams(pool_id)
   local i, all_items_count, this_item, this_item_instance_pool_id, parent_instance_params
 
-  all_items_count = reaper.CountMediaItems(_current_project)
+  all_items_count = reaper.CountMediaItems(_api_current_project)
 
   for i = 0, all_items_count-1 do
-    this_item = reaper.GetMediaItem(_current_project, i)
-    this_item_instance_pool_id = storeRetrieveItemData(this_item, _glued_container_pool_id_key_suffix)
+    this_item = reaper.GetMediaItem(_api_current_project, i)
+    this_item_instance_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
     this_item_instance_pool_id = tonumber(this_item_instance_pool_id)
 
     if this_item_instance_pool_id == pool_id then
       parent_instance_params = getSetItemParams(this_item)
-      _active_instance_params = parent_instance_params
 
 -- logV("getFirstPoolInstanceParams() pool_id",pool_id)
 -- logV("getFirstPoolInstanceParams() parent_instance_params.length",parent_instance_params.length)
@@ -1343,7 +1370,7 @@ end
 
 
 function restorePreviouslyGluedItems(pool_id, active_track, glued_container, this_parent_instance_params, glued_container_preedit_params, this_is_parent_update)
-  local pool_item_states_key_label, retval, stored_items, stored_items_table, restored_items, glued_container_postglue_params, restored_item_position_deltas, i, stored_item_state, restored_item, this_restored_item_track_status, this_restored_item_is_child_of_pool_parent, restored_instance_pool_id, restored_item_position_delta_to_parent, restored_item_position_delta_params
+  local pool_item_states_key_label, retval, stored_items, stored_items_table, restored_items, glued_container_postglue_params, restored_item_position_deltas, i, stored_item_state, restored_item, this_restored_item_track_is_dummy, this_restored_item_is_child_of_pool_parent, restored_instance_pool_id, restored_item_position_delta_to_parent, restored_item_position_delta_params
 
   pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
   retval, stored_items = storeRetrieveProjectData(pool_item_states_key_label)
@@ -1358,23 +1385,13 @@ function restorePreviouslyGluedItems(pool_id, active_track, glued_container, thi
 
     if stored_item_state then
       restored_item = restoreItem(active_track, stored_item_state, this_is_parent_update)
-      restored_item = adjustRestoredItem(restored_item, glued_container, glued_container_preedit_params, glued_container_postglue_params, this_is_parent_update)
-      this_restored_item_track = reaper.GetMediaItem_Track(restored_item)
-      retval, this_restored_item_track_status = reaper.GetSetMediaTrackInfo_String(this_restored_item_track, "P_EXT:SG_dummy", "", false)
-      this_restored_item_is_child_of_pool_parent = this_restored_item_track_status == "true"
+-- Debug("PREADJUST // restorePreviouslyGluedItems()", "", 0, true)
+      restored_item = adjustRestoredItem(restored_item, glued_container, this_parent_instance_params, glued_container_preedit_params, glued_container_postglue_params, this_is_parent_update)
 
       reaper.SetMediaItemSelected(restored_item, true)
+      table.insert(restored_items, restored_item)
 
-      if this_restored_item_is_child_of_pool_parent then
--- logV("BEFORE _api_item_position_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_position_key))
--- logV("BEFORE _api_item_length_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_length_key))
-        restored_item = cropItemToParent(restored_item, this_parent_instance_params)
--- logV("AFTER _api_item_position_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_position_key))
--- logV("AFTER _api_item_length_key",reaper.GetMediaItemInfo_Value(restored_item, _api_item_length_key))
-      end
-
-      restored_items[i] = restored_item
-      restored_instance_pool_id = storeRetrieveItemData(restored_item, _glued_container_pool_id_key_suffix)
+      restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
       restored_item_position_delta_to_parent = storeRetrieveItemData(restored_item, _item_offset_to_container_position_key_suffix)
       restored_item_position_delta_params = {
         ["pool_id"] = restored_instance_pool_id,
@@ -1386,7 +1403,11 @@ function restorePreviouslyGluedItems(pool_id, active_track, glued_container, thi
       end
     end
   end
+
+
 -- Debug("restorePreviouslyGluedItems()", "", 0, true)
+  
+
   return restored_items, restored_item_position_deltas
 end
 
@@ -1395,7 +1416,7 @@ function retrieveStoredItemStates(items)
   local retval, items_table
 
   retval, items_table = serpent.load(items)
-  items_table.track = reaper.BR_GetMediaTrackByGUID(_current_project, items_table.track_guid)
+  items_table.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, items_table.track_guid)
 
   return items_table
 end
@@ -1425,7 +1446,7 @@ function restoreOriginalTake(item)
   
   if item_takes_count > 0 then
     preglue_active_take_guid = storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix)
-    preglue_active_take = reaper.SNM_GetMediaItemTakeByGUID(_current_project, preglue_active_take_guid)
+    preglue_active_take = reaper.SNM_GetMediaItemTakeByGUID(_api_current_project, preglue_active_take_guid)
 
     if preglue_active_take then
       preglue_active_take_num = reaper.GetMediaItemTakeInfo_Value(preglue_active_take, _api_takenumber_key)
@@ -1455,19 +1476,25 @@ function deleteActiveTakeFromItems()
 end
 
 
-function adjustRestoredItem(restored_item, glued_container, glued_container_preedit_params, glued_container_last_glue_params, this_is_parent_update)
-  local restored_item_params, this_restored_instance_pool_id, is_restored_child_instance
+function adjustRestoredItem(restored_item, glued_container, this_parent_instance_params, glued_container_preedit_params, glued_container_last_glue_params, this_is_parent_update)
+  local restored_item_params, this_restored_instance_pool_id, is_restored_child_instance, this_child_is_from_active_pool
 
   restored_item_params = getSetItemParams(restored_item)
-  this_restored_instance_pool_id = storeRetrieveItemData(restored_item, _glued_container_pool_id_key_suffix)
-  is_restored_child_instance = this_restored_instance_pool_id and this_restored_instance_pool_id ~= ""
+  -- this_restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
+  -- is_restored_child_instance = this_restored_instance_pool_id and this_restored_instance_pool_id ~= ""
+  this_restored_item_parent_pool_id = storeRetrieveItemData(restored_item, _restored_item_pool_id_key_suffix)
+  this_restored_item_parent_pool_id = tonumber(this_restored_item_parent_pool_id)
+  this_child_is_from_active_pool = this_restored_item_parent_pool_id == this_parent_instance_params.pool_id
 
   if not this_is_parent_update then
     restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item_params.position, glued_container_preedit_params, glued_container_last_glue_params)
   
-  elseif this_is_parent_update and is_restored_child_instance then
--- logV("adjustRestoredItem() this_restored_instance_pool_id",this_restored_instance_pool_id)
-    restored_item_params = adjustChildInstance(glued_container, restored_item, restored_item_params)
+  elseif this_is_parent_update and this_child_is_from_active_pool then
+    restored_item_offset_to_parent = storeRetrieveItemData(restored_item, _item_offset_to_container_position_key_suffix)
+-- logV("restored_item_offset_to_parent",restored_item_offset_to_parent)
+    restored_item_params.position = this_parent_instance_params.position + restored_item_offset_to_parent
+    -- adjustInstance(glued_container, restored_item, restored_item_params, this_parent_instance_params)
+    -- cropItemToParent(restored_item, this_parent_instance_params)
   end
 
   getSetItemParams(restored_item, restored_item_params)
@@ -1485,100 +1512,114 @@ function shiftRestoredItemPositionSinceLastGlue(restored_item_params_position, g
 end
 
 
-function cropItemToParent(restored_item, this_parent_instance_params)
-  local restored_item_params, restored_item_is_before_parent, restored_item_parent_pool_id, right_hand_split_item, restored_item_ends_later_than_parent
-
-  restored_item_params = getSetItemParams(restored_item)
-  restored_item_is_before_parent = restored_item_params.position < this_parent_instance_params.position
-  restored_item_ends_later_than_parent = restored_item_params.end_point > this_parent_instance_params.end_point
-
-    restored_item_parent_pool_id = storeRetrieveItemData(restored_item, _restored_item_pool_id_key_suffix)
-
-
-  if restored_item_is_before_parent then
-    right_hand_split_item = reaper.SplitMediaItem(restored_item, this_parent_instance_params.position)
-    restored_item_params.track = reaper.BR_GetMediaTrackByGUID(_current_project, restored_item_params.track_guid)
-
-    storeRetrieveItemData(right_hand_split_item, _restored_item_pool_id_key_suffix, restored_item_parent_pool_id)
-    reaper.DeleteTrackMediaItem(restored_item_params.track, restored_item)
-    
-    restored_item = right_hand_split_item
-  end
-
-  if restored_item_ends_later_than_parent then
-    end_point_delta = restored_item_params.end_point - this_parent_instance_params.end_point
-    restored_item_new_length = restored_item_params.length - end_point_delta
-    
-    reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
-  end
-
--- Debug("cropItemToParent() restored_item_parent_pool_id", restored_item_parent_pool_id, 0, true)
-  return restored_item
-end
-
-
 function sortParentUpdates()
-  local i, this_parent_instance_params
+  local k, this_parent_instance_params
 
-  for i, this_parent_instance_params in pairs(_keyed_parent_instances) do
+  for k, this_parent_instance_params in pairs(_keyed_parent_instances) do
+
+-- log("this_parent_instance_params")
+-- logTableMediaItems(this_parent_instance_params.restored_items)
+
     table.insert(_numeric_parent_instances, this_parent_instance_params)
   end
 
   -- sort parent instances by how nested they are: convert _keyed_parent_instances to a numeric array then sort by nesting value
-  table.sort( _numeric_parent_instances, function(a, b) 
+  table.sort( _numeric_parent_instances, function(a, b)
     return a.children_nesting_depth < b.children_nesting_depth end
   )
+
+-- log("=====")
+-- local i
+-- for i = 1, #_numeric_parent_instances do
+--   log("_numeric_parent_instances[i]")
+--   logTableMediaItems(_numeric_parent_instances[i].restored_items)
+-- end
+
+
+
+-- logV("sortParentUpdates() _numeric_parent_instances[1].restored_items[1] type",tostring(reaper.ValidatePtr(_numeric_parent_instances[1].restored_items[1], "MediaItem*")))
+-- logV("sortParentUpdates() _numeric_parent_instances[1].restored_items[2] type",tostring(reaper.ValidatePtr(_numeric_parent_instances[1].restored_items[2], "MediaItem*")))
 end
 
 
 function propagatePoolChanges(glued_container, glued_container_params, sizing_region_guid, obey_time_selection)
-  local i, parent_instance_params
+  local i
 
-  handleThisPoolsInstances(glued_container, glued_container_params)
+  handlePoolInstances(glued_container, glued_container_params)
 
-  for i, parent_instance_params in ipairs(_numeric_parent_instances) do
-    reglueParentInstance(parent_instance_params, obey_time_selection, sizing_region_guid)
+  for i = 1, #_numeric_parent_instances do
+     _active_instance_params = getFirstPoolInstanceParams(_numeric_parent_instances[i].pool_id)
+
+    reglueParentInstance(_numeric_parent_instances[i], obey_time_selection, sizing_region_guid)
   end
 
   reaper.ClearPeakCache()
 end
 
 
-function handleThisPoolsInstances(glued_container, glued_container_params)
+function handlePoolInstances(glued_container, glued_container_params)
   local all_items_count, i, this_item
 
-  all_items_count = reaper.CountMediaItems(_current_project)
+  all_items_count = reaper.CountMediaItems(_api_current_project)
 
   for i = 0, all_items_count-1 do
-    this_item = reaper.GetMediaItem(_current_project, i)
+    this_item = reaper.GetMediaItem(_api_current_project, i)
 
     updateInstance(this_item, glued_container, glued_container_params)
   end
 end
 
 
-function updateInstance(item, glued_container, glued_container_params)
-  local this_glued_container_pool_id, this_item_is_active_pool_instance, current_src, this_instance_needs_update
+function updateInstance(instance, glued_container, glued_container_params)
+  local this_instance_pool_id, this_item_is_active_pool_instance, this_instance_track, retval, this_restored_item_track_is_dummy, this_restored_item_track_is_dummy, current_src, this_instance_needs_update
 
   glued_container_params.pool_id = tonumber(glued_container_params.pool_id)
-  this_glued_container_pool_id = storeRetrieveItemData(item, _glued_container_pool_id_key_suffix)
-  this_glued_container_pool_id = tonumber(this_glued_container_pool_id)
-  this_item_is_active_pool_instance = this_glued_container_pool_id == glued_container_params.pool_id
+  this_instance_pool_id = storeRetrieveItemData(instance, _instance_pool_id_key_suffix)
+  this_instance_pool_id = tonumber(this_instance_pool_id)
+  this_item_is_active_pool_instance = this_instance_pool_id == glued_container_params.pool_id
+  this_instance_track = reaper.GetMediaItem_Track(instance)
+  -- retval, this_restored_item_track_is_dummy = reaper.GetSetMediaTrackInfo_String(this_instance_track, "P_EXT:SG_dummy", "", false)
+  -- this_restored_item_is_child_of_pool_parent = this_restored_item_track_is_dummy == "true"
+  this_instance_parent_pool_id = storeRetrieveItemData(instance, _restored_item_pool_id_key_suffix)
+  this_restored_item_is_child_of_pool_parent = this_instance_parent_pool_id == glued_container_params.pool_id
+
+-- logV("this_item_is_active_pool_instance",tostring(this_item_is_active_pool_instance))
+-- logV("this_restored_item_is_child_of_pool_parent",tostring(this_restored_item_is_child_of_pool_parent))
 
   if this_item_is_active_pool_instance then
-    current_src = getSetItemAudioSrc(item)
+    current_src = getSetItemAudioSrc(instance)
     this_instance_needs_update = current_src ~= glued_container_params.new_src
 
-    if this_instance_needs_update then
-      getSetItemAudioSrc(item, glued_container_params.new_src)
-      adjustChildInstance(glued_container, item, glued_container_params)
+-- logV("handlePoolInstances() _numeric_parent_instances[1].restored_items[1] type",tostring(reaper.ValidatePtr(_numeric_parent_instances[1].restored_items[1], "MediaItem*")))
+    if this_instance_needs_update --[[and not this_restored_item_is_child_of_pool_parent--]] then
+-- reaper.ClearPeakCache()
+-- Debug("PRE_SRC // updateInstance()", "", 0, true)
+      getSetItemAudioSrc(instance, glued_container_params.new_src)
+-- reaper.ClearPeakCache()
+-- Debug("POST_SRC // updateInstance()", "", 0, true)
+      adjustInstance(glued_container, instance, glued_container_params, this_restored_item_is_child_of_pool_parent)
     end
   end
+-- logV("handlePoolInstances() _numeric_parent_instances[1].restored_items[1] type",tostring(reaper.ValidatePtr(_numeric_parent_instances[1].restored_items[1], "MediaItem*")))
+--   if this_restored_item_is_child_of_pool_parent then
+-- -- Debug("PRECROP // updateInstance()", "", 0, true)
+--     cropItemToParent(instance, glued_container_params)
+-- -- Debug("POSTCROP // updateInstance()", "", 0, true)
+--   end
 end
 
 
-function adjustChildInstance(glued_container, instance, this_instance_params)
-  local this_instance_current_position, adjusted_pool_instance_params, user_wants_position_change, this_instance_is_parent, this_instance_is_immediate_parent, this_instance_parent_pool_id, this_instance_position_delta_to_parent, this_instance_is_active_child, child_instances, this_parent_active_take, this_parent_current_offset, i, this_parent_adjusted_offset, child_instance_guid, active_child_instance_params, child_pool_id, child_position_delta_to_parent, this_child_is_from_active_pool, active_child_instances, current_length, new_length, new_position
+-- function cropInstanceToActiveGlue(instance)
+--   reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, 0)
+--   reaper.SetMediaItemSelected(instance, true)
+--   reaper.GetSet_LoopTimeRange(true, false, _active_instance_params.position, _active_instance_params.end_point, false)
+--   reaper.Main_OnCommand(_crop_selected_items_to_time_selection_action_id, 0)
+--   reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, 0)
+-- end
+
+
+function adjustInstance(glued_container, instance, this_instance_params, this_restored_item_is_child_of_pool_parent)
+  local this_instance_current_position, adjusted_pool_instance_params, user_wants_position_change, this_instance_is_parent, this_instance_is_immediate_parent, retval, this_restored_item_track_is_dummy, this_restored_item_is_child_of_pool_parent, this_instance_active_take, this_instance_track, this_instance_parent_pool_id, this_instance_position_delta_to_parent, this_instance_is_active_child, child_instances, this_parent_active_take, this_parent_current_offset, i, this_parent_adjusted_offset, child_instance_guid, active_child_instance_params, child_pool_id, child_position_delta_to_parent, this_child_is_from_active_pool, active_child_instances, current_length, new_length, new_position
 
   if not _position_change_response and _position_changed_since_last_glue == true then
     _position_change_response = launchPropagatePositionDialog()
@@ -1589,35 +1630,42 @@ function adjustChildInstance(glued_container, instance, this_instance_params)
   if user_wants_position_change then
     this_instance_is_parent = this_instance_params.children_nesting_depth and this_instance_params.children_nesting_depth > 0
     -- this_instance_is_immediate_parent = this_instance_params.children_nesting_depth == 1
+    -- this_child_is_from_active_pool = this_instance_params.pool_id == _active_glue_pool_id
+    this_instance_active_take = reaper.GetTake(instance, this_instance_params.active_take_num)
+    -- this_instance_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, this_instance_params.track_guid)
+    -- retval, this_restored_item_track_is_dummy = reaper.GetSetMediaTrackInfo_String(this_instance_track, "P_EXT:SG_dummy", "", false)
+    -- this_restored_item_is_child_of_pool_parent = this_restored_item_track_is_dummy == "true"
     this_instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
 
--- logV("this instance pool ID",storeRetrieveItemData(instance,_glued_container_pool_id_key_suffix))
--- logV("this_instance_is_parent",tostring(this_instance_is_parent))
-
     if not this_instance_is_parent then
+      if not this_restored_item_is_child_of_pool_parent then
+      -- if this_child_is_from_active_pool then
+      -- if not this_instance_is_parent then
+        -- adjusted_pool_instance_params = {
+        --   ["position"] = this_instance_current_position + _glued_instance_offset_delta_since_last_glue,
+        --   ["length"] = this_instance_params.length
+        -- }
+        this_instance_params.position = this_instance_current_position + _glued_instance_offset_delta_since_last_glue
+    -- Debug("adjustInstance()", "", 0, true)
 
--- logV("BEFORE _api_item_position_key",reaper.GetMediaItemInfo_Value(instance, _api_item_position_key))
--- logV("BEFORE _api_item_length_key",reaper.GetMediaItemInfo_Value(instance, _api_item_length_key))
--- logV("adjustChildInstance() this instance pool ID",storeRetrieveItemData(instance,_glued_container_pool_id_key_suffix))
-      -- adjusted_pool_instance_params = {
-      --   ["position"] = this_instance_current_position + _glued_instance_offset_delta_since_last_glue,
-      --   ["length"] = this_instance_params.length
-      -- }
+      -- end
+      elseif this_restored_item_is_child_of_pool_parent then
+-- Debug("adjustInstance() this_restored_item_is_child_of_pool_parent", "", 0, true)
 
-      this_instance_params.position = this_instance_current_position + _glued_instance_offset_delta_since_last_glue
-    
-      -- getSetItemParams(instance, adjusted_pool_instance_params)
+  -- Debug("PRE_OFFSETADJUST // adjustInstance()", "", 0, true)
+        this_instance_params.length = this_instance_params.length - _glued_instance_offset_delta_since_last_glue
 
--- logV("AFTER _api_item_position_key",reaper.GetMediaItemInfo_Value(instance, _api_item_position_key))
--- logV("AFTER _api_item_length_key",reaper.GetMediaItemInfo_Value(instance, _api_item_length_key))
+        -- reaper.SetMediaItemTakeInfo_Value(this_instance_active_take, _api_take_src_offset_key, _glued_instance_offset_delta_since_last_glue)
+  -- Debug("adjustInstance() _glued_instance_offset_delta_since_last_glue", _glued_instance_offset_delta_since_last_glue, 0, true)
+      end
 
-  -- logV("BEFORE restored_item ",reaper.GetMediaItemInfo_Value(instance, _api_item_position_key))
-  -- Debug("adjustChildInstance()", "", 0, true)
+      -- this_instance_params.position = this_instance_current_position + _glued_instance_offset_delta_since_last_glue
 
+      -- logV("this_restored_item_is_child_of_pool_parent instance",tostring(reaper.ValidatePtr(instance, "MediaItem*")))
     end
-  end
 
-  return this_instance_params
+    getSetItemParams(instance, this_instance_params)
+  end
 end
 
 
@@ -1626,31 +1674,32 @@ function launchPropagatePositionDialog()
 end
 
 
--- function cropParentInstanceRestoredItems(instance_params)
---   instance_params.end_point = instance_params.position + instance_params.length
-
--- -- Debug("cropParentInstanceRestoredItems()", "before " .. _crop_selected_items_to_time_selection_action_id, 0, true)
-
---   reaper.GetSet_LoopTimeRange(true, false, instance_params.position, instance_params.end_point, false)
---   reaper.Main_OnCommand(_crop_selected_items_to_time_selection_action_id, 0)
-
--- -- Debug("cropParentInstanceRestoredItems()", "after", 0, true)
-
--- end
-
-
-function reglueParentInstance(parent_instance_params, obey_time_selection, active_instance_params, sizing_region_guid)
-  local parent_instance
+function reglueParentInstance(parent_instance_params, obey_time_selection, sizing_region_guid)
+  local parent_instance_track, parent_dummy_track, parent_instance
 
   deselectAllItems()
+-- logV("parent_instance_params.position",parent_instance_params.position)
+-- logV("parent_instance_params.end_point",parent_instance_params.end_point)
+  
+  -- parent_instance_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, parent_instance_params.track_guid)
+  parent_dummy_track = parent_instance_params.track
+
+-- Debug("PRE EMPTY ITEM CREATION // reglueParentInstance()", "", 0, true)
+  -- createEmptySpacingItem(parent_instance_track, _active_instance_params)
+-- Debug("POST EMPTY ITEM CREATION // reglueParentInstance()", "", 0, true)
+
+-- logV("reglueParentInstance() restored_items[1] type",tostring(reaper.ValidatePtr(parent_instance_params.restored_items[1], "MediaItem*")))
+
   selectDeselectItems(parent_instance_params.restored_items, true)
 
-  parent_instance = handleGlue(parent_instance_params.track, parent_instance_params.pool_id, sizing_region_guid, obey_time_selection, true)
+  -- log(reaper.GetMediaTrackInfo_Value(parent_instance_track, "IP_TRACKNUMBER"))
+  -- log(reaper.GetMediaTrackInfo_Value(parent_dummy_track, "IP_TRACKNUMBER"))
+  parent_instance = handleGlue(parent_dummy_track, parent_instance_params.pool_id, sizing_region_guid, obey_time_selection, true)
   parent_instance_params.new_src = getSetItemAudioSrc(parent_instance)
-  parent_instance_params.length = active_instance_params.length
+  -- parent_instance_params.length = _active_instance_params.length
 
   deselectAllItems()
-  handleThisPoolsInstances(parent_instance, parent_instance_params, true)
+  handlePoolInstances(parent_instance, parent_instance_params)
   reaper.DeleteTrack(parent_instance_params.track)
 end
   
@@ -1666,7 +1715,7 @@ function initEdit()
 
   if isNotSingleGluedContainer(#glued_containers) == true then return end
 
-  this_pool_id = storeRetrieveItemData(glued_containers[1], _glued_container_pool_id_key_suffix)
+  this_pool_id = storeRetrieveItemData(glued_containers[1], _instance_pool_id_key_suffix)
 
   if otherInstanceIsOpen(this_pool_id) then
     other_open_instance = glued_containers[1]
@@ -1705,10 +1754,10 @@ end
 function otherInstanceIsOpen(edit_pool_id)
   local all_items_count, i, this_item, restored_item_pool_id
 
-  all_items_count = reaper.CountMediaItems(_current_project)
+  all_items_count = reaper.CountMediaItems(_api_current_project)
 
   for i = 0, all_items_count-1 do
-    this_item = reaper.GetMediaItem(_current_project, i)
+    this_item = reaper.GetMediaItem(_api_current_project, i)
     restored_item_pool_id = storeRetrieveItemData(this_item, _restored_item_pool_id_key_suffix)
 
     if restored_item_pool_id == edit_pool_id then
@@ -1752,7 +1801,7 @@ function processEdit(glued_container, pool_id)
 
   deselectAllItems()
 
-  active_track = reaper.BR_GetMediaTrackByGUID(_current_project, glued_container_preedit_params.track_guid)
+  active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, glued_container_preedit_params.track_guid)
   restored_items = restorePreviouslyGluedItems(pool_id, active_track, glued_container, nil, glued_container_preedit_params)
   
   createSizingRegionFromContainer(glued_container, pool_id)
@@ -1912,12 +1961,23 @@ function logTable(t, name)
   end
 end
 
+function logTableMediaItems(t, name)
+  local k,v
+  if name then
+    log("Iterate through table " .. name)
+  end
+  for k,v in pairs(t) do
+    logV(k,tostring(reaper.ValidatePtr(v, "MediaItem*")))
+  end
+
+end
+
 
 
 local DebugType = 0
 
 function Debug(message, value, spacesToAdd, forceMsgBox)
--- updateSelectedItems()
+updateSelectedItems()
 refreshUI()
     if DebugType < 0 then return end
 
@@ -1926,7 +1986,11 @@ refreshUI()
     local b = tostring(value)
     
     if message ~= nil then text = a end
-    if value ~= nil then text = text .. " = " .. b end
+    if value ~= nil then 
+      if value ~= "" then text = text .. " = " .. b 
+      elseif value == "" then text = text .. b
+      end
+    end
     
     local space = ""
     
