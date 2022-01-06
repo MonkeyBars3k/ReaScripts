@@ -270,7 +270,8 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b Reaper v6.43} or newer\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension}!\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be {\i very} careful if you want to {\b Clean current project directory} after gluing \u8211- you could lose your original items.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be {\i very} careful if you want to {\b Clean current project directory} after supergluing \u8211- you could lose your superglued items, since at that point, they're not in the project.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be very careful ungluing and editing a parent container item {\b near project start}. If a child container item would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its pooled sibling container items.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes to set background image for easy recognition of glued container and contained items. Careful: {\b The background image will overwrite any item notes you already have on your glued items.} Disable this feature in the script options if you want your item notes preserved.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI container items}, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an {\b infinite recursion}.\par}
