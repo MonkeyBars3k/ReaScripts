@@ -1,7 +1,7 @@
 -- @description MB_Glue-Reversible Utils: Codebase for MB_Glue-Reversible scripts' functionality
 -- @author MonkeyBars
 -- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152)
+-- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153)
 -- @provides [nomain] .
 --   serpent.lua
 --   gr-bg.png
@@ -1345,8 +1345,9 @@ function editParentInstances(pool_id, glued_container, children_nesting_depth)
         else
           this_parent_instance_params = getFirstPoolInstanceParams(this_parent_pool_id)
 
--- REMOVE PARENT INSTANCE FROM DATA HERE IF NOT FOUND? (MEANS IT WAS DELETED AFTER LAST GLUE)
           if not this_parent_instance_params then
+            _keyed_parent_instances[this_parent_pool_id] = nil
+
             this_parent_instance_params = {}
           end
 
@@ -1988,14 +1989,12 @@ end
 
 --- DEV FUNCTIONS ---
 
-
 function updateSelectedItems()
   local i
   for i = 0, reaper.CountSelectedMediaItems(0)-1 do
     reaper.UpdateItemInProject(reaper.GetMediaItem(0,i))
   end
 end
-
 
 function log(...)
   local arg = {...}
@@ -2038,38 +2037,29 @@ function logTableMediaItems(t, name)
 end
 
 
-
 local DebugType = 0
 
 function Debug(message, value, spacesToAdd, forceMsgBox)
 updateSelectedItems()
 refreshUI()
     if DebugType < 0 then return end
-
     local text = ""
     local a = tostring(message)
     local b = tostring(value)
-    
     if message ~= nil then text = a end
     if value ~= nil then 
       if value ~= "" then text = text .. " = " .. b 
       elseif value == "" then text = text .. b
       end
     end
-    
     local space = ""
-    
     if spacesToAdd ~= nil and spacesToAdd > 0 then 
         for i=1, spacesToAdd do space = space .. "\n" end      
     end
-    
     text = space .. text
-    
     if forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) end
-    
     if DebugType == 0 then reaper.ShowConsoleMsg(text .. "\n") return 
     elseif DebugType == 1 and not forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) return end
-
 updateSelectedItems()
 refreshUI()
 end
