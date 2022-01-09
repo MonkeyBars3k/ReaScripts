@@ -27,7 +27,7 @@ end
 function logTable(t, name)
   local k,v
   if name then
-    log("Iterate through table " .. name)
+    log("Iterate through table " .. name .. ":")
   end
   for k,v in pairs(t) do
     logV(k,tostring(v))
@@ -37,7 +37,7 @@ end
 function logTableMediaItems(t, name)
   local k,v
   if name then
-    log("Iterate through table " .. name)
+    log("Iterate through table " .. name .. ":")
   end
   for k,v in pairs(t) do
     logV(k,tostring(reaper.ValidatePtr(v, "MediaItem*")))
