@@ -1,7 +1,7 @@
 -- @description MB_Glue-Reversible Utils: Codebase for MB_Glue-Reversible scripts' functionality
 -- @author MonkeyBars
 -- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153)
+-- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153); Move dev functions to external file (https://github.com/MonkeyBars3k/ReaScripts/issues/160)
 -- @provides [nomain] .
 --   serpent.lua
 --   gr-bg.png
@@ -16,6 +16,10 @@
 -- GR uses Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 -- Data is also stored in media items' P_EXT.
 -- General utility functions at bottom
+
+-- for dev only
+package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -1748,6 +1752,10 @@ end
 function adjustActivePoolSibling(instance, active_glued_instance_params)
   local active_instance_position_has_changed, instance_params, user_wants_position_change, instance_current_position, instance_active_take, instance_current_src_offset, instance_new_src_offset, instance_stored_src_offset, instance_src_offset_delta, adjusted_instance_position_is_before_project_start, restored_item_position_delta, instance_position_negative_delta, instance_adjusted_position, instance_adjusted_length, attempted_adjusted_instance_position
 
+  instance_adjusted_length = active_glued_instance_params.length
+
+  reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
+
   active_instance_position_has_changed = not _position_change_response and _position_changed_since_last_glue == true
 
   if active_instance_position_has_changed then
@@ -1759,11 +1767,6 @@ function adjustActivePoolSibling(instance, active_glued_instance_params)
   if user_wants_position_change then
     instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
     instance_adjusted_position = instance_current_position + _glued_instance_offset_delta_since_last_glue
-    instance_adjusted_length = active_glued_instance_params.length
-
-    reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
-
--- logV("instance_adjusted_position",instance_adjusted_position)
     
     if instance_adjusted_position >= 0 then
       reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
@@ -2042,84 +2045,4 @@ end
 
 function round(num, precision)
    return math.floor(num*(10^precision)+0.5) / 10^precision
-end
-
-
-
-
---- DEV FUNCTIONS ---
-
-function updateSelectedItems()
-  local i
-  for i = 0, reaper.CountSelectedMediaItems(0)-1 do
-    reaper.UpdateItemInProject(reaper.GetMediaItem(0,i))
-  end
-end
-
-function log(...)
-  local arg = {...}
-  local msg = "", i, v
-  for i,v in ipairs(arg) do
-    msg = msg..v..", "
-  end
-  msg = msg.."\n"
-  reaper.ShowConsoleMsg(msg)
-end
-
-function logV(name, val)
-  val = val or ""
-  reaper.ShowConsoleMsg(name.." = "..val.."\n")
-end
-
-function logStr(val)
-  reaper.ShowConsoleMsg(tostring(val)..", \n")
-end
-
-function logTable(t, name)
-  local k,v
-  if name then
-    log("Iterate through table " .. name)
-  end
-  for k,v in pairs(t) do
-    logV(k,tostring(v))
-  end
-end
-
-function logTableMediaItems(t, name)
-  local k,v
-  if name then
-    log("Iterate through table " .. name)
-  end
-  for k,v in pairs(t) do
-    logV(k,tostring(reaper.ValidatePtr(v, "MediaItem*")))
-  end
-
-end
-
-
-local DebugType = 0
-
-function Debug(message, value, spacesToAdd, forceMsgBox)
-updateSelectedItems()
-refreshUI()
-    if DebugType < 0 then return end
-    local text = ""
-    local a = tostring(message)
-    local b = tostring(value)
-    if message ~= nil then text = a end
-    if value ~= nil then 
-      if value ~= "" then text = text .. " = " .. b 
-      elseif value == "" then text = text .. b
-      end
-    end
-    local space = ""
-    if spacesToAdd ~= nil and spacesToAdd > 0 then 
-        for i=1, spacesToAdd do space = space .. "\n" end      
-    end
-    text = space .. text
-    if forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) end
-    if DebugType == 0 then reaper.ShowConsoleMsg(text .. "\n") return 
-    elseif DebugType == 1 and not forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) return end
-updateSelectedItems()
-refreshUI()
 end
