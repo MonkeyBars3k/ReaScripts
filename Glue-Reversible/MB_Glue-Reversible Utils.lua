@@ -1,7 +1,7 @@
 -- @description MB_Glue-Reversible Utils: Codebase for MB_Glue-Reversible scripts' functionality
 -- @author MonkeyBars
 -- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153)
+-- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153)
 -- @provides [nomain] .
 --   serpent.lua
 --   gr-bg.png
@@ -98,8 +98,12 @@ function initGlue(obey_time_selection)
 
   restored_items_pool_id = getFirstPoolIdFromSelectedItems(selected_item_count)
   _active_glue_pool_id = restored_items_pool_id
-  first_selected_item = getFirstSelectedItem()
+  selected_items, first_selected_item = getSelectedItems(selected_item_count)
   first_selected_item_track = reaper.GetMediaItemTrack(first_selected_item)
+
+  if restored_items_pool_id then
+    handleRemovedItems(restored_items_pool_id, selected_items)
+  end
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or 
     containerSelectionIsInvalid(selected_item_count) == true or 
@@ -107,7 +111,7 @@ function initGlue(obey_time_selection)
       return
   end
 
-  glued_container = triggerGlue(restored_items_pool_id, first_selected_item_track, obey_time_selection)
+  glued_container = triggerGlue(restored_items_pool_id, first_selected_item_track, obey_time_selection, selected_items)
   
   exclusiveSelectItem(glued_container)
   cleanUpAction(_glue_undo_block_string)
@@ -262,6 +266,56 @@ function storeRetrieveItemData(item, key_suffix, val)
 
   elseif store then
     reaper.GetSetMediaItemInfo_String(item, data_param_key, val, true)
+  end
+end
+
+
+function getSelectedItems(selected_item_count)
+  local selected_items, i, this_item, first_selected_item
+
+  selected_items = {}
+  
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
+
+    table.insert(selected_items, this_item)
+
+    if not first_selected_item then
+      first_selected_item = this_item
+    end
+  end
+
+  return selected_items, first_selected_item
+end
+
+
+function handleRemovedItems(restored_items_pool_id, selected_items)
+  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, unmatched_item_guids, this_stored_item_guid, this_item_last_glue_state, this_selected_item, this_selected_item_guid, this_unmatched_item
+
+  retval, last_glue_stored_item_states_string = storeRetrieveProjectData(_pool_key_prefix .. restored_items_pool_id .. _pool_item_states_key_suffix)
+    
+  if retval then
+    retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
+    unmatched_item_guids = {}
+
+    for this_stored_item_guid, this_item_last_glue_state in pairs(last_glue_stored_item_states_table) do
+
+      for i = 1, #selected_items do
+        this_selected_item = selected_items[i]
+        this_selected_item_guid = reaper.BR_GetMediaItemGUID(this_selected_item)
+
+        if this_stored_item_guid ~= this_selected_item_guid then
+          table.insert(unmatched_item_guids, this_stored_item_guid)
+        end
+      end
+    end
+
+    for i = 1, #unmatched_item_guids do
+      this_unmatched_item = reaper.BR_GetMediaItemByGUID(_api_current_project, unmatched_item_guids[i])
+
+      addRemoveItemImage(this_unmatched_item, false)
+      storeRetrieveItemData(this_unmatched_item, _parent_pool_id_key_suffix, "")
+    end
   end
 end
 
@@ -440,9 +494,9 @@ function triggerGlue(restored_items_pool_id, first_selected_item_track, obey_tim
   local glued_container
 
   if restored_items_pool_id then
-    glued_container = handleReglue(first_selected_item_track, restored_items_pool_id, obey_time_selection)
+    glued_container = handleReglue(selected_items, first_selected_item_track, restored_items_pool_id, obey_time_selection)
   else
-    glued_container = handleGlue(first_selected_item_track, nil, nil, nil, obey_time_selection)
+    glued_container = handleGlue(selected_items, first_selected_item_track, nil, nil, nil, obey_time_selection)
   end
 
   return glued_container
@@ -476,13 +530,13 @@ function refreshUI()
 end
 
 
-function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, parent_is_being_updated)
-  local this_is_new_glue, user_selected_instance_is_being_reglued, selected_item_count, selected_items, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_container_items, glued_container, glued_container_init_name, parent_instance, pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point
+function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, parent_is_being_updated)
+  local this_is_new_glue, user_selected_instance_is_being_reglued, selected_item_count, first_selected_item, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_container_items, glued_container, glued_container_init_name, parent_instance, pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point
 
   this_is_new_glue = not pool_id
   user_selected_instance_is_being_reglued = not parent_is_being_updated
-  selected_item_count = getSelectedItemsCount()
-  selected_items, first_selected_item_name = getSelectedItems(selected_item_count)
+  first_selected_item = getFirstSelectedItem()
+  first_selected_item_name = getSetItemName(first_selected_item)
 
   deselectAllItems()
 
@@ -530,25 +584,6 @@ function handleGlue(first_selected_item_track, pool_id, sizing_region_guid, rest
   end
 
   return glued_container
-end
-
-
-function getSelectedItems(selected_item_count)
-  local selected_items, i, this_item, first_selected_item_name
-
-  selected_items = {}
-  
-  for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
-
-    table.insert(selected_items, this_item)
-
-    if not first_selected_item_name then
-      first_selected_item_name = getSetItemName(this_item)
-    end
-  end
-
-  return selected_items, first_selected_item_name
 end
 
 
@@ -751,7 +786,28 @@ end
 
 
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
-  local earliest_item_delta_to_glued_container_position, selected_item_states, selected_container_items, parent_instance_track, i
+  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, earliest_item_delta_to_glued_container_position, selected_item_states, selected_container_items, parent_instance_track, this_stored_item_guid, this_item_last_glue_state, i, this_selected_item, this_selected_item_guid
+
+
+-- THIS BLOCK NEEDS TO GO BEFORE THE ERROR CHECKS IN INITGLUE()
+
+  -- retval, last_glue_stored_item_states_string = storeRetrieveProjectData(_pool_key_prefix .. pool_id .. _pool_item_states_key_suffix)
+  
+  -- if retval then
+  --   retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
+
+  --   for i = 1, #selected_items do
+  --     this_selected_item = selected_items[i]
+  --     this_selected_item_guid = reaper.BR_GetMediaItemGUID(this_selected_item)
+
+  --     for this_stored_item_guid, this_item_last_glue_state in pairs(last_glue_stored_item_states_table) do
+
+  --       if this_selected_item_guid ~= this_stored_item_guid then
+  --         storeRetrieveItemData(this_selected_item, _parent_pool_id_key_suffix, "")
+  --       end
+  --     end
+  --   end
+  -- end
 
   earliest_item_delta_to_glued_container_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
   selected_item_states, selected_container_items = createSelectedItemStates(selected_items, pool_id)
@@ -764,10 +820,10 @@ end
 
 
 function setPreglueItemsData(items, pool_id, sizing_params)
-  local is_new_glue, is_reglue, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_glued_container_position, earliest_item_delta_to_glued_container_position
+  local this_is_new_glue, this_is_reglue, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_glued_container_position, earliest_item_delta_to_glued_container_position
 
-  is_new_glue = not sizing_params
-  is_reglue = sizing_params
+  this_is_new_glue = not sizing_params
+  this_is_reglue = sizing_params
   earliest_item_delta_to_glued_container_position = 0
 
   for i = 1, #items do
@@ -781,10 +837,10 @@ function setPreglueItemsData(items, pool_id, sizing_params)
       first_item_position = this_item_position
     end
 
-    if is_new_glue then
+    if this_is_new_glue then
       offset_position = first_item_position
 
-    elseif is_reglue then
+    elseif this_is_reglue then
       offset_position = math.min(first_item_position, sizing_params.position)
     end
     
@@ -811,9 +867,10 @@ function createSelectedItemStates(selected_items, active_pool_id)
 
     convertMidiItemToAudio(this_item)
 
+    this_item_guid = reaper.BR_GetMediaItemGUID(item)
     this_item_state = getSetItemStateChunk(this_item)
 
-    table.insert(selected_item_states, this_item_state)
+    selected_item_states[this_item_guid] = this_item_state
 
     if this_is_glued_container then
       table.insert(selected_container_items, this_glued_container_pool_id)
@@ -1225,13 +1282,13 @@ function removeOldPoolFromParentPools(child_pool_id, parent_pool_id)
 end
 
 
-function handleReglue(first_selected_item_track, restored_items_pool_id, obey_time_selection)
+function handleReglue(selected_items, first_selected_item_track, restored_items_pool_id, obey_time_selection)
   local glued_container_last_glue_params, sizing_region_guid_key_label, retval, sizing_region_guid, glued_container, glued_container_params
 
   glued_container_last_glue_params = storeRetrieveGluedContainerParams(restored_items_pool_id, _postglue_action_step)
   sizing_region_guid_key_label = _pool_key_prefix .. restored_items_pool_id .. _sizing_region_guid_key_suffix
   retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key_label)
-  glued_container = handleGlue(first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, obey_time_selection)
+  glued_container = handleGlue(selected_items, first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, obey_time_selection)
   glued_container_params = getSetItemParams(glued_container)
   glued_container_params.updated_src = getSetItemAudioSrc(glued_container)
   glued_container_params.pool_id = restored_items_pool_id
@@ -1409,47 +1466,49 @@ end
 
 
 function restoreSupergluedItems(pool_id, active_track, glued_container, this_parent_instance_params, glued_container_preedit_params, parent_is_being_updated)
-  local pool_item_states_key_label, retval, stored_items, stored_items_table, restored_items, glued_container_postglue_params, restored_item_position_deltas, i, stored_item_state, restored_item, this_restored_item_track_is_dummy, this_restored_item_is_child_of_pool_parent, restored_instance_pool_id, restored_item_position_delta_to_parent, restored_item_position_delta_params, restored_item_position_delta_to_parent_was_retrieved, restored_item_negative_position_delta, restored_items_with_state, earliest_restored_item_position, restored_item_adjusted_position, this_restored_item_with_state, this_restored_item_with_state_current_position, restored_instances_near_project_start, this_instance_current_position, this_instance_adjusted_position, glued_container_params, restored_instance_last_glue_delta_to_parent, this_instance_adjustment_delta
+  local pool_item_states_key_label, retval, stored_item_states, stored_item_states_table, restored_items, glued_container_postglue_params, item_guid, stored_item_state, restored_item, this_restored_item_track_is_dummy, this_restored_item_is_child_of_pool_parent, restored_instance_pool_id, restored_item_position_delta_to_parent, restored_item_position_delta_params, restored_item_position_delta_to_parent_was_retrieved, restored_item_negative_position_delta, restored_items_with_state, earliest_restored_item_position, restored_item_adjusted_position, this_restored_item_with_state, this_restored_item_with_state_current_position, restored_instances_near_project_start, this_instance_current_position, this_instance_adjusted_position, glued_container_params, restored_instance_last_glue_delta_to_parent, this_instance_adjustment_delta
 
   pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
-  retval, stored_items = storeRetrieveProjectData(pool_item_states_key_label)
+  retval, stored_item_states = storeRetrieveProjectData(pool_item_states_key_label)
 
-  stored_items_table = retrieveStoredItemStates(stored_items)
+  stored_item_states_table = retrieveStoredItemStates(stored_item_states)
   restored_items = {}
   glued_container_postglue_params = storeRetrieveGluedContainerParams(pool_id, _postglue_action_step)
   restored_instances_near_project_start = {}
 
-  for i = 1, #stored_items_table do
-    stored_item_state = stored_items_table[i]
+  for item_guid, stored_item_state in pairs(stored_item_states_table) do
+    
+    -- if stored_item_state then
 
-    if stored_item_state then
-      restored_item = restoreItem(active_track, stored_item_state, parent_is_being_updated)
-      restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, glued_container, this_parent_instance_params, glued_container_preedit_params, glued_container_postglue_params, parent_is_being_updated)
+    restored_item = restoreItem(active_track, stored_item_state, parent_is_being_updated)
+    restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, glued_container, this_parent_instance_params, glued_container_preedit_params, glued_container_postglue_params, parent_is_being_updated)
 
-      reaper.SetMediaItemSelected(restored_item, true)
-      table.insert(restored_items, restored_item)
+    reaper.SetMediaItemSelected(restored_item, true)
+    table.insert(restored_items, restored_item)
 
-      restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
+    restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
 
-      if restored_item_negative_position_delta then
-        if not restored_instances_near_project_start[restored_instance_pool_id] then
+    if restored_item_negative_position_delta then
+      if not restored_instances_near_project_start[restored_instance_pool_id] then
+        restored_instances_near_project_start[restored_instance_pool_id] = {
+          ["item"] = restored_item,
+          ["negative_position_delta"] = restored_item_negative_position_delta
+        }
+
+      elseif restored_instances_near_project_start[restored_instance_pool_id] then
+        this_restored_instance_position_is_earlier_than_prev_sibling = restored_item_negative_position_delta < restored_instances_near_project_start[restored_instance_pool_id]
+
+        if this_restored_instance_position_is_earlier_than_prev_sibling then
           restored_instances_near_project_start[restored_instance_pool_id] = {
             ["item"] = restored_item,
             ["negative_position_delta"] = restored_item_negative_position_delta
           }
-
-        elseif restored_instances_near_project_start[restored_instance_pool_id] then
-          this_restored_instance_position_is_earlier_than_prev_sibling = restored_item_negative_position_delta < restored_instances_near_project_start[restored_instance_pool_id]
-
-          if this_restored_instance_position_is_earlier_than_prev_sibling then
-            restored_instances_near_project_start[restored_instance_pool_id] = {
-              ["item"] = restored_item,
-              ["negative_position_delta"] = restored_item_negative_position_delta
-            }
-          end
         end
       end
     end
+
+    -- end
+
   end
 
   for restored_instance_pool_id, this_instance_params in pairs(restored_instances_near_project_start) do
@@ -1480,13 +1539,13 @@ function restoreSupergluedItems(pool_id, active_track, glued_container, this_par
 end
 
 
-function retrieveStoredItemStates(items)
-  local retval, items_table
+function retrieveStoredItemStates(item_state_chunks_string)
+  local retval, item_state_chunks_table
 
-  retval, items_table = serpent.load(items)
-  items_table.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, items_table.track_guid)
+  retval, item_state_chunks_table = serpent.load(item_state_chunks_string)
+  item_state_chunks_table.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, item_state_chunks_table.track_guid)
 
-  return items_table
+  return item_state_chunks_table
 end
 
 
@@ -1757,8 +1816,9 @@ function reglueParentInstance(parent_instance_params, obey_time_selection, sizin
 
   deselectAllItems()
   selectDeselectItems(parent_instance_params.restored_items, true)
+  selected_items = getSelectedItems(#parent_instance_params.restored_items)
 
-  parent_instance = handleGlue(parent_instance_params.track, parent_instance_params.pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, true)
+  parent_instance = handleGlue(selected_items, parent_instance_params.track, parent_instance_params.pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, true)
   parent_instance_params.updated_src = getSetItemAudioSrc(parent_instance)
 
   deselectAllItems()
