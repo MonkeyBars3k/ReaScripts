@@ -535,9 +535,10 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, parent_is_being_updated)
-  local this_is_new_glue, user_selected_instance_is_being_reglued, selected_item_count, first_selected_item, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_container_items, glued_container, glued_container_init_name, parent_instance, pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point
+  local this_is_new_glue, this_is_reglue, user_selected_instance_is_being_reglued, selected_item_count, first_selected_item, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_container_items, glued_container, glued_container_init_name, parent_instance, pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, time_selection_was_set_by_code
 
   this_is_new_glue = not pool_id
+  this_is_reglue = pool_id
   user_selected_instance_is_being_reglued = not parent_is_being_updated
   first_selected_item = getFirstSelectedItem()
   first_selected_item_name = getSetItemName(first_selected_item)
@@ -562,10 +563,15 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
       ["end_point"] = pool_parent_last_glue_end_point - restored_items_position_adjustment
     }
 
-    createEmptySpacingItem(parent_dummy_track, sizing_params)
+    if not obey_time_selection then
+      setResetGlueTimeSelection(sizing_params, "set")
+
+      obey_time_selection = true
+      time_selection_was_set_by_code = true
+    end
 
   elseif user_selected_instance_is_being_reglued then
-    sizing_params = setUpReglue(sizing_region_guid, first_selected_item_track)
+    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(sizing_region_guid, first_selected_item_track, obey_time_selection)
   end
 
   selected_item_states, selected_container_items, earliest_item_delta_to_glued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
@@ -575,7 +581,6 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
     for i = 1, #selected_items do
       cropItemToParent(selected_items[i], sizing_params)
     end
--- Debug("POST CROP handleGlue()", pool_id, 0, true)
   end
 
   glued_container = glueSelectedItemsIntoContainer(obey_time_selection)
@@ -585,6 +590,10 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
 
   if not parent_is_being_updated then
     handlePoolInheritanceData(pool_id, selected_container_items)
+  end
+
+  if this_is_reglue and time_selection_was_set_by_code then
+    setResetGlueTimeSelection(sizing_params, "reset")
   end
 
   return glued_container
@@ -677,6 +686,20 @@ function incrementPoolId(last_pool_id)
 end
 
 
+function setResetGlueTimeSelection(sizing_params, set_or_reset)
+  set = set_or_reset == "set"
+  reset = set_or_reset == "reset"
+
+  if set then
+    reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, 0)
+    reaper.GetSet_LoopTimeRange(true, false, sizing_params.position, sizing_params.end_point, false)
+
+  elseif reset then
+    reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, 0)
+  end
+end
+
+
 function convertMidiItemToAudio(item)
   local item_takes_count, active_take, this_take_is_midi, retval, active_take_guid
 
@@ -766,52 +789,40 @@ function selectDeselectItems(items, select_deselect)
 end
 
 
-function setUpReglue(sizing_region_guid, active_track)
-  local sizing_region_params, is_active_container_reglue
+function setUpReglue(sizing_region_guid, active_track, obey_time_selection)
+  local sizing_region_params, is_active_container_reglue, time_selection_was_set_by_code
 
   sizing_region_params = getSetSizingRegion(sizing_region_guid)
   is_active_container_reglue = sizing_region_params
+  time_selection_was_set_by_code = false
 
+-- IS THIS CONDITIONAL REALLY NECESSARY, CONSIDERING THE ELSEIF IN handleGlue()?
   if is_active_container_reglue then
-    createEmptySpacingItem(active_track, sizing_region_params)
+
+    if not obey_time_selection then
+      setResetGlueTimeSelection(sizing_region_params, "set")
+
+      obey_time_selection = true
+      time_selection_was_set_by_code = true
+    end
+
     getSetSizingRegion(sizing_region_guid, "delete")
   end
 
-  return sizing_region_params
+  return sizing_region_params, obey_time_selection, time_selection_was_set_by_code
 end
 
 
-function createEmptySpacingItem(destination_track, sizing_params)
-  local empty_spacing_item = reaper.AddMediaItemToTrack(destination_track)
+-- function createEmptySpacingItem(destination_track, sizing_params)
+--   local empty_spacing_item = reaper.AddMediaItemToTrack(destination_track)
 
-  getSetItemParams(empty_spacing_item, sizing_params)
-  reaper.SetMediaItemSelected(empty_spacing_item, true)
-end
+--   getSetItemParams(empty_spacing_item, sizing_params)
+--   reaper.SetMediaItemSelected(empty_spacing_item, true)
+-- end
 
 
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
   local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, earliest_item_delta_to_glued_container_position, selected_item_states, selected_container_items, parent_instance_track, this_stored_item_guid, this_item_last_glue_state, i, this_selected_item, this_selected_item_guid
-
-
--- THIS BLOCK NEEDS TO GO BEFORE THE ERROR CHECKS IN INITGLUE()
-
-  -- retval, last_glue_stored_item_states_string = storeRetrieveProjectData(_pool_key_prefix .. pool_id .. _pool_item_states_key_suffix)
-  
-  -- if retval then
-  --   retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
-
-  --   for i = 1, #selected_items do
-  --     this_selected_item = selected_items[i]
-  --     this_selected_item_guid = reaper.BR_GetMediaItemGUID(this_selected_item)
-
-  --     for this_stored_item_guid, this_item_last_glue_state in pairs(last_glue_stored_item_states_table) do
-
-  --       if this_selected_item_guid ~= this_stored_item_guid then
-  --         storeRetrieveItemData(this_selected_item, _parent_pool_id_key_suffix, "")
-  --       end
-  --     end
-  --   end
-  -- end
 
   earliest_item_delta_to_glued_container_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
   selected_item_states, selected_container_items = createSelectedItemStates(selected_items, pool_id)
