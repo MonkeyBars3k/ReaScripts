@@ -1219,7 +1219,7 @@ function handlePostGlue(selected_items, pool_id, first_selected_item_name, super
   handleContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
 
   if user_selected_instance_is_being_reglued then
-    handlePoolInheritanceData(pool_id, selected_instances_pool_ids)
+    handleParentPoolReferencesInChildPools(pool_id, selected_instances_pool_ids)
   end
 
   if this_is_reglue and time_selection_was_set_by_code then
@@ -1228,117 +1228,46 @@ function handlePostGlue(selected_items, pool_id, first_selected_item_name, super
 end
 
 
-function handlePoolInheritanceData(active_pool_id, selected_instances_pool_ids)
-  local child_pool_ids_data_key_label, retval, old_child_pool_ids, child_pool_ids, i, this_preglue_child_pool_id, ref, this_old_child_pool_id
+function handleParentPoolReferencesInChildPools(active_pool_id, selected_instances_pool_ids)
+  local i, this_preglue_child_instance_pool_id
 
--- CHANGE "old" TO "last-glue"?
-
-  child_pool_ids_data_key_label = _pool_key_prefix .. active_pool_id .. _child_pool_ids_data_key_suffix
-  retval, old_child_pool_ids = storeRetrieveProjectData(child_pool_ids_data_key_label)
-
-  if retval == false then
-    old_child_pool_ids = {}
-  else
-    retval, old_child_pool_ids = serpent.load(old_child_pool_ids)
-  end
-
--- logTable(old_child_pool_ids, "old_child_pool_ids")
-
-  child_pool_ids = {}
-
-  -- store a reference to this pool for all the child instances so if any get updated, they can check and update this pool
   for i = 1, #selected_instances_pool_ids do
-    this_preglue_child_pool_id = selected_instances_pool_ids[i]
-    child_pool_ids, old_child_pool_ids = storePoolReferences(this_preglue_child_pool_id, active_pool_id, child_pool_ids, old_child_pool_ids)
-  end
+    this_preglue_child_instance_pool_id = selected_instances_pool_ids[i]
 
-  -- store this pool's child_pool_ids list
-  child_pool_ids = serpent.dump(child_pool_ids)
-
-  storeRetrieveProjectData(child_pool_ids_data_key_label, child_pool_ids)
-
-  if #old_child_pool_ids > 0 then
-
-    -- loop thru all the child_pool_ids no longer needed
-    for i = 1,  #old_child_pool_ids do
-      this_old_child_pool_id = old_child_pool_ids[i]
-
-      -- remove this pool from the other pool_ids' parent_pool_ids list
-      removeOldPoolFromParentPools(this_old_child_pool_id, active_pool_id)
-    end
+    storeParentPoolReferencesInChildPool(this_preglue_child_instance_pool_id, active_pool_id)
   end
 end
 
 
-function storePoolReferences(preglue_child_pool_id, active_pool_id, child_pool_ids, old_child_pool_ids)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids, i, this_parent_pool_id, this_parent_pool_id_is_active
+function storeParentPoolReferencesInChildPool(preglue_child_instance_pool_id, active_pool_id)
+  local parent_pool_ids_data_key_label, retval, parent_pool_ids_referenced_in_child_pool, i, this_parent_pool_id, this_parent_pool_id_is_referenced_in_child_pool
 
-  -- make a key for child instance to store which items are active_pool_id on it
-  parent_pool_ids_data_key_label = _pool_key_prefix .. preglue_child_pool_id .. _parent_pool_ids_data_key_suffix
-  
-  retval, parent_pool_ids = storeRetrieveProjectData(parent_pool_ids_data_key_label)
+  parent_pool_ids_data_key_label = _pool_key_prefix .. preglue_child_instance_pool_id .. _parent_pool_ids_data_key_suffix
+  retval, parent_pool_ids_referenced_in_child_pool = storeRetrieveProjectData(parent_pool_ids_data_key_label)
 
-  -- see if child instance already has a list of parent_pool_ids
   if retval == false then
-    parent_pool_ids = {}
+    parent_pool_ids_referenced_in_child_pool = {}
 
   else
-    retval, parent_pool_ids = serpent.load(parent_pool_ids)
+    retval, parent_pool_ids_referenced_in_child_pool = serpent.load(parent_pool_ids_referenced_in_child_pool)
   end
 
-  -- if this pool isn't already in list, add it
-  for i = 1, #parent_pool_ids do
-    this_parent_pool_id = parent_pool_ids[i]
+  for i = 1, #parent_pool_ids_referenced_in_child_pool do
+    this_parent_pool_id = parent_pool_ids_referenced_in_child_pool[i]
 
     if this_parent_pool_id == active_pool_id then
-      this_parent_pool_id_is_active = true
+      this_parent_pool_id_is_referenced_in_child_pool = true
 
       break
     end
   end
 
-  if not this_parent_pool_id_is_active then
-    table.insert(parent_pool_ids, active_pool_id)
+  if not this_parent_pool_id_is_referenced_in_child_pool then
+    table.insert(parent_pool_ids_referenced_in_child_pool, active_pool_id)
 
-    parent_pool_ids = serpent.dump(parent_pool_ids)
+    parent_pool_ids_referenced_in_child_pool = serpent.dump(parent_pool_ids_referenced_in_child_pool)
 
-    storeRetrieveProjectData(parent_pool_ids_data_key_label, parent_pool_ids)
-  end
-
-  -- now store this pool's child_pool_ids
-  table.insert(child_pool_ids, child_pool_id)
-
-  -- remove this child_pool_id from old_child_pool_ids
-  for i = 1, #old_child_pool_ids do
-
-    if old_child_pool_ids[i] == child_pool_id then
-      table.remove(old_child_pool_ids, i)
-    end
-  end
-
-  return child_pool_ids, old_child_pool_ids
-end
-
-
-function removeOldPoolFromParentPools(child_pool_id, parent_pool_id)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids, i
-
-  parent_pool_ids_data_key_label = _pool_key_prefix .. child_pool_id .. _parent_pool_ids_data_key_suffix
-  retval, parent_pool_ids = storeRetrieveProjectData(parent_pool_ids_data_key_label)
-
-  if retval == true then
-    retval, parent_pool_ids = serpent.load(parent_pool_ids)
-
-    for i = 1, #parent_pool_ids do
-
-      if parent_pool_ids[i] == parent_pool_id then
-        table.remove(parent_pool_ids, i)
-      end
-    end
-
-    parent_pool_ids = serpent.dump(parent_pool_ids)
-
-    storeRetrieveProjectData(parent_pool_ids_data_key_label, parent_pool_ids)
+    storeRetrieveProjectData(parent_pool_ids_data_key_label, parent_pool_ids_referenced_in_child_pool)
   end
 end
 
