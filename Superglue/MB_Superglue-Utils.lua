@@ -651,25 +651,22 @@ end
 
 
 function setUpReglue(parent_is_being_updated, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items, obey_time_selection)
-  local user_selected_instance_is_being_reglued, sizing_params, obey_time_selection, time_selection_was_set_by_code
+  local user_selected_instance_is_being_reglued
 
   user_selected_instance_is_being_reglued = not parent_is_being_updated
 
   if parent_is_being_updated then
-    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
+    return setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
 
   elseif user_selected_instance_is_being_reglued then
-    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, obey_time_selection)
+    return setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, obey_time_selection)
   end
-
-  return sizing_params, obey_time_selection, time_selection_was_set_by_code
 end
 
 
 function setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
-  local parent_dummy_track, pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, sizing_params, time_selection_was_set_by_code
+  local pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, sizing_params, time_selection_was_set_by_code
 
-  parent_dummy_track = first_selected_item_track
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   retval, pool_parent_last_glue_position = storeRetrieveProjectData(pool_parent_position_key_label)
@@ -798,7 +795,7 @@ end
 
 
 function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selected_items, obey_time_selection)
-  local sizing_params, is_active_container_reglue, time_selection_was_set_by_code, i, this_selected_item, this_selected_item_position, this_selected_item_length, earliest_selected_item_position, latest_selected_item_end_point
+  local sizing_params, is_active_container_reglue, time_selection_was_set_by_code
 
   sizing_params = getSetSizingRegion(sizing_region_guid)
   is_active_container_reglue = sizing_params
@@ -807,28 +804,7 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selec
   if is_active_container_reglue then
 
     if not obey_time_selection then
-
-      for i = 1, #selected_items do
-        this_selected_item = selected_items[i]
-        this_selected_item_position = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_position_key)
-        this_selected_item_length = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_length_key)
-        this_selected_item_end_point = this_selected_item_position + this_selected_item_length
-
-        if earliest_selected_item_position then
-          earliest_selected_item_position = math.min(earliest_selected_item_position, this_selected_item_position)
-        else
-          earliest_selected_item_position = this_selected_item_position
-        end
-
-        if latest_selected_item_end_point then
-          latest_selected_item_end_point = math.max(latest_selected_item_end_point, this_selected_item_end_point)
-        else
-          latest_selected_item_end_point = this_selected_item_end_point
-        end
-      end
-
-      sizing_params.position = math.min(sizing_params.position, earliest_selected_item_position)
-      sizing_params.end_point = math.max(sizing_params.end_point, latest_selected_item_end_point)
+      sizing_params = calculateSizingTimeSelection(selected_items, sizing_params)
 
       setResetGlueTimeSelection(sizing_params, "set")
 
@@ -840,6 +816,65 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selec
   end
 
   return sizing_params, obey_time_selection, time_selection_was_set_by_code
+end
+
+
+function getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_delete)
+  local get_or_delete, set, retval, sizing_region_params, sizing_region_guid, region_idx, sizing_region_params
+ 
+  get_or_delete = not params_or_delete or params_or_delete == "delete"
+  set = params_or_delete and params_or_delete ~= "delete"
+  region_idx = 0
+
+  repeat
+
+    if get_or_delete then
+      retval, sizing_region_params = getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
+
+      if sizing_region_params then
+        return sizing_region_params
+      end
+
+    elseif set then
+      retval, sizing_region_guid = addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
+
+      if sizing_region_guid then
+        return sizing_region_guid
+      end
+    end
+
+    region_idx = region_idx + 1
+
+  until retval == 0
+end
+
+
+function calculateSizingTimeSelection(selected_items, sizing_params)
+  local i, this_selected_item, this_selected_item_position, this_selected_item_length, this_selected_item_end_point, earliest_selected_item_position, latest_selected_item_end_point
+
+  for i = 1, #selected_items do
+    this_selected_item = selected_items[i]
+    this_selected_item_position = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_position_key)
+    this_selected_item_length = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_length_key)
+    this_selected_item_end_point = this_selected_item_position + this_selected_item_length
+
+    if earliest_selected_item_position then
+      earliest_selected_item_position = math.min(earliest_selected_item_position, this_selected_item_position)
+    else
+      earliest_selected_item_position = this_selected_item_position
+    end
+
+    if latest_selected_item_end_point then
+      latest_selected_item_end_point = math.max(latest_selected_item_end_point, this_selected_item_end_point)
+    else
+      latest_selected_item_end_point = this_selected_item_end_point
+    end
+  end
+
+  sizing_params.position = math.min(sizing_params.position, earliest_selected_item_position)
+  sizing_params.end_point = math.max(sizing_params.end_point, latest_selected_item_end_point)
+
+  return sizing_params
 end
 
 
@@ -957,36 +992,6 @@ function cropItemToParent(restored_item, this_parent_instance_params)
     
     reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
   end
-end
-
-
-function getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_delete)
-  local get_or_delete, set, retval, sizing_region_params, sizing_region_guid, region_idx, sizing_region_params
- 
-  get_or_delete = not params_or_delete or params_or_delete == "delete"
-  set = params_or_delete and params_or_delete ~= "delete"
-  region_idx = 0
-
-  repeat
-
-    if get_or_delete then
-      retval, sizing_region_params = getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-
-      if sizing_region_params then
-        return sizing_region_params
-      end
-
-    elseif set then
-      retval, sizing_region_guid = addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-
-      if sizing_region_guid then
-        return sizing_region_guid
-      end
-    end
-
-    region_idx = region_idx + 1
-
-  until retval == 0
 end
 
 
