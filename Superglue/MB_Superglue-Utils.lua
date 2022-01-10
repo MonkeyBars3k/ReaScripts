@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
 -- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Change action nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/148); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153); Move dev functions to external file (https://github.com/MonkeyBars3k/ReaScripts/issues/160); Deleted parents still get glued on temp tracks (https://github.com/MonkeyBars3k/ReaScripts/issues/161)
+-- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Change action nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/148); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153); Move dev functions to external file (https://github.com/MonkeyBars3k/ReaScripts/issues/160); Deleted parents still get glued on temp tracks (https://github.com/MonkeyBars3k/ReaScripts/issues/161)
 -- @provides [nomain] .
 --   serpent.lua
 --   sg-bg.png
@@ -294,31 +294,37 @@ end
 
 
 function handleRemovedItems(restored_items_pool_id, selected_items)
-  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, unmatched_item_guids, this_stored_item_guid, this_item_last_glue_state, this_selected_item, this_selected_item_guid, this_unmatched_item
+  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, matched_item_guids, unmatched_item_guids, this_stored_item_guid, this_item_last_glue_state, this_selected_item, this_selected_item_guid, this_unmatched_item, this_stored_item_is_unmatched, i
 
   retval, last_glue_stored_item_states_string = storeRetrieveProjectData(_pool_key_prefix .. restored_items_pool_id .. _pool_item_states_key_suffix)
     
   if retval then
     retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
+    matched_item_guids = {}
     unmatched_item_guids = {}
 
     for this_stored_item_guid, this_item_last_glue_state in pairs(last_glue_stored_item_states_table) do
+      this_stored_item_is_unmatched = true
 
       for i = 1, #selected_items do
         this_selected_item = selected_items[i]
         this_selected_item_guid = reaper.BR_GetMediaItemGUID(this_selected_item)
 
-        if this_stored_item_guid ~= this_selected_item_guid then
-          table.insert(unmatched_item_guids, this_stored_item_guid)
+        if this_selected_item_guid == this_stored_item_guid then
+          this_stored_item_is_unmatched = false
+
+          break
         end
       end
-    end
 
-    for i = 1, #unmatched_item_guids do
-      this_unmatched_item = reaper.BR_GetMediaItemByGUID(_api_current_project, unmatched_item_guids[i])
+      if this_stored_item_is_unmatched then
+        this_unmatched_item = reaper.BR_GetMediaItemByGUID(_api_current_project, this_stored_item_guid)
 
-      addRemoveItemImage(this_unmatched_item, false)
-      storeRetrieveItemData(this_unmatched_item, _parent_pool_id_key_suffix, "")
+        if this_unmatched_item then
+          addRemoveItemImage(this_unmatched_item, false)
+          storeRetrieveItemData(this_unmatched_item, _parent_pool_id_key_suffix, "")
+        end
+      end
     end
   end
 end
@@ -535,7 +541,7 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, parent_is_being_updated)
-  local this_is_new_glue, this_is_reglue, user_selected_instance_is_being_reglued, selected_item_count, first_selected_item, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_container_pool_ids, superglued_container, superglued_container_init_name, parent_instance, pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, time_selection_was_set_by_code
+  local this_is_new_glue, this_is_reglue, user_selected_instance_is_being_reglued, selected_item_count, first_selected_item, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_instances_pool_ids, superglued_container, superglued_container_init_name, parent_instance, pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, time_selection_was_set_by_code
 
   this_is_new_glue = not pool_id
   this_is_reglue = pool_id
@@ -574,7 +580,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
     sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(sizing_region_guid, first_selected_item_track, selected_items, obey_time_selection)
   end
 
-  selected_item_states, selected_container_pool_ids, earliest_item_delta_to_superglued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
+  selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
 
   if parent_is_being_updated then
 
@@ -589,7 +595,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   handleContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
 
   if user_selected_instance_is_being_reglued then
-    handlePoolInheritanceData(pool_id, selected_container_pool_ids)
+    handlePoolInheritanceData(pool_id, selected_instances_pool_ids)
   end
 
   if this_is_reglue and time_selection_was_set_by_code then
@@ -818,7 +824,7 @@ function setUpReglue(sizing_region_guid, active_track, selected_items, obey_time
           latest_selected_item_end_point = this_selected_item_end_point
         end
       end
-      
+
       sizing_params.position = math.min(sizing_params.position, earliest_selected_item_position)
       sizing_params.end_point = math.max(sizing_params.end_point, latest_selected_item_end_point)
 
@@ -836,15 +842,15 @@ end
 
 
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
-  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, earliest_item_delta_to_superglued_container_position, selected_item_states, selected_container_pool_ids, parent_instance_track, this_stored_item_guid, this_item_last_glue_state, i, this_selected_item, this_selected_item_guid
+  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, earliest_item_delta_to_superglued_container_position, selected_item_states, selected_instances_pool_ids, parent_instance_track, this_stored_item_guid, this_item_last_glue_state, i, this_selected_item, this_selected_item_guid
 
   earliest_item_delta_to_superglued_container_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
-  selected_item_states, selected_container_pool_ids = createSelectedItemStates(selected_items, pool_id)
+  selected_item_states, selected_instances_pool_ids = createSelectedItemStates(selected_items, pool_id)
 
   storeSelectedItemStates(pool_id, selected_item_states)
   selectDeselectItems(selected_items, true)
 
-  return selected_item_states, selected_container_pool_ids, earliest_item_delta_to_superglued_container_position
+  return selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position
 end
 
 
@@ -867,7 +873,7 @@ function setPreglueItemsData(items, pool_id, sizing_params)
     end
 
     if this_is_new_glue then
-      offset_position = first_item_position
+      offset_position = this_item_position
 
     elseif this_is_reglue then
       offset_position = math.min(first_item_position, sizing_params.position)
@@ -884,10 +890,10 @@ end
 
 
 function createSelectedItemStates(selected_items, active_pool_id)
-  local selected_item_states, selected_container_pool_ids, i, item, this_item, this_item_state, this_superglued_container_pool_id, this_is_superglued_container
+  local selected_item_states, selected_instances_pool_ids, i, item, this_item, this_item_state, this_superglued_container_pool_id, this_is_superglued_container
 
   selected_item_states = {}
-  selected_container_pool_ids = {}
+  selected_instances_pool_ids = {}
 
   for i, item in ipairs(selected_items) do
     this_item = selected_items[i]
@@ -902,11 +908,11 @@ function createSelectedItemStates(selected_items, active_pool_id)
     selected_item_states[this_item_guid] = this_item_state
 
     if this_is_superglued_container then
-      table.insert(selected_container_pool_ids, this_superglued_container_pool_id)
+      table.insert(selected_instances_pool_ids, this_superglued_container_pool_id)
     end
   end
 
-  return selected_item_states, selected_container_pool_ids, this_superglued_container_pool_id
+  return selected_item_states, selected_instances_pool_ids, this_superglued_container_pool_id
 end
 
 
@@ -1189,8 +1195,8 @@ function glueSelectedItems(obey_time_selection)
 end
 
 
-function handlePoolInheritanceData(active_pool_id, selected_container_pool_ids)
-  local child_pool_ids_data_key_label, retval, old_child_pool_ids, child_pool_ids, i, this_child_pool_id, ref, this_old_child_pool_id
+function handlePoolInheritanceData(active_pool_id, selected_instances_pool_ids)
+  local child_pool_ids_data_key_label, retval, old_child_pool_ids, child_pool_ids, i, this_preglue_child_pool_id, ref, this_old_child_pool_id
 
 -- CHANGE "old" TO "last-glue"?
 
@@ -1207,11 +1213,10 @@ function handlePoolInheritanceData(active_pool_id, selected_container_pool_ids)
 
   child_pool_ids = {}
 
-  -- store a reference to this pool for all the nested pool_ids so if any get updated, they can check and update this pool
-  for i = 1, #selected_container_pool_ids do
-    this_child_pool_id = selected_container_pool_ids[i]
-
-    child_pool_ids, old_child_pool_ids = storePoolReference(this_child_pool_id, active_pool_id, child_pool_ids, old_child_pool_ids)
+  -- store a reference to this pool for all the child instances so if any get updated, they can check and update this pool
+  for i = 1, #selected_instances_pool_ids do
+    this_preglue_child_pool_id = selected_instances_pool_ids[i]
+    child_pool_ids, old_child_pool_ids = storePoolReferences(this_preglue_child_pool_id, active_pool_id, child_pool_ids, old_child_pool_ids)
   end
 
   -- store this pool's child_pool_ids list
@@ -1219,11 +1224,12 @@ function handlePoolInheritanceData(active_pool_id, selected_container_pool_ids)
 
   storeRetrieveProjectData(child_pool_ids_data_key_label, child_pool_ids)
 
-  -- have the child_pool_ids changed? - CHANGE CONDITION TO VAR child_pool_ids_have_changed?
   if #old_child_pool_ids > 0 then
+
     -- loop thru all the child_pool_ids no longer needed
     for i = 1,  #old_child_pool_ids do
       this_old_child_pool_id = old_child_pool_ids[i]
+
       -- remove this pool from the other pool_ids' parent_pool_ids list
       removeOldPoolFromParentPools(this_old_child_pool_id, active_pool_id)
     end
@@ -1231,17 +1237,18 @@ function handlePoolInheritanceData(active_pool_id, selected_container_pool_ids)
 end
 
 
-function storePoolReference(child_pool_id, active_pool_id, child_pool_ids, old_child_pool_ids)
+function storePoolReferences(preglue_child_pool_id, active_pool_id, child_pool_ids, old_child_pool_ids)
   local parent_pool_ids_data_key_label, retval, parent_pool_ids, i, this_parent_pool_id, this_parent_pool_id_is_active
 
-  -- make a key for nested container to store which items are active_pool_id on it
-  parent_pool_ids_data_key_label = _pool_key_prefix .. child_pool_id .. _parent_pool_ids_data_key_suffix
+  -- make a key for child instance to store which items are active_pool_id on it
+  parent_pool_ids_data_key_label = _pool_key_prefix .. preglue_child_pool_id .. _parent_pool_ids_data_key_suffix
   
-  -- see if nested container already has a list of parent_pool_ids
   retval, parent_pool_ids = storeRetrieveProjectData(parent_pool_ids_data_key_label)
 
+  -- see if child instance already has a list of parent_pool_ids
   if retval == false then
     parent_pool_ids = {}
+
   else
     retval, parent_pool_ids = serpent.load(parent_pool_ids)
   end
@@ -1852,7 +1859,7 @@ end
   
 
 function initUnglue()
-  local selected_item_count, superglued_containers, first_selected_superglued_container, this_pool_id, other_open_instance
+  local selected_item_count, superglued_containers, --[[first_selected_superglued_container, --]]this_pool_id, other_open_instance
 
   selected_item_count = initAction("unglue")
 
@@ -1862,19 +1869,20 @@ function initUnglue()
 
   if isNotSingleSupergluedContainer(#superglued_containers) == true then return end
 
-  first_selected_superglued_container = superglued_containers[1]
-  this_pool_id = storeRetrieveItemData(first_selected_superglued_container, _instance_pool_id_key_suffix)
-  open_instance_pool_id = getOpenInstancePoolId()
+  -- first_selected_superglued_container = superglued_containers[1]
+  this_pool_id = storeRetrieveItemData(superglued_containers[1], _instance_pool_id_key_suffix)
+  -- open_instance_pool_id = getOpenInstancePoolId()
 
-  if open_instance_pool_id then
-    other_open_instance = first_selected_superglued_container
+  -- if open_instance_pool_id then
+  if otherInstanceIsOpen(this_pool_id) then
+    other_open_instance = superglued_containers[1]
 
-    handleOtherOpenInstance(open_instance_pool_id, other_open_instance)
+    handleOtherOpenInstance(other_open_instance, this_pool_id)
 
     return
   end
   
-  handleEdit(this_pool_id)
+  handleUnglue(this_pool_id)
 end
 
 
@@ -1900,31 +1908,30 @@ function isNotSingleSupergluedContainer(superglued_containers_count)
 end
 
 
-function getOpenInstancePoolId()
-  local all_items_count, i, this_item, restored_item_pool_id, other_instance_is_open
+function otherInstanceIsOpen(edit_pool_id)
+  local all_items_count, i, this_item, restored_item_pool_id
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(_api_current_project, i)
     restored_item_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
-    other_instance_is_open = restored_item_pool_id and restored_item_pool_id ~= ""
 
-    if other_instance_is_open then
-      return restored_item_pool_id
+    if restored_item_pool_id == edit_pool_id then
+      return true
     end
   end
 end
 
 
-function handleOtherOpenInstance(open_instance_pool_id, instance)
+function handleOtherOpenInstance(instance, open_instance_pool_id)
   deselectAllItems()
   reaper.SetMediaItemSelected(instance, true)
   scrollToSelectedItem()
 
   open_instance_pool_id = tostring(open_instance_pool_id)
 
-  reaper.ShowMessageBox("Reglue the open instance from pool " .. open_instance_pool_id .. " before trying to edit this superglued container item. It will be selected and scrolled to now.", "Superglue can only Unglue one superglued container item at a time.", _msg_type_ok)
+  reaper.ShowMessageBox("Reglue the other open instance from pool " .. open_instance_pool_id .. " before trying to unglue this superglued container item. It will be selected and scrolled to now.", "Superglue can only Unglue one superglued pool instance at a time.", _msg_type_ok)
 end
 
 
@@ -1933,7 +1940,7 @@ function scrollToSelectedItem()
 end
 
 
-function handleEdit(pool_id)
+function handleUnglue(pool_id)
   local superglued_container
 
   superglued_container = getFirstSelectedItem()
