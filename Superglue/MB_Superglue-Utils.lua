@@ -294,14 +294,12 @@ end
 
 
 function handleRemovedItems(restored_items_pool_id, selected_items)
-  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, matched_item_guids, unmatched_item_guids, this_stored_item_guid, this_item_last_glue_state, this_selected_item, this_selected_item_guid, this_unmatched_item, this_stored_item_is_unmatched, i
+  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, this_stored_item_guid, this_item_last_glue_state, this_stored_item_is_unmatched, i, this_selected_item, this_selected_item_guid, this_unmatched_item
 
   retval, last_glue_stored_item_states_string = storeRetrieveProjectData(_pool_key_prefix .. restored_items_pool_id .. _pool_item_states_key_suffix)
     
   if retval then
     retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
-    matched_item_guids = {}
-    unmatched_item_guids = {}
 
     for this_stored_item_guid, this_item_last_glue_state in pairs(last_glue_stored_item_states_table) do
       this_stored_item_is_unmatched = true
@@ -541,11 +539,10 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, parent_is_being_updated)
-  local this_is_new_glue, this_is_reglue, user_selected_instance_is_being_reglued, selected_item_count, first_selected_item, first_selected_item_name, parent_dummy_track, sizing_params, selected_item_states, selected_instances_pool_ids, superglued_container, superglued_container_init_name, parent_instance, pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, time_selection_was_set_by_code
+  local this_is_new_glue, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position, superglued_container, time_selection_was_set_by_code
 
   this_is_new_glue = not pool_id
   this_is_reglue = pool_id
-  user_selected_instance_is_being_reglued = not parent_is_being_updated
   first_selected_item = getFirstSelectedItem()
   first_selected_item_name = getSetItemName(first_selected_item)
 
@@ -554,53 +551,14 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   if this_is_new_glue then
     pool_id = handlePoolId()
 
-  elseif parent_is_being_updated then
-    parent_dummy_track = first_selected_item_track
-    pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
-    pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
-    retval, pool_parent_last_glue_position = storeRetrieveProjectData(pool_parent_position_key_label)
-    retval, pool_parent_last_glue_length = storeRetrieveProjectData(pool_parent_length_key_label)
-    pool_parent_last_glue_position = tonumber(pool_parent_last_glue_position)
-    pool_parent_last_glue_length = tonumber(pool_parent_last_glue_length)
-    pool_parent_last_glue_end_point = pool_parent_last_glue_position + pool_parent_last_glue_length
-    sizing_params = {
-      ["position"] = pool_parent_last_glue_position - restored_items_position_adjustment,
-      ["length"] = pool_parent_last_glue_length - restored_items_position_adjustment,
-      ["end_point"] = pool_parent_last_glue_end_point - restored_items_position_adjustment
-    }
-
-    if not obey_time_selection then
-      setResetGlueTimeSelection(sizing_params, "set")
-
-      obey_time_selection = true
-      time_selection_was_set_by_code = true
-    end
-
-  elseif user_selected_instance_is_being_reglued then
-    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(sizing_region_guid, first_selected_item_track, selected_items, obey_time_selection)
+  elseif this_is_reglue then
+    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(parent_is_being_updated, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items, obey_time_selection)
   end
 
   selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
-
-  if parent_is_being_updated then
-
-    for i = 1, #selected_items do
-      cropItemToParent(selected_items[i], sizing_params)
-    end
-  end
-
   superglued_container = glueSelectedItemsIntoContainer(obey_time_selection)
-  superglued_container_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
 
-  handleContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
-
-  if user_selected_instance_is_being_reglued then
-    handlePoolInheritanceData(pool_id, selected_instances_pool_ids)
-  end
-
-  if this_is_reglue and time_selection_was_set_by_code then
-    setResetGlueTimeSelection(sizing_params, "reset")
-  end
+  handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, selected_instances_pool_ids, sizing_params, parent_is_being_updated, time_selection_was_set_by_code)
 
   return superglued_container
 end
@@ -689,6 +647,50 @@ function incrementPoolId(last_pool_id)
   end
 
   return new_pool_id
+end
+
+
+function setUpReglue(parent_is_being_updated, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items, obey_time_selection)
+  local user_selected_instance_is_being_reglued, sizing_params, obey_time_selection, time_selection_was_set_by_code
+
+  user_selected_instance_is_being_reglued = not parent_is_being_updated
+
+  if parent_is_being_updated then
+    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
+
+  elseif user_selected_instance_is_being_reglued then
+    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, obey_time_selection)
+  end
+
+  return sizing_params, obey_time_selection, time_selection_was_set_by_code
+end
+
+
+function setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
+  local parent_dummy_track, pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, sizing_params, time_selection_was_set_by_code
+
+  parent_dummy_track = first_selected_item_track
+  pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
+  pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
+  retval, pool_parent_last_glue_position = storeRetrieveProjectData(pool_parent_position_key_label)
+  retval, pool_parent_last_glue_length = storeRetrieveProjectData(pool_parent_length_key_label)
+  pool_parent_last_glue_position = tonumber(pool_parent_last_glue_position)
+  pool_parent_last_glue_length = tonumber(pool_parent_last_glue_length)
+  pool_parent_last_glue_end_point = pool_parent_last_glue_position + pool_parent_last_glue_length
+  sizing_params = {
+    ["position"] = pool_parent_last_glue_position - restored_items_position_adjustment,
+    ["length"] = pool_parent_last_glue_length - restored_items_position_adjustment,
+    ["end_point"] = pool_parent_last_glue_end_point - restored_items_position_adjustment
+  }
+
+  if not obey_time_selection then
+    setResetGlueTimeSelection(sizing_params, "set")
+
+    obey_time_selection = true
+    time_selection_was_set_by_code = true
+  end
+
+  return sizing_params, obey_time_selection, time_selection_was_set_by_code
 end
 
 
@@ -795,7 +797,7 @@ function selectDeselectItems(items, select_deselect)
 end
 
 
-function setUpReglue(sizing_region_guid, active_track, selected_items, obey_time_selection)
+function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selected_items, obey_time_selection)
   local sizing_params, is_active_container_reglue, time_selection_was_set_by_code, i, this_selected_item, this_selected_item_position, this_selected_item_length, earliest_selected_item_position, latest_selected_item_end_point
 
   sizing_params = getSetSizingRegion(sizing_region_guid)
@@ -849,6 +851,13 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, first_select
 
   storeSelectedItemStates(pool_id, selected_item_states)
   selectDeselectItems(selected_items, true)
+
+  if parent_is_being_updated then
+
+    for i = 1, #selected_items do
+      cropItemToParent(selected_items[i], sizing_params)
+    end
+  end
 
   return selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position
 end
@@ -1191,6 +1200,25 @@ function glueSelectedItems(obey_time_selection)
     reaper.Main_OnCommand(41588, 0)
   else
     reaper.Main_OnCommand(40362, 0)
+  end
+end
+
+
+function handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, selected_instances_pool_ids, sizing_params, parent_is_being_updated, time_selection_was_set_by_code)
+  local this_is_reglue, user_selected_instance_is_being_reglued, superglued_container_init_name
+
+  this_is_reglue = pool_id
+  user_selected_instance_is_being_reglued = not parent_is_being_updated
+  superglued_container_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
+
+  handleContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
+
+  if user_selected_instance_is_being_reglued then
+    handlePoolInheritanceData(pool_id, selected_instances_pool_ids)
+  end
+
+  if this_is_reglue and time_selection_was_set_by_code then
+    setResetGlueTimeSelection(sizing_params, "reset")
   end
 end
 
