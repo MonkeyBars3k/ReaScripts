@@ -571,7 +571,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
     end
 
   elseif user_selected_instance_is_being_reglued then
-    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(sizing_region_guid, first_selected_item_track, obey_time_selection)
+    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(sizing_region_guid, first_selected_item_track, selected_items, obey_time_selection)
   end
 
   selected_item_states, selected_container_pool_ids, earliest_item_delta_to_superglued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
@@ -789,17 +789,40 @@ function selectDeselectItems(items, select_deselect)
 end
 
 
-function setUpReglue(sizing_region_guid, active_track, obey_time_selection)
-  local sizing_region_params, is_active_container_reglue, time_selection_was_set_by_code
+function setUpReglue(sizing_region_guid, active_track, selected_items, obey_time_selection)
+  local sizing_params, is_active_container_reglue, time_selection_was_set_by_code, i, this_selected_item, this_selected_item_position, this_selected_item_length, earliest_selected_item_position, latest_selected_item_end_point
 
-  sizing_region_params = getSetSizingRegion(sizing_region_guid)
-  is_active_container_reglue = sizing_region_params
+  sizing_params = getSetSizingRegion(sizing_region_guid)
+  is_active_container_reglue = sizing_params
   time_selection_was_set_by_code = false
 
   if is_active_container_reglue then
 
     if not obey_time_selection then
-      setResetGlueTimeSelection(sizing_region_params, "set")
+
+      for i = 1, #selected_items do
+        this_selected_item = selected_items[i]
+        this_selected_item_position = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_position_key)
+        this_selected_item_length = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_length_key)
+        this_selected_item_end_point = this_selected_item_position + this_selected_item_length
+
+        if earliest_selected_item_position then
+          earliest_selected_item_position = math.min(earliest_selected_item_position, this_selected_item_position)
+        else
+          earliest_selected_item_position = this_selected_item_position
+        end
+
+        if latest_selected_item_end_point then
+          latest_selected_item_end_point = math.max(latest_selected_item_end_point, this_selected_item_end_point)
+        else
+          latest_selected_item_end_point = this_selected_item_end_point
+        end
+      end
+      
+      sizing_params.position = math.min(sizing_params.position, earliest_selected_item_position)
+      sizing_params.end_point = math.max(sizing_params.end_point, latest_selected_item_end_point)
+
+      setResetGlueTimeSelection(sizing_params, "set")
 
       obey_time_selection = true
       time_selection_was_set_by_code = true
@@ -808,7 +831,7 @@ function setUpReglue(sizing_region_guid, active_track, obey_time_selection)
     getSetSizingRegion(sizing_region_guid, "delete")
   end
 
-  return sizing_region_params, obey_time_selection, time_selection_was_set_by_code
+  return sizing_params, obey_time_selection, time_selection_was_set_by_code
 end
 
 
