@@ -1202,7 +1202,7 @@ end
 
 
 function glueSelectedItems(obey_time_selection)
-  
+
   if obey_time_selection == true then
     reaper.Main_OnCommand(41588, 0)
   else
@@ -1287,7 +1287,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   superglued_container = restoreContainerState(superglued_container, superglued_container_params)
 
   setRegluePositionDeltas(superglued_container_params, superglued_container_last_glue_params)
-  editParentInstances(superglued_container_params.pool_id, superglued_container)
+  handleAncestorUpdates(superglued_container_params.pool_id, superglued_container)
   deselectAllItems()
   propagatePoolChanges(superglued_container_params, sizing_region_guid, obey_time_selection)
 
@@ -1364,21 +1364,20 @@ function setRegluePositionDeltas(freshly_superglued_container_params, superglued
 end
 
 
-
--- populate _keyed_parent_instances with a nicely ordered sequence and reinsert the items of each pool into temp tracks so they can be updated
-function editParentInstances(pool_id, superglued_container, children_nesting_depth)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids, i, this_parent_pool_id, track, restored_items--[[, restored_item_position_deltas--]], this_parent_instance_params, no_parent_instances_were_found
+function handleAncestorUpdates(pool_id, superglued_container, children_nesting_depth_of_active_parent)
+  local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, i, this_parent_pool_id, parent_unglue_temp_track, restored_items, this_parent_instance_params, no_parent_instances_were_found
 
   parent_pool_ids_data_key_label = _pool_key_prefix .. pool_id .. _parent_pool_ids_data_key_suffix
   retval, parent_pool_ids = storeRetrieveProjectData(parent_pool_ids_data_key_label)
+  parent_pool_ids_data_found_for_active_pool = retval == true
 
 -- SOMEWHERE IN HERE, WE HAVE TO CHECK WHETHER ANY PARENTS WERE DELETED
 
-  if not children_nesting_depth then
-    children_nesting_depth = 1
+  if not children_nesting_depth_of_active_parent then
+    children_nesting_depth_of_active_parent = 1
   end
 
-  if retval == true then
+  if parent_pool_ids_data_found_for_active_pool then
     retval, parent_pool_ids = serpent.load(parent_pool_ids)
 
     if #parent_pool_ids > 0 then
@@ -1387,47 +1386,11 @@ function editParentInstances(pool_id, superglued_container, children_nesting_dep
       for i = 1, #parent_pool_ids do
         this_parent_pool_id = parent_pool_ids[i]
 
-        -- check if an entry for this pool already exists
         if _keyed_parent_instances[this_parent_pool_id] then
-          -- store how deeply nested this item is
-          _keyed_parent_instances[this_parent_pool_id].children_nesting_depth = math.max(children_nesting_depth, _keyed_parent_instances[this_parent_pool_id].children_nesting_depth)
+          assignParentNestingDepth(this_parent_pool_id, children_nesting_depth_of_active_parent)
 
-        -- this is the first time this pool has come up. set up for update loop
         else
-          this_parent_instance_params = getFirstPoolInstanceParams(this_parent_pool_id)
-
-          if not this_parent_instance_params then
-
--- IS THIS LINE STILL NECESSARY WHEN PARENTS ARE CHECKED FOR EXISTENCE ABOVE?
-            _keyed_parent_instances[this_parent_pool_id] = nil
-
-            this_parent_instance_params = {}
-          end
-
-          this_parent_instance_params.pool_id = this_parent_pool_id
-          this_parent_instance_params.children_nesting_depth = children_nesting_depth
-
-          -- make track for this item's updates
-          reaper.InsertTrackAtIndex(0, false)
-          track = reaper.GetTrack(_api_current_project, 0)
--- FOR TESTING
--- reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", "2", true)
-
-          deselectAllItems()
-
-          -- restore items into newly made empty track
-          restored_items--[[, restored_item_position_deltas--]] = restoreSupergluedItems(this_parent_pool_id, track, superglued_container, this_parent_instance_params, nil, true)
-
-          -- store references to temp track and items
-          this_parent_instance_params.track = track
-          this_parent_instance_params.restored_items = restored_items
-          -- this_parent_instance_params.restored_item_position_deltas = restored_item_position_deltas
-
-          -- store this item in _keyed_parent_instances
-          _keyed_parent_instances[this_parent_pool_id] = this_parent_instance_params
-
-          -- check if this pool also has parent_pool_ids
-          editParentInstances(this_parent_pool_id, superglued_container, children_nesting_depth + 1)
+          updateAncestorsOnTempTracks(this_parent_pool_id, superglued_container, children_nesting_depth_of_active_parent)
         end
       end
 
@@ -1437,8 +1400,43 @@ function editParentInstances(pool_id, superglued_container, children_nesting_dep
 end
 
 
+function assignParentNestingDepth(this_parent_pool_id, children_nesting_depth_of_active_parent)
+  _keyed_parent_instances[this_parent_pool_id].children_nesting_depth = math.max(children_nesting_depth_of_active_parent, _keyed_parent_instances[this_parent_pool_id].children_nesting_depth)
+end
+
+
+function updateAncestorsOnTempTracks(this_parent_pool_id, superglued_container, children_nesting_depth_of_active_parent)
+  local this_parent_instance_params, parent_unglue_temp_track, restored_items
+
+  this_parent_instance_params = getFirstPoolInstanceParams(this_parent_pool_id)
+
+  if not this_parent_instance_params then
+
+-- IS THIS LINE STILL NECESSARY WHEN PARENTS ARE CHECKED FOR EXISTENCE ABOVE?
+    _keyed_parent_instances[this_parent_pool_id] = nil
+    this_parent_instance_params = {}
+  end
+
+  this_parent_instance_params.pool_id = this_parent_pool_id
+  this_parent_instance_params.children_nesting_depth = children_nesting_depth_of_active_parent
+
+  reaper.InsertTrackAtIndex(0, false)
+
+  parent_unglue_temp_track = reaper.GetTrack(_api_current_project, 0)
+
+  deselectAllItems()
+
+  restored_items = restoreSupergluedItems(this_parent_pool_id, parent_unglue_temp_track, superglued_container, this_parent_instance_params, nil, true)
+  this_parent_instance_params.track = parent_unglue_temp_track
+  this_parent_instance_params.restored_items = restored_items
+  _keyed_parent_instances[this_parent_pool_id] = this_parent_instance_params
+
+  handleAncestorUpdates(this_parent_pool_id, superglued_container, children_nesting_depth_of_active_parent + 1)
+end
+
+
 function getFirstPoolInstanceParams(pool_id)
-  local i, all_items_count, this_item, this_item_instance_pool_id, parent_instance_params
+  local all_items_count, i, this_item, this_item_instance_pool_id, parent_instance_params
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
 
@@ -1449,9 +1447,6 @@ function getFirstPoolInstanceParams(pool_id)
 
     if this_item_instance_pool_id == pool_id then
       parent_instance_params = getSetItemParams(this_item)
-
--- logV("getFirstPoolInstanceParams() pool_id",pool_id)
--- logV("getFirstPoolInstanceParams() parent_instance_params.length",parent_instance_params.length)
 
       return parent_instance_params
     end
@@ -1466,7 +1461,6 @@ function restoreSupergluedItems(pool_id, active_track, superglued_container, thi
 
   pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
   retval, stored_item_states = storeRetrieveProjectData(pool_item_states_key_label)
-
   stored_item_states_table = retrieveStoredItemStates(stored_item_states)
   restored_items = {}
   superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
