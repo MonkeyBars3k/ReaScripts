@@ -1364,7 +1364,7 @@ function setRegluePositionDeltas(freshly_superglued_container_params, superglued
 end
 
 
-function handleAncestorUpdates(pool_id, superglued_container, children_nesting_depth_of_active_parent)
+function handleAncestorUpdates(pool_id, superglued_container, descendant_nesting_depth_of_active_parent)
   local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, i, this_parent_pool_id, parent_unglue_temp_track, restored_items, this_parent_instance_params, no_parent_instances_were_found
 
   parent_pool_ids_data_key_label = _pool_key_prefix .. pool_id .. _parent_pool_ids_data_key_suffix
@@ -1373,8 +1373,8 @@ function handleAncestorUpdates(pool_id, superglued_container, children_nesting_d
 
 -- SOMEWHERE IN HERE, WE HAVE TO CHECK WHETHER ANY PARENTS WERE DELETED
 
-  if not children_nesting_depth_of_active_parent then
-    children_nesting_depth_of_active_parent = 1
+  if not descendant_nesting_depth_of_active_parent then
+    descendant_nesting_depth_of_active_parent = 1
   end
 
   if parent_pool_ids_data_found_for_active_pool then
@@ -1387,10 +1387,10 @@ function handleAncestorUpdates(pool_id, superglued_container, children_nesting_d
         this_parent_pool_id = parent_pool_ids[i]
 
         if _keyed_parent_instances[this_parent_pool_id] then
-          assignParentNestingDepth(this_parent_pool_id, children_nesting_depth_of_active_parent)
+          assignParentNestingDepth(this_parent_pool_id, descendant_nesting_depth_of_active_parent)
 
         else
-          updateAncestorsOnTempTracks(this_parent_pool_id, superglued_container, children_nesting_depth_of_active_parent)
+          traverseDescendantsOnTempTracks(this_parent_pool_id, superglued_container, descendant_nesting_depth_of_active_parent)
         end
       end
 
@@ -1400,13 +1400,13 @@ function handleAncestorUpdates(pool_id, superglued_container, children_nesting_d
 end
 
 
-function assignParentNestingDepth(this_parent_pool_id, children_nesting_depth_of_active_parent)
-  _keyed_parent_instances[this_parent_pool_id].children_nesting_depth = math.max(children_nesting_depth_of_active_parent, _keyed_parent_instances[this_parent_pool_id].children_nesting_depth)
+function assignParentNestingDepth(this_parent_pool_id, descendant_nesting_depth_of_active_parent)
+  _keyed_parent_instances[this_parent_pool_id].children_nesting_depth = math.max(descendant_nesting_depth_of_active_parent, _keyed_parent_instances[this_parent_pool_id].children_nesting_depth)
 end
 
 
-function updateAncestorsOnTempTracks(this_parent_pool_id, superglued_container, children_nesting_depth_of_active_parent)
-  local this_parent_instance_params, parent_unglue_temp_track, restored_items
+function traverseDescendantsOnTempTracks(this_parent_pool_id, superglued_container, descendant_nesting_depth_of_active_parent)
+  local this_parent_instance_params, parent_unglue_temp_track, restored_items, next_nesting_depth
 
   this_parent_instance_params = getFirstPoolInstanceParams(this_parent_pool_id)
 
@@ -1418,7 +1418,7 @@ function updateAncestorsOnTempTracks(this_parent_pool_id, superglued_container, 
   end
 
   this_parent_instance_params.pool_id = this_parent_pool_id
-  this_parent_instance_params.children_nesting_depth = children_nesting_depth_of_active_parent
+  this_parent_instance_params.children_nesting_depth = descendant_nesting_depth_of_active_parent
 
   reaper.InsertTrackAtIndex(0, false)
 
@@ -1430,8 +1430,9 @@ function updateAncestorsOnTempTracks(this_parent_pool_id, superglued_container, 
   this_parent_instance_params.track = parent_unglue_temp_track
   this_parent_instance_params.restored_items = restored_items
   _keyed_parent_instances[this_parent_pool_id] = this_parent_instance_params
+  next_nesting_depth = descendant_nesting_depth_of_active_parent + 1
 
-  handleAncestorUpdates(this_parent_pool_id, superglued_container, children_nesting_depth_of_active_parent + 1)
+  handleAncestorUpdates(this_parent_pool_id, superglued_container, next_nesting_depth)
 end
 
 
@@ -1457,66 +1458,21 @@ end
 
 
 function restoreSupergluedItems(pool_id, active_track, superglued_container, this_parent_instance_params, superglued_container_preedit_params, parent_is_being_updated)
-  local pool_item_states_key_label, retval, stored_item_states, stored_item_states_table, restored_items, superglued_container_postglue_params, item_guid, stored_item_state, restored_item, this_restored_item_track_is_dummy, this_restored_item_is_child_of_pool_parent, restored_instance_pool_id, restored_item_position_delta_to_parent, restored_item_position_delta_params, restored_item_position_delta_to_parent_was_retrieved, restored_item_negative_position_delta, restored_items_with_state, earliest_restored_item_position, restored_item_adjusted_position, this_restored_item_with_state, this_restored_item_with_state_current_position, restored_instances_near_project_start, this_instance_current_position, this_instance_adjusted_position, superglued_container_params, restored_instance_last_glue_delta_to_parent, this_instance_adjustment_delta
+  local pool_item_states_key_label, retval, stored_item_states, stored_item_states_table, superglued_container_postglue_params, item_guid, stored_item_state, restored_instances_near_project_start, restored_items, restored_instance_pool_id, this_instance_params
 
   pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_item_states_key_suffix
   retval, stored_item_states = storeRetrieveProjectData(pool_item_states_key_label)
   stored_item_states_table = retrieveStoredItemStates(stored_item_states)
-  restored_items = {}
   superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
-  restored_instances_near_project_start = {}
 
   for item_guid, stored_item_state in pairs(stored_item_states_table) do
     if stored_item_state then
-      restored_item = restoreItem(active_track, stored_item_state, parent_is_being_updated)
-      restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, superglued_container, this_parent_instance_params, superglued_container_preedit_params, superglued_container_postglue_params, parent_is_being_updated)
-
-      reaper.SetMediaItemSelected(restored_item, true)
-      table.insert(restored_items, restored_item)
-
-      restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
-
-      if restored_item_negative_position_delta then
-        if not restored_instances_near_project_start[restored_instance_pool_id] then
-          restored_instances_near_project_start[restored_instance_pool_id] = {
-            ["item"] = restored_item,
-            ["negative_position_delta"] = restored_item_negative_position_delta
-          }
-
-        elseif restored_instances_near_project_start[restored_instance_pool_id] then
-          this_restored_instance_position_is_earlier_than_prev_sibling = restored_item_negative_position_delta < restored_instances_near_project_start[restored_instance_pool_id]
-
-          if this_restored_instance_position_is_earlier_than_prev_sibling then
-            restored_instances_near_project_start[restored_instance_pool_id] = {
-              ["item"] = restored_item,
-              ["negative_position_delta"] = restored_item_negative_position_delta
-            }
-          end
-        end
-      end
+      restored_instances_near_project_start, restored_items = handleRestoredItem(active_track, stored_item_state, parent_is_being_updated, superglued_container, this_parent_instance_params, superglued_container_preedit_params, superglued_container_postglue_params, parent_is_being_updated)
     end
   end
 
   for restored_instance_pool_id, this_instance_params in pairs(restored_instances_near_project_start) do
-    superglued_container_params = getSetItemParams(superglued_container)
-    restored_instance_last_glue_delta_to_parent = storeRetrieveItemData(this_instance_params.item, _item_offset_to_container_position_key_suffix)
-    restored_instance_last_glue_delta_to_parent = tonumber(restored_instance_last_glue_delta_to_parent)
-    this_instance_adjusted_position = superglued_container_params.position + restored_instance_last_glue_delta_to_parent + this_instance_params.negative_position_delta
-
-    if this_instance_adjusted_position < -this_instance_params.negative_position_delta then
-      this_instance_adjustment_delta = this_instance_adjusted_position
-      this_instance_adjusted_position = 0
-
-    else
-      this_instance_adjustment_delta = this_instance_params.negative_position_delta
-    end
-
-    this_instance_active_take = reaper.GetActiveTake(this_instance_params.item)
-    this_instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(this_instance_active_take, _api_take_src_offset_key)
-    this_instance_adjusted_src_offset = this_instance_current_src_offset - this_instance_params.negative_position_delta
-
-    reaper.SetMediaItemInfo_Value(this_instance_params.item, _api_item_position_key, this_instance_adjusted_position)
-    reaper.SetMediaItemTakeInfo_Value(this_instance_active_take, _api_take_src_offset_key, this_instance_adjusted_src_offset)
+    handleInstancesNearProjectStart(superglued_container, this_instance_params)
   end
 
 -- Debug("restoreSupergluedItems() END", "", 0, true)
@@ -1532,6 +1488,67 @@ function retrieveStoredItemStates(item_state_chunks_string)
   item_state_chunks_table.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, item_state_chunks_table.track_guid)
 
   return item_state_chunks_table
+end
+
+
+function handleRestoredItem(active_track, stored_item_state, parent_is_being_updated, superglued_container, this_parent_instance_params, superglued_container_preedit_params, superglued_container_postglue_params, parent_is_being_updated)
+  local restored_item, restored_item_negative_position_delta, restored_instance_pool_id, restored_instances_near_project_start, restored_items
+
+  restored_item = restoreItem(active_track, stored_item_state, parent_is_being_updated)
+  restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, superglued_container, this_parent_instance_params, superglued_container_preedit_params, superglued_container_postglue_params, parent_is_being_updated)
+  restored_items = {}
+  restored_instances_near_project_start = {}
+
+  reaper.SetMediaItemSelected(restored_item, true)
+  table.insert(restored_items, restored_item)
+
+  restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
+
+  if restored_item_negative_position_delta then
+    if not restored_instances_near_project_start[restored_instance_pool_id] then
+      restored_instances_near_project_start[restored_instance_pool_id] = {
+        ["item"] = restored_item,
+        ["negative_position_delta"] = restored_item_negative_position_delta
+      }
+
+    elseif restored_instances_near_project_start[restored_instance_pool_id] then
+      this_restored_instance_position_is_earlier_than_prev_sibling = restored_item_negative_position_delta < restored_instances_near_project_start[restored_instance_pool_id]
+
+      if this_restored_instance_position_is_earlier_than_prev_sibling then
+        restored_instances_near_project_start[restored_instance_pool_id] = {
+          ["item"] = restored_item,
+          ["negative_position_delta"] = restored_item_negative_position_delta
+        }
+      end
+    end
+  end
+
+  return restored_instances_near_project_start, restored_items
+end
+
+
+function handleInstancesNearProjectStart(superglued_container, this_instance_params)
+  local superglued_container_params, restored_instance_last_glue_delta_to_parent, this_instance_adjusted_position, this_instance_adjustment_delta, this_instance_active_take, this_instance_current_src_offset, this_instance_adjusted_src_offset
+
+  superglued_container_params = getSetItemParams(superglued_container)
+  restored_instance_last_glue_delta_to_parent = storeRetrieveItemData(this_instance_params.item, _item_offset_to_container_position_key_suffix)
+  restored_instance_last_glue_delta_to_parent = tonumber(restored_instance_last_glue_delta_to_parent)
+  this_instance_adjusted_position = superglued_container_params.position + restored_instance_last_glue_delta_to_parent + this_instance_params.negative_position_delta
+
+  if this_instance_adjusted_position < -this_instance_params.negative_position_delta then
+    this_instance_adjustment_delta = this_instance_adjusted_position
+    this_instance_adjusted_position = 0
+
+  else
+    this_instance_adjustment_delta = this_instance_params.negative_position_delta
+  end
+
+  this_instance_active_take = reaper.GetActiveTake(this_instance_params.item)
+  this_instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(this_instance_active_take, _api_take_src_offset_key)
+  this_instance_adjusted_src_offset = this_instance_current_src_offset - this_instance_params.negative_position_delta
+
+  reaper.SetMediaItemInfo_Value(this_instance_params.item, _api_item_position_key, this_instance_adjusted_position)
+  reaper.SetMediaItemTakeInfo_Value(this_instance_active_take, _api_take_src_offset_key, this_instance_adjusted_src_offset)
 end
 
 
