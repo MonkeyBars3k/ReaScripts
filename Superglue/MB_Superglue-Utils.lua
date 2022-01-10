@@ -25,7 +25,7 @@ require("sg-dev-functions")
 local serpent = require("serpent")
 
 
-local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _smart_action_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _pool_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _child_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _earliest_item_delta_to_superglued_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _keyed_parent_instances, _numeric_parent_instances, _position_changed_since_last_glue, _position_change_response
+local _script_path, _item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _smart_action_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _pool_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _keyed_parent_instances, _numeric_parent_instances, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _item_bg_img_path = _script_path .. "sg-bg.png"
@@ -40,6 +40,7 @@ _smart_action_undo_block_string = "MB_Superglue-Smart-Action"
 _sizing_region_label = "SG: DO NOT DELETE – Use to increase size – Pool #"
 _sizing_region_color = reaper.ColorToNative(255, 255, 255)|0x1000000
 _api_current_project = 0
+_api_include_all_undo_states = -1
 _api_data_key = "P_EXT:"
 _api_project_region_guid_key_prefix = "MARKER_GUID:"
 _api_item_mute_key = "B_MUTE"
@@ -66,10 +67,8 @@ _glue_data_key_suffix = ":glue"
 _edit_data_key_suffix = ":pre-edit"
 _superglued_container_params_suffix = "_superglued-container-params"
 _parent_pool_ids_data_key_suffix = ":parent-pool-ids"
-_child_pool_ids_data_key_suffix = ":child-pool-ids"
 _container_preglue_state_suffix = ":preglue-state-chunk"
 _item_offset_to_container_position_key_suffix = "_superglued-container-offset"
-_earliest_item_delta_to_superglued_container_position_key_suffix = "_earliest_item_position_delta"
 _postglue_action_step = "postglue"
 _preedit_action_step = "preedit"
 _container_name_default_prefix = "^" .. _global_script_item_name_prefix .. "%:%d+"
@@ -94,7 +93,7 @@ _position_change_response = nil
 
 
 function initSuperglue(obey_time_selection)
-  local selected_item_count, restored_items_pool_id, first_selected_item, first_selected_item_track, superglued_container
+  local selected_item_count, restored_items_pool_id, selected_items, first_selected_item, first_selected_item_track, superglued_container
 
   selected_item_count = initAction("glue")
 
@@ -115,7 +114,7 @@ function initSuperglue(obey_time_selection)
       return
   end
 
-  superglued_container = triggerSuperglue(restored_items_pool_id, first_selected_item_track, obey_time_selection, selected_items)
+  superglued_container = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track, obey_time_selection, selected_items)
   
   exclusiveSelectItem(superglued_container)
   cleanUpAction(_glue_undo_block_string)
@@ -432,8 +431,10 @@ function getItemType(item)
 
   if is_superglued_container then
     return "glued"
+
   elseif is_restored_item then
     return "restored"
+  
   else
     return "noncontained"
   end
@@ -498,7 +499,7 @@ function midiItemIsSelected(item)
 end
 
 
-function triggerSuperglue(restored_items_pool_id, first_selected_item_track, obey_time_selection)
+function triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track, obey_time_selection)
   local superglued_container
 
   if restored_items_pool_id then
@@ -526,7 +527,7 @@ end
 
 function cleanUpAction(undo_block_string)
   refreshUI()
-  reaper.Undo_EndBlock(undo_block_string, -1)
+  reaper.Undo_EndBlock(undo_block_string, _api_include_all_undo_states)
 end
 
 
@@ -539,7 +540,7 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, parent_is_being_updated)
-  local this_is_new_glue, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position, superglued_container, time_selection_was_set_by_code
+  local this_is_new_glue, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position, superglued_container
 
   this_is_new_glue = not pool_id
   this_is_reglue = pool_id
@@ -613,7 +614,7 @@ end
 
 
 function storeRetrieveProjectData(key, val)
-  local store, retrieve, store_or_retrieve_state_data, data_param_key, retval, state_data_val
+  local retrieve, store, store_or_retrieve_state_data, data_param_key, retval, state_data_val
 
   retrieve = not val
   store = val
@@ -665,7 +666,7 @@ end
 
 
 function setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
-  local pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, sizing_params, time_selection_was_set_by_code
+  local pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, sizing_params, time_selection_was_set_by_code
 
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
@@ -692,6 +693,8 @@ end
 
 
 function setResetGlueTimeSelection(sizing_params, set_or_reset)
+  local set, reset
+
   set = set_or_reset == "set"
   reset = set_or_reset == "reset"
 
@@ -782,13 +785,13 @@ end
 
 
 function selectDeselectItems(items, select_deselect)
-  local i, item
+  local i, this_item
 
   for i = 1, #items do
-    item = items[i]
+    this_item = items[i]
 
-    if item then 
-      reaper.SetMediaItemSelected(item, select_deselect)
+    if this_item then 
+      reaper.SetMediaItemSelected(this_item, select_deselect)
     end
   end
 end
@@ -820,7 +823,7 @@ end
 
 
 function getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_delete)
-  local get_or_delete, set, retval, sizing_region_params, sizing_region_guid, region_idx, sizing_region_params
+  local get_or_delete, set, region_idx, retval, sizing_region_params, sizing_region_guid
  
   get_or_delete = not params_or_delete or params_or_delete == "delete"
   set = params_or_delete and params_or_delete ~= "delete"
@@ -879,7 +882,7 @@ end
 
 
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
-  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, earliest_item_delta_to_superglued_container_position, selected_item_states, selected_instances_pool_ids, parent_instance_track, this_stored_item_guid, this_item_last_glue_state, i, this_selected_item, this_selected_item_guid
+  local earliest_item_delta_to_superglued_container_position, selected_item_states, selected_instances_pool_ids, i
 
   earliest_item_delta_to_superglued_container_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
   selected_item_states, selected_instances_pool_ids = createSelectedItemStates(selected_items, pool_id)
@@ -899,7 +902,7 @@ end
 
 
 function setPreglueItemsData(items, pool_id, sizing_params)
-  local this_is_new_glue, this_is_reglue, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superglued_container_position, earliest_item_delta_to_superglued_container_position
+  local this_is_new_glue, this_is_reglue, earliest_item_delta_to_superglued_container_position, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superglued_container_position
 
   this_is_new_glue = not sizing_params
   this_is_reglue = sizing_params
@@ -934,7 +937,7 @@ end
 
 
 function createSelectedItemStates(selected_items, active_pool_id)
-  local selected_item_states, selected_instances_pool_ids, i, item, this_item, this_item_state, this_superglued_container_pool_id, this_is_superglued_container
+  local selected_item_states, selected_instances_pool_ids, i, item, this_item, this_superglued_container_pool_id, this_is_superglued_container, this_item_guid, this_item_state
 
   selected_item_states = {}
   selected_instances_pool_ids = {}
@@ -971,7 +974,7 @@ end
 
 
 function cropItemToParent(restored_item, this_parent_instance_params)
-  local restored_item_params, restored_item_starts_before_parent, restored_item_parent_pool_id, right_hand_split_item, restored_item_ends_later_than_parent
+  local restored_item_params, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_parent_pool_id, restored_item_cropped_position_delta, restored_item_active_take, end_point_delta, restored_item_new_length
 
   restored_item_params = getSetItemParams(restored_item)
   restored_item_starts_before_parent = restored_item_params.position < this_parent_instance_params.position
@@ -996,7 +999,7 @@ end
 
 
 function getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-  local get, delete, sizing_region_api_key, stored_guid_retval, this_region_guid, this_region_belongs_to_active_pool, sizing_region_params, retval, is_region
+  local get, delete, sizing_region_guid, sizing_region_api_key, stored_guid_retval, this_region_guid, this_region_belongs_to_active_pool, sizing_region_params, retval, is_region
 
   get = not params_or_delete
   delete = params_or_delete == "delete"
@@ -1031,7 +1034,7 @@ end
 
 
 function addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-  local params, pool_id, sizing_region_name, sizing_region_label_num, retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num, this_region_is_active, sizing_region_api_key, stored_guid_retval, sizing_region_guid
+  local params, pool_id, sizing_region_name, sizing_region_label_num, sizing_region_guid_key_label, retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num, this_region_is_active, sizing_region_api_key, stored_guid_retval, sizing_region_guid
 
   params = params_or_delete
   params.end_point = params.position + params.length
@@ -1086,23 +1089,21 @@ end
 
 
 function handleContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
-  local superglued_container_preglue_state_key, superglued_container_state, earliest_item_delta_to_superglued_container_position_key, pool_parent_position_key_label, pool_parent_length_key_label
+  local superglued_container_preglue_state_key_suffix, superglued_container_state, pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_params
 
-  superglued_container_preglue_state_key = _pool_key_prefix .. pool_id .. _container_preglue_state_suffix
+  superglued_container_preglue_state_key_suffix = _pool_key_prefix .. pool_id .. _container_preglue_state_suffix
   superglued_container_state = getSetItemStateChunk(superglued_container)
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   pool_parent_params = getSetItemParams(superglued_container)
-  earliest_item_delta_to_superglued_container_position_key = _pool_key_prefix .. pool_id ..  _earliest_item_delta_to_superglued_container_position_key_suffix
 
   setGluedContainerName(superglued_container, superglued_container_init_name, true)
   addRemoveItemImage(superglued_container, true)
   storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step, superglued_container)
   storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, pool_id)
-  storeRetrieveItemData(superglued_container, superglued_container_preglue_state_key, superglued_container_state)
+  storeRetrieveItemData(superglued_container, superglued_container_preglue_state_key_suffix, superglued_container_state)
   storeRetrieveProjectData(pool_parent_position_key_label, pool_parent_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, pool_parent_params.length)
-  storeRetrieveItemData(superglued_container, earliest_item_delta_to_superglued_container_position_key, earliest_item_delta_to_superglued_container_position)
 end
 
 
@@ -1201,6 +1202,7 @@ end
 
 
 function glueSelectedItems(obey_time_selection)
+  
   if obey_time_selection == true then
     reaper.Main_OnCommand(41588, 0)
   else
@@ -1370,8 +1372,6 @@ function editParentInstances(pool_id, superglued_container, children_nesting_dep
   parent_pool_ids_data_key_label = _pool_key_prefix .. pool_id .. _parent_pool_ids_data_key_suffix
   retval, parent_pool_ids = storeRetrieveProjectData(parent_pool_ids_data_key_label)
 
--- log(#parent_pool_ids)
-
 -- SOMEWHERE IN HERE, WE HAVE TO CHECK WHETHER ANY PARENTS WERE DELETED
 
   if not children_nesting_depth then
@@ -1386,8 +1386,6 @@ function editParentInstances(pool_id, superglued_container, children_nesting_dep
 
       for i = 1, #parent_pool_ids do
         this_parent_pool_id = parent_pool_ids[i]
-
--- log(this_parent_pool_id)
 
         -- check if an entry for this pool already exists
         if _keyed_parent_instances[this_parent_pool_id] then
@@ -1598,7 +1596,7 @@ end
 
 
 function adjustRestoredItem(restored_item, superglued_container, this_parent_instance_params, superglued_container_preedit_params, superglued_container_last_glue_params, parent_is_being_updated)
-  local siblings_are_being_updated, restored_item_params, this_restored_instance_pool_id, is_restored_child_instance, this_child_is_from_active_pool, restored_item_offset_to_parent, adjusted_restored_item_position_is_before_project_start, earliest_item_delta_to_superglued_container_position_key, earliest_item_delta_to_superglued_container_position, restored_item_negative_position
+  local siblings_are_being_updated, restored_item_params, this_restored_instance_pool_id, is_restored_child_instance, this_child_is_from_active_pool, restored_item_offset_to_parent, adjusted_restored_item_position_is_before_project_start, earliest_item_delta_to_superglued_container_position, restored_item_negative_position
 
   siblings_are_being_updated = not parent_is_being_updated
   restored_item_params = getSetItemParams(restored_item)
