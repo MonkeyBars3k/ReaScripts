@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
 -- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Add script: "Explode container items" [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/7); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Change background image on restored items (https://github.com/MonkeyBars3k/ReaScripts/issues/130); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Change action nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/148); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153); Doublecheck loops through all items & remove if alternate solution possible (https://github.com/MonkeyBars3k/ReaScripts/issues/158); Move dev functions to external file (https://github.com/MonkeyBars3k/ReaScripts/issues/160); Deleted ancestors prevent higher ancestors from updating (https://github.com/MonkeyBars3k/ReaScripts/issues/161); Utilize terms "ancestors" and "descendants" (https://github.com/MonkeyBars3k/ReaScripts/issues/164)
+-- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Add script: "Explode container items" [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/7); Add scripts: "Smart Glue-Explode" with & without time selection [1] (https://github.com/MonkeyBars3k/ReaScripts/issues/50); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Change background image on restored items (https://github.com/MonkeyBars3k/ReaScripts/issues/130); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Change action nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/148); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153); Doublecheck loops through all items & remove if alternate solution possible (https://github.com/MonkeyBars3k/ReaScripts/issues/158); Move dev functions to external file (https://github.com/MonkeyBars3k/ReaScripts/issues/160); Deleted ancestors prevent higher ancestors from updating (https://github.com/MonkeyBars3k/ReaScripts/issues/161); Utilize terms "ancestors" and "descendants" (https://github.com/MonkeyBars3k/ReaScripts/issues/164)
 -- @provides [nomain] .
 --   serpent.lua
 --   sg-bg-restored.png
@@ -342,7 +342,7 @@ function itemsOnMultipleTracksAreSelected(selected_item_count)
   local items_on_multiple_tracks_are_selected = detectSelectedItemsOnMultipleTracks(selected_item_count)
 
   if items_on_multiple_tracks_are_selected == true then 
-      reaper.ShowMessageBox(_msg_change_selected_items, "Glue-Reversible and Edit container item only work on items on a single track.", _msg_type_ok)
+      reaper.ShowMessageBox(_msg_change_selected_items, "Superglue only works on items on a single track.", _msg_type_ok)
       return true
   end
 end
@@ -2071,7 +2071,7 @@ function createSizingRegionFromSupergluedContainer(superglued_container, pool_id
 end
 
 
-function initSmartAction(obey_time_selection)
+function initSmartAction(unglue_or_explode, obey_time_selection)
   local selected_item_count, pool_id
   
   selected_item_count = doPreGlueChecks()
@@ -2086,14 +2086,14 @@ function initSmartAction(obey_time_selection)
 
   if containerSelectionIsInvalid(selected_item_count) == true then return end
 
-  if triggerAction(selected_item_count, obey_time_selection) == false then 
+  if triggerAction(selected_item_count, unglue_or_explode, obey_time_selection) == false then 
     reaper.ShowMessageBox(_msg_change_selected_items, "Superglue Smart Action can't determine which script to run.", _msg_type_ok)
     setResetItemSelectionSet(false)
 
     return
   end
 
-  reaper.Undo_EndBlock(_smart_action_undo_block_string, -1)
+  reaper.Undo_EndBlock(_smart_action_undo_block_string, _api_include_all_undo_states)
 end
 
 
@@ -2112,7 +2112,7 @@ function getSmartAction(selected_item_count)
   restored_items_are_selected = restored_item_count > 0
 
   if single_superglued_container_is_selected and no_open_instances_are_selected and no_restored_items_are_selected then
-    return "unglue"
+    return "unglue_or_explode"
   
   elseif single_open_instance_is_selected and superglued_containers_are_selected then
     return "glue/abort"
@@ -2123,18 +2123,18 @@ function getSmartAction(selected_item_count)
 end
 
 
-function triggerAction(selected_item_count, obey_time_selection)
-  local glue_reversible_action, glue_abort_dialog
+function triggerAction(selected_item_count, unglue_or_explode, obey_time_selection)
+  local superglue_action, glue_abort_dialog
 
-  glue_reversible_action = getSmartAction(selected_item_count)
+  superglue_action = getSmartAction(selected_item_count)
 
-  if glue_reversible_action == "unglue" then
-    initUnglue()
+  if superglue_action == "unglue_or_explode" then
+    initUnglueExplode(unglue_or_explode)
 
-  elseif glue_reversible_action == "glue" then
+  elseif superglue_action == "glue" then
     initSuperglue(obey_time_selection)
 
-  elseif glue_reversible_action == "glue/abort" then
+  elseif superglue_action == "glue/abort" then
     glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to superglue them?", "You have selected both an unglued container and superglued container(s).", _msg_type_ok_cancel)
 
     if glue_abort_dialog == 2 then
