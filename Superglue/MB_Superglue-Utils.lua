@@ -19,8 +19,8 @@
 -- General utility functions at bottom
 
 -- for dev only
-package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("sg-dev-functions")
+-- package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
