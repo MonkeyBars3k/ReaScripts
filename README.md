@@ -13,13 +13,13 @@ There are two main ways to consolidate selected items on a track natively in Rea
 
 The other option is to **Group** items. This works well if you simply want to  move items around or select multiple items by clicking one item; however, you cannot use the other benefits of Reaper items, such as quickly looping, take envelopes, etc. Grouping can become confusing because Groups are highlighted in green around the items, but *not* around the boundary of the group itself. Groups can be unwieldy to work with in many musical contexts, such as a four-bar repetition, and they tend to create visual clutter.
 
-**Glue-Reversible** aims to address the shortcomings of both Glue and Groups, restore the convenient functionality already present in items (looping, timestretching, and much more) by placing selected items in a new container item – _and_ provide users the convenience of audio item pooling.
+**Superglue** aims to address the shortcomings of both Glue and Groups, restore the convenient functionality already present in items (looping, timestretching, and much more) by placing selected items in a new container item – _and_ provide users the convenience of audio item pooling.
 
 ### How to use
 
-**To Superglue items**, simply select items and trigger one of the Superglue Glue or Smart Action scripts (obey time selection enabled/disabled).
+**To Superglue items**, simply select items and trigger one of the Superglue Glue, Unglue, Explode, or Smart Action scripts (obey time selection enabled/disabled).
 
-To edit your glued items, the **Unglue** script opens the created container item, revealing the contained items once again. To Reglue, just use one of the Glue or Smart Action scripts again.
+To edit your superglued item container, the **Unglue** script opens the created container item, revealing the contained items once again. To Reglue, just use one of the Glue or Smart Action scripts again. The **Explode** scripts open the superglued container item and returns the contained items to their state from before that pool's last superglue.
 
 **Smart Action** (with time selection enabled/disabled) will intelligently determine which action is required based on your item selection.
 
@@ -27,6 +27,7 @@ To edit your glued items, the **Unglue** script opens the created container item
 - Provides the missing **nondestructive/reversible Glue feature** in Reaper!
   - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes, Pooled Audio Items
 - Currently, Superglued container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. (Yes! We have scripted the missing native **pooled audio items** feature in Reaper along with everything else!)
+  - If you want to separate a container from its pool, Explode it then Superglue anew.
 - Supports **nesting Superglued container items** inside _other_ superglued container items! When you update the nested container item, Superglue checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest – tested with 20 levels of nesting.
 
 ### Tips
@@ -36,10 +37,10 @@ To edit your glued items, the **Unglue** script opens the created container item
 ### Notes
 - Requires **Reaper v6.43** or newer
 - Requires **SWS Plugin Extension**!
-- Be _very_ careful if you want to **Clean current project directory** after supergluing – you could lose your superglued items, since at that point, those items aren't included in the project proper.
+- Be _very_ careful if you want to **Clean current project directory** after supergluing – you could lose your superglued items, since at that point, those "items" aren't included in the project proper – they only exist as data (state chunks).
 - Be very careful ungluing and editing a parent container item **near project start**. If a child container item would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its pooled sibling container items.
-- Superglue uses item notes to set background image for easy recognition of superglued container and contained items. Careful: **The background image will overwrite any item notes you already have on your glued items.** Disable this feature in the script options if you want your item notes preserved.
-- To create **MIDI superglued container items**, the script uses "Apply track FX as new take" on each item to get a (silent) audio take. When you Unglue, the audio take is removed and just the original MIDI take is restored to active. _Currently only MIDI on virtual instrument tracks is supported._
+- Superglue uses item notes to set background image for easy recognition of superglued container and contained items. Careful: **The background image will overwrite any item notes you already have on your glued items.** We plan to allow disabling of this feature in Superglue script options soon.
+- To create **MIDI superglued container items**, the script uses "Apply track FX as new take" on each item to get an audio take. When you Unglue, the audio take is removed and just the original MIDI take is restored to active. _Currently only MIDI on virtual instrument tracks is supported._
 - When using copies of superglued container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
 - Superglue uses **item selection set slot 10** and **SWS time selection set slot 5**.
  
