@@ -1,3 +1,8 @@
+-- @description serpent serialization tool
+-- @author Paul Kulchenko
+-- @version 0.302
+-- @changelog initial upload
+
 -- Serpent source is released under the MIT License
 
 -- Copyright (c) 2012-2018 Paul Kulchenko (paul@kulchenko.com)

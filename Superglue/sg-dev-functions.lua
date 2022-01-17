@@ -1,3 +1,8 @@
+-- @description general dev functions, used for Superglue
+-- @author various
+-- @version 1.0
+-- @changelog initial upload
+
 function updateSelectedItems()
   local i
   for i = 0, reaper.CountSelectedMediaItems(0)-1 do
