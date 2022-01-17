@@ -1,5 +1,6 @@
 -- @description serpent serialization tool
 -- @author Paul Kulchenko
+-- @noindex
 -- @version 0.302
 -- @changelog initial upload
 
