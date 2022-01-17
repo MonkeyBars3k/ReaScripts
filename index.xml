@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="35feb811bb1ba2a6ac812441760f3110895ce27e">
+<index version="1" name="MonkeyBars-ReaScripts" commit="1b1059ba7d8646034a1c28d3bba4472b82d091b3">
   <category name="Superglue">
     <reapack name="MB_Superglue - Explode superglued items back to original state irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
       <metadata>
@@ -147,8 +147,20 @@
         <source file="sg-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/sg-bg.png</source>
       </version>
     </reapack>
+    <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
+      <version name="1.0" author="various" time="2022-01-17T14:43:44Z">
+        <changelog><![CDATA[initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/1b1059ba7d8646034a1c28d3bba4472b82d091b3/Superglue/sg-dev-functions.lua</source>
+      </version>
+    </reapack>
   </category>
   <category name="Utilities">
+    <reapack name="benmrx_debug.lua" type="script" desc="Debug for ReaScript">
+      <version name="1.0" author="BenMRX" time="2022-01-17T14:43:44Z">
+        <changelog><![CDATA[initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/1b1059ba7d8646034a1c28d3bba4472b82d091b3/Utilities/benmrx_debug.lua</source>
+      </version>
+    </reapack>
     <reapack name="MB_Deselect child tracks &amp; select their parent folder.lua" type="script" desc="Deselect child tracks &amp; select their parent folder">
       <version name="1.0" author="MonkeyBars" time="2021-11-06T19:07:43Z">
         <changelog><![CDATA[Initial commit]]></changelog>
