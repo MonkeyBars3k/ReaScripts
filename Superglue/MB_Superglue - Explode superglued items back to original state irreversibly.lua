@@ -1,13 +1,13 @@
--- @description MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any
+-- @description MB_Superglue - Explode superglued items back to original state irreversibly
 -- @author MonkeyBars
--- @version 1.39
--- @changelog metadata update
+-- @version 1.53
+-- @changelog initial upload
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("MB_Glue-Reversible Utils")
+require("MB_Superglue-Utils")
 
-initSmartAction(true)
+initUnglueExplode("Explode")
