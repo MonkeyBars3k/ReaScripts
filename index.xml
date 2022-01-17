@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="488f421d66877e7a22b337e335d97627f3501971">
-  <category name="Glue-Reversible">
-    <reapack name="MB_Glue-Reversible - Edit container item, retaining container holder.lua" type="script" desc="MB_Glue-Reversible - Edit container item, retaining container holder">
+<index version="1" name="MonkeyBars-ReaScripts" commit="35feb811bb1ba2a6ac812441760f3110895ce27e">
+  <category name="Superglue">
+    <reapack name="MB_Superglue - Explode superglued items back to original state irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -12,20 +12,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.30" author="MonkeyBars" time="2021-10-29T13:54:38Z">
-        <changelog><![CDATA[Change nomenclature from Unglue to Edit (https://github.com/MonkeyBars3k/ReaScripts/issues/64)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Edit%20container%20item,%20retaining%20container%20holder.lua</source>
-      </version>
-      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
-        <changelog><![CDATA[metadata update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Edit%20container%20item,%20retaining%20container%20holder.lua</source>
-      </version>
-      <version name="1.34" author="MonkeyBars" time="2021-11-06T16:45:20Z">
-        <changelog><![CDATA[version fix]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b1c2755ec9c00b23c91e469fc16854c63e8bb9e0/Glue-Reversible/MB_Glue-Reversible%20-%20Edit%20container%20item,%20retaining%20container%20holder.lua</source>
+      <version name="1.53" author="MonkeyBars" time="2022-01-16T08:45:39Z">
+        <changelog><![CDATA[initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c9d6808f02f526661f49851ca1ee4da51306ac4a/Superglue/MB_Superglue%20-%20Explode%20superglued%20items%20back%20to%20original%20state%20irreversibly.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Glue selected item(s) into pooled container item, expanding to time selection if any.lua" type="script" desc="MB_Glue-Reversible - Glue selected item(s) into pooled container item, expanding to time selection if any">
+    <reapack name="MB_Superglue - Reversibly Glue selected item(s) into pooled container item, expanding to time selection if any.lua" type="script" desc="MB_Superglue - Reversibly Glue selected item(s) into pooled container item, expanding to time selection if any">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -36,16 +28,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.30" author="MonkeyBars" time="2021-10-29T13:54:38Z">
-        <changelog><![CDATA[Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20expanding%20to%20time%20selection%20if%20any.lua</source>
-      </version>
-      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
-        <changelog><![CDATA[metadata update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20expanding%20to%20time%20selection%20if%20any.lua</source>
+      <version name="1.53" author="MonkeyBars" time="2022-01-09T21:25:07Z">
+        <changelog><![CDATA[branding update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/MB_Superglue%20-%20Reversibly%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20expanding%20to%20time%20selection%20if%20any.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Glue selected item(s) into pooled container item, ignoring time selection.lua" type="script" desc="MB_Glue-Reversible - Glue selected item(s) into pooled container item, ignoring time selection">
+    <reapack name="MB_Superglue - Reversibly Glue selected item(s) into pooled container item, ignoring time selection.lua" type="script" desc="MB_Superglue - Reversibly Glue selected item(s) into pooled container item, ignoring time selection">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -56,16 +44,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.30" author="MonkeyBars" time="2021-10-29T13:54:38Z">
-        <changelog><![CDATA[Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20ignoring%20time%20selection.lua</source>
-      </version>
-      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
-        <changelog><![CDATA[metadata update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20ignoring%20time%20selection.lua</source>
+      <version name="1.53" author="MonkeyBars" time="2022-01-09T21:25:07Z">
+        <changelog><![CDATA[branding update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/MB_Superglue%20-%20Reversibly%20Glue%20selected%20item(s)%20into%20pooled%20container%20item,%20ignoring%20time%20selection.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any.lua" type="script" desc="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, expanding glue to time selection if any">
+    <reapack name="MB_Superglue - Unglue superglued container item.lua" type="script" desc="MB_Superglue - Unglue superglued container item">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -76,20 +60,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.30" author="MonkeyBars" time="2021-10-29T13:54:38Z">
-        <changelog><![CDATA[Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
-      </version>
-      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
-        <changelog><![CDATA[metadata update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
-      </version>
-      <version name="1.39" author="MonkeyBars" time="2021-11-03T21:04:23Z">
-        <changelog><![CDATA[metadata update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/2bf64b031dbde99578b9af34e70cb2b815c272b7/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
+      <version name="1.53" author="MonkeyBars" time="2022-01-09T21:25:07Z">
+        <changelog><![CDATA[branding update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/MB_Superglue%20-%20Unglue%20superglued%20container%20item.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, ignoring time selection.lua" type="script" desc="MB_Glue-Reversible - Smart Glue or Edit selected item(s) by context, ignoring time selection">
+    <reapack name="MB_Superglue Smart Action - Reversibly Glue or Explode selected item(s) by context, expanding glue to time selection if any.lua" type="script" desc="MB_Superglue Smart Action - Reversibly Glue or Explode selected item(s) by context, expanding glue to time selection if any">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -100,131 +76,75 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.30" author="MonkeyBars" time="2021-10-29T13:54:38Z">
-        <changelog><![CDATA[Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/95e117765414d294a59cf1cd89e3b13a56bd544f/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
-      </version>
-      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
-        <changelog><![CDATA[metadata update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
-      </version>
-      <version name="1.39" author="MonkeyBars" time="2021-11-03T21:04:23Z">
-        <changelog><![CDATA[metadata update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/2bf64b031dbde99578b9af34e70cb2b815c272b7/Glue-Reversible/MB_Glue-Reversible%20-%20Smart%20Glue%20or%20Edit%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
+      <version name="1.53" author="MonkeyBars" time="2022-01-16T09:03:01Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/77e47157db036297a664eb4795ffad0eee3b0a8f/Superglue/MB_Superglue%20Smart%20Action%20-%20Reversibly%20Glue%20or%20Explode%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Glue-Reversible Utils.lua" type="script" desc="MB Glue-Reversible Utils: Tools for MB Glue-Reversible functionality">
+    <reapack name="MB_Superglue Smart Action - Reversibly Glue or Explode selected item(s) by context, ignoring time selection.lua" type="script" desc="MB_Superglue Smart Action - Reversibly Glue or Unglue selected item(s) by context, ignoring time selection">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
-{\pard \ql \f0 \sa180 \li0 \fi0 Code for Glue-Reversible scripts\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
 }
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.30" author="MonkeyBars" time="2021-10-28T19:06:32Z">
-        <changelog><![CDATA[Refactor doUnglue() new name initEditGlueReversible() (https://github.com/MonkeyBars3k/ReaScripts/issues/49); Rename all scripts to MB_xxx for clarity (https://github.com/MonkeyBars3k/ReaScripts/issues/60); Rename "Toggle Glug/Unglue" scripts to "Smart Glue-Unglue" (https://github.com/MonkeyBars3k/ReaScripts/issues/59)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b8ab43412008d91e3835d04626e24241350e1078/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+      <version name="1.53" author="MonkeyBars" time="2022-01-16T09:03:01Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/77e47157db036297a664eb4795ffad0eee3b0a8f/Superglue/MB_Superglue%20Smart%20Action%20-%20Reversibly%20Glue%20or%20Explode%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
       </version>
-      <version name="1.31" author="MonkeyBars" time="2021-10-30T19:59:38Z">
-        <changelog><![CDATA[Add tiling image to glued container (https://github.com/MonkeyBars3k/ReaScripts/issues/22)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b6a4b1078b352ccefeccf5f0520359b52bcdfa93/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+    </reapack>
+    <reapack name="MB_Superglue Smart Action - Reversibly Glue or Unglue selected item(s) by context, expanding glue to time selection if any.lua" type="script" desc="MB_Superglue Smart Action - Reversibly Glue or Unglue selected item(s) by context, expanding glue to time selection if any">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.53" author="MonkeyBars" time="2022-01-09T21:25:07Z">
+        <changelog><![CDATA[branding update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/MB_Superglue%20Smart%20Action%20-%20Reversibly%20Glue%20or%20Unglue%20selected%20item(s)%20by%20context,%20expanding%20glue%20to%20time%20selection%20if%20any.lua</source>
       </version>
-      <version name="1.32" author="MonkeyBars" time="2021-10-30T20:11:03Z">
-        <changelog><![CDATA[Add tiling stripe image to container holder (https://github.com/MonkeyBars3k/ReaScripts/issues/70)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e5d1ef68a23dfc63546ff8420556a95b7b12e19f/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
+    </reapack>
+    <reapack name="MB_Superglue Smart Action - Reversibly Glue or Unglue selected item(s) by context, ignoring time selection.lua" type="script" desc="MB_Superglue Smart Action - Reversibly Glue or Unglue selected item(s) by context, ignoring time selection">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.53" author="MonkeyBars" time="2022-01-09T21:25:07Z">
+        <changelog><![CDATA[branding update]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/MB_Superglue%20Smart%20Action%20-%20Reversibly%20Glue%20or%20Unglue%20selected%20item(s)%20by%20context,%20ignoring%20time%20selection.lua</source>
       </version>
-      <version name="1.33" author="MonkeyBars" time="2021-10-30T20:56:18Z">
-        <changelog><![CDATA[Further Edit refactoring]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/d13ccf74f8b5f0b7aea5803b7153fbab5cfe1331/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.34" author="MonkeyBars" time="2021-10-30T21:00:06Z">
-        <changelog><![CDATA[Image path cleanup]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b4853750fa25c9f6eb8d1e569b0cdd1b7f456671/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.35" author="MonkeyBars" time="2021-10-30T21:15:44Z">
-        <changelog><![CDATA[Fix container detection]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/a8b54d1b88e50fcbb517987a22ca929064b86bd4/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.36" author="MonkeyBars" time="2021-10-31T19:45:48Z">
-        <changelog><![CDATA[Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/7d3720ac291a76ec887b0731f22a91f1965caad7/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.37" author="MonkeyBars" time="2021-11-03T05:47:38Z">
-        <changelog><![CDATA[Edit container item left edge doesn't adjust position in pooled items [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/41)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/12b8e792198e8f243646dc14cf9ae980ae23c236/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.38" author="MonkeyBars" time="2021-11-03T16:24:04Z">
-        <changelog><![CDATA[Creating new pool from old container causes position error on reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/82)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/25f5a5b6dcfe487187129203936ae0d334c456bf/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.39" author="MonkeyBars" time="2021-11-03T21:04:23Z">
-        <changelog><![CDATA[Fix open container check logic]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/2bf64b031dbde99578b9af34e70cb2b815c272b7/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.40" author="MonkeyBars" time="2021-11-04T05:14:46Z">
-        <changelog><![CDATA[Dragging pooled item moves other pooled instances (https://github.com/MonkeyBars3k/ReaScripts/issues/84)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/58f51e88340601d66c9a34e9d96602c0607388f1/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.41" author="MonkeyBars" time="2021-11-05T23:52:03Z">
-        <changelog><![CDATA[Dragging pooled item moves other pooled instances (https://github.com/MonkeyBars3k/ReaScripts/issues/84)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b26b083d0b1d6c7105eb28317b2e165066438e03/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.42" author="MonkeyBars" time="2021-11-06T01:20:04Z">
-        <changelog><![CDATA[Fix image provides]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e9b0464786ced5632edfc3d36d1329afdae6c99d/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-      </version>
-      <version name="1.43" author="MonkeyBars" time="2021-11-06T01:32:06Z">
-        <changelog><![CDATA[Fix image provides]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/bb993063eac0a830693e09a4fcdbe54feeab4276/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/bb993063eac0a830693e09a4fcdbe54feeab4276/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.44" author="MonkeyBars" time="2021-11-09T20:39:27Z">
-        <changelog><![CDATA[Iterate version for image update]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/6e8a9258dde86a0ae2e78cfb3c29031f6d469b8f/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6e8a9258dde86a0ae2e78cfb3c29031f6d469b8f/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.45" author="MonkeyBars" time="2021-11-22T00:31:42Z">
-        <changelog><![CDATA[Refactor doGlueReversible() and doReglueReversible()]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/ac1c8adeb90fc473f1ff58a5340db7ef8a53c3da/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/ac1c8adeb90fc473f1ff58a5340db7ef8a53c3da/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.46" author="MonkeyBars" time="2021-11-25T05:27:13Z">
-        <changelog><![CDATA[Add check for required libs (https://github.com/MonkeyBars3k/ReaScripts/issues/90)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/45a080aecb0fe24883e56894234d496624559568/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/45a080aecb0fe24883e56894234d496624559568/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.47" author="MonkeyBars" time="2021-11-25T05:56:12Z">
-        <changelog><![CDATA[Finally fix math for position change detection with proper LUA rounding function]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e98acea5c25ca9168e76433634fabd5227ce8185/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e98acea5c25ca9168e76433634fabd5227ce8185/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.48" author="MonkeyBars" time="2021-11-25T05:58:32Z">
-        <changelog><![CDATA[Remove logs]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/bbc94e99f39d2a6e8e84dea64f283e388c05ba25/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/bbc94e99f39d2a6e8e84dea64f283e388c05ba25/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.49" author="MonkeyBars" time="2021-11-25T15:55:57Z">
-        <changelog><![CDATA[Position check doesn't detect if there are no other containers in pool (https://github.com/MonkeyBars3k/ReaScripts/issues/86)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e6706f2f43716b507396807876b0c94215046dd5/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e6706f2f43716b507396807876b0c94215046dd5/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.50" author="MonkeyBars" time="2021-11-28T00:03:07Z">
-        <changelog><![CDATA[Undo breaks container items data (https://github.com/MonkeyBars3k/ReaScripts/issues/37); Undo breaks pool logic (https://github.com/MonkeyBars3k/ReaScripts/issues/105); Pooled item position doesn't update consistently (https://github.com/MonkeyBars3k/ReaScripts/issues/106)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/4ad4fb52f40d39ba558536ba3da2c0a3e4aad886/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/4ad4fb52f40d39ba558536ba3da2c0a3e4aad886/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.51" author="MonkeyBars" time="2021-12-01T06:50:26Z">
-        <changelog><![CDATA[Ungrouping contained items breaks Glue-Reversible [7] (https://github.com/MonkeyBars3k/ReaScripts/issues/69)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/5d1b17696e37b69cf73937080adc428828938f62/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5d1b17696e37b69cf73937080adc428828938f62/Glue-Reversible/gr-bg.png</source>
-      </version>
-      <version name="1.52" author="MonkeyBars" time="2021-12-01T16:13:10Z">
-        <changelog><![CDATA[Edit doesn't detect container length edits done since last Glue (https://github.com/MonkeyBars3k/ReaScripts/issues/85); Canceling render dialog spits out error (https://github.com/MonkeyBars3k/ReaScripts/issues/96)]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/a3b36dc28655736568af9c127909394e119e75b2/Glue-Reversible/MB_Glue-Reversible%20Utils.lua</source>
-        <source file="gr-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/a3b36dc28655736568af9c127909394e119e75b2/Glue-Reversible/gr-bg.png</source>
+    </reapack>
+    <reapack name="MB_Superglue-Utils.lua" type="script" desc="MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Code for Superglue scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.53" author="MonkeyBars" time="2022-01-09T21:25:07Z">
+        <changelog><![CDATA[Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Change action nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/148); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Disallow multiple edit completely (https://github.com/MonkeyBars3k/ReaScripts/issues/152); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153); Move dev functions to external file (https://github.com/MonkeyBars3k/ReaScripts/issues/160); Deleted parents still get glued on temp tracks (https://github.com/MonkeyBars3k/ReaScripts/issues/161)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/serpent.lua</source>
+        <source file="sg-bg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fe3037d8401656bb744e3f49177fcc012325b98c/Superglue/sg-bg.png</source>
       </version>
     </reapack>
   </category>
@@ -249,37 +169,33 @@
 
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 MonkeyBars Reaper Scripts\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 The URL to import in ReaPack is https://github.com/MonkeyBars3k/ReaScripts/raw/master/index.xml.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Glue-Reversible\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs32 Superglue\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Background\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 There are two main ways to consolidate selected items on a track natively in Reaper: {\b Glue} and {\b Groups}. Both have disadvantages.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 {\b Glue} is permanent: once you glue items together, you cannot make edits later without cutting again. This can be problematic as you may wish make any number of changes to enclosed items (such as make the sound of a kick drum's tail longer, etc.). You cannot do this using Glue.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 The other option is to {\b Group} items. This works well if you simply want to move items around or select multiple items by clicking one item; however, you cannot use the other benefits of Reaper items, such as quickly looping, take envelopes, etc. Grouping can become confusing because Groups are highlighted in green around the items, but {\i not} around the boundary of the group itself. Groups can be unwieldy to work with in many musical contexts, such as a four-bar repetition, and they tend to create visual clutter.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 {\b Glue-Reversible} aims to address the shortcomings of both Glue and Groups, as well as restore the convenient functionality already present in items (looping, timestretching, and much more), by placing selected items in a new container item.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b Glue-Reversible} aims to address the shortcomings of both Glue and Groups, restore the convenient functionality already present in items (looping, timestretching, and much more) by placing selected items in a new container item \u8211- {\i and} provide users the convenience of audio item pooling.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 How to use\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 {\b To use Glue-Reversible}, simply select items and trigger one of the Glue-Reversible Glue or Smart Glue scripts (obey time selection enabled/disabled).\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 To edit your glued items, the {\b Edit} script opens the created container item, revealing the contained items once again. To reglue, just use one of the Glue scripts again.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 {\b Smart Glue/Edit} (with time selection enabled/disabled) will intelligently determine which action is required based on your item selections.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b To Superglue items}, simply select items and trigger one of the Superglue Glue or Smart Action scripts (obey time selection enabled/disabled).\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 To edit your glued items, the {\b Unglue} script opens the created container item, revealing the contained items once again. To Reglue, just use one of the Glue or Smart Action scripts again.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 {\b Smart Action} (with time selection enabled/disabled) will intelligently determine which action is required based on your item selection.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Features\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Provides the missing {\b nondestructive/reversible Glue feature} in Reaper!\par}
 {\pard \ql \f0 \sa0 \li720 \fi-360 \endash \tx360\tab A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes, Pooled Audio Items\sa180\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Currently, Glue-Reversible container item copies are {\b pooled by default}. Editing and regluing one container item {\b updates all instances}. (Yes! We have scripted the missing native {\b pooled audio items} feature in Reaper along with everything else!)\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Supports {\b nesting Glue-Reversible container items} inside other container items! When you update the nested container item, the script checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest \u8211- tested with 20 levels of nesting.\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Currently, Superglued container item copies are {\b pooled by default}. Editing and regluing one container item {\b updates all instances}. (Yes! We have scripted the missing native {\b pooled audio items} feature in Reaper along with everything else!)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Supports {\b nesting Superglued container items} inside {\i other} superglued container items! When you update the nested container item, Superglue checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest \u8211- tested with 20 levels of nesting.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Tips\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the pooled audio item feature:} Feel free to glue a single audio item and make copies of that! Since every glued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Edit any one of the pooled glue containers and reglue after.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab In Edit mode, the automatically created region can be used to increase the size of your glued container item. Otherwise, the size will be determined by the items selected as with native Reaper glue.\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the pooled audio item feature:} Feel free to superglue a single audio item and make copies of that! Since every superglued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Unglue any one of the pooled glue containers and reglue after.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When superglue items are Unglued, an automatically created region can be used to increase the size of your glued container item. Otherwise, the size will be determined by the items selected as with native Reaper glue or by time selection if you run one of those scripts.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b Reaper v6.43} or newer\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension}!\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be {\i very} careful if you want to {\b Clean current project directory} after supergluing \u8211- you could lose your superglued items, since at that point, they're not in the project.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be {\i very} careful if you want to {\b Clean current project directory} after supergluing \u8211- you could lose your superglued items, since at that point, those items aren't included in the project proper.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be very careful ungluing and editing a parent container item {\b near project start}. If a child container item would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its pooled sibling container items.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses item notes to set background image for easy recognition of glued container and contained items. Careful: {\b The background image will overwrite any item notes you already have on your glued items.} Disable this feature in the script options if you want your item notes preserved.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI container items}, the script uses "Apply track FX as new take" on each item to get a (silent) wav audio take. When you Edit, the wav take is removed and just the original MIDI take is restored to active. Currently only MIDI on virtual instrument tracks is supported.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of Glue-Reversible container items, you can't make a copy of itself inside itself, as that would cause an {\b infinite recursion}.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When gluing with time selection, ensure your time selection includes all items being glued because of {\field{\*\fldinst{HYPERLINK "https://forums.cockos.com/showthread.php?t=258769"}}{\fldrslt{\ul
-this Reaper bug
-}}}
-.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Uses {\b item selection set slot 10} and {\b SWS time selection set slot 5}.\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Superglue uses item notes to set background image for easy recognition of superglued container and contained items. Careful: {\b The background image will overwrite any item notes you already have on your glued items.} Disable this feature in the script options if you want your item notes preserved.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI superglued container items}, the script uses "Apply track FX as new take" on each item to get a (silent) audio take. When you Unglue, the audio take is removed and just the original MIDI take is restored to active. {\i Currently only MIDI on virtual instrument tracks is supported.}\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of superglued container items, you can't make a copy of itself inside itself, as that would cause an {\b infinite recursion}.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Superglue uses {\b item selection set slot 10} and {\b SWS time selection set slot 5}.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 History\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 matthewjumpsoffbuildings created the powerful, excellent "Glue Groups" scripts: https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window), bugfixes, and additional features.\par}
