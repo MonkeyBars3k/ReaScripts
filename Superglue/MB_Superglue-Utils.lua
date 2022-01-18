@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.53
--- @changelog Rename item breaks Glue-Reversible [9] (https://github.com/MonkeyBars3k/ReaScripts/issues/3); Add script: "Explode container items" [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/7); Add scripts: "Smart Glue-Explode" with & without time selection [1] (https://github.com/MonkeyBars3k/ReaScripts/issues/50); Don't store original item state in item name (https://github.com/MonkeyBars3k/ReaScripts/issues/73); Open container item is poor UX (https://github.com/MonkeyBars3k/ReaScripts/issues/75); Update code for item state from faststrings to Reaper state chunks (https://github.com/MonkeyBars3k/ReaScripts/issues/89); Refactor nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/115); Replace os.time() for id string with GenGUID() (https://github.com/MonkeyBars3k/ReaScripts/issues/109); Change SNM_GetSetObjectState to state chunk functions (https://github.com/MonkeyBars3k/ReaScripts/issues/120); Switch take data number to item data take GUID (https://github.com/MonkeyBars3k/ReaScripts/issues/121); Refactor: Bundle up related variables into tables (https://github.com/MonkeyBars3k/ReaScripts/issues/129); Change background image on restored items (https://github.com/MonkeyBars3k/ReaScripts/issues/130); Abstract out (de)serialization (https://github.com/MonkeyBars3k/ReaScripts/issues/132); Remove extra loop in adjustRestoredItems() (https://github.com/MonkeyBars3k/ReaScripts/issues/134); Use serialization lib for dependencies storage (https://github.com/MonkeyBars3k/ReaScripts/issues/135); Extrapolate deserialized data handling (https://github.com/MonkeyBars3k/ReaScripts/issues/137); Refactor nested pool update functions (https://github.com/MonkeyBars3k/ReaScripts/issues/139); Correct parent container pool update offset logic (https://github.com/MonkeyBars3k/ReaScripts/issues/142); Regluing container with previously removed item throws recursion msg (https://github.com/MonkeyBars3k/ReaScripts/issues/145); Rearchitect parent position propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/146); Change action nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/148); Check that parents exist before attempting restore+reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/150); Empty spacing item breaks in item replace modes (https://github.com/MonkeyBars3k/ReaScripts/issues/151); Reglue after parent deletion throws error (still looks for it) (https://github.com/MonkeyBars3k/ReaScripts/issues/153); Doublecheck loops through all items & remove if alternate solution possible (https://github.com/MonkeyBars3k/ReaScripts/issues/158); Move dev functions to external file (https://github.com/MonkeyBars3k/ReaScripts/issues/160); Deleted ancestors prevent higher ancestors from updating (https://github.com/MonkeyBars3k/ReaScripts/issues/161); Utilize terms "ancestors" and "descendants" (https://github.com/MonkeyBars3k/ReaScripts/issues/164); Smart action logic is wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/166)
+-- @version 1.54
+-- @changelog Change script names; optimize getSelectedSuperglueItemTypes()
 -- @provides [nomain] .
 --   serpent.lua
 --   sg-bg-restored.png
@@ -368,9 +368,11 @@ end
 
 
 function containerSelectionIsInvalid(selected_item_count, action)
-  local superglued_containers, restored_items, multiple_instances_from_same_pool_are_selected, i, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id, recursive_container_is_being_glued
+  local selected_item_groups, superglued_containers, restored_items, multiple_instances_from_same_pool_are_selected, i, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id, recursive_container_is_being_glued
 
-  superglued_containers, restored_items = getSelectedSuperglueItemTypes(selected_item_count)
+  selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superglued", "restored"})
+  superglued_containers = selected_item_groups["superglued"]["selected_items"]
+  restored_items = selected_item_groups["restored"]["selected_items"]
   multiple_instances_from_same_pool_are_selected = false
 
   for i = 1, #restored_items do
@@ -405,8 +407,8 @@ function containerSelectionIsInvalid(selected_item_count, action)
 end
 
 
-function getSelectedSuperglueItemTypes(selected_item_count)
-  local item_types, item_types_data, i, this_item_type, this_item, superglued_container_pool_id, restored_item_pool_id, j
+function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
+  local item_types, item_types_data, i, this_item_type, this_item, superglued_container_pool_id, restored_item_pool_id, j, this_requested_item_type
 
   item_types = {"superglued", "restored", "noncontainer", "child_instance", "parent_instance"}
   item_types_data = {}
@@ -428,16 +430,16 @@ function getSelectedSuperglueItemTypes(selected_item_count)
     item_types_data["child_instance"]["is"] = item_types_data["superglued"]["is"] and item_types_data["restored"]["is"]
     item_types_data["parent_instance"]["is"] = item_types_data["superglued"]["is"] and not item_types_data["restored"]["is"]
 
-    for j = 1, #item_types do
-      this_item_type = item_types[j]
+    for j = 1, #requested_types do
+      this_requested_item_type = requested_types[j]
       
-      if item_types_data[this_item_type]["is"] then
-        table.insert(item_types_data[this_item_type]["selected_items"], this_item)
+      if item_types_data[this_requested_item_type]["is"] then
+        table.insert(item_types_data[this_requested_item_type]["selected_items"], this_item)
       end
     end
   end
 
-  return item_types_data["superglued"]["selected_items"], item_types_data["restored"]["selected_items"], item_types_data["noncontainer"]["selected_items"], item_types_data["child_instance"]["selected_items"], item_types_data["parent_instance"]["selected_items"]
+  return item_types_data
 end
 
 
@@ -951,7 +953,6 @@ function createSelectedItemStates(selected_items, active_pool_id)
 
     this_item_guid = reaper.BR_GetMediaItemGUID(item)
     this_item_state = getSetItemStateChunk(this_item)
-
     selected_item_states[this_item_guid] = this_item_state
 
     if this_is_superglued_container then
@@ -1042,7 +1043,6 @@ function addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region
   sizing_region_name = _sizing_region_label .. pool_id
   sizing_region_label_num = reaper.AddProjectMarker2(_api_current_project, true, params.position, params.end_point, sizing_region_name, _sizing_region_1st_display_num, _sizing_region_color)
   sizing_region_guid_key_label = _pool_key_prefix .. pool_id .. _sizing_region_guid_key_suffix
-
   retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
       
   if is_region then
@@ -1935,10 +1935,11 @@ end
   
 
 function initUnglueExplode(action)
-  local selected_item_count, superglued_containers, this_pool_id, other_open_instance
+  local selected_item_count, selected_item_groups, superglued_containers, this_pool_id, other_open_instance
 
   selected_item_count = initAction(action)
-  superglued_containers = getSelectedSuperglueItemTypes(selected_item_count)
+  selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superglued"})
+  superglued_containers = selected_item_groups["superglued"]["selected_items"]
 
   if isNotSingleSupergluedContainer(#superglued_containers, action) == true then return end
 
@@ -2087,20 +2088,20 @@ end
 
 
 function getSmartAction(selected_item_count)
-  local superglued_containers, restored_items, noncontainers, child_instances, parent_instances, parent_instances_count, no_parent_instances_are_selected, single_parent_instance_is_selected, parent_instances_are_selected, multiple_parent_instances_are_selected, noncontainers_count, no_noncontainers_are_selected, noncontainers_are_selected, child_instances_count, no_child_instances_are_selected
+  local selected_item_groups, parent_instances_count, no_parent_instances_are_selected, single_parent_instance_is_selected, parent_instances_are_selected, multiple_parent_instances_are_selected, noncontainers_count, no_noncontainers_are_selected, noncontainers_are_selected, child_instances_count, no_child_instances_are_selected
 
-  superglued_containers, restored_items, noncontainers, child_instances, parent_instances = getSelectedSuperglueItemTypes(selected_item_count)
-  parent_instances_count = #parent_instances
+  selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"noncontainer", "child_instance", "parent_instance"})
+  parent_instances_count = #selected_item_groups["parent_instance"]["selected_items"]
   no_parent_instances_are_selected = parent_instances_count == 0
   single_parent_instance_is_selected = parent_instances_count == 1
   parent_instances_are_selected = parent_instances_count > 0
   multiple_parent_instances_are_selected = parent_instances_count > 1
-  noncontainers_count = #noncontainers
+  noncontainers_count = #selected_item_groups["noncontainer"]["selected_items"]
   no_noncontainers_are_selected = noncontainers_count == 0
   noncontainers_are_selected = noncontainers_count > 0
-  child_instances_count = #child_instances
-  no_child_instances_are_selected = #child_instances == 0
-  single_child_instance_is_selected = #child_instances == 1
+  child_instances_count = #selected_item_groups["child_instance"]["selected_items"]
+  no_child_instances_are_selected = child_instances_count == 0
+  single_child_instance_is_selected = child_instances_count == 1
 
   if single_parent_instance_is_selected and no_noncontainers_are_selected and no_child_instances_are_selected then
     return "unglue_or_explode"
