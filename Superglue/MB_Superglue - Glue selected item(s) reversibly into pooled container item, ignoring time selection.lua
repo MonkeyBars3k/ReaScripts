@@ -1,6 +1,6 @@
--- @description MB_Superglue - Reversibly Glue selected item(s) into pooled container item, ignoring time selection
+-- @description MB_Superglue - Glue selected item(s) reversibly into pooled container item, ignoring time selection
 -- @author MonkeyBars
--- @version 1.54
+-- @version 1.55
 -- @changelog Change script name
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
