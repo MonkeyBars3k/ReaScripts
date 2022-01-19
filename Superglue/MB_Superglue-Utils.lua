@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.55
--- @changelog Add script: "DePool Superglue container item" [8] (https://github.com/MonkeyBars3k/ReaScripts/issues/5)
+-- @version 1.56
+-- @changelog Revert crop change and fix DePool length bug (https://github.com/MonkeyBars3k/ReaScripts/issues/169)
 -- @provides [nomain] .
 --   serpent.lua
 --   sg-bg-restored.png
@@ -897,7 +897,7 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, first_select
   if parent_is_being_updated then
 
     for i = 1, #selected_items do
-      cropItemToParent(selected_items[i], sizing_params, first_selected_item_track)
+      cropItemToSizingParams(selected_items[i], sizing_params, first_selected_item_track)
     end
   end
 
@@ -976,31 +976,36 @@ function storeSelectedItemStates(pool_id, selected_item_states)
 end
 
 
-function cropItemToParent(restored_item, sizing_item_params, active_track)
-  local restored_item_params, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_parent_pool_id, right_hand_split_item, restored_item_cropped_position_delta, restored_item_active_take, end_point_delta, restored_item_new_length
+function cropItemToSizingParams(restored_item, sizing_item_params, active_track)
+  local restored_item_params, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_parent_pool_id, right_hand_split_item, restored_item_cropped_position_delta, restored_item_active_take, restored_vs_sizing_item_length_delta, restored_item_new_length, end_point_delta
 
   restored_item_params = getSetItemParams(restored_item)
   restored_item_starts_before_parent = round(restored_item_params.position, _api_time_decimal_resolution) < round(sizing_item_params.position, _api_time_decimal_resolution)
   restored_item_ends_later_than_parent = round(restored_item_params.end_point, _api_time_decimal_resolution) > round(sizing_item_params.end_point, _api_time_decimal_resolution)
   restored_item_parent_pool_id = storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix)
 
+  if restored_item_starts_before_parent then
+    restored_item_cropped_position_delta = sizing_item_params.position - restored_item_params.position
+    restored_item_active_take = reaper.GetTake(restored_item, restored_item_params.active_take_num)
+
+    reaper.SetMediaItemPosition(restored_item, sizing_item_params.position, true)
+    reaper.SetMediaItemTakeInfo_Value(restored_item_active_take, _api_take_src_offset_key, restored_item_cropped_position_delta)
+
+    restored_item_params.length = reaper.GetMediaItemInfo_Value(restored_item, _api_item_length_key)
+    restored_vs_sizing_item_length_delta = restored_item_params.length - sizing_item_params.length
+    
+    if restored_vs_sizing_item_length_delta > 0 then
+      restored_item_new_length = restored_item_params.length - restored_vs_sizing_item_length_delta
+      
+      reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
+    end
+  end
+
   if restored_item_ends_later_than_parent then
     end_point_delta = restored_item_params.end_point - sizing_item_params.end_point
     restored_item_new_length = restored_item_params.length - end_point_delta
     
     reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
-  end
-
-  if restored_item_starts_before_parent then
-  right_hand_split_item = reaper.SplitMediaItem(restored_item, sizing_item_params.position)
-  reaper.SetMediaItemSelected(right_hand_split_item, true)
-  reaper.DeleteTrackMediaItem(active_track, restored_item)
-  
-    -- restored_item_cropped_position_delta = sizing_item_params.position - restored_item_params.position
-    -- restored_item_active_take = reaper.GetTake(restored_item, restored_item_params.active_take_num)
-
-    -- reaper.SetMediaItemPosition(restored_item, sizing_item_params.position, true)
-    -- reaper.SetMediaItemTakeInfo_Value(restored_item_active_take, _api_take_src_offset_key, restored_item_cropped_position_delta)
   end
 end
 
@@ -2171,7 +2176,7 @@ function initDePool()
   for i = 0, selected_items_count-1 do
     this_selected_item = reaper.GetSelectedMediaItem(_api_current_project, i)
 
-    cropItemToParent(this_selected_item, selected_container_params, active_track)
+    cropItemToSizingParams(this_selected_item, selected_container_params, active_track)
   end
 
   selected_items_count = reaper.CountSelectedMediaItems(_api_current_project)
