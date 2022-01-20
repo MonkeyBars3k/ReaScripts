@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.59
--- @changelog Add dedicated options window [6] (https://github.com/MonkeyBars3k/ReaScripts/issues/51)
+-- @version 1.60
+-- @changelog Add option: Toggle sizing region deletion defer loop (https://github.com/MonkeyBars3k/ReaScripts/issues/170)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,7 +20,6 @@
 -- General utility functions at bottom
 
 -- for dev only
--- package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 -- require("sg-dev-functions")
  
 
@@ -28,7 +27,7 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
+local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _global_option_toggle_detect_sizing_region_deletion_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superglued_item_bg_img_path = _script_path .. "sg-bg-superglued.png"
@@ -65,7 +64,21 @@ _global_script_prefix = "SG_"
 _global_script_item_name_prefix = "sg"
 _global_options_section = "SUPERGLUE_OPTIONS"
 _global_option_toggle_item_images_key = "item_images_enabled"
-_global_option_toggle_item_images_default_val = "true"
+_global_option_toggle_detect_sizing_region_deletion_key = "detect_sizing_region_deletion_enabled"
+_all_global_options_params = {
+  {
+    ["name"] = "item_images",
+    ["ext_state_key"] = _global_option_toggle_item_images_key,
+    ["user_readable_text"] = "Enable item background images",
+    ["default_value"] = "true"
+  },
+  {
+    ["name"] = "detect_sizing_region_deletion",
+    ["ext_state_key"] = _global_option_toggle_detect_sizing_region_deletion_key,
+    ["user_readable_text"] = "Detect Unglue sizing region deletion",
+    ["default_value"] = "true"
+  }
+}
 _separator = ":"
 _superglued_container_name_prefix = _global_script_item_name_prefix .. _separator
 _pool_key_prefix = "pool-"
@@ -109,28 +122,40 @@ _position_change_response = nil
 
 
 
-function doInitialChecks()
-  local item_images_toggle_exists
+function setDefaultOptionValues()
+  local i, this_option_ext_state_key, this_option_exists_in_extstate
 
-  item_images_toggle_exists = reaper.HasExtState(_global_options_section, _global_option_toggle_item_images_key)
+  for i = 1, #_all_global_options_params do
+    this_option_ext_state_key = _all_global_options_params[i].ext_state_key
+    this_option_exists_in_extstate = reaper.HasExtState(_global_options_section, this_option_ext_state_key)
 
-  if not item_images_toggle_exists then
-    reaper.SetExtState(_global_options_section, _global_option_toggle_item_images_key, "true", true)
+    if not this_option_exists_in_extstate then
+      reaper.SetExtState(_global_options_section, this_option_ext_state_key, _all_global_options_params[i].default_value, true)
+    end
   end
 end
 
-doInitialChecks()
+setDefaultOptionValues()
 
 
 
-function toggleOption(option)
-  local key, current_val, new_val
+function toggleOption(option_name)
+  local i, active_option_idx, active_option, current_val, new_val
 
-  if option == "item_images" then
-    key = _global_option_toggle_item_images_key
+  for i = 1, #_all_global_options_params do
+
+    if _all_global_options_params[i].name == option_name then
+      active_option_idx = i
+
+      break
+    end
   end
 
-  current_val = reaper.GetExtState(_global_options_section, key)
+  active_option = _all_global_options_params[active_option_idx]
+
+  if not active_option then return end
+
+  current_val = reaper.GetExtState(_global_options_section, active_option.ext_state_key)
 
   if current_val == "false" then
     new_val = "true"
@@ -139,77 +164,72 @@ function toggleOption(option)
     new_val = "false"
   end
 
-  reaper.SetExtState(_global_options_section, key, new_val, true)
+  reaper.SetExtState(_global_options_section, active_option.ext_state_key, new_val, true)
 end
 
 
 function openOptionsWindow()
-  local all_option_params, all_option_controls, option_control_prefix, options_window, options_window_content, option_form_controls, option_form_submit, option_form_cancel
+  local all_option_controls, options_window, options_window_content, option_form_buttons, option_form_submit, option_form_cancel
 
-  all_option_params = {
-    ["item_images"] = {
-      ["ext_state_key"] = _global_option_toggle_item_images_key,
-      ["user_readable_text"] = "Enable item background images"
-    }
-  }
   all_option_controls = {}
-  options_window = rtk.Window()
-  options_window_content = rtk.VBox{margin = "0 35 35 35", halign = "center"} 
-  option_form_controls = rtk.HBox{margin = "40 10 10 10", halign = "center", spacing = 10}
-  option_form_submit = rtk.Button{"OK"}
+  options_window = rtk.Window{halign = "center"}
+  options_window_content = rtk.VBox{w = 0.75, margin = "0 35 35 35"} 
+  option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
+  option_form_submit = rtk.Button{"Submit"}
   option_form_cancel = rtk.Button{"Cancel"}
   option_form_cancel.onclick = function() 
     options_window:close()
   end
 
-  option_form_controls:add(option_form_submit)
-  option_form_controls:add(option_form_cancel)
+  option_form_buttons:add(option_form_submit)
+  option_form_buttons:add(option_form_cancel)
   options_window_content:add(rtk.Heading{"MB_Superglue Global Options", w = 1, margin = 35, halign = "center"})
 
-  all_option_params, all_option_controls, options_window_content = updateOptionCheckboxes(all_option_params, all_option_controls, options_window_content)
+  all_option_controls, options_window_content = populateOptionCheckboxes(all_option_controls, options_window_content)
   option_form_submit.onclick = function()
-    submitOptionChanges(all_option_params, all_option_controls, options_window)
+    submitOptionChanges(all_option_controls, options_window)
   end
 
-  options_window_content:attr(w, option_form_controls.w)
-  options_window_content:add(option_form_controls)
+  options_window_content:add(option_form_buttons)
   options_window:add(options_window_content)
-  options_window:attr(w, options_window_content.w)
   options_window:open{halign = "center", valign = "center"}
 end
 
 
-function updateOptionCheckboxes(all_option_params, all_option_controls, options_window_content)
-  local option_name, option_params, checkbox_value
+function populateOptionCheckboxes(all_option_controls, options_window_content)
+  local i, this_option, this_option_name, this_option_saved_value, checkbox_value
 
-  for option_name, option_params in pairs(all_option_params) do
-    option_params.saved_value = reaper.GetExtState(_global_options_section, option_params.ext_state_key)
+  for i = 1, #_all_global_options_params do
+    this_option = _all_global_options_params[i]
+    this_option_name = _all_global_options_params[i].name
+    this_option_saved_value = reaper.GetExtState(_global_options_section, this_option.ext_state_key)
 
-    if option_params.saved_value == "true" then
+    if this_option_saved_value == "true" then
       checkbox_value = true
     
     else
       checkbox_value = false
     end
 
-    all_option_controls[option_name] = rtk.CheckBox{option_params.user_readable_text, value = checkbox_value}
+    all_option_controls[this_option_name] = rtk.CheckBox{this_option.user_readable_text, value = checkbox_value}
 
-    options_window_content:add(all_option_controls[option_name])
+    options_window_content:add(all_option_controls[this_option_name])
   end
 
-  return all_option_params, all_option_controls, options_window_content
+  return all_option_controls, options_window_content
 end
 
 
-function submitOptionChanges(all_option_params, all_option_controls, options_window)
-  local option_name, option_params
+function submitOptionChanges(all_option_controls, options_window)
+  local i, this_option, this_option_saved_value, this_option_checkbox_value
 
-  for option_name, option_params in pairs(all_option_params) do
-    option_params.saved_value = tostring(reaper.GetExtState(_global_options_section, option_params.ext_state_key))
-    option_params.checkbox_value = all_option_controls[option_name].value
+  for i = 1, #_all_global_options_params do
+    this_option = _all_global_options_params[i]
+    this_option_saved_value = reaper.GetExtState(_global_options_section, this_option.ext_state_key)
+    this_option_checkbox_value = tostring(all_option_controls[this_option.name].value)
 
-    if option_params.checkbox_value ~= option_params.saved_value then
-      reaper.SetExtState(_global_options_section, option_params.ext_state_key, tostring(option_params.checkbox_value), true)
+    if this_option_checkbox_value ~= this_option_saved_value then
+      reaper.SetExtState(_global_options_section, this_option.ext_state_key, this_option_checkbox_value, true)
       options_window:close()
     end
   end
@@ -2174,7 +2194,7 @@ end
 
 
 function processUnglueExplode(superglued_container, pool_id, action)
-  local superglued_container_preedit_params, active_track, this_is_explode, sizing_region_guid, superglued_container_postglue_params
+  local superglued_container_preedit_params, active_track, this_is_explode, sizing_region_guid, detect_sizing_region_deletion_is_enabled, superglued_container_postglue_params
 
   superglued_container_preedit_params = getSetItemParams(superglued_container)
 
@@ -2190,8 +2210,11 @@ function processUnglueExplode(superglued_container, pool_id, action)
 
   if action == "Unglue" then
     sizing_region_guid = createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
+    detect_sizing_region_deletion_is_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_detect_sizing_region_deletion_key) == "true"
 
-    initSizingRegionCheck(sizing_region_guid, pool_id)
+    if detect_sizing_region_deletion_is_enabled then
+      initSizingRegionCheck(sizing_region_guid, pool_id)
+    end
 
 -- IS THIS DOING ANYTHING?
     superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
