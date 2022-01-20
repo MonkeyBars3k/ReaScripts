@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.57
--- @changelog Add defer script to detect sizing region deletion: user dialog(https://github.com/MonkeyBars3k/ReaScripts/issues/131)
+-- @version 1.58
+-- @changelog Add option: Toggle bg image insertion (https://github.com/MonkeyBars3k/ReaScripts/issues/87)
 -- @provides [nomain] .
 --   serpent.lua
 --   sg-bg-restored.png
@@ -26,7 +26,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
+local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superglued_item_bg_img_path = _script_path .. "sg-bg-superglued.png"
@@ -61,6 +61,9 @@ _api_takenumber_key = "IP_TAKENUMBER"
 _api_null_takes_val = "TAKE NULL"
 _global_script_prefix = "SG_"
 _global_script_item_name_prefix = "sg"
+_global_options_section = "SUPERGLUE_OPTIONS"
+_global_option_toggle_item_images_key = "item_images_enabled"
+_global_option_toggle_item_images_default_val = "true"
 _separator = ":"
 _superglued_container_name_prefix = _global_script_item_name_prefix .. _separator
 _pool_key_prefix = "pool-"
@@ -102,6 +105,39 @@ _ancestor_pools_params = {}
 _position_changed_since_last_glue = false
 _position_change_response = nil
 
+
+
+function doInitialChecks()
+  local item_images_toggle_exists
+
+  item_images_toggle_exists = reaper.HasExtState(_global_options_section, _global_option_toggle_item_images_key)
+
+  if not item_images_toggle_exists then
+    reaper.SetExtState(_global_options_section, _global_option_toggle_item_images_key, "true", true)
+  end
+end
+
+doInitialChecks()
+
+
+function toggleOption(option)
+  local key, current_val, new_val
+
+  if option == "item_images" then
+    key = _global_option_toggle_item_images_key
+  end
+
+  current_val = reaper.GetExtState(_global_options_section, key)
+
+  if current_val == "false" then
+    new_val = "true"
+
+  elseif current_val == "true" then
+    new_val = "false"
+  end
+
+  reaper.SetExtState(_global_options_section, key, new_val, true)
+end
 
 
 function initSuperglue(obey_time_selection)
@@ -1193,26 +1229,30 @@ end
 
 
 function addRemoveItemImage(item, type_or_remove)
-  local add, type, remove, img_path
+  local item_images_are_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_item_images_key) == "true"
 
-  add = type_or_remove
-  type = type_or_remove
-  remove = type_or_remove == false
+  if item_images_are_enabled then
+    local add, type, remove, img_path
 
-  if add then
+    add = type_or_remove
+    type = type_or_remove
+    remove = type_or_remove == false
 
-    if type == "superglued" then
-      img_path = _superglued_item_bg_img_path
+    if add then
 
-    elseif type == "restored" then
-      img_path = _restored_item_bg_img_path
+      if type == "superglued" then
+        img_path = _superglued_item_bg_img_path
+
+      elseif type == "restored" then
+        img_path = _restored_item_bg_img_path
+      end
+
+    elseif remove then
+      img_path = ""
     end
 
-  elseif remove then
-    img_path = ""
+    reaper.BR_SetMediaItemImageResource(item, img_path, _api_item_image_center_tile)
   end
-
-  reaper.BR_SetMediaItemImageResource(item, img_path, _api_item_image_center_tile)
 end
 
 
