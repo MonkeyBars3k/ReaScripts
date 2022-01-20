@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.56
--- @changelog Revert crop change and fix DePool length bug (https://github.com/MonkeyBars3k/ReaScripts/issues/169)
+-- @version 1.57
+-- @changelog Add defer script to detect sizing region deletion: user dialog(https://github.com/MonkeyBars3k/ReaScripts/issues/131)
 -- @provides [nomain] .
 --   serpent.lua
 --   sg-bg-restored.png
@@ -26,7 +26,7 @@
 local serpent = require("serpent")
 
 
-local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
+local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superglued_item_bg_img_path = _script_path .. "sg-bg-superglued.png"
@@ -41,10 +41,12 @@ _unglue_undo_block_string = "MB_Superglue-Unglue"
 _explode_undo_block_string = "MB_Superglue-Explode"
 _depool_undo_block_string = "MB_Superglue-DePool"
 _smart_action_undo_block_string = "MB_Superglue-Smart-Action"
+_reinstate_sizing_region_undo_block_string = "MB_Superglue-Reinstate-Sizing-Region"
 _sizing_region_label = "SG: DO NOT DELETE – Use to increase size – Pool #"
 _sizing_region_color = reaper.ColorToNative(255, 255, 255)|0x1000000
 _api_current_project = 0
 _api_include_all_undo_states = -1
+_api_marker_region_undo_states = 8
 _api_item_image_center_tile = 1
 _api_time_decimal_resolution = 12
 _api_data_key = "P_EXT:"
@@ -63,6 +65,7 @@ _separator = ":"
 _superglued_container_name_prefix = _global_script_item_name_prefix .. _separator
 _pool_key_prefix = "pool-"
 _sizing_region_guid_key_suffix = ":sizing-region-guid"
+_sizing_region_defer_loop_suffix = "_sizing_region_loop_active"
 _pool_contained_item_states_key_suffix = ":contained-item-states"
 _pool_parent_position_key_suffix = ":first-parent-instance-position"
 _pool_parent_length_key_suffix = ":first-parent-instance-length"
@@ -87,10 +90,12 @@ _msg_type_ok_cancel = 1
 _msg_type_yes_no = 4
 _msg_response_ok = 2
 _msg_response_yes = 6
+_msg_response_no = 7
 _msg_change_selected_items = "Change the items selected and try again."
 _data_storage_track = reaper.GetMasterTrack(_api_current_project)
 _active_glue_pool_id = nil
 _sizing_region_1st_display_num = 0
+_sizing_region_defer_timing = 0.75
 _superglued_instance_offset_delta_since_last_glue = 0
 _restored_items_project_start_position_delta = 0
 _ancestor_pools_params = {}
@@ -664,7 +669,7 @@ function setUpReglue(parent_is_being_updated, first_selected_item_track, pool_id
     return setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
 
   elseif user_selected_instance_is_being_reglued then
-    return setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, obey_time_selection)
+    return setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, pool_id, obey_time_selection)
   end
 end
 
@@ -801,12 +806,13 @@ function selectDeselectItems(items, select_deselect)
 end
 
 
-function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selected_items, obey_time_selection)
-  local sizing_params, is_active_container_reglue, time_selection_was_set_by_code
+function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selected_items, pool_id, obey_time_selection)
+  local sizing_params, is_active_container_reglue, time_selection_was_set_by_code, sizing_region_defer_loop_is_active_key
 
   sizing_params = getSetSizingRegion(sizing_region_guid)
   is_active_container_reglue = sizing_params
   time_selection_was_set_by_code = false
+  sizing_region_defer_loop_is_active_key = _pool_key_prefix .. pool_id .. _sizing_region_defer_loop_suffix
 
   if is_active_container_reglue then
 
@@ -819,6 +825,7 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selec
       time_selection_was_set_by_code = true
     end
 
+    storeRetrieveProjectData(sizing_region_defer_loop_is_active_key, "false")
     getSetSizingRegion(sizing_region_guid, "delete")
   end
 
@@ -853,6 +860,70 @@ function getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_delete)
     region_idx = region_idx + 1
 
   until retval == 0
+end
+
+
+function getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
+  local get, delete, sizing_region_guid, sizing_region_api_key, stored_guid_retval, this_region_guid, this_region_belongs_to_active_pool, sizing_region_params, retval, is_region
+
+  get = not params_or_delete
+  delete = params_or_delete == "delete"
+  sizing_region_guid = sizing_region_guid_or_pool_id
+  sizing_region_api_key = _api_project_region_guid_key_prefix .. region_idx
+  stored_guid_retval, this_region_guid = reaper.GetSetProjectInfo_String(_api_current_project, sizing_region_api_key, "", false)
+  this_region_belongs_to_active_pool = this_region_guid == sizing_region_guid
+
+  if this_region_belongs_to_active_pool then
+
+    if get then
+      sizing_region_params = {
+        ["idx"] = region_idx
+      }
+      retval, is_region, sizing_region_params.position, sizing_region_params.end_point = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
+      sizing_region_params.length = sizing_region_params.end_point - sizing_region_params.position
+
+      return retval, sizing_region_params
+
+    elseif delete then
+      reaper.DeleteProjectMarkerByIndex(_api_current_project, region_idx, true)
+
+      retval = 0
+
+      return retval
+    end
+
+  else
+    return retval
+  end
+end
+
+
+function addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
+  local params, pool_id, sizing_region_name, sizing_region_label_num, sizing_region_guid_key_label, retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num, this_region_is_active, sizing_region_api_key, stored_guid_retval, sizing_region_guid
+
+  params = params_or_delete
+  params.end_point = params.position + params.length
+  pool_id = sizing_region_guid_or_pool_id
+  sizing_region_name = _sizing_region_label .. pool_id
+  sizing_region_label_num = reaper.AddProjectMarker2(_api_current_project, true, params.position, params.end_point, sizing_region_name, _sizing_region_1st_display_num, _sizing_region_color)
+  sizing_region_guid_key_label = _pool_key_prefix .. pool_id .. _sizing_region_guid_key_suffix
+  retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
+      
+  if is_region then
+    this_region_is_active = this_region_label_num == sizing_region_label_num
+
+    if this_region_is_active then
+      sizing_region_api_key = _api_project_region_guid_key_prefix .. region_idx
+      stored_guid_retval, sizing_region_guid = reaper.GetSetProjectInfo_String(_api_current_project, sizing_region_api_key, "", false)
+
+      storeRetrieveProjectData(sizing_region_guid_key_label, sizing_region_guid)
+
+      return retval, sizing_region_guid
+
+    else
+      return retval
+    end
+  end
 end
 
 
@@ -1006,69 +1077,6 @@ function cropItemToSizingParams(restored_item, sizing_item_params, active_track)
     restored_item_new_length = restored_item_params.length - end_point_delta
     
     reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
-  end
-end
-
-
-function getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-  local get, delete, sizing_region_guid, sizing_region_api_key, stored_guid_retval, this_region_guid, this_region_belongs_to_active_pool, sizing_region_params, retval, is_region
-
-  get = not params_or_delete
-  delete = params_or_delete == "delete"
-  sizing_region_guid = sizing_region_guid_or_pool_id
-  sizing_region_api_key = _api_project_region_guid_key_prefix .. region_idx
-  stored_guid_retval, this_region_guid = reaper.GetSetProjectInfo_String(_api_current_project, sizing_region_api_key, "", false)
-  this_region_belongs_to_active_pool = this_region_guid == sizing_region_guid
-
-  if this_region_belongs_to_active_pool then
-    if get then
-      sizing_region_params = {
-        ["idx"] = region_idx
-      }
-
-      retval, is_region, sizing_region_params.position, sizing_region_params.end_point = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
-      sizing_region_params.length = sizing_region_params.end_point - sizing_region_params.position
-
-      return retval, sizing_region_params
-
-    elseif delete then
-      reaper.DeleteProjectMarkerByIndex(_api_current_project, region_idx, true)
-
-      retval = 0
-
-      return retval
-    end
-
-  else
-    return retval
-  end
-end
-
-
-function addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-  local params, pool_id, sizing_region_name, sizing_region_label_num, sizing_region_guid_key_label, retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num, this_region_is_active, sizing_region_api_key, stored_guid_retval, sizing_region_guid
-
-  params = params_or_delete
-  params.end_point = params.position + params.length
-  pool_id = sizing_region_guid_or_pool_id
-  sizing_region_name = _sizing_region_label .. pool_id
-  sizing_region_label_num = reaper.AddProjectMarker2(_api_current_project, true, params.position, params.end_point, sizing_region_name, _sizing_region_1st_display_num, _sizing_region_color)
-  sizing_region_guid_key_label = _pool_key_prefix .. pool_id .. _sizing_region_guid_key_suffix
-  retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
-      
-  if is_region then
-    this_region_is_active = this_region_label_num == sizing_region_label_num
-
-    if this_region_is_active then
-      sizing_region_api_key = _api_project_region_guid_key_prefix .. region_idx
-      stored_guid_retval, sizing_region_guid = reaper.GetSetProjectInfo_String(_api_current_project, sizing_region_api_key, "", false)
-      storeRetrieveProjectData(sizing_region_guid_key_label, sizing_region_guid)
-
-      return retval, sizing_region_guid
-
-    else
-      return retval
-    end
   end
 end
 
@@ -1599,6 +1607,10 @@ function handleRestoredItem(active_track, stored_item_state, superglued_containe
 
   restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
 
+  if this_is_explode then
+    storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, "")
+  end
+
   handleRestoredItemImage(restored_item, restored_instance_pool_id, this_is_explode)
 
   if restored_item_negative_position_delta then
@@ -1748,7 +1760,6 @@ function handleRestoredItemImage(restored_item, restored_instance_pool_id, this_
   local this_restored_item_is_not_instance = not restored_instance_pool_id or restored_instance_pool_id == ""
 
   if this_is_explode then
-    storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, "")
 
     if this_restored_item_is_not_instance then
       addRemoveItemImage(restored_item, false)
@@ -2037,7 +2048,7 @@ function handleUnglueExplode(pool_id, action)
   if action == "Unglue" then
     storeRetrieveSupergluedContainerParams(pool_id, _preedit_action_step, superglued_container)
   end
-  
+
   processUnglueExplode(superglued_container, pool_id, action)
 
   if action ~= "DePool" then
@@ -2047,7 +2058,7 @@ end
 
 
 function processUnglueExplode(superglued_container, pool_id, action)
-  local superglued_container_preedit_params, active_track, this_is_explode, superglued_container_postglue_params
+  local superglued_container_preedit_params, active_track, this_is_explode, sizing_region_guid, superglued_container_postglue_params
 
   superglued_container_preedit_params = getSetItemParams(superglued_container)
 
@@ -2062,8 +2073,11 @@ function processUnglueExplode(superglued_container, pool_id, action)
   restoreContainedItems(pool_id, active_track, superglued_container, superglued_container_preedit_params, nil, this_is_explode)
 
   if action == "Unglue" then
-    createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
+    sizing_region_guid = createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
 
+    initSizingRegionCheck(sizing_region_guid, pool_id)
+
+-- IS THIS DOING ANYTHING?
     superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
   end
 
@@ -2072,9 +2086,111 @@ end
 
 
 function createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
-  local superglued_container_params = getSetItemParams(superglued_container)
+  local superglued_container_params, sizing_region_guid
 
-  getSetSizingRegion(pool_id, superglued_container_params)
+  superglued_container_params = getSetItemParams(superglued_container)
+  sizing_region_guid = getSetSizingRegion(pool_id, superglued_container_params)
+  
+  return sizing_region_guid
+end
+
+
+function initSizingRegionCheck(sizing_region_guid, pool_id)
+  local sizing_region_params, defer_start_time, defer_start_project_state, sizing_region_defer_loop_is_active_key
+
+  sizing_region_params = getSetSizingRegion(sizing_region_guid)
+  defer_start_time = os.time()
+  defer_start_project_state = reaper.GetProjectStateChangeCount(_api_current_project)
+  sizing_region_defer_loop_is_active_key = _pool_key_prefix .. pool_id .. _sizing_region_defer_loop_suffix
+
+  storeRetrieveProjectData(sizing_region_defer_loop_is_active_key, "true")
+  startSizingRegionCheckLoop(defer_start_time, defer_start_project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id)
+end
+
+
+function startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id)
+  local current_time = os.time()
+  local time_elapsed = current_time - defer_loop_start_time
+
+  if time_elapsed > _sizing_region_defer_timing then
+    local new_project_state = reaper.GetProjectStateChangeCount(_api_current_project)
+
+    if new_project_state ~= project_state then
+      defer_loop_start_time, project_state = checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_state, sizing_region_defer_loop_is_active_key, sizing_region_params, pool_id)
+
+    else
+      defer_loop_start_time = current_time
+    end
+  end
+
+  if defer_loop_start_time then
+    local retval, sizing_region_defer_loop_is_active = storeRetrieveProjectData(sizing_region_defer_loop_is_active_key)
+    
+    if retval and sizing_region_defer_loop_is_active == "true" then
+      reaper.defer(function() 
+        startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id)
+      end)
+    end
+  end
+end
+
+
+function checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_state, sizing_region_defer_loop_is_active_key, sizing_region_params, pool_id)
+  local region_idx, retval, this_guid, defer_loop_start_time, project_state
+
+  region_idx = 0
+
+  repeat
+    retval, this_guid = reaper.GetSetProjectInfo_String(_api_current_project, _api_project_region_guid_key_prefix .. region_idx, "", false)
+    
+    if retval and this_guid == sizing_region_guid then
+      defer_loop_start_time = current_time
+      project_state = new_project_state
+
+      break
+    end
+
+    region_idx = region_idx + 1
+
+  until retval == false
+
+  if retval == false then
+    storeRetrieveProjectData(sizing_region_defer_loop_is_active_key, "false")
+    handleSizingRegionDeletion(sizing_region_params, pool_id)
+
+    return false
+  end
+
+  return defer_loop_start_time, project_state
+end
+
+
+function handleSizingRegionDeletion(sizing_region_params, pool_id)
+  local sizing_region_deletion_result, user_wants_to_reinstate_sizing_region, user_wants_to_explode, sizing_region_guid, selected_item_count, i, this_selected_item, this_selected_item_instance_pool_id
+
+  sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Explode or "no" to reinstate the deleted sizing region.', "MB_Superglue: An active Unglue sizing region got deleted!", _msg_type_yes_no)
+  user_wants_to_reinstate_sizing_region = sizing_region_deletion_result == _msg_response_no
+  user_wants_to_explode = sizing_region_deletion_result == _msg_response_yes
+
+  if user_wants_to_reinstate_sizing_region then
+    reaper.Undo_BeginBlock()
+
+    sizing_region_guid = getSetSizingRegion(pool_id, sizing_region_params)
+    
+    reaper.Undo_EndBlock(_reinstate_sizing_region_undo_block_string, _api_marker_region_undo_states)
+    initSizingRegionCheck(sizing_region_guid, pool_id)
+
+  elseif user_wants_to_explode then
+    selected_item_count = reaper.CountSelectedMediaItems(_api_current_project)
+
+    for i = 0, selected_item_count-1 do
+      this_selected_item = reaper.GetSelectedMediaItem(_api_current_project, i)
+      this_selected_item_instance_pool_id = storeRetrieveItemData(this_selected_item, _instance_pool_id_key_suffix)
+
+      storeRetrieveItemData(this_selected_item, _parent_pool_id_key_suffix, "")
+      handleRestoredItemImage(this_selected_item, this_selected_item_instance_pool_id, true)
+    end
+  end
 end
 
 
