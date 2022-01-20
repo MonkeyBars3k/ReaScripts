@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.60
--- @changelog Add option: Toggle sizing region deletion defer loop (https://github.com/MonkeyBars3k/ReaScripts/issues/170)
+-- @version 1.61
+-- @changelog Disabled sizing region deletion detection should default to yes option, not disable the defer (https://github.com/MonkeyBars3k/ReaScripts/issues/172)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -27,7 +27,7 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _global_option_toggle_detect_sizing_region_deletion_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
+local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_center_tile, _api_time_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _global_option_toggle_sizing_region_deletion_msg_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superglued_item_bg_img_path = _script_path .. "sg-bg-superglued.png"
@@ -64,18 +64,18 @@ _global_script_prefix = "SG_"
 _global_script_item_name_prefix = "sg"
 _global_options_section = "SUPERGLUE_OPTIONS"
 _global_option_toggle_item_images_key = "item_images_enabled"
-_global_option_toggle_detect_sizing_region_deletion_key = "detect_sizing_region_deletion_enabled"
+_global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
 _all_global_options_params = {
   {
     ["name"] = "item_images",
     ["ext_state_key"] = _global_option_toggle_item_images_key,
-    ["user_readable_text"] = "Enable item background images",
+    ["user_readable_text"] = "Insert item background images on superglue",
     ["default_value"] = "true"
   },
   {
-    ["name"] = "detect_sizing_region_deletion",
-    ["ext_state_key"] = _global_option_toggle_detect_sizing_region_deletion_key,
-    ["user_readable_text"] = "Detect Unglue sizing region deletion",
+    ["name"] = "sizing_region_deletion_msg",
+    ["ext_state_key"] = _global_option_toggle_sizing_region_deletion_msg_key,
+    ["user_readable_text"] = "Prompt on deletion of Unglue sizing region (disabled = explode unglued Oitems on sizing region deletion)",
     ["default_value"] = "true"
   }
 }
@@ -113,7 +113,7 @@ _msg_change_selected_items = "Change the items selected and try again."
 _data_storage_track = reaper.GetMasterTrack(_api_current_project)
 _active_glue_pool_id = nil
 _sizing_region_1st_display_num = 0
-_sizing_region_defer_timing = 0.75
+_sizing_region_defer_timing = 0.125
 _superglued_instance_offset_delta_since_last_glue = 0
 _restored_items_project_start_position_delta = 0
 _ancestor_pools_params = {}
@@ -2194,7 +2194,7 @@ end
 
 
 function processUnglueExplode(superglued_container, pool_id, action)
-  local superglued_container_preedit_params, active_track, this_is_explode, sizing_region_guid, detect_sizing_region_deletion_is_enabled, superglued_container_postglue_params
+  local superglued_container_preedit_params, active_track, this_is_explode, sizing_region_guid, sizing_region_deletion_msg_is_enabled, superglued_container_postglue_params
 
   superglued_container_preedit_params = getSetItemParams(superglued_container)
 
@@ -2210,11 +2210,9 @@ function processUnglueExplode(superglued_container, pool_id, action)
 
   if action == "Unglue" then
     sizing_region_guid = createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
-    detect_sizing_region_deletion_is_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_detect_sizing_region_deletion_key) == "true"
+    sizing_region_deletion_msg_is_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_sizing_region_deletion_msg_key)
 
-    if detect_sizing_region_deletion_is_enabled then
-      initSizingRegionCheck(sizing_region_guid, pool_id)
-    end
+    initSizingRegionCheck(sizing_region_guid, pool_id, sizing_region_deletion_msg_is_enabled)
 
 -- IS THIS DOING ANYTHING?
     superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
@@ -2234,7 +2232,7 @@ function createSizingRegionFromSupergluedContainer(superglued_container, pool_id
 end
 
 
-function initSizingRegionCheck(sizing_region_guid, pool_id)
+function initSizingRegionCheck(sizing_region_guid, pool_id, sizing_region_deletion_msg_is_enabled)
   local sizing_region_params, defer_start_time, defer_start_project_state, sizing_region_defer_loop_is_active_key
 
   sizing_region_params = getSetSizingRegion(sizing_region_guid)
@@ -2243,11 +2241,11 @@ function initSizingRegionCheck(sizing_region_guid, pool_id)
   sizing_region_defer_loop_is_active_key = _pool_key_prefix .. pool_id .. _sizing_region_defer_loop_suffix
 
   storeRetrieveProjectData(sizing_region_defer_loop_is_active_key, "true")
-  startSizingRegionCheckLoop(defer_start_time, defer_start_project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id)
+  startSizingRegionCheckLoop(defer_start_time, defer_start_project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id, sizing_region_deletion_msg_is_enabled)
 end
 
 
-function startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id)
+function startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id, sizing_region_deletion_msg_is_enabled)
   local current_time = os.time()
   local time_elapsed = current_time - defer_loop_start_time
 
@@ -2255,7 +2253,8 @@ function startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing
     local new_project_state = reaper.GetProjectStateChangeCount(_api_current_project)
 
     if new_project_state ~= project_state then
-      defer_loop_start_time, project_state = checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_state, sizing_region_defer_loop_is_active_key, sizing_region_params, pool_id)
+
+      defer_loop_start_time, project_state = checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_state, sizing_region_defer_loop_is_active_key, sizing_region_params, pool_id, sizing_region_deletion_msg_is_enabled)
 
     else
       defer_loop_start_time = current_time
@@ -2267,14 +2266,14 @@ function startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing
     
     if retval and sizing_region_defer_loop_is_active == "true" then
       reaper.defer(function() 
-        startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id)
+        startSizingRegionCheckLoop(defer_loop_start_time, project_state, sizing_region_guid, sizing_region_params, sizing_region_defer_loop_is_active_key, pool_id, sizing_region_deletion_msg_is_enabled)
       end)
     end
   end
 end
 
 
-function checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_state, sizing_region_defer_loop_is_active_key, sizing_region_params, pool_id)
+function checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_state, sizing_region_defer_loop_is_active_key, sizing_region_params, pool_id, sizing_region_deletion_msg_is_enabled)
   local region_idx, retval, this_guid, defer_loop_start_time, project_state
 
   region_idx = 0
@@ -2295,7 +2294,7 @@ function checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_
 
   if retval == false then
     storeRetrieveProjectData(sizing_region_defer_loop_is_active_key, "false")
-    handleSizingRegionDeletion(sizing_region_params, pool_id)
+    handleSizingRegionDeletion(sizing_region_params, pool_id, sizing_region_deletion_msg_is_enabled)
 
     return false
   end
@@ -2304,12 +2303,17 @@ function checkSizingRegionDeleted(sizing_region_guid, current_time, new_project_
 end
 
 
-function handleSizingRegionDeletion(sizing_region_params, pool_id)
+function handleSizingRegionDeletion(sizing_region_params, pool_id, sizing_region_deletion_msg_is_enabled)
   local sizing_region_deletion_result, user_wants_to_reinstate_sizing_region, user_wants_to_explode, sizing_region_guid, selected_item_count, i, this_selected_item, this_selected_item_instance_pool_id
 
-  sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Explode or "no" to reinstate the deleted sizing region.', "MB_Superglue: An active Unglue sizing region got deleted!", _msg_type_yes_no)
-  user_wants_to_reinstate_sizing_region = sizing_region_deletion_result == _msg_response_no
-  user_wants_to_explode = sizing_region_deletion_result == _msg_response_yes
+  if sizing_region_deletion_msg_is_enabled == "true" then
+    sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Explode or "no" to reinstate the deleted sizing region.', "MB_Superglue: An active Unglue sizing region got deleted!", _msg_type_yes_no)
+    user_wants_to_reinstate_sizing_region = sizing_region_deletion_result == _msg_response_no
+    user_wants_to_explode = sizing_region_deletion_result == _msg_response_yes
+
+  elseif sizing_region_deletion_msg_is_enabled == "false" then
+    user_wants_to_explode = true
+  end
 
   if user_wants_to_reinstate_sizing_region then
     reaper.Undo_BeginBlock()
