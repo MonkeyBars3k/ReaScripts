@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.61
--- @changelog Disabled sizing region deletion detection should default to yes option, not disable the defer (https://github.com/MonkeyBars3k/ReaScripts/issues/172)
+-- @version 1.62
+-- @changelog Superglued container item and take properties getting lost on Reglue and DePool (https://github.com/MonkeyBars3k/ReaScripts/issues/173)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1242,7 +1242,6 @@ end
 function handleSupergluedContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
   local superglued_container_preglue_state_key_suffix, superglued_container_state, pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_params
 
-  superglued_container_preglue_state_key_suffix = _pool_key_prefix .. pool_id .. _container_preglue_state_suffix
   superglued_container_state = getSetItemStateChunk(superglued_container)
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
@@ -1252,7 +1251,6 @@ function handleSupergluedContainerPostGlue(superglued_container, superglued_cont
   addRemoveItemImage(superglued_container, "superglued")
   storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step, superglued_container)
   storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, pool_id)
-  storeRetrieveItemData(superglued_container, superglued_container_preglue_state_key_suffix, superglued_container_state)
   storeRetrieveProjectData(pool_parent_position_key_label, pool_parent_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, pool_parent_params.length)
 end
@@ -1514,13 +1512,13 @@ end
 
 
 function restoreContainerState(superglued_container, superglued_container_params)
-  local superglued_container_preglue_state_key_label, retval, original_state
+  local superglued_container_preglue_state_key_label, retval, superglued_container_last_glue_state
 
   superglued_container_preglue_state_key_label = _pool_key_prefix .. superglued_container_params.pool_id .. _container_preglue_state_suffix
-  retval, original_state = storeRetrieveProjectData(superglued_container_preglue_state_key_label)
+  retval, superglued_container_last_glue_state = storeRetrieveProjectData(superglued_container_preglue_state_key_label)
 
-  if retval == true and original_state then
-    getSetItemStateChunk(superglued_container, original_state)
+  if retval == true and superglued_container_last_glue_state then
+    getSetItemStateChunk(superglued_container, superglued_container_last_glue_state)
     getSetItemAudioSrc(superglued_container, superglued_container_params.updated_src)
     getSetItemParams(superglued_container, superglued_container_params)
   end
@@ -2194,7 +2192,7 @@ end
 
 
 function processUnglueExplode(superglued_container, pool_id, action)
-  local superglued_container_preedit_params, active_track, this_is_explode, sizing_region_guid, sizing_region_deletion_msg_is_enabled, superglued_container_postglue_params
+  local superglued_container_preedit_params, superglued_container_preglue_state_key_suffix, superglued_container_state, active_track, this_is_explode, sizing_region_guid, sizing_region_deletion_msg_is_enabled, superglued_container_postglue_params
 
   superglued_container_preedit_params = getSetItemParams(superglued_container)
 
@@ -2204,6 +2202,12 @@ function processUnglueExplode(superglued_container, pool_id, action)
 
   if action == "Explode" or action == "DePool" then
     this_is_explode = true
+
+  elseif action == "Unglue" then
+    superglued_container_preglue_state_key_suffix = _pool_key_prefix .. pool_id .. _container_preglue_state_suffix
+    superglued_container_state = getSetItemStateChunk(superglued_container)
+
+    storeRetrieveProjectData(superglued_container_preglue_state_key_suffix, superglued_container_state)
   end
 
   restoreContainedItems(pool_id, active_track, superglued_container, superglued_container_preedit_params, nil, this_is_explode)
