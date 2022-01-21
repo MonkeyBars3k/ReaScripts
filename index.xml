@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="e7a86cb6b1e2e35cb2dd6261daed091b11acc805">
+<index version="1" name="MonkeyBars-ReaScripts" commit="fad9759f86f03dde8a8d82720e056449559c173d">
   <category name="Superglue">
     <reapack name="MB_Superglue - Explode superglued items back to original state irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
       <metadata>
@@ -304,6 +304,22 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e7a86cb6b1e2e35cb2dd6261daed091b11acc805/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e7a86cb6b1e2e35cb2dd6261daed091b11acc805/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e7a86cb6b1e2e35cb2dd6261daed091b11acc805/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.63" author="MonkeyBars" time="2022-01-21T06:09:37Z">
+        <changelog><![CDATA[Add option: Change position of pooled items by default (https://github.com/MonkeyBars3k/ReaScripts/issues/104)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/ff7da371978774cc81e77dbdca9ad1cf64c246b8/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ff7da371978774cc81e77dbdca9ad1cf64c246b8/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ff7da371978774cc81e77dbdca9ad1cf64c246b8/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/ff7da371978774cc81e77dbdca9ad1cf64c246b8/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/ff7da371978774cc81e77dbdca9ad1cf64c246b8/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.631" author="MonkeyBars" time="2022-01-21T06:10:51Z">
+        <changelog><![CDATA[Fix dev]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/fad9759f86f03dde8a8d82720e056449559c173d/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/fad9759f86f03dde8a8d82720e056449559c173d/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/fad9759f86f03dde8a8d82720e056449559c173d/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fad9759f86f03dde8a8d82720e056449559c173d/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fad9759f86f03dde8a8d82720e056449559c173d/Superglue/sg-bg-superglued.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
