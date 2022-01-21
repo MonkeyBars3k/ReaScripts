@@ -1,10 +1,11 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.631
--- @changelog Fix dev
+-- @version 1.64
+-- @changelog Take envelopes don't adjust position if pool propagate enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/175)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
+--   sg-dev-functions.lua
 --   sg-bg-restored.png
 --   sg-bg-superglued.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -20,7 +21,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -212,47 +213,66 @@ end
 
 
 function populateOptionControls(all_option_controls, options_window_content)
-  local i, this_option, this_option_name, this_option_saved_value, checkbox_value, dropdown_label, dropdown_menu, j
+  local i, this_option, this_option_name
 
   for i = 1, #_all_global_options_params do
     this_option = _all_global_options_params[i]
     this_option_name = _all_global_options_params[i].name
-    this_option_saved_value = reaper.GetExtState(_global_options_section, this_option.ext_state_key)
 
     if this_option.type == "checkbox" then
-
-      if this_option_saved_value == "true" then
-        checkbox_value = true
-      
-      else
-        checkbox_value = false
-      end
-
-      all_option_controls[this_option_name] = rtk.CheckBox{this_option.user_readable_text, value = checkbox_value, margin = "10 0"}
+      all_option_controls[this_option_name] = getOptionCheckbox(this_option)
 
     elseif this_option.type == "dropdown" then
-      all_option_controls[this_option_name] = rtk.HBox{spacing = 10}
-      dropdown_label = rtk.Text{this_option.user_readable_text, margin = "15 0 5", wrap = "wrap_normal"}
-      dropdown_control = rtk.OptionMenu{margin = "15 0 5"}
-      dropdown_menu = {}
-
-      for j = 1, #this_option.values do
-        this_option_value = this_option.values[j]
-        this_option_value_menu_item = {this_option_value[2], id = this_option_value[1]}
-
-        table.insert(dropdown_menu, this_option_value_menu_item)
-      end
-
-      dropdown_control:attr("menu", dropdown_menu)
-      dropdown_control:select(this_option_saved_value)
-      all_option_controls[this_option_name]:add(dropdown_control)
-      all_option_controls[this_option_name]:add(dropdown_label)
+      all_option_controls[this_option_name] = getOptionDropdown(this_option)
     end
 
     options_window_content:add(all_option_controls[this_option_name])
   end
 
   return all_option_controls, options_window_content
+end
+
+
+function getOptionCheckbox(option)
+  local option_saved_value, checkbox_value, option_checkbox
+
+  option_saved_value = reaper.GetExtState(_global_options_section, option.ext_state_key)
+
+  if option_saved_value == "true" then
+    checkbox_value = true
+  
+  else
+    checkbox_value = false
+  end
+
+  option_checkbox = rtk.CheckBox{option.user_readable_text, value = checkbox_value, margin = "10 0"}
+
+  return option_checkbox
+end
+
+
+function getOptionDropdown(option)
+  local option_saved_value, option_dropdown_box, dropdown_label, dropdown_control, dropdown_menu, i, this_option_value, this_option_value_menu_item
+
+  option_saved_value = reaper.GetExtState(_global_options_section, option.ext_state_key)
+  option_dropdown_box = rtk.HBox{spacing = 10}
+  dropdown_label = rtk.Text{option.user_readable_text, margin = "15 0 5", wrap = "wrap_normal"}
+  dropdown_control = rtk.OptionMenu{margin = "15 0 5"}
+  dropdown_menu = {}
+
+  for i = 1, #option.values do
+    this_option_value = option.values[i]
+    this_option_value_menu_item = {this_option_value[2], id = this_option_value[1]}
+
+    table.insert(dropdown_menu, this_option_value_menu_item)
+  end
+
+  dropdown_control:attr("menu", dropdown_menu)
+  dropdown_control:select(option_saved_value)
+  option_dropdown_box:add(dropdown_control)
+  option_dropdown_box:add(dropdown_label)
+
+  return option_dropdown_box
 end
 
 
@@ -1515,6 +1535,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   superglued_container = restoreContainerState(superglued_container, superglued_container_params)
 
   setRegluePositionDeltas(superglued_container_params, superglued_container_last_glue_params)
+  adjustPostGlueTakeEnvelopes(superglued_container)
   unglueAncestors(superglued_container_params.pool_id, superglued_container)
   deselectAllItems()
   propagatePoolChanges(superglued_container_params, sizing_region_guid, obey_time_selection)
@@ -1588,6 +1609,26 @@ function setRegluePositionDeltas(freshly_superglued_container_params, superglued
 
   if _superglued_instance_offset_delta_since_last_glue ~= 0 then
     _position_changed_since_last_glue = true
+  end
+end
+
+
+function adjustPostGlueTakeEnvelopes(instance)
+  local instance_active_take, take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_time, adjusted_envelope_point_position
+
+  instance_active_take = reaper.GetActiveTake(instance)
+  take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
+
+  for i = 0, take_envelopes_count-1 do
+    this_take_envelope = reaper.GetTakeEnvelope(instance_active_take, i)
+    envelope_points_count = reaper.CountEnvelopePoints(this_take_envelope)
+
+    for j = 0, envelope_points_count-1 do
+      retval, this_envelope_point_time = reaper.GetEnvelopePoint(this_take_envelope, j)
+      this_envelope_point_time = this_envelope_point_time - _superglued_instance_offset_delta_since_last_glue
+
+      reaper.SetEnvelopePoint(this_take_envelope, j, this_envelope_point_time)
+    end
   end
 end
 
@@ -2054,6 +2095,8 @@ function adjustActivePoolSibling(instance, active_superglued_instance_params)
   user_wants_position_change = _position_change_response == _msg_response_yes
 
   if user_wants_position_change then
+    adjustPostGlueTakeEnvelopes(instance)
+
     instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
     instance_adjusted_position = instance_current_position + _superglued_instance_offset_delta_since_last_glue
     
