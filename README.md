@@ -32,14 +32,15 @@ To edit your superglued item container, the **Unglue** script opens the created 
 
 ### Tips
 - **Using just the pooled audio item feature:** Feel free to superglue a single audio item and make copies of that! Since every superglued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Unglue any one of the pooled glue containers and reglue after.
-- When superglue items are Unglued, an automatically created region can be used to increase the size of your glued container item. Otherwise, the size will be determined by the items selected as with native Reaper glue or by time selection if you run one of those scripts.
+- When superglue items are Unglued, an automatically created region can be used to increase the size of your glued container item. Otherwise, the size will be determined by the items selected as with native Reaper glue or by time selection, if you run one of those scripts.
 
 ### Notes
 - Requires **Reaper v6.43** or newer
 - Requires **SWS Plugin Extension**!
 - Be _very_ careful if you want to **Clean current project directory** after supergluing – you could lose your superglued items, since at that point, those "items" aren't included in the project proper – they only exist as data (state chunks).
-- Be very careful ungluing and editing a parent container item **near project start**. If a child container item would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its pooled sibling container items.
-- Superglue uses item notes to set background image for easy recognition of superglued container and contained items. Careful: **The background image will overwrite any item notes you already have on your glued items.** We plan to allow disabling of this feature in Superglue script options soon.
+- Be  careful ungluing and editing a parent container item **near project start**. If a child container item would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its sibling pooled container items.
+- Superglue uses item notes to set background image for easy recognition of superglued container and contained items. Careful: **The background image will overwrite any item notes you already have on your glued items.** Just disable this feature in the script options window or with the included script, if you don't like it for any reason.
+- If you want to have more than one superglued container item Unglued at the same time, Reaper will throw a warning that the script is running again. Just select that you want to allow it to run (always, if you don't like getting prompted). ReaScript devs can't get around this message until [this FR](https://forum.cockos.com/showthread.php?t=202416) happens. 
 - To create **MIDI superglued container items**, the script uses "Apply track FX as new take" on each item to get an audio take. When you Unglue, the audio take is removed and just the original MIDI take is restored to active. _Currently only MIDI on virtual instrument tracks is supported._
 - When using copies of superglued container items, you can't make a copy of itself inside itself, as that would cause an **infinite recursion**.
 - Superglue uses **item selection set slot 10** and **SWS time selection set slot 5**.
