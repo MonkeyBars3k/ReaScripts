@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.62
--- @changelog Superglued container item and take properties getting lost on Reglue and DePool (https://github.com/MonkeyBars3k/ReaScripts/issues/173)
+-- @version 1.63
+-- @changelog Add option: Change position of pooled items by default (https://github.com/MonkeyBars3k/ReaScripts/issues/104)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,7 +20,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -64,19 +64,34 @@ _global_script_prefix = "SG_"
 _global_script_item_name_prefix = "sg"
 _global_options_section = "SUPERGLUE_OPTIONS"
 _global_option_toggle_item_images_key = "item_images_enabled"
+_global_option_propagate_position_default_key = "propagate_position_default"
 _global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
 _all_global_options_params = {
   {
     ["name"] = "item_images",
+    ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_item_images_key,
     ["user_readable_text"] = "Insert item background images on superglue",
     ["default_value"] = "true"
   },
   {
     ["name"] = "sizing_region_deletion_msg",
+    ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_sizing_region_deletion_msg_key,
-    ["user_readable_text"] = "Prompt on deletion of Unglue sizing region (disabled = explode unglued Oitems on sizing region deletion)",
+    ["user_readable_text"] = "Prompt on deletion of Unglue sizing region (disabled = explode unglued items on sizing region deletion)",
     ["default_value"] = "true"
+  },
+  {
+    ["name"] = "propagate_position_change_default",
+    ["type"] = "dropdown",
+    ["ext_state_key"] = _global_option_propagate_position_default_key,
+    ["user_readable_text"] = "Propagate left edge position change on Reglue by default",
+    ["values"] = {
+      {"always", "Always propagate"},
+      {"ask", "Ask"},
+      {"no", "Don't propagate"}
+    },
+    ["default_value"] = "ask"
   }
 }
 _separator = ":"
@@ -113,7 +128,7 @@ _msg_change_selected_items = "Change the items selected and try again."
 _data_storage_track = reaper.GetMasterTrack(_api_current_project)
 _active_glue_pool_id = nil
 _sizing_region_1st_display_num = 0
-_sizing_region_defer_timing = 0.125
+_sizing_region_defer_timing = 0.5
 _superglued_instance_offset_delta_since_last_glue = 0
 _restored_items_project_start_position_delta = 0
 _ancestor_pools_params = {}
@@ -129,7 +144,7 @@ function setDefaultOptionValues()
     this_option_ext_state_key = _all_global_options_params[i].ext_state_key
     this_option_exists_in_extstate = reaper.HasExtState(_global_options_section, this_option_ext_state_key)
 
-    if not this_option_exists_in_extstate then
+    if not this_option_exists_in_extstate or this_option_exists_in_extstate == "nil" then
       reaper.SetExtState(_global_options_section, this_option_ext_state_key, _all_global_options_params[i].default_value, true)
     end
   end
@@ -185,7 +200,7 @@ function openOptionsWindow()
   option_form_buttons:add(option_form_cancel)
   options_window_content:add(rtk.Heading{"MB_Superglue Global Options", w = 1, margin = 35, halign = "center"})
 
-  all_option_controls, options_window_content = populateOptionCheckboxes(all_option_controls, options_window_content)
+  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content)
   option_form_submit.onclick = function()
     submitOptionChanges(all_option_controls, options_window)
   end
@@ -196,22 +211,43 @@ function openOptionsWindow()
 end
 
 
-function populateOptionCheckboxes(all_option_controls, options_window_content)
-  local i, this_option, this_option_name, this_option_saved_value, checkbox_value
+function populateOptionControls(all_option_controls, options_window_content)
+  local i, this_option, this_option_name, this_option_saved_value, checkbox_value, dropdown_label, dropdown_menu, j
 
   for i = 1, #_all_global_options_params do
     this_option = _all_global_options_params[i]
     this_option_name = _all_global_options_params[i].name
     this_option_saved_value = reaper.GetExtState(_global_options_section, this_option.ext_state_key)
 
-    if this_option_saved_value == "true" then
-      checkbox_value = true
-    
-    else
-      checkbox_value = false
-    end
+    if this_option.type == "checkbox" then
 
-    all_option_controls[this_option_name] = rtk.CheckBox{this_option.user_readable_text, value = checkbox_value}
+      if this_option_saved_value == "true" then
+        checkbox_value = true
+      
+      else
+        checkbox_value = false
+      end
+
+      all_option_controls[this_option_name] = rtk.CheckBox{this_option.user_readable_text, value = checkbox_value, margin = "10 0"}
+
+    elseif this_option.type == "dropdown" then
+      all_option_controls[this_option_name] = rtk.HBox{spacing = 10}
+      dropdown_label = rtk.Text{this_option.user_readable_text, margin = "15 0 5", wrap = "wrap_normal"}
+      dropdown_control = rtk.OptionMenu{margin = "15 0 5"}
+      dropdown_menu = {}
+
+      for j = 1, #this_option.values do
+        this_option_value = this_option.values[j]
+        this_option_value_menu_item = {this_option_value[2], id = this_option_value[1]}
+
+        table.insert(dropdown_menu, this_option_value_menu_item)
+      end
+
+      dropdown_control:attr("menu", dropdown_menu)
+      dropdown_control:select(this_option_saved_value)
+      all_option_controls[this_option_name]:add(dropdown_control)
+      all_option_controls[this_option_name]:add(dropdown_label)
+    end
 
     options_window_content:add(all_option_controls[this_option_name])
   end
@@ -221,15 +257,22 @@ end
 
 
 function submitOptionChanges(all_option_controls, options_window)
-  local i, this_option, this_option_saved_value, this_option_checkbox_value
+  local i, this_option, this_option_saved_value, this_option_form_value, dropdown
 
   for i = 1, #_all_global_options_params do
     this_option = _all_global_options_params[i]
     this_option_saved_value = reaper.GetExtState(_global_options_section, this_option.ext_state_key)
-    this_option_checkbox_value = tostring(all_option_controls[this_option.name].value)
 
-    if this_option_checkbox_value ~= this_option_saved_value then
-      reaper.SetExtState(_global_options_section, this_option.ext_state_key, this_option_checkbox_value, true)
+    if this_option.type == "checkbox" then
+      this_option_form_value = tostring(all_option_controls[this_option.name].value)
+
+    elseif this_option.type == "dropdown" then
+      dropdown = all_option_controls[this_option.name]:get_child(1)
+      this_option_form_value = dropdown.selected
+    end
+
+    if this_option_form_value ~= this_option_saved_value then
+      reaper.SetExtState(_global_options_section, this_option.ext_state_key, this_option_form_value, true)
       options_window:close()
     end
   end
@@ -2025,7 +2068,17 @@ end
 
 
 function launchPropagatePositionDialog()
-  return reaper.ShowMessageBox("Do you want to adjust other pool instances' position to match so their audio position remains the same?", "The left edge location of the superglued container item you're regluing has changed!", _msg_type_yes_no)
+  local global_option_propagate_position_default = reaper.GetExtState(_global_options_section, _global_option_propagate_position_default_key)
+
+  if global_option_propagate_position_default == "ask" then
+    return reaper.ShowMessageBox("Do you want to adjust other pool instances' position to match so their audio position remains the same?", "The left edge location of the superglued container item you're regluing has changed!", _msg_type_yes_no)
+
+  elseif global_option_propagate_position_default == "always" then
+    return _msg_response_yes
+
+  elseif global_option_propagate_position_default == "no" then
+    return _msg_response_no
+  end
 end
 
 
@@ -2218,8 +2271,8 @@ function processUnglueExplode(superglued_container, pool_id, action)
 
     initSizingRegionCheck(sizing_region_guid, pool_id, sizing_region_deletion_msg_is_enabled)
 
--- IS THIS DOING ANYTHING?
-    superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
+-- WAS THIS DOING ANYTHING?
+    -- superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
   end
 
   reaper.DeleteTrackMediaItem(active_track, superglued_container)
