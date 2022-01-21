@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="5df6c3174665af98f1e710cf41d511f36234b6f3">
+<index version="1" name="MonkeyBars-ReaScripts" commit="d4dc7a986743dde9be3e57faa9b21f1b2ce9d036">
   <category name="Superglue">
     <reapack name="MB_Superglue - Explode superglued items back to original state irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
       <metadata>
@@ -328,6 +328,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5df6c3174665af98f1e710cf41d511f36234b6f3/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5df6c3174665af98f1e710cf41d511f36234b6f3/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5df6c3174665af98f1e710cf41d511f36234b6f3/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.67" author="MonkeyBars" time="2022-01-21T23:11:32Z">
+        <changelog><![CDATA[Take envelopes don't adjust position if pool propagate enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/175) redux]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/sg-bg-superglued.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
