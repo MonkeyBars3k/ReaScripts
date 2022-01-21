@@ -1,11 +1,10 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.64
--- @changelog Take envelopes don't adjust position if pool propagate enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/175)
+-- @version 1.66
+-- @changelog Fix provides
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
---   sg-dev-functions.lua
 --   sg-bg-restored.png
 --   sg-bg-superglued.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
@@ -21,7 +20,7 @@
 -- General utility functions at bottom
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
