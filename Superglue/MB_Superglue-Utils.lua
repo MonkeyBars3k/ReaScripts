@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.66
--- @changelog Fix provides
+-- @version 1.67
+-- @changelog Take envelopes don't adjust position if pool propagate enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/175) redux
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1613,7 +1613,7 @@ end
 
 
 function adjustPostGlueTakeEnvelopes(instance)
-  local instance_active_take, take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_time, adjusted_envelope_point_position
+  local instance_active_take, take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_time, adjusted_envelope_point_time
 
   instance_active_take = reaper.GetActiveTake(instance)
   take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
@@ -1624,9 +1624,9 @@ function adjustPostGlueTakeEnvelopes(instance)
 
     for j = 0, envelope_points_count-1 do
       retval, this_envelope_point_time = reaper.GetEnvelopePoint(this_take_envelope, j)
-      this_envelope_point_time = this_envelope_point_time - _superglued_instance_offset_delta_since_last_glue
-
-      reaper.SetEnvelopePoint(this_take_envelope, j, this_envelope_point_time)
+      adjusted_envelope_point_time = this_envelope_point_time - _superglued_instance_offset_delta_since_last_glue
+      
+      reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_time, nil, nil, nil, nil, true)
     end
   end
 end
@@ -2084,6 +2084,7 @@ function adjustActivePoolSibling(instance, active_superglued_instance_params)
   instance_adjusted_length = active_superglued_instance_params.length
 
   reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
+  adjustPostGlueTakeEnvelopes(instance)
 
   active_instance_position_has_changed = not _position_change_response and _position_changed_since_last_glue == true
 
@@ -2094,8 +2095,6 @@ function adjustActivePoolSibling(instance, active_superglued_instance_params)
   user_wants_position_change = _position_change_response == _msg_response_yes
 
   if user_wants_position_change then
-    adjustPostGlueTakeEnvelopes(instance)
-
     instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
     instance_adjusted_position = instance_current_position + _superglued_instance_offset_delta_since_last_glue
     
