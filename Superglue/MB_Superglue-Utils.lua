@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.68
--- @changelog Options window: grey out submit button until form changes (https://github.com/MonkeyBars3k/ReaScripts/issues/176)
+-- @version 1.69
+-- @changelog Add script: "Display Superglue container items info" [5] (https://github.com/MonkeyBars3k/ReaScripts/issues/21)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -184,11 +184,12 @@ end
 
 
 function openOptionsWindow()
-  local all_option_controls, options_window, options_window_content, option_form_buttons, option_form_submit, option_form_cancel
+  local all_option_controls, options_window, options_window_content, options_window_title, option_form_buttons, option_form_submit, option_form_cancel
 
   all_option_controls = {}
   options_window = rtk.Window{halign = "center"}
-  options_window_content = rtk.VBox{w = 0.75, margin = "0 35 35 35"} 
+  options_window_content = rtk.VBox{w = 0.75, margin = "0 35 35 35"}
+  options_window_title = rtk.Heading{"MB_Superglue Global Options", w = 1, margin = 35, halign = "center"}
   option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
   option_form_submit = rtk.Button{"Submit", color = "#656565", textcolor = "#343434", elevation = 0, hover = true, gradient = 0}
   option_form_cancel = rtk.Button{"Cancel"}
@@ -198,13 +199,13 @@ function openOptionsWindow()
 
   option_form_buttons:add(option_form_submit)
   option_form_buttons:add(option_form_cancel)
-  options_window_content:add(rtk.Heading{"MB_Superglue Global Options", w = 1, margin = 35, halign = "center"})
+  options_window_content:add(options_window_title)
 
   all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content,option_form_submit)
   option_form_submit.onclick = function()
     submitOptionChanges(all_option_controls, options_window)
   end
-  
+
   options_window_content:add(option_form_buttons)
   options_window:add(options_window_content)
   options_window:open{halign = "center", valign = "center"}
@@ -276,9 +277,11 @@ function getOptionDropdown(option, option_form_submit)
 
   dropdown_control:attr("menu", dropdown_menu)
   dropdown_control:select(option_saved_value)
+
   dropdown_control.onchange = function()
     activateOptionSubmitButton(option_form_submit)
   end
+  
   option_dropdown_box:add(dropdown_control)
   option_dropdown_box:add(dropdown_label)
 
@@ -306,6 +309,87 @@ function submitOptionChanges(all_option_controls, options_window)
       options_window:close()
     end
   end
+end
+
+
+function openContainerItemInfoWindow()
+  local selected_item_count, selected_container_item
+
+  selected_item_count = reaper.CountSelectedMediaItems(_api_current_project)
+
+  if selected_item_count == false then return end
+
+  if selected_item_count > 1 then
+    reaper.ShowMessageBox("Select only one item and try again.", "You have more than one item selected.", _msg_type_ok)
+
+    return
+  end
+
+  selected_container_item = reaper.GetSelectedMediaItem(_api_current_project, 0)
+  selected_container_instance_pool_id = storeRetrieveItemData(selected_container_item, _instance_pool_id_key_suffix)
+
+  if not selected_container_instance_pool_id or selected_container_instance_pool_id == "" then
+    reaper.ShowMessageBox("Select a superglued container item and try again.", "The item selected is not a superglued container item.", _msg_type_ok)
+
+    return
+  end
+
+  handleContainerItemInfoWindow(selected_container_item, selected_container_instance_pool_id)
+end
+
+
+function handleContainerItemInfoWindow(selected_container_item, selected_container_instance_pool_id)
+  local selected_container_parent_pool_id, selected_container_descendant_pool_ids_key, retval, selected_container_descendant_pool_ids, selected_container_descendant_pool_ids_list, selected_container_item_params
+
+  selected_container_parent_pool_id = storeRetrieveItemData(selected_container_item, _parent_pool_id_key_suffix)
+  selected_container_descendant_pool_ids_key = _pool_key_prefix .. selected_container_instance_pool_id .. _descendant_pool_ids_key_suffix
+  retval, selected_container_descendant_pool_ids = storeRetrieveProjectData(selected_container_descendant_pool_ids_key)
+  retval, selected_container_descendant_pool_ids = serpent.load(selected_container_descendant_pool_ids)
+  selected_container_descendant_pool_ids_list = stringifyArray(selected_container_descendant_pool_ids)
+  
+  if not selected_container_parent_pool_id or selected_container_parent_pool_id == "" then
+    selected_container_parent_pool_id = "none"
+  end
+
+  selected_container_item_params = {
+    {
+      "Pool ID: ",
+      selected_container_instance_pool_id
+    },
+    {
+      "Parent Pool ID: ",
+      selected_container_parent_pool_id
+    },
+    {
+      "Descendant Pool IDs: ",
+      selected_container_descendant_pool_ids_list
+    }
+  }
+
+  populateContainerItemWindow(selected_container_item, selected_container_item_params)
+end
+
+
+function populateContainerItemWindow(selected_container_item, selected_container_item_params)
+  local item_info_window, item_info_content, item_info_title, item_info, item_info_text
+
+  item_info_window = rtk.Window{halign = "center"}
+  item_info_content = rtk.VBox{w = 0.75, margin = "0 35 35 35"}
+  item_info_title = rtk.Heading{"MB_Superglue Container Item Info", w = 1, margin = 35, halign = "center"}
+  item_info_name = rtk.Text{getSetItemName(selected_container_item), w = 1, halign = "center", textalign = "center", bmargin = 20, fontscale = 1.3, wrap = "wrap_normal"}
+  item_info = ""
+
+  for i = 1, #selected_container_item_params do
+    item_info = item_info .. selected_container_item_params[i][1] .. selected_container_item_params[i][2] .. "\n"
+  end
+  
+  item_info_text = rtk.Text{item_info, wrap = "wrap_normal", spacing = 13}
+
+  item_info_content:add(item_info_title)
+  item_info_content:add(item_info_name)
+  item_info_content:add(item_info_text)
+  item_info_window:add(item_info_content)
+  item_info_window:open{halign = "center", valign = "center"}
 end
 
 
@@ -1636,7 +1720,7 @@ function adjustPostGlueTakeEnvelopes(instance)
     for j = 0, envelope_points_count-1 do
       retval, this_envelope_point_time = reaper.GetEnvelopePoint(this_take_envelope, j)
       adjusted_envelope_point_time = this_envelope_point_time - _superglued_instance_offset_delta_since_last_glue
-      
+
       reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_time, nil, nil, nil, nil, true)
     end
   end
@@ -2562,6 +2646,24 @@ end
 
 
 --- UTILITY FUNCTIONS ---
+
+function stringifyArray(t)
+  local s = ""
+  local this_item
+  for i = 1, #t do
+    this_item = t[i]
+    s = s .. this_item
+
+    if i ~= #t then
+       s = s .. ", "
+    end
+  end
+  if not s or s == "" then
+    s = "none"
+  end
+
+  return s
+end
 
 function deduplicateTable(t)
   local hash = {}
