@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.67
--- @changelog Take envelopes don't adjust position if pool propagate enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/175) redux
+-- @version 1.68
+-- @changelog Options window: grey out submit button until form changes (https://github.com/MonkeyBars3k/ReaScripts/issues/176)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -190,7 +190,7 @@ function openOptionsWindow()
   options_window = rtk.Window{halign = "center"}
   options_window_content = rtk.VBox{w = 0.75, margin = "0 35 35 35"} 
   option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
-  option_form_submit = rtk.Button{"Submit"}
+  option_form_submit = rtk.Button{"Submit", color = "#656565", textcolor = "#343434", elevation = 0, hover = true, gradient = 0}
   option_form_cancel = rtk.Button{"Cancel"}
   option_form_cancel.onclick = function() 
     options_window:close()
@@ -200,29 +200,29 @@ function openOptionsWindow()
   option_form_buttons:add(option_form_cancel)
   options_window_content:add(rtk.Heading{"MB_Superglue Global Options", w = 1, margin = 35, halign = "center"})
 
-  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content)
+  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content,option_form_submit)
   option_form_submit.onclick = function()
     submitOptionChanges(all_option_controls, options_window)
   end
-
+  
   options_window_content:add(option_form_buttons)
   options_window:add(options_window_content)
   options_window:open{halign = "center", valign = "center"}
 end
 
 
-function populateOptionControls(all_option_controls, options_window_content)
+function populateOptionControls(all_option_controls, options_window_content, option_form_submit)
   local i, this_option, this_option_name
 
   for i = 1, #_all_global_options_params do
     this_option = _all_global_options_params[i]
-    this_option_name = _all_global_options_params[i].name
+    this_option_name = this_option.name
 
     if this_option.type == "checkbox" then
-      all_option_controls[this_option_name] = getOptionCheckbox(this_option)
+      all_option_controls[this_option_name] = getOptionCheckbox(this_option, option_form_submit)
 
     elseif this_option.type == "dropdown" then
-      all_option_controls[this_option_name] = getOptionDropdown(this_option)
+      all_option_controls[this_option_name] = getOptionDropdown(this_option, option_form_submit)
     end
 
     options_window_content:add(all_option_controls[this_option_name])
@@ -232,7 +232,7 @@ function populateOptionControls(all_option_controls, options_window_content)
 end
 
 
-function getOptionCheckbox(option)
+function getOptionCheckbox(option, option_form_submit)
   local option_saved_value, checkbox_value, option_checkbox
 
   option_saved_value = reaper.GetExtState(_global_options_section, option.ext_state_key)
@@ -245,12 +245,20 @@ function getOptionCheckbox(option)
   end
 
   option_checkbox = rtk.CheckBox{option.user_readable_text, value = checkbox_value, margin = "10 0"}
+  option_checkbox.onchange = function()
+    activateOptionSubmitButton(option_form_submit)
+  end
 
   return option_checkbox
 end
 
 
-function getOptionDropdown(option)
+function activateOptionSubmitButton(submit_button)
+  submit_button:attr("color", rtk.Attribute.DEFAULT):attr("textcolor", rtk.Attribute.DEFAULT):attr("elevation", rtk.Attribute.DEFAULT):attr("hover", rtk.Attribute.DEFAULT):attr("gradient", rtk.Attribute.DEFAULT)
+end
+
+
+function getOptionDropdown(option, option_form_submit)
   local option_saved_value, option_dropdown_box, dropdown_label, dropdown_control, dropdown_menu, i, this_option_value, this_option_value_menu_item
 
   option_saved_value = reaper.GetExtState(_global_options_section, option.ext_state_key)
@@ -268,6 +276,9 @@ function getOptionDropdown(option)
 
   dropdown_control:attr("menu", dropdown_menu)
   dropdown_control:select(option_saved_value)
+  dropdown_control.onchange = function()
+    activateOptionSubmitButton(option_form_submit)
+  end
   option_dropdown_box:add(dropdown_control)
   option_dropdown_box:add(dropdown_label)
 
