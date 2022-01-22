@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.69
--- @changelog Add script: "Display Superglue container items info" [5] (https://github.com/MonkeyBars3k/ReaScripts/issues/21)
+-- @version 1.70
+-- @changelog Add option: "Remove all sibling instances from pool on Reglue (disable pooling)" (https://github.com/MonkeyBars3k/ReaScripts/issues/8)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,7 +20,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -68,6 +68,7 @@ _global_options_section = "SUPERGLUE_OPTIONS"
 _global_option_toggle_item_images_key = "item_images_enabled"
 _global_option_propagate_position_default_key = "propagate_position_default"
 _global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
+_global_option_toggle_depool_all_siblings_on_reglue_key = "depool_all_siblings_on_reglue_enabled"
 _all_global_options_params = {
   {
     ["name"] = "item_images",
@@ -82,6 +83,13 @@ _all_global_options_params = {
     ["ext_state_key"] = _global_option_toggle_sizing_region_deletion_msg_key,
     ["user_readable_text"] = "Prompt on deletion of Unglue sizing region (disabled = explode unglued items on sizing region deletion)",
     ["default_value"] = "true"
+  },
+  {
+    ["name"] = "depool_all_siblings_on_reglue",
+    ["type"] = "checkbox",
+    ["ext_state_key"] = _global_option_toggle_depool_all_siblings_on_reglue_key,
+    ["user_readable_text"] = "Remove all sibling instances from pool on Reglue (disable pooling)",
+    ["default_value"] = "false"
   },
   {
     ["name"] = "propagate_position_change_default",
@@ -2086,7 +2094,7 @@ end
 
 
 function propagatePoolChanges(active_superglued_instance_params, sizing_region_guid, obey_time_selection)
-  local parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id--[[, this_parent_instance_params--]], restored_items_position_adjustment
+  local parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id, retval, global_option_toggle_depool_all_siblings_on_reglue, active_track, selected_items, restored_items_position_adjustment
 
   parent_pools_near_project_start = updateActivePoolSiblings(active_superglued_instance_params)
   ancestor_pools_params_by_children_nesting_depth = sortParentUpdatesByNestingDepth()
@@ -2094,16 +2102,26 @@ function propagatePoolChanges(active_superglued_instance_params, sizing_region_g
   for i = 1, #ancestor_pools_params_by_children_nesting_depth do
     this_parent_pool_params = ancestor_pools_params_by_children_nesting_depth[i]
     this_parent_pool_id = tostring(this_parent_pool_params.pool_id)
-    restored_items_position_adjustment = parent_pools_near_project_start[this_parent_pool_id]
+    retval, global_option_toggle_depool_all_siblings_on_reglue = storeRetrieveProjectData(_global_option_toggle_depool_all_siblings_on_reglue_key)
 
-    if restored_items_position_adjustment then
-      adjustParentPoolChildren(this_parent_pool_id, active_superglued_instance_params.pool_id, restored_items_position_adjustment)
+    if global_option_toggle_depool_all_siblings_on_reglue then
+      active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, active_superglued_instance_params.track_guid)
+      selected_items = getSelectedItems(#this_parent_pool_params.restored_items)
+log(#this_parent_pool_params.restored_items)
+      handleGlue(selected_items, active_track, nil, nil, nil, false)
 
     else
-      restored_items_position_adjustment = 0
-    end
+      restored_items_position_adjustment = parent_pools_near_project_start[this_parent_pool_id]
 
-    reglueParentInstance(this_parent_pool_params, obey_time_selection, sizing_region_guid, restored_items_position_adjustment)
+      if restored_items_position_adjustment then
+        adjustParentPoolChildren(this_parent_pool_id, active_superglued_instance_params.pool_id, restored_items_position_adjustment)
+
+      else
+        restored_items_position_adjustment = 0
+      end
+
+      reglueParentInstance(this_parent_pool_params, obey_time_selection, sizing_region_guid, restored_items_position_adjustment)
+    end
   end
 
   reaper.ClearPeakCache()
@@ -2111,7 +2129,7 @@ end
 
 
 function updateActivePoolSiblings(active_superglued_instance_params, parent_is_being_updated)
-  local all_items_count, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
+  local all_items_count, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, retval, global_option_toggle_depool_all_siblings_on_reglue, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
   siblings_are_being_updated = not parent_is_being_updated
@@ -2122,22 +2140,26 @@ function updateActivePoolSiblings(active_superglued_instance_params, parent_is_b
     this_active_pool_sibling = getActivePoolSibling(this_item, active_superglued_instance_params)
 
     if this_active_pool_sibling then
-      getSetItemAudioSrc(this_active_pool_sibling, active_superglued_instance_params.updated_src)
+      retval, global_option_toggle_depool_all_siblings_on_reglue = storeRetrieveProjectData(_global_option_toggle_depool_all_siblings_on_reglue_key)
 
-      if siblings_are_being_updated then
-        attempted_negative_instance_position = adjustActivePoolSibling(this_active_pool_sibling, active_superglued_instance_params)
+      if not global_option_toggle_depool_all_siblings_on_reglue then
+        getSetItemAudioSrc(this_active_pool_sibling, active_superglued_instance_params.updated_src)
 
-        if attempted_negative_instance_position then
-          this_sibling_parent_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
+        if siblings_are_being_updated then
+          attempted_negative_instance_position = adjustActivePoolSibling(this_active_pool_sibling, active_superglued_instance_params)
 
-          if not parent_pools_near_project_start[this_sibling_parent_pool_id] then
-            parent_pools_near_project_start[this_sibling_parent_pool_id] = attempted_negative_instance_position
+          if attempted_negative_instance_position then
+            this_sibling_parent_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
 
-          elseif parent_pools_near_project_start[this_sibling_parent_pool_id] then
-            this_sibling_position_is_earlier_than_prev_sibling = attempted_negative_instance_position < parent_pools_near_project_start[this_sibling_parent_pool_id]
-
-            if this_sibling_position_is_earlier_than_prev_sibling then
+            if not parent_pools_near_project_start[this_sibling_parent_pool_id] then
               parent_pools_near_project_start[this_sibling_parent_pool_id] = attempted_negative_instance_position
+
+            elseif parent_pools_near_project_start[this_sibling_parent_pool_id] then
+              this_sibling_position_is_earlier_than_prev_sibling = attempted_negative_instance_position < parent_pools_near_project_start[this_sibling_parent_pool_id]
+
+              if this_sibling_position_is_earlier_than_prev_sibling then
+                parent_pools_near_project_start[this_sibling_parent_pool_id] = attempted_negative_instance_position
+              end
             end
           end
         end
