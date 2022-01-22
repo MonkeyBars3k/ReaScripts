@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="fce67f83b8ce79948db3b3dea0fa1c82683eddab">
+<index version="1" name="MonkeyBars-ReaScripts" commit="a612482084881c61097ca5fb7dd4c176e9250259">
   <category name="Superglue">
+    <reapack name="MB_Superglue - Change color of all superglued container items in project.lua" type="script" desc="MB_Superglue - Change color of all superglued container items in project">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.69" author="MonkeyBars" time="2022-01-22T04:44:56Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/a612482084881c61097ca5fb7dd4c176e9250259/Superglue/MB_Superglue%20-%20Change%20color%20of%20all%20superglued%20container%20items%20in%20project.lua</source>
+      </version>
+    </reapack>
     <reapack name="MB_Superglue - Display selected superglued container item info.lua" type="script" desc="MB_Superglue - Display selected superglued container item info">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
