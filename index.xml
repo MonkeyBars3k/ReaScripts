@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="d4dc7a986743dde9be3e57faa9b21f1b2ce9d036">
+<index version="1" name="MonkeyBars-ReaScripts" commit="8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40">
   <category name="Superglue">
-    <reapack name="MB_Superglue - Explode superglued items back to original state irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
+    <reapack name="MB_Superglue - Explode superglued container back into original items irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -12,9 +12,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.53" author="MonkeyBars" time="2022-01-16T08:45:39Z">
+      <version name="1.53" author="MonkeyBars" time="2022-01-22T00:52:04Z">
         <changelog><![CDATA[initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c9d6808f02f526661f49851ca1ee4da51306ac4a/Superglue/MB_Superglue%20-%20Explode%20superglued%20items%20back%20to%20original%20state%20irreversibly.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/MB_Superglue%20-%20Explode%20superglued%20container%20back%20into%20original%20items%20irreversibly.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Glue selected item(s) reversibly into pooled container item, expanding to time selection if any.lua" type="script" desc="MB_Superglue - Glue selected item(s) reversibly into pooled container item, expanding to time selection if any">
@@ -336,6 +336,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d4dc7a986743dde9be3e57faa9b21f1b2ce9d036/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.68" author="MonkeyBars" time="2022-01-22T00:52:04Z">
+        <changelog><![CDATA[Options window: grey out submit button until form changes (https://github.com/MonkeyBars3k/ReaScripts/issues/176)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/sg-bg-superglued.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
