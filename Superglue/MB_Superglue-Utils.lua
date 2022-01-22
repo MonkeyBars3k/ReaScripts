@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.71
--- @changelog Regluing restored item removed from container crashes Reaper (https://github.com/MonkeyBars3k/ReaScripts/issues/183)
+-- @version 1.72
+-- @changelog Glue expanding to TS with no TS doesn't expand to sizing region (https://github.com/MonkeyBars3k/ReaScripts/issues/181)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,7 +20,7 @@
 -- General utility functions at bottom
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -1098,16 +1098,18 @@ end
 
 
 function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selected_items, pool_id, obey_time_selection)
-  local sizing_params, is_active_container_reglue, time_selection_was_set_by_code, sizing_region_defer_loop_is_active_key
+  local sizing_params, is_active_container_reglue, time_selection_start, time_selection_end, no_time_selection_exists, time_selection_was_set_by_code, sizing_region_defer_loop_is_active_key
 
   sizing_params = getSetSizingRegion(sizing_region_guid)
   is_active_container_reglue = sizing_params
+  time_selection_start, time_selection_end = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
+  no_time_selection_exists = time_selection_end == 0
   time_selection_was_set_by_code = false
   sizing_region_defer_loop_is_active_key = _pool_key_prefix .. pool_id .. _sizing_region_defer_loop_suffix
 
   if is_active_container_reglue then
 
-    if not obey_time_selection then
+    if not obey_time_selection or (obey_time_selection and no_time_selection_exists) then
       sizing_params = calculateSizingTimeSelection(selected_items, sizing_params)
 
       setResetGlueTimeSelection(sizing_params, "set")
