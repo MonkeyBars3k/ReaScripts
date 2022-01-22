@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.70
--- @changelog Refresh ReaPack
+-- @version 1.71
+-- @changelog Regluing restored item removed from container crashes Reaper (https://github.com/MonkeyBars3k/ReaScripts/issues/183)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,7 +20,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -1621,6 +1621,8 @@ end
 function handleReglue(selected_items, first_selected_item_track, restored_items_pool_id, obey_time_selection)
   local superglued_container_last_glue_params, sizing_region_guid_key_label, retval, sizing_region_guid, superglued_container, superglued_container_params
 
+  cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
+
   superglued_container_last_glue_params = storeRetrieveSupergluedContainerParams(restored_items_pool_id, _postglue_action_step)
   sizing_region_guid_key_label = _pool_key_prefix .. restored_items_pool_id .. _sizing_region_guid_key_suffix
   retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key_label)
@@ -1637,6 +1639,27 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   propagatePoolChanges(superglued_container_params, sizing_region_guid, obey_time_selection)
 
   return superglued_container
+end
+
+
+function cleanUnselectedRestoredItemsFromPool(pool_id)
+  local all_items_count, i, this_item, this_item_is_selected, this_item_parent_pool_id
+
+  all_items_count = reaper.CountMediaItems(_api_current_project)
+
+  for i = 0, all_items_count-1 do
+    this_item = reaper.GetMediaItem(_api_current_project, i)
+    this_item_is_selected = reaper.IsMediaItemSelected(this_item)
+
+    if not this_item_is_selected then
+      this_item_parent_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
+
+      if this_item_parent_pool_id == pool_id then
+        storeRetrieveItemData(this_item, _parent_pool_id_key_suffix, "")
+        addRemoveItemImage(this_item, false)
+      end
+    end
+  end
 end
 
 
