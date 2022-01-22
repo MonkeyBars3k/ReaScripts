@@ -1,7 +1,7 @@
 -- @description MB_Superglue - Unglue superglued container item
 -- @author MonkeyBars
--- @version 1.53
--- @changelog branding update
+-- @version 1.70
+-- @changelog Refresh ReaPack
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
