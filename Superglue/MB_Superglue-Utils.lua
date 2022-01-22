@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.72
--- @changelog Glue expanding to TS with no TS doesn't expand to sizing region (https://github.com/MonkeyBars3k/ReaScripts/issues/181)
+-- @version 1.73
+-- @changelog Autoscroll to unglued sibling doesn't scroll properly (https://github.com/MonkeyBars3k/ReaScripts/issues/182)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2316,10 +2316,9 @@ function initUnglueExplode(action)
   if isNotSingleSupergluedContainer(#superglued_containers, action) == true then return end
 
   this_pool_id = storeRetrieveItemData(superglued_containers[1], _instance_pool_id_key_suffix)
+  other_open_instance = otherInstanceIsOpen(this_pool_id)
 
-  if otherInstanceIsOpen(this_pool_id) then
-    other_open_instance = superglued_containers[1]
-
+  if other_open_instance then
     handleOtherOpenInstance(other_open_instance, this_pool_id, action)
 
     return
@@ -2361,20 +2360,20 @@ function otherInstanceIsOpen(edit_pool_id)
     restored_item_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
 
     if restored_item_pool_id == edit_pool_id then
-      return true
+      return this_item
     end
   end
 end
 
 
 function handleOtherOpenInstance(instance, open_instance_pool_id, action)
-  deselectAllItems()
-  reaper.SetMediaItemSelected(instance, true)
-  scrollToSelectedItem()
-
   open_instance_pool_id = tostring(open_instance_pool_id)
 
   reaper.ShowMessageBox("Reglue the other open instance from pool " .. open_instance_pool_id .. " before trying to " .. action .. " this superglued container item. It will be selected and scrolled to now.", "Superglue can only " .. action .. " one superglued pool instance at a time.", _msg_type_ok)
+  
+  deselectAllItems()
+  reaper.SetMediaItemSelected(instance, true)
+  scrollToSelectedItem()
 end
 
 
