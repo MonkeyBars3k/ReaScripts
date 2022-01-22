@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40">
+<index version="1" name="MonkeyBars-ReaScripts" commit="fce67f83b8ce79948db3b3dea0fa1c82683eddab">
   <category name="Superglue">
+    <reapack name="MB_Superglue - Display selected superglued container item info.lua" type="script" desc="MB_Superglue - Display selected superglued container item info">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.69" author="MonkeyBars" time="2022-01-22T03:50:10Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/fce67f83b8ce79948db3b3dea0fa1c82683eddab/Superglue/MB_Superglue%20-%20Display%20selected%20superglued%20container%20item%20info.lua</source>
+      </version>
+    </reapack>
     <reapack name="MB_Superglue - Explode superglued container back into original items irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
@@ -344,6 +360,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.69" author="MonkeyBars" time="2022-01-22T03:50:10Z">
+        <changelog><![CDATA[Add script: "Display Superglue container items info" [5] (https://github.com/MonkeyBars3k/ReaScripts/issues/21)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/fce67f83b8ce79948db3b3dea0fa1c82683eddab/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/fce67f83b8ce79948db3b3dea0fa1c82683eddab/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/fce67f83b8ce79948db3b3dea0fa1c82683eddab/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fce67f83b8ce79948db3b3dea0fa1c82683eddab/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fce67f83b8ce79948db3b3dea0fa1c82683eddab/Superglue/sg-bg-superglued.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
