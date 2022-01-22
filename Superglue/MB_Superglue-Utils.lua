@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.69
--- @changelog Add script: "Display Superglue container items info" [5] (https://github.com/MonkeyBars3k/ReaScripts/issues/21)
+-- @version 1.70
+-- @changelog Refresh ReaPack
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
