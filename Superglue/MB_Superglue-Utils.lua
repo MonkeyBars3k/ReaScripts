@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.74
--- @changelog Change bg image to full height (https://github.com/MonkeyBars3k/ReaScripts/issues/179)
+-- @version 1.740
+-- @changelog ReaPack version issue
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
