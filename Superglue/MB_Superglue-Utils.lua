@@ -64,7 +64,7 @@ _api_takenumber_key = "IP_TAKENUMBER"
 _api_null_takes_val = "TAKE NULL"
 _global_script_prefix = "SG_"
 _global_script_item_name_prefix = "sg"
-_global_options_section = "SUPERGLUE_OPTIONS"
+_global_options_section = "MB_SUPERGLUE-OPTIONS"
 _global_option_toggle_item_images_key = "item_images_enabled"
 _global_option_propagate_position_default_key = "propagate_position_default"
 _global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
@@ -2119,21 +2119,23 @@ end
 
 
 function propagatePoolChanges(active_superglued_instance_params, sizing_region_guid, obey_time_selection)
-  local parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id, retval, global_option_toggle_depool_all_siblings_on_reglue, active_track, selected_items, restored_items_position_adjustment
+  local global_option_toggle_depool_all_siblings_on_reglue, parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id, active_track, selected_items, restored_items_position_adjustment
 
-  parent_pools_near_project_start = updateActivePoolSiblings(active_superglued_instance_params)
+  global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
+  parent_pools_near_project_start = updateActivePoolSiblings(active_superglued_instance_params, false, global_option_toggle_depool_all_siblings_on_reglue)
   ancestor_pools_params_by_children_nesting_depth = sortParentUpdatesByNestingDepth()
 
   for i = 1, #ancestor_pools_params_by_children_nesting_depth do
     this_parent_pool_params = ancestor_pools_params_by_children_nesting_depth[i]
     this_parent_pool_id = tostring(this_parent_pool_params.pool_id)
-    retval, global_option_toggle_depool_all_siblings_on_reglue = storeRetrieveProjectData(_global_option_toggle_depool_all_siblings_on_reglue_key)
 
-    if global_option_toggle_depool_all_siblings_on_reglue then
-      active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, active_superglued_instance_params.track_guid)
-      selected_items = getSelectedItems(#this_parent_pool_params.restored_items)
-log(#this_parent_pool_params.restored_items)
-      handleGlue(selected_items, active_track, nil, nil, nil, false)
+    if global_option_toggle_depool_all_siblings_on_reglue == "true" then
+      -- selected_items = getSelectedItems(#this_parent_pool_params.restored_items)
+      -- active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, active_superglued_instance_params.track_guid)
+      -- this_parent_pool_params.pool_id = nil
+
+      -- handleGlue(selected_items, active_track, nil, sizing_region_guid, nil, obey_time_selection)
+      -- reglueParentInstance(this_parent_pool_params, obey_time_selection, sizing_region_guid)
 
     else
       restored_items_position_adjustment = parent_pools_near_project_start[this_parent_pool_id]
@@ -2144,17 +2146,17 @@ log(#this_parent_pool_params.restored_items)
       else
         restored_items_position_adjustment = 0
       end
-
-      reglueParentInstance(this_parent_pool_params, obey_time_selection, sizing_region_guid, restored_items_position_adjustment)
     end
+      
+    reglueParentInstance(this_parent_pool_params, obey_time_selection, sizing_region_guid, restored_items_position_adjustment)
   end
 
   reaper.ClearPeakCache()
 end
 
 
-function updateActivePoolSiblings(active_superglued_instance_params, parent_is_being_updated)
-  local all_items_count, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, retval, global_option_toggle_depool_all_siblings_on_reglue, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
+function updateActivePoolSiblings(active_superglued_instance_params, parent_is_being_updated, global_option_toggle_depool_all_siblings_on_reglue)
+  local all_items_count, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, restored_items, active_track, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
   siblings_are_being_updated = not parent_is_being_updated
@@ -2165,9 +2167,14 @@ function updateActivePoolSiblings(active_superglued_instance_params, parent_is_b
     this_active_pool_sibling = getActivePoolSibling(this_item, active_superglued_instance_params)
 
     if this_active_pool_sibling then
-      retval, global_option_toggle_depool_all_siblings_on_reglue = storeRetrieveProjectData(_global_option_toggle_depool_all_siblings_on_reglue_key)
 
-      if not global_option_toggle_depool_all_siblings_on_reglue then
+      if global_option_toggle_depool_all_siblings_on_reglue == "true" then
+-- NEED PREEDIT RESTORED ITEMS, NOT FRESH ONES AS THEY COME FROM THE NEWLY GLUED SUPERITEM
+        restored_items, active_track = processUnglueExplode(this_active_pool_sibling, active_superglued_instance_params.pool_id, "Explode")
+
+        handleGlue(restored_items, active_track, nil, nil, nil, obey_time_selection)
+
+      elseif global_option_toggle_depool_all_siblings_on_reglue == "false" then
         getSetItemAudioSrc(this_active_pool_sibling, active_superglued_instance_params.updated_src)
 
         if siblings_are_being_updated then
@@ -2429,7 +2436,7 @@ end
 
 
 function processUnglueExplode(superglued_container, pool_id, action)
-  local superglued_container_preedit_params, superglued_container_preglue_state_key_suffix, superglued_container_state, active_track, this_is_explode, sizing_region_guid, sizing_region_deletion_msg_is_enabled, superglued_container_postglue_params
+  local superglued_container_preedit_params, active_track, this_is_explode, superglued_container_preglue_state_key_suffix, superglued_container_state, restored_items, sizing_region_guid, sizing_region_deletion_msg_is_enabled
 
   superglued_container_preedit_params = getSetItemParams(superglued_container)
 
@@ -2447,19 +2454,18 @@ function processUnglueExplode(superglued_container, pool_id, action)
     storeRetrieveProjectData(superglued_container_preglue_state_key_suffix, superglued_container_state)
   end
 
-  restoreContainedItems(pool_id, active_track, superglued_container, superglued_container_preedit_params, nil, this_is_explode)
+  restored_items = restoreContainedItems(pool_id, active_track, superglued_container, superglued_container_preedit_params, nil, this_is_explode)
 
   if action == "Unglue" then
     sizing_region_guid = createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
     sizing_region_deletion_msg_is_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_sizing_region_deletion_msg_key)
 
     initSizingRegionCheck(sizing_region_guid, pool_id, sizing_region_deletion_msg_is_enabled)
-
--- WAS THIS DOING ANYTHING?
-    -- superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
   end
 
   reaper.DeleteTrackMediaItem(active_track, superglued_container)
+
+  return restored_items, active_track
 end
 
 
@@ -2726,7 +2732,6 @@ function stringifyArray(t)
   for i = 1, #t do
     this_item = t[i]
     s = s .. this_item
-
     if i ~= #t then
        s = s .. ", "
     end
@@ -2734,7 +2739,6 @@ function stringifyArray(t)
   if not s or s == "" then
     s = "none"
   end
-
   return s
 end
 
