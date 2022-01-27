@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.742
--- @changelog Issue 173 cleanup
+-- @version 1.743
+-- @changelog Fix DePool offset
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,7 +20,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -2692,12 +2692,15 @@ end
 
 
 function handleDePoolPostGlue(superglued_container, selected_container_state, selected_container_params)
+  local active_take = reaper.GetActiveTake(superglued_container)
+
   selected_container_params.active_take_name = getSetItemName(superglued_container)
   selected_container_params.updated_src = getSetItemAudioSrc(superglued_container)
   selected_container_params.new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
 
   getSetItemStateChunk(superglued_container, selected_container_state)
   getSetItemParams(superglued_container, selected_container_params)
+  reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, 0)
   getSetItemAudioSrc(superglued_container, selected_container_params.updated_src)
   getSetItemName(superglued_container, selected_container_params.active_take_name)
   storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, selected_container_params.new_pool_id)
