@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.741
--- @changelog Issue 173 redux
+-- @version 1.742
+-- @changelog Issue 173 cleanup
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2664,11 +2664,11 @@ function initDePool()
 
   selected_container = getFirstSelectedItem()
   selected_container_params = getSetItemParams(selected_container)
-  selected_container_state = getSetItemStateChunk(selected_container)
-  selected_items = {}
   active_track = reaper.GetMediaItemTrack(selected_container)
-  selected_container_params.pool_id = initUnglueExplode("DePool")
   selected_items_count = reaper.CountSelectedMediaItems(_api_current_project)
+  selected_items = {}
+  selected_container_state = getSetItemStateChunk(selected_container)
+  selected_container_params.pool_id = initUnglueExplode("DePool")
 
   for i = 0, selected_items_count-1 do
     this_selected_item = reaper.GetSelectedMediaItem(_api_current_project, i)
