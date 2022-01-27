@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="8518fbe6319c1c5623a075abe73dec7fdf49a742">
+<index version="1" name="MonkeyBars-ReaScripts" commit="0e1aa9c5740a93533fc118e88816332e41d402af">
   <category name="Superglue">
     <reapack name="MB_Superglue - Change color of all superglued container items in project.lua" type="script" desc="MB_Superglue - Change color of all superglued container items in project">
       <metadata>
@@ -440,6 +440,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8518fbe6319c1c5623a075abe73dec7fdf49a742/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8518fbe6319c1c5623a075abe73dec7fdf49a742/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8518fbe6319c1c5623a075abe73dec7fdf49a742/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.741" author="MonkeyBars" time="2022-01-27T03:49:46Z">
+        <changelog><![CDATA[Issue 173 redux]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/0e1aa9c5740a93533fc118e88816332e41d402af/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/0e1aa9c5740a93533fc118e88816332e41d402af/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/0e1aa9c5740a93533fc118e88816332e41d402af/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/0e1aa9c5740a93533fc118e88816332e41d402af/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/0e1aa9c5740a93533fc118e88816332e41d402af/Superglue/sg-bg-superglued.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
