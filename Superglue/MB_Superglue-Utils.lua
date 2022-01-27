@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.743
--- @changelog Fix DePool offset
+-- @version 1.744
+-- @changelog More sensible DePool variables
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2692,18 +2692,19 @@ end
 
 
 function handleDePoolPostGlue(superglued_container, selected_container_state, selected_container_params)
-  local active_take = reaper.GetActiveTake(superglued_container)
+  local active_take, active_take_name, updated_src, new_pool_id
 
-  selected_container_params.active_take_name = getSetItemName(superglued_container)
-  selected_container_params.updated_src = getSetItemAudioSrc(superglued_container)
-  selected_container_params.new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
+  active_take = reaper.GetActiveTake(superglued_container)
+  active_take_name = getSetItemName(superglued_container)
+  updated_src = getSetItemAudioSrc(superglued_container)
+  new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
 
   getSetItemStateChunk(superglued_container, selected_container_state)
   getSetItemParams(superglued_container, selected_container_params)
   reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, 0)
-  getSetItemAudioSrc(superglued_container, selected_container_params.updated_src)
-  getSetItemName(superglued_container, selected_container_params.active_take_name)
-  storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, selected_container_params.new_pool_id)
+  getSetItemName(superglued_container, active_take_name)
+  getSetItemAudioSrc(superglued_container, updated_src)
+  storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, new_pool_id)
 end
 
 
