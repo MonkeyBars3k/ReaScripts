@@ -27,7 +27,6 @@ To edit your superglued item container, the **Unglue** script opens the created 
 - Provides the missing **nondestructive/reversible Glue feature** in Reaper!
   - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes, Pooled Audio Items
 - Currently, Superglued container item copies are **pooled by default**. Editing and regluing one container item **updates all instances**. (Yes! We have scripted the missing native **pooled audio items** feature in Reaper along with everything else!)
-  - If you want to separate a container from its pool, Explode it then Superglue anew.
 - Supports **nesting Superglued container items** inside _other_ superglued container items! When you update the nested container item, Superglue checks the parent item and updates that as well. There is no limit in the code as to how many times you can nest – tested with 20 levels of nesting.
 
 ### Tips

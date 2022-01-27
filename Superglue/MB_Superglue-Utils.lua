@@ -1,6 +1,6 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.75
+-- @version 1.750
 -- @changelog Add option: "Remove all sibling instances from pool on Reglue (disable pooling)" (https://github.com/MonkeyBars3k/ReaScripts/issues/8)
 -- @provides [nomain] .
 --   serpent.lua
@@ -813,7 +813,7 @@ function triggerSuperglue(selected_items, restored_items_pool_id, first_selected
   if restored_items_pool_id then
     superglued_container = handleReglue(selected_items, first_selected_item_track, restored_items_pool_id, obey_time_selection)
   else
-    superglued_container = handleGlue(selected_items, first_selected_item_track, nil, nil, nil, obey_time_selection)
+    superglued_container = handleGlue(selected_items, first_selected_item_track, nil, nil, nil, nil, obey_time_selection)
   end
 
   return superglued_container
@@ -847,10 +847,11 @@ function refreshUI()
 end
 
 
-function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, parent_is_being_updated)
-  local this_is_new_glue, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position, superglued_container
+function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, depool_container_params, obey_time_selection, parent_is_being_updated)
+  local this_is_new_glue, this_is_depool, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position, superglued_container
 
   this_is_new_glue = not pool_id
+  this_is_depool = depool_container_params
   this_is_reglue = pool_id
   first_selected_item = getFirstSelectedItem()
   first_selected_item_name = getSetItemName(first_selected_item)
@@ -860,6 +861,10 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   if this_is_new_glue then
     pool_id = handlePoolId()
 
+    if this_is_depool then
+      sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpDePool(depool_container_params)
+    end
+
   elseif this_is_reglue then
     sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(parent_is_being_updated, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items, obey_time_selection)
   end
@@ -867,7 +872,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
   superglued_container = glueSelectedItemsIntoContainer(obey_time_selection)
 
-  handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, selected_instances_pool_ids, sizing_params, parent_is_being_updated, time_selection_was_set_by_code)
+  handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, selected_instances_pool_ids, sizing_params, this_is_reglue, parent_is_being_updated, time_selection_was_set_by_code)
 
   return superglued_container
 end
@@ -1016,95 +1021,6 @@ function setResetGlueTimeSelection(sizing_params, set_or_reset)
 end
 
 
-function convertMidiItemToAudio(item)
-  local item_takes_count, active_take, this_take_is_midi, retval, active_take_guid
-
-  item_takes_count = reaper.GetMediaItemNumTakes(item)
-
-  if item_takes_count > 0 then
-    active_take = reaper.GetActiveTake(item)
-    this_take_is_midi = active_take and reaper.TakeIsMIDI(active_take)
-
-    if this_take_is_midi then
-      reaper.SetMediaItemSelected(item, true)
-      renderFxToItem()
-      
-      active_take = reaper.GetActiveTake(item)
-      retval, active_take_guid = reaper.GetSetMediaItemTakeInfo_String(active_take, "GUID", "", false)
-
-      storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix, active_take_guid)
-      reaper.SetMediaItemSelected(item, false)
-      cleanNullTakes(item)
-    end
-  end
-end
-
-
-function renderFxToItem()
-  reaper.Main_OnCommand(40209, 0)
-end
-
-
-function setLastTakeActive(item, item_takes_count)
-  local last_take = reaper.GetTake(item, item_takes_count)
-
-  reaper.SetActiveTake(last_take)
-
-  return last_take
-end
-
-
-function cleanNullTakes(item, force)
-  local item_state = getSetItemStateChunk(item)
-
-  if string.find(item_state, _api_null_takes_val) or force then
-    item_state = string.gsub(item_state, _api_null_takes_val, "")
-
-    getSetItemStateChunk(item, item_state)
-  end
-end
-
-
-function getSetItemStateChunk(item, state)
-  local get, set, retval
-
-  get = not state
-  set = state
-
-  if get then
-    retval, state = reaper.GetItemStateChunk(item, "", true)
-
-    return state
-
-  elseif set then
-    reaper.SetItemStateChunk(item, state, true)
-  end
-end
-
-
-function setGluedContainerName(item, item_name_ending)
-  local take, new_item_name
-
-  take = reaper.GetActiveTake(item)
-  new_item_name = _superglued_container_name_prefix .. item_name_ending
-
-  reaper.GetSetMediaItemTakeInfo_String(take, _api_take_name_key, new_item_name, true)
-end
-
-
-function selectDeselectItems(items, select_deselect)
-  local i, this_item
-
-  for i = 1, #items do
-    this_item = items[i]
-
-    if this_item then 
-      reaper.SetMediaItemSelected(this_item, select_deselect)
-    end
-  end
-end
-
-
 function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selected_items, pool_id, obey_time_selection)
   local sizing_params, is_active_container_reglue, time_selection_start, time_selection_end, no_time_selection_exists, time_selection_was_set_by_code, sizing_region_defer_loop_is_active_key
 
@@ -1116,7 +1032,6 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selec
   sizing_region_defer_loop_is_active_key = _pool_key_prefix .. pool_id .. _sizing_region_defer_loop_suffix
 
   if is_active_container_reglue then
-
     if not obey_time_selection or (obey_time_selection and no_time_selection_exists) then
       sizing_params = calculateSizingTimeSelection(selected_items, sizing_params)
 
@@ -1257,11 +1172,27 @@ function calculateSizingTimeSelection(selected_items, sizing_params)
 end
 
 
+function setUpDePool(depool_container_params)
+  local sizing_params, obey_time_selection, time_selection_was_set_by_code
+
+  sizing_params = {
+    ["position"] = depool_container_params.position,
+    ["end_point"] = depool_container_params.end_point
+  }
+  obey_time_selection = true
+  time_selection_was_set_by_code = true
+
+  setResetGlueTimeSelection(sizing_params, "set")
+
+  return sizing_params, obey_time_selection, time_selection_was_set_by_code
+end
+
+
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, parent_is_being_updated)
   local earliest_item_delta_to_superglued_container_position, selected_item_states, selected_instances_pool_ids, i
 
   earliest_item_delta_to_superglued_container_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
-  selected_item_states, selected_instances_pool_ids = createSelectedItemStates(selected_items, pool_id)
+  selected_item_states, selected_instances_pool_ids = getSelectedItemStates(selected_items, pool_id)
 
   storeSelectedItemStates(pool_id, selected_item_states)
   selectDeselectItems(selected_items, true)
@@ -1278,10 +1209,10 @@ end
 
 
 function setPreglueItemsData(preglue_items, pool_id, sizing_params)
-  local this_is_new_glue, this_is_reglue, earliest_item_delta_to_superglued_container_position, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superglued_container_position
+  local this_is_new_glue, this_is_reglue_or_depool, earliest_item_delta_to_superglued_container_position, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superglued_container_position
 
   this_is_new_glue = not sizing_params
-  this_is_reglue = sizing_params
+  this_is_reglue_or_depool = sizing_params
   earliest_item_delta_to_superglued_container_position = 0
 
   for i = 1, #preglue_items do
@@ -1298,7 +1229,7 @@ function setPreglueItemsData(preglue_items, pool_id, sizing_params)
     if this_is_new_glue then
       offset_position = this_item_position
 
-    elseif this_is_reglue then
+    elseif this_is_reglue_or_depool then
       offset_position = math.min(first_item_position, sizing_params.position)
     end
     
@@ -1312,7 +1243,7 @@ function setPreglueItemsData(preglue_items, pool_id, sizing_params)
 end
 
 
-function createSelectedItemStates(selected_items, active_pool_id)
+function getSelectedItemStates(selected_items, active_pool_id)
   local selected_item_states, selected_instances_pool_ids, i, item, this_item, this_superglued_container_pool_id, this_is_superglued_container, this_item_guid, this_item_state
 
   selected_item_states = {}
@@ -1338,6 +1269,72 @@ function createSelectedItemStates(selected_items, active_pool_id)
 end
 
 
+function convertMidiItemToAudio(item)
+  local item_takes_count, active_take, this_take_is_midi, retval, active_take_guid
+
+  item_takes_count = reaper.GetMediaItemNumTakes(item)
+
+  if item_takes_count > 0 then
+    active_take = reaper.GetActiveTake(item)
+    this_take_is_midi = active_take and reaper.TakeIsMIDI(active_take)
+
+    if this_take_is_midi then
+      reaper.SetMediaItemSelected(item, true)
+      renderFxToItem()
+      
+      active_take = reaper.GetActiveTake(item)
+      retval, active_take_guid = reaper.GetSetMediaItemTakeInfo_String(active_take, "GUID", "", false)
+
+      storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix, active_take_guid)
+      reaper.SetMediaItemSelected(item, false)
+      cleanNullTakes(item)
+    end
+  end
+end
+
+
+function renderFxToItem()
+  reaper.Main_OnCommand(40209, 0)
+end
+
+
+function setLastTakeActive(item, item_takes_count)
+  local last_take = reaper.GetTake(item, item_takes_count)
+
+  reaper.SetActiveTake(last_take)
+
+  return last_take
+end
+
+
+function cleanNullTakes(item, force)
+  local item_state = getSetItemStateChunk(item)
+
+  if string.find(item_state, _api_null_takes_val) or force then
+    item_state = string.gsub(item_state, _api_null_takes_val, "")
+
+    getSetItemStateChunk(item, item_state)
+  end
+end
+
+
+function getSetItemStateChunk(item, state)
+  local get, set, retval
+
+  get = not state
+  set = state
+
+  if get then
+    retval, state = reaper.GetItemStateChunk(item, "", true)
+
+    return state
+
+  elseif set then
+    reaper.SetItemStateChunk(item, state, true)
+  end
+end
+
+
 function storeSelectedItemStates(pool_id, selected_item_states)
   local pool_item_states_key_label
 
@@ -1345,6 +1342,19 @@ function storeSelectedItemStates(pool_id, selected_item_states)
   selected_item_states = serpent.dump(selected_item_states)
   
   storeRetrieveProjectData(pool_item_states_key_label, selected_item_states)
+end
+
+
+function selectDeselectItems(items, select_deselect)
+  local i, this_item
+
+  for i = 1, #items do
+    this_item = items[i]
+
+    if this_item then 
+      reaper.SetMediaItemSelected(this_item, select_deselect)
+    end
+  end
 end
 
 
@@ -1378,6 +1388,45 @@ function cropItemToSizingParams(restored_item, sizing_item_params, active_track)
     restored_item_new_length = restored_item_params.length - end_point_delta
     
     reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
+  end
+end
+
+
+function glueSelectedItemsIntoContainer(obey_time_selection)
+  local superglued_container
+
+  glueSelectedItems(obey_time_selection)
+
+  superglued_container = getFirstSelectedItem()
+
+  return superglued_container
+end
+
+
+function glueSelectedItems(obey_time_selection)
+  if obey_time_selection == true then
+    reaper.Main_OnCommand(41588, 0)
+  else
+    reaper.Main_OnCommand(40362, 0)
+  end
+end
+
+
+function handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, child_instances_pool_ids, sizing_params, this_is_reglue, parent_is_being_updated, time_selection_was_set_by_code)
+  local user_selected_instance_is_being_reglued, superglued_container_init_name
+
+  user_selected_instance_is_being_reglued = not parent_is_being_updated
+  superglued_container_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
+
+  handleSupergluedContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
+  handleDescendantPoolReferences(pool_id, child_instances_pool_ids)
+
+  if user_selected_instance_is_being_reglued then
+    handleParentPoolReferencesInChildPools(pool_id, child_instances_pool_ids)
+  end
+
+  if time_selection_was_set_by_code then
+    setResetGlueTimeSelection(sizing_params, "reset")
   end
 end
 
@@ -1422,6 +1471,16 @@ function handleSupergluedContainerPostGlue(superglued_container, superglued_cont
   storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, pool_id)
   storeRetrieveProjectData(pool_parent_position_key_label, pool_parent_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, pool_parent_params.length)
+end
+
+
+function setGluedContainerName(item, item_name_ending)
+  local take, new_item_name
+
+  take = reaper.GetActiveTake(item)
+  new_item_name = _superglued_container_name_prefix .. item_name_ending
+
+  reaper.GetSetMediaItemTakeInfo_String(take, _api_take_name_key, new_item_name, true)
 end
 
 
@@ -1519,47 +1578,6 @@ function addRemoveItemImage(item, type_or_remove)
 end
 
 
-function glueSelectedItemsIntoContainer(obey_time_selection)
-  local superglued_container
-
-  glueSelectedItems(obey_time_selection)
-
-  superglued_container = getFirstSelectedItem()
-
-  return superglued_container
-end
-
-
-function glueSelectedItems(obey_time_selection)
-
-  if obey_time_selection == true then
-    reaper.Main_OnCommand(41588, 0)
-  else
-    reaper.Main_OnCommand(40362, 0)
-  end
-end
-
-
-function handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, child_instances_pool_ids, sizing_params, parent_is_being_updated, time_selection_was_set_by_code)
-  local this_is_reglue, user_selected_instance_is_being_reglued, superglued_container_init_name
-
-  this_is_reglue = pool_id
-  user_selected_instance_is_being_reglued = not parent_is_being_updated
-  superglued_container_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
-
-  handleSupergluedContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, parent_is_being_updated)
-  handleDescendantPoolReferences(pool_id, child_instances_pool_ids)
-
-  if user_selected_instance_is_being_reglued then
-    handleParentPoolReferencesInChildPools(pool_id, child_instances_pool_ids)
-  end
-
-  if this_is_reglue and time_selection_was_set_by_code then
-    setResetGlueTimeSelection(sizing_params, "reset")
-  end
-end
-
-
 function handleDescendantPoolReferences(pool_id, child_instances_pool_ids)
   local this_pool_descendants, i, this_child_pool_id, this_child_pool_descendant_pool_ids_key, retval, this_child_pool_descendant_pool_ids, j, descendant_pool_ids_key, this_pool_descendants_string
 
@@ -1636,7 +1654,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   superglued_container_last_glue_params = storeRetrieveSupergluedContainerParams(restored_items_pool_id, _postglue_action_step)
   sizing_region_guid_key_label = _pool_key_prefix .. restored_items_pool_id .. _sizing_region_guid_key_suffix
   retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key_label)
-  superglued_container = handleGlue(selected_items, first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, obey_time_selection)
+  superglued_container = handleGlue(selected_items, first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, nil, obey_time_selection)
   superglued_container_params = getSetItemParams(superglued_container)
   superglued_container_params.updated_src = getSetItemAudioSrc(superglued_container)
   superglued_container_params.pool_id = restored_items_pool_id
@@ -2326,7 +2344,7 @@ function reglueParentInstance(parent_instance_params, obey_time_selection, sizin
   selectDeselectItems(parent_instance_params.restored_items, true)
 
   selected_items = getSelectedItems(#parent_instance_params.restored_items)
-  parent_instance = handleGlue(selected_items, parent_instance_params.track, parent_instance_params.pool_id, sizing_region_guid, restored_items_position_adjustment, obey_time_selection, true)
+  parent_instance = handleGlue(selected_items, parent_instance_params.track, parent_instance_params.pool_id, sizing_region_guid, restored_items_position_adjustment, nil, obey_time_selection, true)
   parent_instance_params.updated_src = getSetItemAudioSrc(parent_instance)
 
   deselectAllItems()
@@ -2354,6 +2372,8 @@ function initUnglueExplode(action)
   end
   
   handleUnglueExplode(this_pool_id, action)
+
+  return this_pool_id
 end
 
 
@@ -2668,16 +2688,15 @@ end
 
 
 function initDePool()
-  local selected_container, selected_container_params, selected_items_count, i, this_selected_item, selected_items
+  local selected_container, selected_container_params, selected_container_state, selected_items, active_track, selected_items_count, i, this_selected_item, superglued_container
 
   selected_container = getFirstSelectedItem()
   selected_container_params = getSetItemParams(selected_container)
-  selected_items = {}
   active_track = reaper.GetMediaItemTrack(selected_container)
-
-  initUnglueExplode("DePool")
-
   selected_items_count = reaper.CountSelectedMediaItems(_api_current_project)
+  selected_items = {}
+  selected_container_state = getSetItemStateChunk(selected_container)
+  selected_container_params.pool_id = initUnglueExplode("DePool")
 
   for i = 0, selected_items_count-1 do
     this_selected_item = reaper.GetSelectedMediaItem(_api_current_project, i)
@@ -2693,8 +2712,23 @@ function initDePool()
     table.insert(selected_items, this_selected_item)
   end
 
-  handleGlue(selected_items, active_track, nil, nil, nil, false)
+  superglued_container = handleGlue(selected_items, active_track, nil, nil, nil, selected_container_params, false, false)
+
+  handleDePoolPostGlue(superglued_container, selected_container_state, selected_container_params)
   cleanUpAction(_explode_undo_block_string)
+end
+
+
+function handleDePoolPostGlue(superglued_container, selected_container_state, selected_container_params)
+  selected_container_params.active_take_name = getSetItemName(superglued_container)
+  selected_container_params.updated_src = getSetItemAudioSrc(superglued_container)
+  selected_container_params.new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
+
+  getSetItemStateChunk(superglued_container, selected_container_state)
+  getSetItemParams(superglued_container, selected_container_params)
+  getSetItemAudioSrc(superglued_container, selected_container_params.updated_src)
+  getSetItemName(superglued_container, selected_container_params.active_take_name)
+  storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, selected_container_params.new_pool_id)
 end
 
 
