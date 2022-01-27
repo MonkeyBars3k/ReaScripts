@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="24c9d3a0d232ec308ce4fa0567c6f8f94086517d">
+<index version="1" name="MonkeyBars-ReaScripts" commit="7d27c32da8d19af539d5817000e8a73dfe4ee3b4">
   <category name="Superglue">
     <reapack name="MB_Superglue - Change color of all superglued container items in project.lua" type="script" desc="MB_Superglue - Change color of all superglued container items in project">
       <metadata>
@@ -464,6 +464,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.744" author="MonkeyBars" time="2022-01-27T19:41:14Z">
+        <changelog><![CDATA[More sensible DePool variables]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/sg-bg-superglued.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
