@@ -36,6 +36,7 @@ To edit your superglued item container, the **Unglue** script opens the created 
 ### Notes
 - Requires **Reaper v6.43** or newer
 - Requires **SWS Plugin Extension**!
+- Stay aware of the state of your Superitems whenever editing audio externally. If you're destructively editing audio in a contained item, or for example editing a subproject which is present as a contained item in your project, such items' direct parent must be in Edit mode ("open") during your external edits, or their ancestors (parent, grandparent, etc. superitems) won't be updated.
 - Be _very_ careful if you want to **Clean current project directory** after supergluing – you could lose your superglued items, since at that point, those "items" aren't included in the project proper – they only exist as data (state chunks).
 - Be careful ungluing and editing a parent container item **near project start**. If a child container item would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its sibling pooled container items.
 - Superglue uses item notes to set background image for easy recognition of superglued container and contained items. Careful: **The background image will overwrite any item notes you already have on your glued items.** Just disable this feature in the script options window or with the included script, if you don't like it for any reason.
