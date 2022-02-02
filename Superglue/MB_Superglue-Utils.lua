@@ -2690,11 +2690,9 @@ end
 
 
 function initDePool(target_item)
-  local this_is_user_initiated_depool, this_is_sibling_depool, target_item_params, target_item_state, restored_items, active_track, selected_items_count, i, this_restored_item, superglued_container, retval
+  local this_is_user_initiated_depool, target_item_params, target_item_state, active_track, restored_items, superglued_container
 
   this_is_user_initiated_depool = not target_item
-  this_is_sibling_depool = target_item
-  restored_items = {}
 
   if this_is_user_initiated_depool then
     target_item = getFirstSelectedItem()
@@ -2702,10 +2700,27 @@ function initDePool(target_item)
 
   target_item_params = getSetItemParams(target_item)
   target_item_state = getSetItemStateChunk(target_item)
+  active_track, target_item_params, restored_items = processDePool(target_item, target_item_params, this_is_user_initiated_depool)
+  superglued_container = handleGlue(restored_items, active_track, nil, nil, nil, target_item_params, false, false)
+
+  handleDePoolPostGlue(superglued_container, target_item_state, target_item_params)
+
+  if this_is_user_initiated_depool then
+    cleanUpAction(_explode_undo_block_string)
+  end
+end
+
+
+function processDePool(target_item, target_item_params, this_is_user_initiated_depool)
+  local restored_items, this_is_user_initiated_depool, active_track, selected_items_count, i, this_restored_item
+
+  restored_items = {}
+  this_is_sibling_depool = not this_is_user_initiated_depool
 
   if this_is_user_initiated_depool then
     active_track = reaper.GetMediaItemTrack(target_item)
     target_item_params.pool_id = initUnglueExplode("DePool")
+    selected_items_count = reaper.CountSelectedMediaItems(_api_current_project)
 
     for i = 0, selected_items_count-1 do
       this_restored_item = reaper.GetSelectedMediaItem(_api_current_project, i)
@@ -2732,13 +2747,7 @@ function initDePool(target_item)
     end
   end
 
-  superglued_container = handleGlue(restored_items, active_track, nil, nil, nil, target_item_params, false, false)
-
-  handleDePoolPostGlue(superglued_container, target_item_state, target_item_params)
-
-  if this_is_user_initiated_depool then
-    cleanUpAction(_explode_undo_block_string)
-  end
+  return active_track, target_item_params, restored_items
 end
 
 
