@@ -2752,15 +2752,19 @@ end
 
 
 function handleDePoolPostGlue(superglued_container, target_item_state, target_item_params)
-  target_item_params.active_take_name = getSetItemName(superglued_container)
-  target_item_params.updated_src = getSetItemAudioSrc(superglued_container)
-  target_item_params.new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
+  local active_take, active_take_name, updated_src, new_pool_id
+
+  active_take = reaper.GetActiveTake(superglued_container)
+  active_take_name = getSetItemName(superglued_container)
+  updated_src = getSetItemAudioSrc(superglued_container)
+  new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
 
   getSetItemStateChunk(superglued_container, target_item_state)
   getSetItemParams(superglued_container, target_item_params)
-  getSetItemAudioSrc(superglued_container, target_item_params.updated_src)
-  getSetItemName(superglued_container, target_item_params.active_take_name)
-  storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, target_item_params.new_pool_id)
+  reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, 0)
+  getSetItemName(superglued_container, active_take_name)
+  getSetItemAudioSrc(superglued_container, updated_src)
+  storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, new_pool_id)
 end
 
 

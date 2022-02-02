@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="0e1aa9c5740a93533fc118e88816332e41d402af">
+<index version="1" name="MonkeyBars-ReaScripts" commit="7d27c32da8d19af539d5817000e8a73dfe4ee3b4">
   <category name="Superglue">
     <reapack name="MB_Superglue - Change color of all superglued container items in project.lua" type="script" desc="MB_Superglue - Change color of all superglued container items in project">
       <metadata>
@@ -449,6 +449,30 @@
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/0e1aa9c5740a93533fc118e88816332e41d402af/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/0e1aa9c5740a93533fc118e88816332e41d402af/Superglue/sg-bg-superglued.png</source>
       </version>
+      <version name="1.742" author="MonkeyBars" time="2022-01-27T16:18:50Z">
+        <changelog><![CDATA[Issue 173 cleanup]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/d677b8df3d44a31b4dc74a1af8b8e7aea5d7145b/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d677b8df3d44a31b4dc74a1af8b8e7aea5d7145b/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d677b8df3d44a31b4dc74a1af8b8e7aea5d7145b/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d677b8df3d44a31b4dc74a1af8b8e7aea5d7145b/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d677b8df3d44a31b4dc74a1af8b8e7aea5d7145b/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.743" author="MonkeyBars" time="2022-01-27T19:36:02Z">
+        <changelog><![CDATA[Fix DePool offset]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/24c9d3a0d232ec308ce4fa0567c6f8f94086517d/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.744" author="MonkeyBars" time="2022-01-27T19:41:14Z">
+        <changelog><![CDATA[More sensible DePool variables]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7d27c32da8d19af539d5817000e8a73dfe4ee3b4/Superglue/sg-bg-superglued.png</source>
+      </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
       <version name="1.0" author="various" time="2022-01-17T14:43:44Z">
@@ -505,6 +529,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b Reaper v6.43} or newer\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension}!\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Stay aware of the state of your Superitems whenever editing audio externally. If you're destructively editing audio in a contained item, or for example editing a subproject which is present as a contained item in your project, such items' direct parent must be in Edit mode ("open") during your external edits, or their ancestors (parent, grandparent, etc. superitems) won't be updated.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be {\i very} careful if you want to {\b Clean current project directory} after supergluing \u8211- you could lose your superglued items, since at that point, those "items" aren't included in the project proper \u8211- they only exist as data (state chunks).\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be careful ungluing and editing a parent container item {\b near project start}. If a child container item would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its sibling pooled container items.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Superglue uses item notes to set background image for easy recognition of superglued container and contained items. Careful: {\b The background image will overwrite any item notes you already have on your glued items.} Just disable this feature in the script options window or with the included script, if you don't like it for any reason.\par}
