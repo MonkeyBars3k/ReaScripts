@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.752
--- @changelog Position propagate near project start broken (https://github.com/MonkeyBars3k/ReaScripts/issues/190)
+-- @version 1.753
+-- @changelog Add hidden option: DePool by default is enabled warning (https://github.com/MonkeyBars3k/ReaScripts/issues/193)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -27,7 +27,7 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _global_option_toggle_sizing_region_deletion_msg_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response
+local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superglued_item_bg_img_path = _script_path .. "sg-bg-superglued.png"
@@ -51,6 +51,7 @@ _api_include_all_undo_states = -1
 _api_marker_region_undo_states = 8
 _api_item_image_full_height = 5
 _api_time_value_decimal_resolution = 12
+_api_extstate_persist_enabled = true
 _api_data_key = "P_EXT:"
 _api_project_region_guid_key_prefix = "MARKER_GUID:"
 _api_item_mute_key = "B_MUTE"
@@ -69,6 +70,7 @@ _global_option_toggle_item_images_key = "item_images_enabled"
 _global_option_propagate_position_default_key = "propagate_position_default"
 _global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
 _global_option_toggle_depool_all_siblings_on_reglue_key = "depool_all_siblings_on_reglue_enabled"
+_global_option_toggle_depool_all_siblings_on_reglue_warning_key = "depool_all_siblings_on_reglue_warning_enabled"
 _all_global_options_params = {
   {
     ["name"] = "item_images",
@@ -147,6 +149,7 @@ _preglue_restored_item_states = nil
 _ancestor_pools_params = {}
 _position_changed_since_last_glue = false
 _position_change_response = nil
+_user_wants_to_depool_all_siblings = nil
 
 
 
@@ -158,7 +161,7 @@ function setDefaultOptionValues()
     this_option_exists_in_extstate = reaper.HasExtState(_global_options_section, this_option_ext_state_key)
 
     if not this_option_exists_in_extstate or this_option_exists_in_extstate == "nil" then
-      reaper.SetExtState(_global_options_section, this_option_ext_state_key, _all_global_options_params[i].default_value, true)
+      reaper.SetExtState(_global_options_section, this_option_ext_state_key, _all_global_options_params[i].default_value, _api_extstate_persist_enabled)
     end
   end
 end
@@ -318,7 +321,12 @@ function submitOptionChanges(all_option_controls, options_window)
     end
 
     if this_option_form_value ~= this_option_saved_value then
-      reaper.SetExtState(_global_options_section, this_option.ext_state_key, this_option_form_value, true)
+      reaper.SetExtState(_global_options_section, this_option.ext_state_key, this_option_form_value, _api_extstate_persist_enabled)
+
+      -- reset depool all siblings warning
+      if this_option.ext_state_key == _global_option_toggle_depool_all_siblings_on_reglue_key then
+        reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, "true", _api_extstate_persist_enabled)
+      end
     end
   end
 
@@ -2156,10 +2164,9 @@ end
 
 
 function propagatePoolChanges(active_superglued_instance_params, sizing_region_guid, obey_time_selection)
-  local global_option_toggle_depool_all_siblings_on_reglue, parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id, active_track, selected_items, restored_items_position_adjustment
+  local parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id, active_track, selected_items, restored_items_position_adjustment
 
-  global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
-  parent_pools_near_project_start = updateActivePoolSiblings(active_superglued_instance_params, false, global_option_toggle_depool_all_siblings_on_reglue)
+  parent_pools_near_project_start = updateActivePoolSiblings(active_superglued_instance_params, false)
   ancestor_pools_params_by_children_nesting_depth = sortParentUpdatesByNestingDepth()
 
   for i = 1, #ancestor_pools_params_by_children_nesting_depth do
@@ -2181,10 +2188,11 @@ function propagatePoolChanges(active_superglued_instance_params, sizing_region_g
 end
 
 
-function updateActivePoolSiblings(active_superglued_instance_params, this_is_parent_update, global_option_toggle_depool_all_siblings_on_reglue)
-  local all_items_count, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, selected_container_state, restored_items, active_track, superglued_container, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
+function updateActivePoolSiblings(active_superglued_instance_params, this_is_parent_update)
+  local all_items_count, global_option_toggle_depool_all_siblings_on_reglue, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, global_option_toggle_depool_all_siblings_on_reglue_warning, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
+  global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
   siblings_are_being_updated = not this_is_parent_update
   parent_pools_near_project_start = {}
 
@@ -2195,9 +2203,30 @@ function updateActivePoolSiblings(active_superglued_instance_params, this_is_par
     if this_active_pool_sibling then
 
       if global_option_toggle_depool_all_siblings_on_reglue == "true" then
-        initDePool(this_active_pool_sibling)
+        -- global_option_toggle_depool_all_siblings_on_reglue = handleDePoolAllSiblings(this_active_pool_sibling)
 
-      elseif global_option_toggle_depool_all_siblings_on_reglue == "false" then
+        global_option_toggle_depool_all_siblings_on_reglue_warning = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key)
+        
+        if global_option_toggle_depool_all_siblings_on_reglue_warning == "true" and _user_wants_to_depool_all_siblings == nil then
+          _user_wants_to_depool_all_siblings = reaper.ShowMessageBox("Select yes to continue and remove all of this item's siblings from its pool, or no to disable this option.", "Warning: You have the option to remove all sibling instances from pool enabled.", _msg_type_yes_no)
+
+          if _user_wants_to_depool_all_siblings == _msg_response_no then
+            reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key, "false", _api_extstate_persist_enabled)
+            
+            global_option_toggle_depool_all_siblings_on_reglue = "false"
+
+          elseif _user_wants_to_depool_all_siblings == _msg_response_yes then
+            reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, "false", _api_extstate_persist_enabled)
+
+            initDePool(this_active_pool_sibling)
+          end
+
+        else
+          initDePool(this_active_pool_sibling)
+        end
+      end
+
+      if global_option_toggle_depool_all_siblings_on_reglue == "false" then
         getSetItemAudioSrc(this_active_pool_sibling, active_superglued_instance_params.updated_src)
 
         if siblings_are_being_updated then
@@ -2716,7 +2745,7 @@ function initDePool(target_item)
   handleDePoolPostGlue(superglued_container, target_item_state, target_item_params)
 
   if this_is_user_initiated_depool then
-    cleanUpAction(_explode_undo_block_string)
+    cleanUpAction(_depool_undo_block_string)
   end
 end
 
@@ -2770,10 +2799,7 @@ function handleDePoolPostGlue(superglued_container, target_item_state, target_it
   new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
 
   getSetItemStateChunk(superglued_container, target_item_state)
-  getSetItemParams(superglued_container, target_item_params)
-  reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, _src_offset_reset_value)
   getSetItemName(superglued_container, active_take_name)
-  getSetItemAudioSrc(superglued_container, updated_src)
   storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, new_pool_id)
 end
 
