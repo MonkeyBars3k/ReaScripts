@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.754
--- @changelog Undo DePool takes 3 undo steps (https://github.com/MonkeyBars3k/ReaScripts/issues/194)
+-- @version 1.755
+-- @changelog Add option: Toggle expand to time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/186)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,14 +20,14 @@
 -- General utility functions at bottom
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
+local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _sizing_region_guid_key_suffix, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superglued_item_bg_img_path = _script_path .. "sg-bg-superglued.png"
@@ -66,12 +66,20 @@ _api_null_takes_val = "TAKE NULL"
 _global_script_prefix = "SG_"
 _global_script_item_name_prefix = "sg"
 _global_options_section = "MB_SUPERGLUE-OPTIONS"
+_global_option_toggle_expand_to_time_selection_key = "expand_to_time_selection_enabled"
 _global_option_toggle_item_images_key = "item_images_enabled"
 _global_option_propagate_position_default_key = "propagate_position_default"
 _global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
 _global_option_toggle_depool_all_siblings_on_reglue_key = "depool_all_siblings_on_reglue_enabled"
 _global_option_toggle_depool_all_siblings_on_reglue_warning_key = "depool_all_siblings_on_reglue_warning_enabled"
 _all_global_options_params = {
+  {
+    ["name"] = "expand_to_time_selection",
+    ["type"] = "checkbox",
+    ["ext_state_key"] = _global_option_toggle_expand_to_time_selection_key,
+    ["user_readable_text"] = "Expand superglue to time selection",
+    ["default_value"] = "false"
+  },
   {
     ["name"] = "item_images",
     ["type"] = "checkbox",
@@ -415,7 +423,7 @@ function populateContainerItemWindow(selected_container_item, selected_container
 end
 
 
-function initSuperglue(obey_time_selection)
+function initSuperglue()
   local selected_item_count, restored_items_pool_id, selected_items, first_selected_item, first_selected_item_track, superglued_container
 
   selected_item_count = initAction("glue")
@@ -437,7 +445,7 @@ function initSuperglue(obey_time_selection)
       return
   end
 
-  superglued_container = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track, obey_time_selection, selected_items)
+  superglued_container = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track, selected_items)
   
   exclusiveSelectItem(superglued_container)
   cleanUpAction(_glue_undo_block_string)
@@ -819,13 +827,13 @@ function midiItemIsSelected(item)
 end
 
 
-function triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track, obey_time_selection)
+function triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track)
   local superglued_container
 
   if restored_items_pool_id then
-    superglued_container = handleReglue(selected_items, first_selected_item_track, restored_items_pool_id, obey_time_selection)
+    superglued_container = handleReglue(selected_items, first_selected_item_track, restored_items_pool_id)
   else
-    superglued_container = handleGlue(selected_items, first_selected_item_track, nil, nil, nil, nil, obey_time_selection)
+    superglued_container = handleGlue(selected_items, first_selected_item_track, nil, nil, nil, nil)
   end
 
   return superglued_container
@@ -859,7 +867,7 @@ function refreshUI()
 end
 
 
-function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, depool_container_params, obey_time_selection, this_is_parent_update)
+function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, depool_container_params, this_is_parent_update)
   local this_is_new_glue, this_is_depool, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, global_option_toggle_depool_all_siblings_on_reglue, pool_contained_item_states_key, retval, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position, superglued_container
 
   this_is_new_glue = not pool_id
@@ -874,11 +882,11 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
     pool_id = handlePoolId()
 
     if this_is_depool then
-      sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpDePool(depool_container_params)
+      sizing_params, time_selection_was_set_by_code = setUpDePool(depool_container_params)
     end
 
   elseif this_is_reglue then
-    sizing_params, obey_time_selection, time_selection_was_set_by_code = setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items, obey_time_selection)
+    sizing_params, time_selection_was_set_by_code = setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items)
     global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
 
     if global_option_toggle_depool_all_siblings_on_reglue then  
@@ -888,7 +896,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   end
 
   selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
-  superglued_container = glueSelectedItemsIntoContainer(obey_time_selection)
+  superglued_container = glueSelectedItemsIntoContainer()
 
   handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, selected_instances_pool_ids, sizing_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
 
@@ -982,9 +990,10 @@ function incrementPoolId(last_pool_id)
 end
 
 
-function setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items, obey_time_selection)
-  local user_selected_instance_is_being_reglued
+function setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items)
+  local obey_time_selection, user_selected_instance_is_being_reglued
 
+  obey_time_selection = reaper.GetExtState(_global_options_section, _global_option_toggle_expand_to_time_selection_key)
   user_selected_instance_is_being_reglued = not this_is_parent_update
 
   if this_is_parent_update then
@@ -1012,14 +1021,13 @@ function setUpParentUpdate(first_selected_item_track, pool_id, restored_items_po
     ["end_point"] = pool_parent_last_glue_end_point - restored_items_position_adjustment
   }
 
-  if not obey_time_selection then
+  if obey_time_selection == "false" then
     setResetGlueTimeSelection(sizing_params, "set")
 
-    obey_time_selection = true
     time_selection_was_set_by_code = true
   end
 
-  return sizing_params, obey_time_selection, time_selection_was_set_by_code
+  return sizing_params, time_selection_was_set_by_code
 end
 
 
@@ -1050,12 +1058,11 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selec
   sizing_region_defer_loop_is_active_key = _pool_key_prefix .. pool_id .. _sizing_region_defer_loop_suffix
 
   if is_active_container_reglue then
-    if not obey_time_selection or (obey_time_selection and no_time_selection_exists) then
+    if obey_time_selection == "false" or (obey_time_selection == "true" and no_time_selection_exists) then
       sizing_params = calculateSizingTimeSelection(selected_items, sizing_params)
 
       setResetGlueTimeSelection(sizing_params, "set")
 
-      obey_time_selection = true
       time_selection_was_set_by_code = true
     end
 
@@ -1063,7 +1070,7 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selec
     getSetSizingRegion(sizing_region_guid, "delete")
   end
 
-  return sizing_params, obey_time_selection, time_selection_was_set_by_code
+  return sizing_params, time_selection_was_set_by_code
 end
 
 
@@ -1191,18 +1198,17 @@ end
 
 
 function setUpDePool(depool_container_params)
-  local sizing_params, obey_time_selection, time_selection_was_set_by_code
+  local sizing_params, time_selection_was_set_by_code
 
   sizing_params = {
     ["position"] = depool_container_params.position,
     ["end_point"] = depool_container_params.end_point
   }
-  obey_time_selection = true
   time_selection_was_set_by_code = true
 
   setResetGlueTimeSelection(sizing_params, "set")
 
-  return sizing_params, obey_time_selection, time_selection_was_set_by_code
+  return sizing_params, time_selection_was_set_by_code
 end
 
 
@@ -1410,10 +1416,10 @@ function cropItemToSizingParams(restored_item, sizing_item_params, active_track)
 end
 
 
-function glueSelectedItemsIntoContainer(obey_time_selection)
+function glueSelectedItemsIntoContainer()
   local superglued_container
 
-  glueSelectedItems(obey_time_selection)
+  glueSelectedItemsToTimeSelection()
 
   superglued_container = getFirstSelectedItem()
 
@@ -1421,12 +1427,8 @@ function glueSelectedItemsIntoContainer(obey_time_selection)
 end
 
 
-function glueSelectedItems(obey_time_selection)
-  if obey_time_selection == true then
-    reaper.Main_OnCommand(41588, 0)
-  else
-    reaper.Main_OnCommand(40362, 0)
-  end
+function glueSelectedItemsToTimeSelection()
+  reaper.Main_OnCommand(41588, 0)
 end
 
 
@@ -1664,7 +1666,7 @@ function storeParentPoolReferencesInChildPool(preglue_child_instance_pool_id, ac
 end
 
 
-function handleReglue(selected_items, first_selected_item_track, restored_items_pool_id, obey_time_selection)
+function handleReglue(selected_items, first_selected_item_track, restored_items_pool_id)
   local superglued_container_last_glue_params, sizing_region_guid_key_label, retval, sizing_region_guid, superglued_container, superglued_container_params
 
   cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
@@ -1672,7 +1674,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   superglued_container_last_glue_params = storeRetrieveSupergluedContainerParams(restored_items_pool_id, _postglue_action_step)
   sizing_region_guid_key_label = _pool_key_prefix .. restored_items_pool_id .. _sizing_region_guid_key_suffix
   retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key_label)
-  superglued_container = handleGlue(selected_items, first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, nil, obey_time_selection)
+  superglued_container = handleGlue(selected_items, first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, nil)
   superglued_container_params = getSetItemParams(superglued_container)
   superglued_container_params.updated_src = getSetItemAudioSrc(superglued_container)
   superglued_container_params.pool_id = restored_items_pool_id
@@ -1682,7 +1684,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   adjustPostGlueTakeEnvelopes(superglued_container)
   unglueAncestors(superglued_container_params.pool_id, superglued_container)
   deselectAllItems()
-  propagatePoolChanges(superglued_container_params, sizing_region_guid, obey_time_selection)
+  propagatePoolChanges(superglued_container_params, sizing_region_guid)
 
   return superglued_container
 end
@@ -2163,7 +2165,7 @@ function handleRestoredItemImage(restored_item, restored_instance_pool_id, this_
 end
 
 
-function propagatePoolChanges(active_superglued_instance_params, sizing_region_guid, obey_time_selection)
+function propagatePoolChanges(active_superglued_instance_params, sizing_region_guid)
   local parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id, active_track, selected_items, restored_items_position_adjustment
 
   parent_pools_near_project_start = updateActivePoolSiblings(active_superglued_instance_params, false)
@@ -2181,7 +2183,7 @@ function propagatePoolChanges(active_superglued_instance_params, sizing_region_g
       restored_items_position_adjustment = 0
     end
       
-    reglueParentInstance(this_parent_pool_params, obey_time_selection, sizing_region_guid, restored_items_position_adjustment)
+    reglueParentInstance(this_parent_pool_params, sizing_region_guid, restored_items_position_adjustment)
   end
 
   reaper.ClearPeakCache()
@@ -2393,14 +2395,14 @@ function adjustParentPoolChildren(parent_pool_id, active_pool_id, instance_posit
 end
 
 
-function reglueParentInstance(parent_instance_params, obey_time_selection, sizing_region_guid, restored_items_position_adjustment)
+function reglueParentInstance(parent_instance_params, sizing_region_guid, restored_items_position_adjustment)
   local selected_items, parent_instance
 
   deselectAllItems()
   selectDeselectItems(parent_instance_params.restored_items, true)
 
   selected_items = getSelectedItems(#parent_instance_params.restored_items)
-  parent_instance = handleGlue(selected_items, parent_instance_params.track, parent_instance_params.pool_id, sizing_region_guid, restored_items_position_adjustment, nil, obey_time_selection, true)
+  parent_instance = handleGlue(selected_items, parent_instance_params.track, parent_instance_params.pool_id, sizing_region_guid, restored_items_position_adjustment, nil, true)
   parent_instance_params.updated_src = getSetItemAudioSrc(parent_instance)
 
   deselectAllItems()
@@ -2660,7 +2662,7 @@ function handleSizingRegionDeletion(sizing_region_params, pool_id, sizing_region
 end
 
 
-function initSmartAction(unglue_or_explode, obey_time_selection)
+function initSmartAction(unglue_or_explode)
   local selected_item_count, pool_id
   
   selected_item_count = doPreGlueChecks()
@@ -2675,7 +2677,7 @@ function initSmartAction(unglue_or_explode, obey_time_selection)
 
   if containerSelectionIsInvalid(selected_item_count, unglue_or_explode) == true then return end
 
-  if triggerAction(selected_item_count, unglue_or_explode, obey_time_selection) == false then 
+  if triggerAction(selected_item_count, unglue_or_explode) == false then 
     reaper.ShowMessageBox(_msg_change_selected_items, "Superglue Smart Action can't determine which script to run.", _msg_type_ok)
     setResetItemSelectionSet(false)
 
@@ -2714,7 +2716,7 @@ function getSmartAction(selected_item_count)
 end
 
 
-function triggerAction(selected_item_count, unglue_or_explode, obey_time_selection)
+function triggerAction(selected_item_count, unglue_or_explode)
   local superglue_action, glue_abort_dialog
 
   superglue_action = getSmartAction(selected_item_count)
@@ -2723,7 +2725,7 @@ function triggerAction(selected_item_count, unglue_or_explode, obey_time_selecti
     initUnglueExplode(unglue_or_explode)
 
   elseif superglue_action == "glue" then
-    initSuperglue(obey_time_selection)
+    initSuperglue()
 
   elseif superglue_action == "glue/abort" then
     glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to superglue them?", "You have selected both superglued container(s) and restored item(s) from an unglued container.", _msg_type_ok_cancel)
@@ -2734,7 +2736,7 @@ function triggerAction(selected_item_count, unglue_or_explode, obey_time_selecti
       return
     
     else
-      initSuperglue(obey_time_selection)
+      initSuperglue()
     end
 
   else

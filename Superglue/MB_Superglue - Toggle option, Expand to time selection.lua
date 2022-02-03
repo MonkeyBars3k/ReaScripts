@@ -1,7 +1,7 @@
--- @description MB_Superglue Smart Action - Glue or Explode selected item(s) reversibly by context, expanding glue to time selection if any
+-- @description MB_Superglue - Toggle option, item background images
 -- @author MonkeyBars
--- @version 1.55
--- @changelog Change script name
+-- @version 1.62
+-- @changelog ReaPack refresh
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
@@ -10,4 +10,4 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 require("MB_Superglue-Utils")
 
-initSmartAction("Explode", true)
+toggleOption("expand_to_time_selection")
