@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.753
--- @changelog Add hidden option: DePool by default is enabled warning (https://github.com/MonkeyBars3k/ReaScripts/issues/193)
+-- @version 1.754
+-- @changelog Undo DePool takes 3 undo steps (https://github.com/MonkeyBars3k/ReaScripts/issues/194)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2189,11 +2189,9 @@ end
 
 
 function updateActivePoolSiblings(active_superglued_instance_params, this_is_parent_update)
-  local all_items_count, global_option_toggle_depool_all_siblings_on_reglue, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, global_option_toggle_depool_all_siblings_on_reglue_warning, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
+  local all_items_count, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, global_option_toggle_depool_all_siblings_on_reglue, global_option_toggle_depool_all_siblings_on_reglue_warning, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
-  global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
-  siblings_are_being_updated = not this_is_parent_update
   parent_pools_near_project_start = {}
 
   for i = 0, all_items_count-1 do
@@ -2201,52 +2199,14 @@ function updateActivePoolSiblings(active_superglued_instance_params, this_is_par
     this_active_pool_sibling = getActivePoolSibling(this_item, active_superglued_instance_params)
 
     if this_active_pool_sibling then
+      global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
 
       if global_option_toggle_depool_all_siblings_on_reglue == "true" then
-        -- global_option_toggle_depool_all_siblings_on_reglue = handleDePoolAllSiblings(this_active_pool_sibling)
-
-        global_option_toggle_depool_all_siblings_on_reglue_warning = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key)
-        
-        if global_option_toggle_depool_all_siblings_on_reglue_warning == "true" and _user_wants_to_depool_all_siblings == nil then
-          _user_wants_to_depool_all_siblings = reaper.ShowMessageBox("Select yes to continue and remove all of this item's siblings from its pool, or no to disable this option.", "Warning: You have the option to remove all sibling instances from pool enabled.", _msg_type_yes_no)
-
-          if _user_wants_to_depool_all_siblings == _msg_response_no then
-            reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key, "false", _api_extstate_persist_enabled)
-            
-            global_option_toggle_depool_all_siblings_on_reglue = "false"
-
-          elseif _user_wants_to_depool_all_siblings == _msg_response_yes then
-            reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, "false", _api_extstate_persist_enabled)
-
-            initDePool(this_active_pool_sibling)
-          end
-
-        else
-          initDePool(this_active_pool_sibling)
-        end
+        global_option_toggle_depool_all_siblings_on_reglue = handleDePoolSibling(this_active_pool_sibling)
       end
 
       if global_option_toggle_depool_all_siblings_on_reglue == "false" then
-        getSetItemAudioSrc(this_active_pool_sibling, active_superglued_instance_params.updated_src)
-
-        if siblings_are_being_updated then
-          attempted_negative_instance_position = adjustActivePoolSibling(this_active_pool_sibling, active_superglued_instance_params)
-
-          if attempted_negative_instance_position then
-            this_sibling_parent_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
-
-            if not parent_pools_near_project_start[this_sibling_parent_pool_id] then
-              parent_pools_near_project_start[this_sibling_parent_pool_id] = attempted_negative_instance_position
-
-            elseif parent_pools_near_project_start[this_sibling_parent_pool_id] then
-              this_sibling_position_is_earlier_than_prev_sibling = attempted_negative_instance_position < parent_pools_near_project_start[this_sibling_parent_pool_id]
-
-              if this_sibling_position_is_earlier_than_prev_sibling then
-                parent_pools_near_project_start[this_sibling_parent_pool_id] = attempted_negative_instance_position
-              end
-            end
-          end
-        end
+        parent_pools_near_project_start = handleActivePoolSibling(this_active_pool_sibling, active_superglued_instance_params, this_item, parent_pools_near_project_start, this_is_parent_update)
       end
     end
   end
@@ -2278,6 +2238,63 @@ function getActivePoolSibling(item, active_superglued_instance_params)
       end
     end
   end
+end
+
+
+function handleDePoolSibling(active_pool_sibling)
+  local global_option_toggle_depool_all_siblings_on_reglue_warning, global_option_toggle_depool_all_siblings_on_reglue
+
+  global_option_toggle_depool_all_siblings_on_reglue_warning = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key)
+
+  if global_option_toggle_depool_all_siblings_on_reglue_warning == "true" and _user_wants_to_depool_all_siblings == nil then
+    _user_wants_to_depool_all_siblings = reaper.ShowMessageBox("Select yes to continue and remove all of this item's siblings from its pool, or no to disable this option.", "Warning: You have the option to remove all sibling instances from pool enabled.", _msg_type_yes_no)
+
+    if _user_wants_to_depool_all_siblings == _msg_response_no then
+      reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key, "false", _api_extstate_persist_enabled)
+      
+      global_option_toggle_depool_all_siblings_on_reglue = "false"
+
+    elseif _user_wants_to_depool_all_siblings == _msg_response_yes then
+      reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, "false", _api_extstate_persist_enabled)
+
+      initDePool(active_pool_sibling)
+    end
+
+  else
+    initDePool(active_pool_sibling)
+  end
+
+  return global_option_toggle_depool_all_siblings_on_reglue
+end
+
+
+function handleActivePoolSibling(active_pool_sibling, active_superglued_instance_params, item, parent_pools_near_project_start, this_is_parent_update)
+  local siblings_are_being_updated, attempted_negative_instance_position, sibling_parent_pool_id
+
+  getSetItemAudioSrc(active_pool_sibling, active_superglued_instance_params.updated_src)
+
+  siblings_are_being_updated = not this_is_parent_update
+
+  if siblings_are_being_updated then
+    attempted_negative_instance_position = adjustActivePoolSibling(active_pool_sibling, active_superglued_instance_params)
+
+    if attempted_negative_instance_position then
+      sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
+
+      if not parent_pools_near_project_start[sibling_parent_pool_id] then
+        parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
+
+      elseif parent_pools_near_project_start[sibling_parent_pool_id] then
+        this_sibling_position_is_earlier_than_prev_sibling = attempted_negative_instance_position < parent_pools_near_project_start[sibling_parent_pool_id]
+
+        if this_sibling_position_is_earlier_than_prev_sibling then
+          parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
+        end
+      end
+    end
+  end
+
+  return parent_pools_near_project_start
 end
 
 
@@ -2476,14 +2493,12 @@ function handleUnglueExplode(pool_id, action)
   superglued_container = getFirstSelectedItem()
 
   if action == "Unglue" then
+    storeRetrieveSupergluedContainerParams(pool_id, _preedit_action_step, superglued_container)
+
     undo_block_string = _unglue_undo_block_string
 
   elseif action == "Explode" then
     undo_block_string = _explode_undo_block_string
-  end
-
-  if action == "Unglue" then
-    storeRetrieveSupergluedContainerParams(pool_id, _preedit_action_step, superglued_container)
   end
 
   processUnglueExplode(superglued_container, pool_id, action)
@@ -2751,7 +2766,7 @@ end
 
 
 function processDePool(target_item, target_item_params, this_is_user_initiated_depool)
-  local restored_items, this_is_user_initiated_depool, active_track, selected_items_count, i, this_restored_item
+  local restored_items, active_track, selected_items_count, i, this_restored_item
 
   restored_items = {}
   this_is_sibling_depool = not this_is_user_initiated_depool
