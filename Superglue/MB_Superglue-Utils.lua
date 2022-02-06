@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.755
--- @changelog Add option: Toggle expand to time selection (https://github.com/MonkeyBars3k/ReaScripts/issues/186)
+-- @version 1.756
+-- @changelog Position propagate later near project start after propagate earlier calculates offset wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/196)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1783,11 +1783,16 @@ function setRegluePositionDeltas(freshly_superglued_container_params, superglued
 end
 
 
-function adjustPostGlueTakeEnvelopes(instance)
-  local instance_active_take, take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_time, adjusted_envelope_point_time
+function adjustPostGlueTakeEnvelopes(instance, adjustment_near_project_start)
+  local instance_active_take, take_envelopes_count, instance_src_offset, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_time, adjusted_envelope_point_time
+
+  if not adjustment_near_project_start then
+    adjustment_near_project_start = 0
+  end
 
   instance_active_take = reaper.GetActiveTake(instance)
   take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
+  instance_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key)
 
   for i = 0, take_envelopes_count-1 do
     this_take_envelope = reaper.GetTakeEnvelope(instance_active_take, i)
@@ -1795,7 +1800,7 @@ function adjustPostGlueTakeEnvelopes(instance)
 
     for j = 0, envelope_points_count-1 do
       retval, this_envelope_point_time = reaper.GetEnvelopePoint(this_take_envelope, j)
-      adjusted_envelope_point_time = this_envelope_point_time - _superglued_instance_offset_delta_since_last_glue
+      adjusted_envelope_point_time = this_envelope_point_time + instance_src_offset - _superglued_instance_offset_delta_since_last_glue - adjustment_near_project_start
 
       reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_time, nil, nil, nil, nil, true)
     end
@@ -1973,7 +1978,7 @@ function restoreContainedItems(pool_id, active_track, superglued_container, supe
   end
 
   for restored_instance_pool_id, this_instance_params in pairs(restored_instances_near_project_start) do
-    handleInstancesNearProjectStart(superglued_container, this_instance_params)
+    handleInstanceNearProjectStart(superglued_container, this_instance_params, this_is_parent_update)
   end
 
   return restored_items
@@ -2031,28 +2036,29 @@ function handleRestoredItem(active_track, stored_item_state, superglued_containe
 end
 
 
-function handleInstancesNearProjectStart(superglued_container, this_instance_params)
-  local superglued_container_params, restored_instance_last_glue_delta_to_parent, this_instance_adjusted_position, this_instance_adjustment_delta, this_instance_active_take, this_instance_current_src_offset, this_instance_adjusted_src_offset
-
+function handleInstanceNearProjectStart(superglued_container, instance_params)
+  local superglued_container_params, restored_instance_last_glue_delta_to_parent, instance_adjusted_position, instance_is_closer_to_project_start_than_negative_position_change, instance_adjustment_delta, instance_active_take, instance_current_src_offset, instance_adjusted_src_offset
+  
   superglued_container_params = getSetItemParams(superglued_container)
-  restored_instance_last_glue_delta_to_parent = storeRetrieveItemData(this_instance_params.item, _item_offset_to_container_position_key_suffix)
+  restored_instance_last_glue_delta_to_parent = storeRetrieveItemData(instance_params.item, _item_offset_to_container_position_key_suffix)
   restored_instance_last_glue_delta_to_parent = tonumber(restored_instance_last_glue_delta_to_parent)
-  this_instance_adjusted_position = superglued_container_params.position + restored_instance_last_glue_delta_to_parent + this_instance_params.negative_position_delta
+  instance_adjusted_position = superglued_container_params.position + restored_instance_last_glue_delta_to_parent + instance_params.negative_position_delta
 
-  if this_instance_adjusted_position < -this_instance_params.negative_position_delta then
-    this_instance_adjustment_delta = this_instance_adjusted_position
-    this_instance_adjusted_position = 0
+  instance_is_closer_to_project_start_than_negative_position_change = instance_adjusted_position < -instance_params.negative_position_delta
+
+  if instance_is_closer_to_project_start_than_negative_position_change then
+    instance_adjusted_position = _position_start_of_project
 
   else
-    this_instance_adjustment_delta = this_instance_params.negative_position_delta
+    instance_adjustment_delta = instance_params.negative_position_delta
   end
 
-  this_instance_active_take = reaper.GetActiveTake(this_instance_params.item)
-  this_instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(this_instance_active_take, _api_take_src_offset_key)
-  this_instance_adjusted_src_offset = this_instance_current_src_offset - this_instance_params.negative_position_delta
+  instance_active_take = reaper.GetActiveTake(instance_params.item)
+  instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key)
+  instance_adjusted_src_offset = instance_current_src_offset - instance_params.negative_position_delta
 
-  reaper.SetMediaItemInfo_Value(this_instance_params.item, _api_item_position_key, this_instance_adjusted_position)
-  reaper.SetMediaItemTakeInfo_Value(this_instance_active_take, _api_take_src_offset_key, this_instance_adjusted_src_offset)
+  reaper.SetMediaItemInfo_Value(instance_params.item, _api_item_position_key, instance_adjusted_position)
+  reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
 end
 
 
@@ -2282,17 +2288,7 @@ function handleActivePoolSibling(active_pool_sibling, active_superglued_instance
 
     if attempted_negative_instance_position then
       sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
-
-      if not parent_pools_near_project_start[sibling_parent_pool_id] then
-        parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
-
-      elseif parent_pools_near_project_start[sibling_parent_pool_id] then
-        this_sibling_position_is_earlier_than_prev_sibling = attempted_negative_instance_position < parent_pools_near_project_start[sibling_parent_pool_id]
-
-        if this_sibling_position_is_earlier_than_prev_sibling then
-          parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
-        end
-      end
+      parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
     end
   end
 
@@ -2301,12 +2297,11 @@ end
 
 
 function adjustActivePoolSibling(instance, active_superglued_instance_params)
-  local instance_adjusted_length, active_instance_position_has_changed, user_wants_position_change, instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start
+  local instance_adjusted_length, active_instance_position_has_changed, user_wants_position_change, instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start, negative_position_delta
 
   instance_adjusted_length = active_superglued_instance_params.length
 
   reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
-  adjustPostGlueTakeEnvelopes(instance)
 
   active_instance_position_has_changed = not _position_change_response and _position_changed_since_last_glue == true
 
@@ -2317,20 +2312,9 @@ function adjustActivePoolSibling(instance, active_superglued_instance_params)
   user_wants_position_change = _position_change_response == _msg_response_yes
 
   if user_wants_position_change then
-    instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
-    instance_adjusted_position = instance_current_position + _superglued_instance_offset_delta_since_last_glue
-    instance_would_get_adjusted_before_project_start = instance_adjusted_position < _position_start_of_project
+    negative_position_delta = propagateActivePoolSiblingPosition(instance)
     
-    if instance_would_get_adjusted_before_project_start then
-      active_take = reaper.GetActiveTake(instance)
-
-      reaper.SetMediaItemPosition(instance, _position_start_of_project, false)
-      reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, -instance_adjusted_position)
-
-      return instance_adjusted_position
-    else
-      reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
-    end
+    return negative_position_delta
   end
 end
 
@@ -2346,6 +2330,35 @@ function launchPropagatePositionDialog()
 
   elseif global_option_propagate_position_default == "no" then
     return _msg_response_no
+  end
+end
+
+
+function propagateActivePoolSiblingPosition(instance)
+  local active_take, instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start, instance_adjusted_src_offset, negative_position_delta
+
+  active_take = reaper.GetActiveTake(instance)
+  instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
+  instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key)
+  instance_adjusted_position = instance_current_position - instance_current_src_offset + _superglued_instance_offset_delta_since_last_glue
+  instance_would_get_adjusted_before_project_start = instance_adjusted_position < _position_start_of_project
+
+  if instance_would_get_adjusted_before_project_start then
+    instance_adjusted_src_offset = instance_current_src_offset - instance_current_position - _superglued_instance_offset_delta_since_last_glue
+    negative_position_delta = -instance_adjusted_src_offset
+
+    adjustPostGlueTakeEnvelopes(instance, instance_adjusted_src_offset)
+    reaper.SetMediaItemPosition(instance, _position_start_of_project, false)
+    reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
+
+    return negative_position_delta
+
+  else
+    adjustPostGlueTakeEnvelopes(instance)
+    reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
+    reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, _src_offset_reset_value)
+
+    return nil
   end
 end
 
