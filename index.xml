@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="5b34577d453cee6bbb730fc9f098378e414288da">
+<index version="1" name="MonkeyBars-ReaScripts" commit="5dd3b964ed7e55732c4e4c3689d8ac529b6fbab3">
   <category name="Superglue">
     <reapack name="MB_Superglue - Change color of all superglued container items in project.lua" type="script" desc="MB_Superglue - Change color of all superglued container items in project">
       <metadata>
@@ -476,6 +476,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5b34577d453cee6bbb730fc9f098378e414288da/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5b34577d453cee6bbb730fc9f098378e414288da/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5b34577d453cee6bbb730fc9f098378e414288da/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.756" author="MonkeyBars" time="2022-02-06T23:48:14Z">
+        <changelog><![CDATA[Position propagate later near project start after propagate earlier calculates offset wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/196)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/5dd3b964ed7e55732c4e4c3689d8ac529b6fbab3/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5dd3b964ed7e55732c4e4c3689d8ac529b6fbab3/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5dd3b964ed7e55732c4e4c3689d8ac529b6fbab3/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5dd3b964ed7e55732c4e4c3689d8ac529b6fbab3/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5dd3b964ed7e55732c4e4c3689d8ac529b6fbab3/Superglue/sg-bg-superglued.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
