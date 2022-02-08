@@ -37,6 +37,7 @@ To change the contents of your Superitem, the **Edit** script opens the created 
 ### Tips
 - **Using just the pooled audio item feature:** Feel free to Superglue a _single audio item_ and make copies of that! Since every Superitem you copy is a pooled audio item, all you need to ensure all the copies stay updated is to Edit any one of the pooled Superitems and Reglue.
 - **Using just the container feature:** The most basic application of Superglue is probably just treating your Superitem as a container item that can be edited easily later, i.e. a more convenient way to group items.
+- Check out all the scripts that get installed when you sync the ReaPack repo. There are some very useful utilities, as well as the options window which enables numerous configurations for various use cases.
 
 ### Notes
 - Requires **Reaper v6.43** or newer
