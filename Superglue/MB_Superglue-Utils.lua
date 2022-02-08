@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.762
--- @changelog Add option: Propagate length change to pool by default (https://github.com/MonkeyBars3k/ReaScripts/issues/103)
+-- @version 1.763
+-- @changelog Change color script + function name
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2953,7 +2953,7 @@ function handleDePoolPostGlue(superitem, target_item_state, target_item_params)
 end
 
 
-function changeSuperitemItemsColor()
+function setAllSuperitemsColor()
   local current_window, retval, color, all_items_count, i, this_item, this_item_instance_pool_id
 
   current_window = reaper.GetMainHwnd()
