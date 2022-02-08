@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.759
--- @changelog Change action names back: Unglue > Edit, Explode > Unglue (https://github.com/MonkeyBars3k/ReaScripts/issues/177)
+-- @version 1.760
+-- @changelog Superitem info window: Add number of contained items (https://github.com/MonkeyBars3k/ReaScripts/issues/187)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -130,7 +130,7 @@ _glue_data_key_suffix = ":glue"
 _edit_data_key_suffix = ":pre-edit"
 _superitem_params_suffix = "_superitem-params"
 _parent_pool_ids_data_key_suffix = ":parent-pool-ids"
-_descendant_pool_ids_key_suffix = ":descendant_pool_ids"
+_descendant_pool_ids_key_suffix = ":descendant-pool-ids"
 _superitem_preglue_state_suffix = ":preglue-state-chunk"
 _item_offset_to_superitem_position_key_suffix = "_superitem-offset"
 _postglue_action_step = "postglue"
@@ -373,13 +373,16 @@ end
 
 
 function handleSuperitemInfoWindow(selected_superitem, selected_superitem_instance_pool_id)
-  local selected_superitem_parent_pool_id, selected_superitem_descendant_pool_ids_key, retval, selected_superitem_descendant_pool_ids, selected_superitem_descendant_pool_ids_list, selected_superitem_params
+  local selected_superitem_parent_pool_id, selected_superitem_descendant_pool_ids_key, retval, selected_superitem_descendant_pool_ids, selected_superitem_descendant_pool_ids_list, stored_item_state_chunks, selected_superitem_contained_items_count, selected_superitem_params
 
   selected_superitem_parent_pool_id = storeRetrieveItemData(selected_superitem, _parent_pool_id_key_suffix)
   selected_superitem_descendant_pool_ids_key = _pool_key_prefix .. selected_superitem_instance_pool_id .. _descendant_pool_ids_key_suffix
   retval, selected_superitem_descendant_pool_ids = storeRetrieveProjectData(selected_superitem_descendant_pool_ids_key)
   retval, selected_superitem_descendant_pool_ids = serpent.load(selected_superitem_descendant_pool_ids)
   selected_superitem_descendant_pool_ids_list = stringifyArray(selected_superitem_descendant_pool_ids)
+  retval, stored_item_state_chunks = storeRetrieveProjectData(_pool_key_prefix .. selected_superitem_instance_pool_id .. _pool_contained_item_states_key_suffix)
+  retval, stored_item_state_chunks = serpent.load(stored_item_state_chunks)
+  selected_superitem_contained_items_count = getTableSize(stored_item_state_chunks)
   
   if not selected_superitem_parent_pool_id or selected_superitem_parent_pool_id == "" then
     selected_superitem_parent_pool_id = "none"
@@ -397,6 +400,10 @@ function handleSuperitemInfoWindow(selected_superitem, selected_superitem_instan
     {
       "Descendant Pool IDs: ",
       selected_superitem_descendant_pool_ids_list
+    },
+    {
+      "Number of items contained: ",
+      selected_superitem_contained_items_count
     }
   }
 
