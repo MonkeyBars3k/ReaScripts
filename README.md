@@ -35,7 +35,7 @@ To edit your Superitem, the **Edit** script opens the created Superitem, restori
   - You can toggle expansion to time selection in the options window.
 
 ### Tips
-- **Using just the pooled audio item feature:** Feel free to superglue a single audio item and make copies of that! Since every superglued container item you copy is a pooled audio item, all you need to ensure all the copies stay updated is Unglue any one of the pooled glue containers and reglue after.
+- **Using just the pooled audio item feature:** Feel free to superglue a single audio item and make copies of that! Since every Superitem you copy is a pooled audio item, all you need to ensure all the copies stay updated is Unglue any one of the pooled glue containers and reglue after.
 - When superglue items are Unglued, an automatically created region can be used to increase the size of your glued container item. Otherwise, the size will be determined by the items selected as with native Reaper glue or by time selection, if you run one of those scripts.
 
 ### Notes
