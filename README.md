@@ -19,7 +19,7 @@ The other option is to **Group** items. This works well if you simply want to mo
 
 **To Superglue items**, simply select items and trigger one of the MB_Superglue Glue or Smart Action scripts.
 
-To edit your Superitem, the **Edit** script opens the created Superitem, restoring the contained items once again. To Reglue, just use one of the Glue or Smart Action scripts again. The **Unglue** scripts restore the contained items to their state from before that pool's last Superglue (i.e., irreversibly removes the Superitem).
+To change the contents of your Superitem, the **Edit** script opens the created Superitem, restoring the contained items once again. To Reglue, just use one of the Glue or Smart Action scripts again. The **Unglue** scripts restore the contained items to their state from before that pool's last Superglue (i.e., irreversibly reverts the contained items in the Superitem).
 
 **Smart Action** scripts intelligently determine which action is required based on your item selection!
 
