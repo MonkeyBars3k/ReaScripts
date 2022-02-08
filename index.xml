@@ -596,7 +596,7 @@
 {\pard \ql \f0 \sa180 \li0 \fi0 {\b Superglue} aims to address the shortcomings of both Glue and Groups, restore the convenient functionality already present in items (looping, timestretching, and much more) by placing selected items in a new container item called a {\b Superitem} \u8211- {\i and} provide users the convenience of {\b audio item pooling}.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 How to use\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 {\b To Superglue items}, simply select items and trigger one of the MB_Superglue Glue or Smart Action scripts.\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 To edit your Superitem, the {\b Edit} script opens the created Superitem, restoring the contained items once again. To Reglue, just use one of the Glue or Smart Action scripts again. The {\b Unglue} scripts restore the contained items to their state from before that pool's last Superglue (i.e., irreversibly removes the Superitem).\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 To change the contents of your Superitem, the {\b Edit} script opens the created Superitem, restoring the contained items once again. To Reglue, just use one of the Glue or Smart Action scripts again. The {\b Unglue} scripts restore the contained items to their state from before that pool's last Superglue (i.e., irreversibly reverts the contained items in the Superitem).\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 {\b Smart Action} scripts intelligently determine which action is required based on your item selection!\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Features\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Provides the missing {\b nondestructive/reversible Glue} feature in Reaper!\par}
