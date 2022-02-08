@@ -40,7 +40,7 @@ To change the contents of your Superitem, the **Edit** script opens the created 
 
 ### Notes
 - Requires **Reaper v6.43** or newer
-- Requires **SWS Plugin Extension**
+- Requires **SWS Plugin Extension** and **js_ReaScript_API**
 - Stay aware of the state of your Superitems whenever editing audio externally. If you're destructively editing audio in a contained item, or for example editing a subproject which is present as a contained item in a Superitem, such items' direct parent must be in Edit mode ("open") during your external audio source edits, or their ancestors (parent, grandparent, etc. Superitems) won't be updated.
 - When you Edit a Superitem, a "sizing region" is automatically created so you can expand the size of the Superitem past its contained items once it is reglued. Superglue displays a warning message should you delete this region. (This message can be disabled in the options, in which case when you delete the sizing region, the items will revert to their presuperglued state as if you had Unglued.) **Be careful undoing** sizing region deletion, as the defer loop (constantly checking for sizing region deletion by the user) can get a bit confused.
 - Be _very_ careful if you want to **Clean current project directory** after Supergluing – you could lose contained items' audio, since at that point those "items" aren't included in the project proper – they only exist as data (state chunks).
