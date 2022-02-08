@@ -1,12 +1,12 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.757
--- @changelog Sizing region warning comes up at normal Glue (https://github.com/MonkeyBars3k/ReaScripts/issues/195)
+-- @version 1.758
+-- @changelog Change action names back: Unglue > Edit, Explode > Unglue (https://github.com/MonkeyBars3k/ReaScripts/issues/177)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
 --   sg-bg-restored.png
---   sg-bg-superglued.png
+--   sg-bg-superitem.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Superglue scripts
 
@@ -27,10 +27,10 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superglued_item_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _unglue_undo_block_string, _explode_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superglued_container_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superglued_container_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superglued_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _container_preglue_state_suffix, _item_offset_to_container_position_key_suffix, _postglue_action_step, _preedit_action_step, _container_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
-_superglued_item_bg_img_path = _script_path .. "sg-bg-superglued.png"
+_superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
 _restored_item_bg_img_path = _script_path .. "sg-bg-restored.png"
 _peak_data_filename_extension = ".reapeaks"
 _scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
@@ -38,8 +38,8 @@ _save_time_selection_slot_5_action_id = reaper.NamedCommandLookup("_SWS_SAVETIME
 _restore_time_selection_slot_5_action_id = reaper.NamedCommandLookup("_SWS_RESTTIME5")
 _crop_selected_items_to_time_selection_action_id = reaper.NamedCommandLookup("_SWS_AWTRIMCROP")
 _glue_undo_block_string = "MB_Superglue"
+_edit_undo_block_string = "MB_Superglue-Edit"
 _unglue_undo_block_string = "MB_Superglue-Unglue"
-_explode_undo_block_string = "MB_Superglue-Explode"
 _depool_undo_block_string = "MB_Superglue-DePool"
 _smart_action_undo_block_string = "MB_Superglue-Smart-Action"
 _color_undo_block_string = "MB_Superglue-Color"
@@ -91,7 +91,7 @@ _all_global_options_params = {
     ["name"] = "sizing_region_deletion_msg",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_sizing_region_deletion_msg_key,
-    ["user_readable_text"] = "Prompt on deletion of Unglue sizing region (disabled = explode unglued items on sizing region deletion)",
+    ["user_readable_text"] = "Prompt on deletion of Edit sizing region (disabled = unglue edited items on sizing region deletion)",
     ["default_value"] = "true"
   },
   {
@@ -115,7 +115,7 @@ _all_global_options_params = {
   }
 }
 _separator = ":"
-_superglued_container_name_prefix = _global_script_item_name_prefix .. _separator
+_superitem_name_prefix = _global_script_item_name_prefix .. _separator
 _pool_key_prefix = "pool-"
 _all_pool_ids_with_active_sizing_regions_key = "pool-ids-with-active-sizing-regions"
 _sizing_region_defer_loop_suffix = "_sizing-region-loop-active"
@@ -128,11 +128,11 @@ _last_pool_id_key_suffix = "last-pool-id"
 _preglue_active_take_guid_key_suffix = "preglue-active-take-guid"
 _glue_data_key_suffix = ":glue"
 _edit_data_key_suffix = ":pre-edit"
-_superglued_container_params_suffix = "_superglued-container-params"
+_superitem_params_suffix = "_superitem-params"
 _parent_pool_ids_data_key_suffix = ":parent-pool-ids"
 _descendant_pool_ids_key_suffix = ":descendant_pool_ids"
 _container_preglue_state_suffix = ":preglue-state-chunk"
-_item_offset_to_container_position_key_suffix = "_superglued-container-offset"
+_item_offset_to_container_position_key_suffix = "_superitem-offset"
 _postglue_action_step = "postglue"
 _preedit_action_step = "preedit"
 _container_name_default_prefix = "^" .. _global_script_item_name_prefix .. "%:%d+"
@@ -151,7 +151,7 @@ _position_start_of_project = 0
 _src_offset_reset_value = 0
 _sizing_region_1st_display_num = 0
 _sizing_region_defer_timing = 0.5
-_superglued_instance_offset_delta_since_last_glue = 0
+_superitem_instance_offset_delta_since_last_glue = 0
 _restored_items_project_start_position_delta = 0
 _preglue_restored_item_states = nil
 _ancestor_pools_params = {}
@@ -363,7 +363,7 @@ function openContainerItemInfoWindow()
   selected_container_instance_pool_id = storeRetrieveItemData(selected_container_item, _instance_pool_id_key_suffix)
 
   if not selected_container_instance_pool_id or selected_container_instance_pool_id == "" then
-    reaper.ShowMessageBox("Select a superglued container item and try again.", "The item selected is not a superglued container item.", _msg_type_ok)
+    reaper.ShowMessageBox("Select a superitem and try again.", "The item selected is not a superitem.", _msg_type_ok)
 
     return
   end
@@ -428,7 +428,7 @@ end
 
 
 function initSuperglue()
-  local selected_item_count, restored_items_pool_id, selected_items, first_selected_item, first_selected_item_track, superglued_container
+  local selected_item_count, restored_items_pool_id, selected_items, first_selected_item, first_selected_item_track, superitem
 
   selected_item_count = initAction("glue")
 
@@ -449,9 +449,9 @@ function initSuperglue()
       return
   end
 
-  superglued_container = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track, selected_items)
+  superitem = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track, selected_items)
   
-  exclusiveSelectItem(superglued_container)
+  exclusiveSelectItem(superitem)
   cleanUpAction(_glue_undo_block_string)
 end
 
@@ -698,10 +698,10 @@ end
 
 
 function containerSelectionIsInvalid(selected_item_count, action)
-  local selected_item_groups, superglued_containers, restored_items, multiple_instances_from_same_pool_are_selected, i, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id, recursive_container_is_being_glued
+  local selected_item_groups, superitems, restored_items, multiple_instances_from_same_pool_are_selected, i, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id, recursive_container_is_being_glued
 
-  selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superglued", "restored"})
-  superglued_containers = selected_item_groups["superglued"]["selected_items"]
+  selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superitem", "restored"})
+  superitems = selected_item_groups["superitem"]["selected_items"]
   restored_items = selected_item_groups["restored"]["selected_items"]
   multiple_instances_from_same_pool_are_selected = false
 
@@ -724,7 +724,7 @@ function containerSelectionIsInvalid(selected_item_count, action)
     end
   end
   
-  recursive_container_is_being_glued = recursiveContainerIsBeingGlued(superglued_containers, restored_items) == true
+  recursive_container_is_being_glued = recursiveContainerIsBeingGlued(superitems, restored_items) == true
 
   if recursive_container_is_being_glued then return true end
 
@@ -738,9 +738,9 @@ end
 
 
 function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
-  local item_types, item_types_data, i, this_item_type, this_item, superglued_container_pool_id, restored_item_pool_id, j, this_requested_item_type
+  local item_types, item_types_data, i, this_item_type, this_item, superitem_pool_id, restored_item_pool_id, j, this_requested_item_type
 
-  item_types = {"superglued", "restored", "noncontainer", "child_instance", "parent_instance"}
+  item_types = {"superitem", "restored", "noncontainer", "child_instance", "parent_instance"}
   item_types_data = {}
 
   for i = 1, #item_types do
@@ -752,13 +752,13 @@ function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
 
   for i = 0, selected_item_count-1 do
     this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
-    superglued_container_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
+    superitem_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
     restored_item_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
-    item_types_data["superglued"]["is"] = superglued_container_pool_id and superglued_container_pool_id ~= ""
+    item_types_data["superitem"]["is"] = superitem_pool_id and superitem_pool_id ~= ""
     item_types_data["restored"]["is"] = restored_item_pool_id and restored_item_pool_id ~= ""
-    item_types_data["noncontainer"]["is"] = not item_types_data["superglued"]["is"]
-    item_types_data["child_instance"]["is"] = item_types_data["superglued"]["is"] and item_types_data["restored"]["is"]
-    item_types_data["parent_instance"]["is"] = item_types_data["superglued"]["is"] and not item_types_data["restored"]["is"]
+    item_types_data["noncontainer"]["is"] = not item_types_data["superitem"]["is"]
+    item_types_data["child_instance"]["is"] = item_types_data["superitem"]["is"] and item_types_data["restored"]["is"]
+    item_types_data["parent_instance"]["is"] = item_types_data["superitem"]["is"] and not item_types_data["restored"]["is"]
 
     for j = 1, #requested_types do
       this_requested_item_type = requested_types[j]
@@ -773,20 +773,20 @@ function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
 end
 
 
-function recursiveContainerIsBeingGlued(superglued_containers, restored_items)
-  local i, this_superglued_container, this_superglued_container_instance_pool_id, j, this_restored_item, this_restored_item_parent_pool_id, this_restored_item_is_from_same_pool_as_selected_superglued_container
+function recursiveContainerIsBeingGlued(superitems, restored_items)
+  local i, this_superitem, this_superitem_instance_pool_id, j, this_restored_item, this_restored_item_parent_pool_id, this_restored_item_is_from_same_pool_as_selected_superitem
 
-  for i = 1, #superglued_containers do
-    this_superglued_container = superglued_containers[i]
-    this_superglued_container_instance_pool_id = storeRetrieveItemData(this_superglued_container, _instance_pool_id_key_suffix)
+  for i = 1, #superitems do
+    this_superitem = superitems[i]
+    this_superitem_instance_pool_id = storeRetrieveItemData(this_superitem, _instance_pool_id_key_suffix)
 
     for j = 1, #restored_items do
       this_restored_item = restored_items[j]
       this_restored_item_parent_pool_id = storeRetrieveItemData(this_restored_item, _parent_pool_id_key_suffix)
-      this_restored_item_is_from_same_pool_as_selected_superglued_container = this_superglued_container_instance_pool_id == this_restored_item_parent_pool_id
+      this_restored_item_is_from_same_pool_as_selected_superitem = this_superitem_instance_pool_id == this_restored_item_parent_pool_id
       
-      if this_restored_item_is_from_same_pool_as_selected_superglued_container then
-        reaper.ShowMessageBox(_msg_change_selected_items, "Superglue can't glue a superglued container item to an instance from the same pool being Unglued – that could destroy the universe!", _msg_type_ok)
+      if this_restored_item_is_from_same_pool_as_selected_superitem then
+        reaper.ShowMessageBox(_msg_change_selected_items, "Superglue can't glue a superitem to an instance from the same pool being Editd – that could destroy the universe!", _msg_type_ok)
         setResetItemSelectionSet(false)
 
         return true
@@ -811,7 +811,7 @@ function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track
   end
 
   if midi_item_is_selected and track_has_no_virtual_instrument then
-    reaper.ShowMessageBox("Add a virtual instrument to render audio into the superglued container or try a different item selection.", "Superglue can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
+    reaper.ShowMessageBox("Add a virtual instrument to render audio into the superitem or try a different item selection.", "Superglue can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
     return true
   end
 end
@@ -832,15 +832,15 @@ end
 
 
 function triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track)
-  local superglued_container
+  local superitem
 
   if restored_items_pool_id then
-    superglued_container = handleReglue(selected_items, first_selected_item_track, restored_items_pool_id)
+    superitem = handleReglue(selected_items, first_selected_item_track, restored_items_pool_id)
   else
-    superglued_container = handleGlue(selected_items, first_selected_item_track, nil, nil, nil, nil)
+    superitem = handleGlue(selected_items, first_selected_item_track, nil, nil, nil, nil)
   end
 
-  return superglued_container
+  return superitem
 end
 
 
@@ -872,7 +872,7 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, depool_container_params, this_is_parent_update)
-  local this_is_new_glue, this_is_depool, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, global_option_toggle_depool_all_siblings_on_reglue, pool_contained_item_states_key, retval, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position, superglued_container
+  local this_is_new_glue, this_is_depool, this_is_reglue, first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, global_option_toggle_depool_all_siblings_on_reglue, pool_contained_item_states_key, retval, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position, superitem
 
   this_is_new_glue = not pool_id
   this_is_depool = depool_container_params
@@ -899,12 +899,12 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
     end
   end
 
-  selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
-  superglued_container = glueSelectedItemsIntoContainer()
+  selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
+  superitem = glueSelectedItemsIntoContainer()
 
-  handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, selected_instances_pool_ids, sizing_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+  handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, earliest_item_delta_to_superitem_position, selected_instances_pool_ids, sizing_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
 
-  return superglued_container
+  return superitem
 end
 
 
@@ -1172,7 +1172,7 @@ end
 
 
 function handleSizingRegionPoolData(region_idx, pool_id, delete)
-  local all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions, sizing_region_api_key--[[, sizing_region_guid_key_label--]], sizing_region_guid_retval, sizing_region_guid
+  local all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions, sizing_region_api_key, sizing_region_guid_retval, sizing_region_guid
 
   all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions = storeRetrieveProjectData(_all_pool_ids_with_active_sizing_regions_key)
 
@@ -1188,7 +1188,6 @@ function handleSizingRegionPoolData(region_idx, pool_id, delete)
     end
 
   else
-    -- sizing_region_guid_key_label = _pool_key_prefix .. pool_id .. _sizing_region_guid_key_suffix
     sizing_region_api_key = _api_project_region_guid_key_prefix .. region_idx
     sizing_region_guid_retval, sizing_region_guid = reaper.GetSetProjectInfo_String(_api_current_project, sizing_region_api_key, "", false)
 
@@ -1204,7 +1203,6 @@ function handleSizingRegionPoolData(region_idx, pool_id, delete)
 
     all_pool_ids_with_active_sizing_regions = serpent.dump(all_pool_ids_with_active_sizing_regions)
 
-    -- storeRetrieveProjectData(sizing_region_guid_key_label, sizing_region_guid)
     storeRetrieveProjectData(_all_pool_ids_with_active_sizing_regions_key, all_pool_ids_with_active_sizing_regions)
 
     return retval, sizing_region_guid
@@ -1257,9 +1255,9 @@ end
 
 
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
-  local earliest_item_delta_to_superglued_container_position, selected_item_states, selected_instances_pool_ids, i
+  local earliest_item_delta_to_superitem_position, selected_item_states, selected_instances_pool_ids, i
 
-  earliest_item_delta_to_superglued_container_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
+  earliest_item_delta_to_superitem_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
   selected_item_states, selected_instances_pool_ids = getSelectedItemStates(selected_items, pool_id)
 
   storeSelectedItemStates(pool_id, selected_item_states)
@@ -1272,16 +1270,16 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, first_select
     end
   end
 
-  return selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superglued_container_position
+  return selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position
 end
 
 
 function setPreglueItemsData(preglue_items, pool_id, sizing_params)
-  local this_is_new_glue, this_is_reglue_or_depool, earliest_item_delta_to_superglued_container_position, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superglued_container_position
+  local this_is_new_glue, this_is_reglue_or_depool, earliest_item_delta_to_superitem_position, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superitem_position
 
   this_is_new_glue = not sizing_params
   this_is_reglue_or_depool = sizing_params
-  earliest_item_delta_to_superglued_container_position = 0
+  earliest_item_delta_to_superitem_position = 0
 
   for i = 1, #preglue_items do
     this_item = preglue_items[i]
@@ -1301,26 +1299,26 @@ function setPreglueItemsData(preglue_items, pool_id, sizing_params)
       offset_position = math.min(first_item_position, sizing_params.position)
     end
     
-    this_item_delta_to_superglued_container_position = this_item_position - offset_position
-    earliest_item_delta_to_superglued_container_position = math.min(earliest_item_delta_to_superglued_container_position, this_item_delta_to_superglued_container_position)
+    this_item_delta_to_superitem_position = this_item_position - offset_position
+    earliest_item_delta_to_superitem_position = math.min(earliest_item_delta_to_superitem_position, this_item_delta_to_superitem_position)
 
-    storeRetrieveItemData(this_item, _item_offset_to_container_position_key_suffix, this_item_delta_to_superglued_container_position)
+    storeRetrieveItemData(this_item, _item_offset_to_container_position_key_suffix, this_item_delta_to_superitem_position)
   end
 
-  return earliest_item_delta_to_superglued_container_position
+  return earliest_item_delta_to_superitem_position
 end
 
 
 function getSelectedItemStates(selected_items, active_pool_id)
-  local selected_item_states, selected_instances_pool_ids, i, item, this_item, this_superglued_container_pool_id, this_is_superglued_container, this_item_guid, this_item_state
+  local selected_item_states, selected_instances_pool_ids, i, item, this_item, this_superitem_pool_id, this_is_superitem, this_item_guid, this_item_state
 
   selected_item_states = {}
   selected_instances_pool_ids = {}
 
   for i, item in ipairs(selected_items) do
     this_item = selected_items[i]
-    this_superglued_container_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
-    this_is_superglued_container = this_superglued_container_pool_id and this_superglued_container_pool_id ~= ""
+    this_superitem_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
+    this_is_superitem = this_superitem_pool_id and this_superitem_pool_id ~= ""
 
     convertMidiItemToAudio(this_item)
 
@@ -1328,12 +1326,12 @@ function getSelectedItemStates(selected_items, active_pool_id)
     this_item_state = getSetItemStateChunk(this_item)
     selected_item_states[this_item_guid] = this_item_state
 
-    if this_is_superglued_container then
-      table.insert(selected_instances_pool_ids, this_superglued_container_pool_id)
+    if this_is_superitem then
+      table.insert(selected_instances_pool_ids, this_superitem_pool_id)
     end
   end
 
-  return selected_item_states, selected_instances_pool_ids, this_superglued_container_pool_id
+  return selected_item_states, selected_instances_pool_ids, this_superitem_pool_id
 end
 
 
@@ -1461,13 +1459,13 @@ end
 
 
 function glueSelectedItemsIntoContainer()
-  local superglued_container
+  local superitem
 
   glueSelectedItemsToTimeSelection()
 
-  superglued_container = getFirstSelectedItem()
+  superitem = getFirstSelectedItem()
 
-  return superglued_container
+  return superitem
 end
 
 
@@ -1476,13 +1474,13 @@ function glueSelectedItemsToTimeSelection()
 end
 
 
-function handlePostGlue(selected_items, pool_id, first_selected_item_name, superglued_container, earliest_item_delta_to_superglued_container_position, child_instances_pool_ids, sizing_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
-  local user_selected_instance_is_being_reglued, superglued_container_init_name
+function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, earliest_item_delta_to_superitem_position, child_instances_pool_ids, sizing_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+  local user_selected_instance_is_being_reglued, superitem_init_name
 
   user_selected_instance_is_being_reglued = not this_is_parent_update
-  superglued_container_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
+  superitem_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
 
-  handleSupergluedContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, this_is_parent_update)
+  handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, earliest_item_delta_to_superitem_position, this_is_reglue, this_is_parent_update)
   handleDescendantPoolReferences(pool_id, child_instances_pool_ids)
 
   if user_selected_instance_is_being_reglued then
@@ -1496,7 +1494,7 @@ end
 
 
 function handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
-  local selected_item_count, multiple_user_items_are_selected, other_selected_items_count, is_nested_container_name, has_nested_item_name, item_name_addl_count_str, superglued_container_init_name
+  local selected_item_count, multiple_user_items_are_selected, other_selected_items_count, is_nested_container_name, has_nested_item_name, item_name_addl_count_str, superitem_init_name
 
   selected_item_count = getTableSize(selected_items)
   multiple_user_items_are_selected = selected_item_count > 1
@@ -1515,24 +1513,24 @@ function handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_i
     first_selected_item_name = string.match(first_selected_item_name, _container_name_default_prefix)
   end
 
-  superglued_container_init_name = pool_id .. " [" .. _double_quotation_mark .. first_selected_item_name .. _double_quotation_mark .. item_name_addl_count_str .. "]"
+  superitem_init_name = pool_id .. " [" .. _double_quotation_mark .. first_selected_item_name .. _double_quotation_mark .. item_name_addl_count_str .. "]"
 
-  return superglued_container_init_name
+  return superitem_init_name
 end
 
 
-function handleSupergluedContainerPostGlue(superglued_container, superglued_container_init_name, pool_id, earliest_item_delta_to_superglued_container_position, this_is_reglue, this_is_parent_update)
-  local superglued_container_preglue_state_key_suffix, superglued_container_state, pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_params
+function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, earliest_item_delta_to_superitem_position, this_is_reglue, this_is_parent_update)
+  local superitem_preglue_state_key_suffix, superitem_state, pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_params
 
-  superglued_container_state = getSetItemStateChunk(superglued_container)
+  superitem_state = getSetItemStateChunk(superitem)
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
-  pool_parent_params = getSetItemParams(superglued_container)
+  pool_parent_params = getSetItemParams(superitem)
 
-  setGluedContainerName(superglued_container, superglued_container_init_name, true)
-  addRemoveItemImage(superglued_container, "superglued")
-  storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step, superglued_container)
-  storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, pool_id)
+  setGluedContainerName(superitem, superitem_init_name, true)
+  addRemoveItemImage(superitem, "superitem")
+  storeRetrieveSuperitemParams(pool_id, _postglue_action_step, superitem)
+  storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, pool_id)
   storeRetrieveProjectData(pool_parent_position_key_label, pool_parent_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, pool_parent_params.length)
 end
@@ -1542,34 +1540,34 @@ function setGluedContainerName(item, item_name_ending)
   local take, new_item_name
 
   take = reaper.GetActiveTake(item)
-  new_item_name = _superglued_container_name_prefix .. item_name_ending
+  new_item_name = _superitem_name_prefix .. item_name_ending
 
   reaper.GetSetMediaItemTakeInfo_String(take, _api_take_name_key, new_item_name, true)
 end
 
 
-function storeRetrieveSupergluedContainerParams(pool_id, action_step, superglued_container)
-  local retrieve, store, superglued_container_params_key_label, retval, superglued_container_params
+function storeRetrieveSuperitemParams(pool_id, action_step, superitem)
+  local retrieve, store, superitem_params_key_label, retval, superitem_params
 
-  retrieve = not superglued_container
-  store = superglued_container
-  superglued_container_params_key_label = _pool_key_prefix .. pool_id .. _separator .. action_step .. _superglued_container_params_suffix
+  retrieve = not superitem
+  store = superitem
+  superitem_params_key_label = _pool_key_prefix .. pool_id .. _separator .. action_step .. _superitem_params_suffix
 
   if retrieve then
-    retval, superglued_container_params = storeRetrieveProjectData(superglued_container_params_key_label)
-    retval, superglued_container_params = serpent.load(superglued_container_params)
+    retval, superitem_params = storeRetrieveProjectData(superitem_params_key_label)
+    retval, superitem_params = serpent.load(superitem_params)
 
-    if superglued_container_params then
-      superglued_container_params.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superglued_container_params.track_guid)
+    if superitem_params then
+      superitem_params.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superitem_params.track_guid)
     end
 
-    return superglued_container_params
+    return superitem_params
 
   elseif store then
-    superglued_container_params = getSetItemParams(superglued_container)
-    superglued_container_params = serpent.dump(superglued_container_params)
+    superitem_params = getSetItemParams(superitem)
+    superitem_params = serpent.dump(superitem_params)
 
-    storeRetrieveProjectData(superglued_container_params_key_label, superglued_container_params)
+    storeRetrieveProjectData(superitem_params_key_label, superitem_params)
   end
 end
 
@@ -1626,8 +1624,8 @@ function addRemoveItemImage(item, type_or_remove)
 
     if add then
 
-      if type == "superglued" then
-        img_path = _superglued_item_bg_img_path
+      if type == "superitem" then
+        img_path = _superitem_bg_img_path
 
       elseif type == "restored" then
         img_path = _restored_item_bg_img_path
@@ -1711,29 +1709,27 @@ end
 
 
 function handleReglue(selected_items, first_selected_item_track, restored_items_pool_id)
-  local superglued_container_last_glue_params--[[, sizing_region_guid_key_label--]], retval, all_pool_ids_with_active_sizing_regions, sizing_region_guid, superglued_container, superglued_container_params
+  local superitem_last_glue_params, retval, all_pool_ids_with_active_sizing_regions, sizing_region_guid, superitem, superitem_params
 
   cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
 
-  superglued_container_last_glue_params = storeRetrieveSupergluedContainerParams(restored_items_pool_id, _postglue_action_step)
-  -- sizing_region_guid_key_label = _pool_key_prefix .. restored_items_pool_id .. _sizing_region_guid_key_suffix
-  -- retval, sizing_region_guid = storeRetrieveProjectData(sizing_region_guid_key_label)
+  superitem_last_glue_params = storeRetrieveSuperitemParams(restored_items_pool_id, _postglue_action_step)
   retval, all_pool_ids_with_active_sizing_regions = storeRetrieveProjectData(_all_pool_ids_with_active_sizing_regions_key)
   retval, all_pool_ids_with_active_sizing_regions = serpent.load(all_pool_ids_with_active_sizing_regions)
   sizing_region_guid = all_pool_ids_with_active_sizing_regions[restored_items_pool_id]
-  superglued_container = handleGlue(selected_items, first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, nil)
-  superglued_container_params = getSetItemParams(superglued_container)
-  superglued_container_params.updated_src = getSetItemAudioSrc(superglued_container)
-  superglued_container_params.pool_id = restored_items_pool_id
-  superglued_container = restoreContainerState(superglued_container, superglued_container_params)
+  superitem = handleGlue(selected_items, first_selected_item_track, restored_items_pool_id, sizing_region_guid, nil, nil)
+  superitem_params = getSetItemParams(superitem)
+  superitem_params.updated_src = getSetItemAudioSrc(superitem)
+  superitem_params.pool_id = restored_items_pool_id
+  superitem = restoreContainerState(superitem, superitem_params)
 
-  setRegluePositionDeltas(superglued_container_params, superglued_container_last_glue_params)
-  adjustPostGlueTakeEnvelopes(superglued_container)
-  unglueAncestors(superglued_container_params.pool_id, superglued_container)
+  setRegluePositionDeltas(superitem_params, superitem_last_glue_params)
+  adjustPostGlueTakeEnvelopes(superitem)
+  editAncestors(superitem_params.pool_id, superitem)
   deselectAllItems()
-  propagatePoolChanges(superglued_container_params, sizing_region_guid)
+  propagatePoolChanges(superitem_params, sizing_region_guid)
 
-  return superglued_container
+  return superitem
 end
 
 
@@ -1789,42 +1785,42 @@ function getSetItemAudioSrc(item, src)
 end
 
 
-function restoreContainerState(superglued_container, superglued_container_params)
-  local superglued_container_preglue_state_key_label, retval, superglued_container_last_glue_state, active_take
+function restoreContainerState(superitem, superitem_params)
+  local superitem_preglue_state_key_label, retval, superitem_last_glue_state, active_take
 
-  superglued_container_preglue_state_key_label = _pool_key_prefix .. superglued_container_params.pool_id .. _container_preglue_state_suffix
-  retval, superglued_container_last_glue_state = storeRetrieveProjectData(superglued_container_preglue_state_key_label)
-  active_take = reaper.GetActiveTake(superglued_container)
+  superitem_preglue_state_key_label = _pool_key_prefix .. superitem_params.pool_id .. _container_preglue_state_suffix
+  retval, superitem_last_glue_state = storeRetrieveProjectData(superitem_preglue_state_key_label)
+  active_take = reaper.GetActiveTake(superitem)
 
-  if retval == true and superglued_container_last_glue_state then
-    getSetItemStateChunk(superglued_container, superglued_container_last_glue_state)
-    getSetItemAudioSrc(superglued_container, superglued_container_params.updated_src)
-    getSetItemParams(superglued_container, superglued_container_params)
+  if retval == true and superitem_last_glue_state then
+    getSetItemStateChunk(superitem, superitem_last_glue_state)
+    getSetItemAudioSrc(superitem, superitem_params.updated_src)
+    getSetItemParams(superitem, superitem_params)
     reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, _src_offset_reset_value)
   end
 
-  return superglued_container
+  return superitem
 end
 
 
-function setRegluePositionDeltas(freshly_superglued_container_params, superglued_container_last_glue_params)
-  local superglued_container_preedit_params, superglued_container_offset_changed_before_edit, superglued_container_offset_during_edit, superglued_container_offset_changed_during_edit, superglued_container_offset
+function setRegluePositionDeltas(freshly_superitem_params, superitem_last_glue_params)
+  local superitem_preedit_params, superitem_offset_changed_before_edit, superitem_offset_during_edit, superitem_offset_changed_during_edit, superitem_offset
 
-  superglued_container_preedit_params = storeRetrieveSupergluedContainerParams(freshly_superglued_container_params.pool_id, _preedit_action_step)
-  freshly_superglued_container_params, superglued_container_preedit_params, superglued_container_last_glue_params = numberizeElements(
-    {freshly_superglued_container_params, superglued_container_preedit_params, superglued_container_last_glue_params}, 
+  superitem_preedit_params = storeRetrieveSuperitemParams(freshly_superitem_params.pool_id, _preedit_action_step)
+  freshly_superitem_params, superitem_preedit_params, superitem_last_glue_params = numberizeElements(
+    {freshly_superitem_params, superitem_preedit_params, superitem_last_glue_params}, 
     {"position", "source_offset"}
   )
-  superglued_container_offset_changed_before_edit = superglued_container_preedit_params.source_offset ~= 0
-  superglued_container_offset_during_edit = freshly_superglued_container_params.position - superglued_container_preedit_params.position
-  superglued_container_offset_changed_during_edit = superglued_container_offset_during_edit ~= 0
-  superglued_container_offset = freshly_superglued_container_params.position - superglued_container_preedit_params.position
+  superitem_offset_changed_before_edit = superitem_preedit_params.source_offset ~= 0
+  superitem_offset_during_edit = freshly_superitem_params.position - superitem_preedit_params.position
+  superitem_offset_changed_during_edit = superitem_offset_during_edit ~= 0
+  superitem_offset = freshly_superitem_params.position - superitem_preedit_params.position
 
-  if superglued_container_offset_changed_before_edit or superglued_container_offset_changed_during_edit then
-    _superglued_instance_offset_delta_since_last_glue = round(superglued_container_preedit_params.source_offset + superglued_container_offset, _api_time_value_decimal_resolution)
+  if superitem_offset_changed_before_edit or superitem_offset_changed_during_edit then
+    _superitem_instance_offset_delta_since_last_glue = round(superitem_preedit_params.source_offset + superitem_offset, _api_time_value_decimal_resolution)
   end
 
-  if _superglued_instance_offset_delta_since_last_glue ~= 0 then
+  if _superitem_instance_offset_delta_since_last_glue ~= 0 then
     _position_changed_since_last_glue = true
   end
 end
@@ -1847,7 +1843,7 @@ function adjustPostGlueTakeEnvelopes(instance, adjustment_near_project_start)
 
     for j = 0, envelope_points_count-1 do
       retval, this_envelope_point_time = reaper.GetEnvelopePoint(this_take_envelope, j)
-      adjusted_envelope_point_time = this_envelope_point_time + instance_src_offset - _superglued_instance_offset_delta_since_last_glue - adjustment_near_project_start
+      adjusted_envelope_point_time = this_envelope_point_time + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
 
       reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_time, nil, nil, nil, nil, true)
     end
@@ -1855,8 +1851,8 @@ function adjustPostGlueTakeEnvelopes(instance, adjustment_near_project_start)
 end
 
 
-function unglueAncestors(pool_id, superglued_container, descendant_nesting_depth_of_active_parent)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, i, this_parent_pool_id, parent_unglue_temp_track, restored_items, this_parent_instance_params, no_parent_instances_were_found
+function editAncestors(pool_id, superitem, descendant_nesting_depth_of_active_parent)
+  local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, i, this_parent_pool_id, parent_edit_temp_track, restored_items, this_parent_instance_params, no_parent_instances_were_found
 
   parent_pool_ids_data_key_label = _pool_key_prefix .. pool_id .. _parent_pool_ids_data_key_suffix
   retval, parent_pool_ids = storeRetrieveProjectData(parent_pool_ids_data_key_label)
@@ -1879,7 +1875,7 @@ function unglueAncestors(pool_id, superglued_container, descendant_nesting_depth
           assignParentNestingDepth(this_parent_pool_id, descendant_nesting_depth_of_active_parent)
 
         else
-          traverseAncestorsOnTempTracks(this_parent_pool_id, superglued_container, descendant_nesting_depth_of_active_parent)
+          traverseAncestorsOnTempTracks(this_parent_pool_id, superitem, descendant_nesting_depth_of_active_parent)
         end
       end
 
@@ -1894,8 +1890,8 @@ function assignParentNestingDepth(this_parent_pool_id, descendant_nesting_depth_
 end
 
 
-function traverseAncestorsOnTempTracks(this_parent_pool_id, superglued_container, descendant_nesting_depth_of_active_parent)
-  local this_parent_is_ancestor_in_project, this_parent_instance_params, this_parent_instance_is_item_in_project, this_parent_is_ancestor_not_item_in_project, parent_unglue_temp_track, restored_items, next_nesting_depth
+function traverseAncestorsOnTempTracks(this_parent_pool_id, superitem, descendant_nesting_depth_of_active_parent)
+  local this_parent_is_ancestor_in_project, this_parent_instance_params, this_parent_instance_is_item_in_project, this_parent_is_ancestor_not_item_in_project, parent_edit_temp_track, restored_items, next_nesting_depth
 
   this_parent_instance_params = getFirstPoolInstanceParams(this_parent_pool_id)
   this_parent_instance_is_item_in_project = this_parent_instance_params
@@ -1914,17 +1910,17 @@ function traverseAncestorsOnTempTracks(this_parent_pool_id, superglued_container
 
     reaper.InsertTrackAtIndex(0, false)
 
-    parent_unglue_temp_track = reaper.GetTrack(_api_current_project, 0)
+    parent_edit_temp_track = reaper.GetTrack(_api_current_project, 0)
 
     deselectAllItems()
 
-    restored_items = restoreContainedItems(this_parent_pool_id, parent_unglue_temp_track, superglued_container, nil, true)
-    this_parent_instance_params.track = parent_unglue_temp_track
+    restored_items = restoreContainedItems(this_parent_pool_id, parent_edit_temp_track, superitem, nil, true)
+    this_parent_instance_params.track = parent_edit_temp_track
     this_parent_instance_params.restored_items = restored_items
     _ancestor_pools_params[this_parent_pool_id] = this_parent_instance_params
     next_nesting_depth = descendant_nesting_depth_of_active_parent + 1
 
-    unglueAncestors(this_parent_pool_id, superglued_container, next_nesting_depth)
+    editAncestors(this_parent_pool_id, superitem, next_nesting_depth)
   end
 end
 
@@ -2000,10 +1996,10 @@ function deletePoolDescendantsData(pool_id)
 end
 
 
-function restoreContainedItems(pool_id, active_track, superglued_container, superglued_container_preedit_params, this_is_parent_update, this_is_explode)
-  local retval, stored_item_states_table, pool_item_states_key_label, stored_item_states, restored_items, superglued_container_postglue_params, item_guid, stored_item_state, restored_instances_near_project_start, restored_item, restored_instance_pool_id, this_instance_params
+function restoreContainedItems(pool_id, active_track, superitem, superitem_preedit_params, this_is_parent_update, this_is_unglue)
+  local retval, stored_item_states_table, pool_item_states_key_label, stored_item_states, restored_items, superitem_postglue_params, item_guid, stored_item_state, restored_instances_near_project_start, restored_item, restored_instance_pool_id, this_instance_params
 
-  if this_is_explode and _preglue_restored_item_states then
+  if this_is_unglue and _preglue_restored_item_states then
     retval, stored_item_states_table = serpent.load(_preglue_restored_item_states)
 
   else
@@ -2013,19 +2009,19 @@ function restoreContainedItems(pool_id, active_track, superglued_container, supe
   end
 
   restored_items = {}
-  superglued_container_postglue_params = storeRetrieveSupergluedContainerParams(pool_id, _postglue_action_step)
+  superitem_postglue_params = storeRetrieveSuperitemParams(pool_id, _postglue_action_step)
 
   for item_guid, stored_item_state in pairs(stored_item_states_table) do
 
     if stored_item_state then
-      restored_instances_near_project_start, restored_item = handleRestoredItem(active_track, stored_item_state, superglued_container_preedit_params, superglued_container_postglue_params, this_is_parent_update, this_is_explode)
+      restored_instances_near_project_start, restored_item = handleRestoredItem(active_track, stored_item_state, superitem_preedit_params, superitem_postglue_params, this_is_parent_update, this_is_unglue)
 
       table.insert(restored_items, restored_item)
     end
   end
 
   for restored_instance_pool_id, this_instance_params in pairs(restored_instances_near_project_start) do
-    handleInstanceNearProjectStart(superglued_container, this_instance_params, this_is_parent_update)
+    handleInstanceNearProjectStart(superitem, this_instance_params, this_is_parent_update)
   end
 
   return restored_items
@@ -2042,22 +2038,22 @@ function retrieveStoredItemStates(item_state_chunks_string)
 end
 
 
-function handleRestoredItem(active_track, stored_item_state, superglued_container_preedit_params, superglued_container_postglue_params, this_is_parent_update, this_is_explode)
+function handleRestoredItem(active_track, stored_item_state, superitem_preedit_params, superitem_postglue_params, this_is_parent_update, this_is_unglue)
   local restored_item, restored_item_negative_position_delta, restored_instances_near_project_start, restored_instance_pool_id
 
-  restored_item = restoreItem(active_track, stored_item_state, this_is_parent_update, this_is_explode)
-  restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, superglued_container_preedit_params, superglued_container_postglue_params, this_is_parent_update)
+  restored_item = restoreItem(active_track, stored_item_state, this_is_parent_update, this_is_unglue)
+  restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, superitem_preedit_params, superitem_postglue_params, this_is_parent_update)
   restored_instances_near_project_start = {}
 
   reaper.SetMediaItemSelected(restored_item, true)
 
   restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
 
-  if this_is_explode then
+  if this_is_unglue then
     storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, "")
   end
 
-  handleRestoredItemImage(restored_item, restored_instance_pool_id, this_is_explode)
+  handleRestoredItemImage(restored_item, restored_instance_pool_id, this_is_unglue)
 
   if restored_item_negative_position_delta then
 
@@ -2083,13 +2079,13 @@ function handleRestoredItem(active_track, stored_item_state, superglued_containe
 end
 
 
-function handleInstanceNearProjectStart(superglued_container, instance_params)
-  local superglued_container_params, restored_instance_last_glue_delta_to_parent, instance_adjusted_position, instance_is_closer_to_project_start_than_negative_position_change, instance_adjustment_delta, instance_active_take, instance_current_src_offset, instance_adjusted_src_offset
+function handleInstanceNearProjectStart(superitem, instance_params)
+  local superitem_params, restored_instance_last_glue_delta_to_parent, instance_adjusted_position, instance_is_closer_to_project_start_than_negative_position_change, instance_adjustment_delta, instance_active_take, instance_current_src_offset, instance_adjusted_src_offset
   
-  superglued_container_params = getSetItemParams(superglued_container)
+  superitem_params = getSetItemParams(superitem)
   restored_instance_last_glue_delta_to_parent = storeRetrieveItemData(instance_params.item, _item_offset_to_container_position_key_suffix)
   restored_instance_last_glue_delta_to_parent = tonumber(restored_instance_last_glue_delta_to_parent)
-  instance_adjusted_position = superglued_container_params.position + restored_instance_last_glue_delta_to_parent + instance_params.negative_position_delta
+  instance_adjusted_position = superitem_params.position + restored_instance_last_glue_delta_to_parent + instance_params.negative_position_delta
 
   instance_is_closer_to_project_start_than_negative_position_change = instance_adjusted_position < -instance_params.negative_position_delta
 
@@ -2109,7 +2105,7 @@ function handleInstanceNearProjectStart(superglued_container, instance_params)
 end
 
 
-function restoreItem(track, state, this_is_parent_update, this_is_explode)
+function restoreItem(track, state, this_is_parent_update, this_is_unglue)
   local restored_item
 
   restored_item = reaper.AddMediaItemToTrack(track)
@@ -2161,14 +2157,14 @@ function deleteActiveTakeFromItems()
 end
 
 
-function adjustRestoredItem(restored_item, superglued_container_preedit_params, superglued_container_last_glue_params, this_is_parent_update)
+function adjustRestoredItem(restored_item, superitem_preedit_params, superitem_last_glue_params, this_is_parent_update)
   local siblings_are_being_updated, restored_item_params, adjusted_restored_item_position_is_before_project_start, restored_item_negative_position
 
   siblings_are_being_updated = not this_is_parent_update
   restored_item_params = getSetItemParams(restored_item)
 
   if siblings_are_being_updated then
-    restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item_params.position, superglued_container_preedit_params, superglued_container_last_glue_params)
+    restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item_params.position, superitem_preedit_params, superitem_last_glue_params)
     adjusted_restored_item_position_is_before_project_start = restored_item_params.position < 0
 
     if adjusted_restored_item_position_is_before_project_start then
@@ -2184,29 +2180,29 @@ function adjustRestoredItem(restored_item, superglued_container_preedit_params, 
 end
 
 
-function shiftRestoredItemPositionSinceLastGlue(restored_item_params_position, superglued_container_preedit_params, superglued_container_last_glue_params)
-  local this_instance_delta_to_last_superglued_instance
+function shiftRestoredItemPositionSinceLastGlue(restored_item_params_position, superitem_preedit_params, superitem_last_glue_params)
+  local this_instance_delta_to_last_superitem_instance
 
-  if not superglued_container_preedit_params or not superglued_container_preedit_params.position then
-    this_instance_delta_to_last_superglued_instance = 0
+  if not superitem_preedit_params or not superitem_preedit_params.position then
+    this_instance_delta_to_last_superitem_instance = 0
   
-  elseif not superglued_container_last_glue_params or not superglued_container_last_glue_params.position then
-    this_instance_delta_to_last_superglued_instance = superglued_container_preedit_params.position - superglued_container_preedit_params.source_offset
+  elseif not superitem_last_glue_params or not superitem_last_glue_params.position then
+    this_instance_delta_to_last_superitem_instance = superitem_preedit_params.position - superitem_preedit_params.source_offset
 
   else
-    this_instance_delta_to_last_superglued_instance = superglued_container_preedit_params.position - superglued_container_preedit_params.source_offset - superglued_container_last_glue_params.position
+    this_instance_delta_to_last_superitem_instance = superitem_preedit_params.position - superitem_preedit_params.source_offset - superitem_last_glue_params.position
   end
   
-  restored_item_params_position = restored_item_params_position + this_instance_delta_to_last_superglued_instance 
+  restored_item_params_position = restored_item_params_position + this_instance_delta_to_last_superitem_instance 
 
   return restored_item_params_position
 end
 
 
-function handleRestoredItemImage(restored_item, restored_instance_pool_id, this_is_explode)
+function handleRestoredItemImage(restored_item, restored_instance_pool_id, this_is_unglue)
   local this_restored_item_is_not_instance = not restored_instance_pool_id or restored_instance_pool_id == ""
 
-  if this_is_explode then
+  if this_is_unglue then
 
     if this_restored_item_is_not_instance then
       addRemoveItemImage(restored_item, false)
@@ -2218,10 +2214,10 @@ function handleRestoredItemImage(restored_item, restored_instance_pool_id, this_
 end
 
 
-function propagatePoolChanges(active_superglued_instance_params, sizing_region_guid)
+function propagatePoolChanges(active_superitem_instance_params, sizing_region_guid)
   local parent_pools_near_project_start, ancestor_pools_params_by_children_nesting_depth, i, this_parent_pool_params, this_parent_pool_id, active_track, selected_items, restored_items_position_adjustment
 
-  parent_pools_near_project_start = updateActivePoolSiblings(active_superglued_instance_params, false)
+  parent_pools_near_project_start = updateActivePoolSiblings(active_superitem_instance_params, false)
   ancestor_pools_params_by_children_nesting_depth = sortParentUpdatesByNestingDepth()
 
   for i = 1, #ancestor_pools_params_by_children_nesting_depth do
@@ -2230,7 +2226,7 @@ function propagatePoolChanges(active_superglued_instance_params, sizing_region_g
     restored_items_position_adjustment = parent_pools_near_project_start[this_parent_pool_id]
 
     if restored_items_position_adjustment then
-      adjustParentPoolChildren(this_parent_pool_id, active_superglued_instance_params.pool_id, restored_items_position_adjustment)
+      adjustParentPoolChildren(this_parent_pool_id, active_superitem_instance_params.pool_id, restored_items_position_adjustment)
 
     else
       restored_items_position_adjustment = 0
@@ -2243,7 +2239,7 @@ function propagatePoolChanges(active_superglued_instance_params, sizing_region_g
 end
 
 
-function updateActivePoolSiblings(active_superglued_instance_params, this_is_parent_update)
+function updateActivePoolSiblings(active_superitem_instance_params, this_is_parent_update)
   local all_items_count, siblings_are_being_updated, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, global_option_toggle_depool_all_siblings_on_reglue, global_option_toggle_depool_all_siblings_on_reglue_warning, attempted_negative_instance_position, this_sibling_parent_pool_id, this_sibling_position_is_earlier_than_prev_sibling
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
@@ -2251,7 +2247,7 @@ function updateActivePoolSiblings(active_superglued_instance_params, this_is_par
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(_api_current_project, i)
-    this_active_pool_sibling = getActivePoolSibling(this_item, active_superglued_instance_params)
+    this_active_pool_sibling = getActivePoolSibling(this_item, active_superitem_instance_params)
 
     if this_active_pool_sibling then
       global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
@@ -2261,7 +2257,7 @@ function updateActivePoolSiblings(active_superglued_instance_params, this_is_par
       end
 
       if global_option_toggle_depool_all_siblings_on_reglue == "false" then
-        parent_pools_near_project_start = handleActivePoolSibling(this_active_pool_sibling, active_superglued_instance_params, this_item, parent_pools_near_project_start, this_is_parent_update)
+        parent_pools_near_project_start = handleActivePoolSibling(this_active_pool_sibling, active_superitem_instance_params, this_item, parent_pools_near_project_start, this_is_parent_update)
       end
     end
   end
@@ -2270,23 +2266,23 @@ function updateActivePoolSiblings(active_superglued_instance_params, this_is_par
 end
 
 
-function getActivePoolSibling(item, active_superglued_instance_params)
-  local item_instance_pool_id, item_is_instance, item_is_active_superglued_pool_instance, instance_current_src, this_instance_needs_update
+function getActivePoolSibling(item, active_superitem_instance_params)
+  local item_instance_pool_id, item_is_instance, item_is_active_superitem_pool_instance, instance_current_src, this_instance_needs_update
 
   item_instance_pool_id = storeRetrieveItemData(item, _instance_pool_id_key_suffix)
   item_is_instance = item_instance_pool_id and item_instance_pool_id ~= ""
 
   if item_is_instance then
-    if not active_superglued_instance_params.instance_pool_id or active_superglued_instance_params.instance_pool_id == "" then
-      active_superglued_instance_params.instance_pool_id = active_superglued_instance_params.pool_id
-      active_superglued_instance_params.instance_pool_id = tostring(active_superglued_instance_params.instance_pool_id)
+    if not active_superitem_instance_params.instance_pool_id or active_superitem_instance_params.instance_pool_id == "" then
+      active_superitem_instance_params.instance_pool_id = active_superitem_instance_params.pool_id
+      active_superitem_instance_params.instance_pool_id = tostring(active_superitem_instance_params.instance_pool_id)
     end
 
-    item_is_active_superglued_pool_instance = item_instance_pool_id == active_superglued_instance_params.instance_pool_id
+    item_is_active_superitem_pool_instance = item_instance_pool_id == active_superitem_instance_params.instance_pool_id
     
-    if item_is_active_superglued_pool_instance then
+    if item_is_active_superitem_pool_instance then
       instance_current_src = getSetItemAudioSrc(item)
-      this_instance_needs_update = instance_current_src ~= active_superglued_instance_params.updated_src
+      this_instance_needs_update = instance_current_src ~= active_superitem_instance_params.updated_src
 
       if this_instance_needs_update then
         return item
@@ -2323,15 +2319,15 @@ function handleDePoolSibling(active_pool_sibling)
 end
 
 
-function handleActivePoolSibling(active_pool_sibling, active_superglued_instance_params, item, parent_pools_near_project_start, this_is_parent_update)
+function handleActivePoolSibling(active_pool_sibling, active_superitem_instance_params, item, parent_pools_near_project_start, this_is_parent_update)
   local siblings_are_being_updated, attempted_negative_instance_position, sibling_parent_pool_id
 
-  getSetItemAudioSrc(active_pool_sibling, active_superglued_instance_params.updated_src)
+  getSetItemAudioSrc(active_pool_sibling, active_superitem_instance_params.updated_src)
 
   siblings_are_being_updated = not this_is_parent_update
 
   if siblings_are_being_updated then
-    attempted_negative_instance_position = adjustActivePoolSibling(active_pool_sibling, active_superglued_instance_params)
+    attempted_negative_instance_position = adjustActivePoolSibling(active_pool_sibling, active_superitem_instance_params)
 
     if attempted_negative_instance_position then
       sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
@@ -2343,10 +2339,10 @@ function handleActivePoolSibling(active_pool_sibling, active_superglued_instance
 end
 
 
-function adjustActivePoolSibling(instance, active_superglued_instance_params)
+function adjustActivePoolSibling(instance, active_superitem_instance_params)
   local instance_adjusted_length, active_instance_position_has_changed, user_wants_position_change, instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start, negative_position_delta
 
-  instance_adjusted_length = active_superglued_instance_params.length
+  instance_adjusted_length = active_superitem_instance_params.length
 
   reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
 
@@ -2370,7 +2366,7 @@ function launchPropagatePositionDialog()
   local global_option_propagate_position_default = reaper.GetExtState(_global_options_section, _global_option_propagate_position_default_key)
 
   if global_option_propagate_position_default == "ask" then
-    return reaper.ShowMessageBox("Do you want to adjust other pool instances' position to match so their audio position remains the same?", "The left edge location of the superglued container item you're regluing has changed!", _msg_type_yes_no)
+    return reaper.ShowMessageBox("Do you want to adjust other pool instances' position to match so their audio position remains the same?", "The left edge location of the superitem you're regluing has changed!", _msg_type_yes_no)
 
   elseif global_option_propagate_position_default == "always" then
     return _msg_response_yes
@@ -2387,11 +2383,11 @@ function propagateActivePoolSiblingPosition(instance)
   active_take = reaper.GetActiveTake(instance)
   instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
   instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key)
-  instance_adjusted_position = instance_current_position - instance_current_src_offset + _superglued_instance_offset_delta_since_last_glue
+  instance_adjusted_position = instance_current_position - instance_current_src_offset + _superitem_instance_offset_delta_since_last_glue
   instance_would_get_adjusted_before_project_start = instance_adjusted_position < _position_start_of_project
 
   if instance_would_get_adjusted_before_project_start then
-    instance_adjusted_src_offset = instance_current_src_offset - instance_current_position - _superglued_instance_offset_delta_since_last_glue
+    instance_adjusted_src_offset = instance_current_src_offset - instance_current_position - _superitem_instance_offset_delta_since_last_glue
     negative_position_delta = -instance_adjusted_src_offset
 
     adjustPostGlueTakeEnvelopes(instance, instance_adjusted_src_offset)
@@ -2443,7 +2439,7 @@ function adjustParentPoolChildren(parent_pool_id, active_pool_id, instance_posit
       this_child_current_position = reaper.GetMediaItemInfo_Value(this_item, _api_item_position_key)
 
       if this_child_is_active_sibling then
-        this_child_adjusted_position = this_child_current_position + _superglued_instance_offset_delta_since_last_glue - instance_position
+        this_child_adjusted_position = this_child_current_position + _superitem_instance_offset_delta_since_last_glue - instance_position
 
       else
         this_child_adjusted_position = this_child_current_position - instance_position
@@ -2471,16 +2467,16 @@ function reglueParentInstance(parent_instance_params, sizing_region_guid, restor
 end
   
 
-function initUnglueExplode(action)
-  local selected_item_count, selected_item_groups, superglued_containers, this_pool_id, other_open_instance
+function initEditUnglue(action)
+  local selected_item_count, selected_item_groups, superitems, this_pool_id, other_open_instance
 
   selected_item_count = initAction(action)
-  selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superglued"})
-  superglued_containers = selected_item_groups["superglued"]["selected_items"]
+  selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superitem"})
+  superitems = selected_item_groups["superitem"]["selected_items"]
 
-  if isNotSingleSupergluedContainer(#superglued_containers, action) == true then return end
+  if isNotSingleSuperitem(#superitems, action) == true then return end
 
-  this_pool_id = storeRetrieveItemData(superglued_containers[1], _instance_pool_id_key_suffix)
+  this_pool_id = storeRetrieveItemData(superitems[1], _instance_pool_id_key_suffix)
   other_open_instance = otherInstanceIsOpen(this_pool_id)
 
   if other_open_instance then
@@ -2489,22 +2485,22 @@ function initUnglueExplode(action)
     return
   end
   
-  handleUnglueExplode(this_pool_id, action)
+  handleEditUnglue(this_pool_id, action)
 
   return this_pool_id
 end
 
 
-function isNotSingleSupergluedContainer(superglued_containers_count, action)
+function isNotSingleSuperitem(superitems_count, action)
   local multiitem_result, user_wants_to_edit_1st_container
 
-  if superglued_containers_count == 0 then
-    reaper.ShowMessageBox(_msg_change_selected_items, "Superglue can only " .. action .. " previously superglued container items." , _msg_type_ok)
+  if superitems_count == 0 then
+    reaper.ShowMessageBox(_msg_change_selected_items, "Superglue can only " .. action .. " previously superitems." , _msg_type_ok)
 
     return true
   
-  elseif superglued_containers_count > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to " .. action .. " the first selected superglued container item from the top track only?", "Superglue can only " .. action .. " one superglued container item per action call.", _msg_type_ok_cancel)
+  elseif superitems_count > 1 then
+    multiitem_result = reaper.ShowMessageBox("Would you like to " .. action .. " the first selected superitem from the top track only?", "Superglue can only " .. action .. " one superitem per action call.", _msg_type_ok_cancel)
     user_wants_to_edit_1st_container = multiitem_result == _msg_response_ok
 
     if user_wants_to_edit_1st_container then
@@ -2536,7 +2532,7 @@ end
 function handleOtherOpenInstance(instance, open_instance_pool_id, action)
   open_instance_pool_id = tostring(open_instance_pool_id)
 
-  reaper.ShowMessageBox("Reglue the other open instance from pool " .. open_instance_pool_id .. " before trying to " .. action .. " this superglued container item. It will be selected and scrolled to now.", "Superglue can only " .. action .. " one superglued pool instance at a time.", _msg_type_ok)
+  reaper.ShowMessageBox("Reglue the other open instance from pool " .. open_instance_pool_id .. " before trying to " .. action .. " this superitem. It will be selected and scrolled to now.", "Superglue can only " .. action .. " one superitem pool instance at a time.", _msg_type_ok)
   
   deselectAllItems()
   reaper.SetMediaItemSelected(instance, true)
@@ -2549,21 +2545,21 @@ function scrollToSelectedItem()
 end
 
 
-function handleUnglueExplode(pool_id, action)
-  local superglued_container, undo_block_string
+function handleEditUnglue(pool_id, action)
+  local superitem, undo_block_string
 
-  superglued_container = getFirstSelectedItem()
+  superitem = getFirstSelectedItem()
 
-  if action == "Unglue" then
-    storeRetrieveSupergluedContainerParams(pool_id, _preedit_action_step, superglued_container)
+  if action == "Edit" then
+    storeRetrieveSuperitemParams(pool_id, _preedit_action_step, superitem)
 
+    undo_block_string = _edit_undo_block_string
+
+  elseif action == "Unglue" then
     undo_block_string = _unglue_undo_block_string
-
-  elseif action == "Explode" then
-    undo_block_string = _explode_undo_block_string
   end
 
-  processUnglueExplode(superglued_container, pool_id, action)
+  processEditUnglue(superitem, pool_id, action)
 
   if action ~= "DePool" then
     cleanUpAction(undo_block_string)
@@ -2571,44 +2567,44 @@ function handleUnglueExplode(pool_id, action)
 end
 
 
-function processUnglueExplode(superglued_container, pool_id, action)
-  local superglued_container_preedit_params, active_track, this_is_explode, superglued_container_preglue_state_key_suffix, superglued_container_state, restored_items, sizing_region_guid
+function processEditUnglue(superitem, pool_id, action)
+  local superitem_preedit_params, active_track, this_is_unglue, superitem_preglue_state_key_suffix, superitem_state, restored_items, sizing_region_guid
 
-  superglued_container_preedit_params = getSetItemParams(superglued_container)
+  superitem_preedit_params = getSetItemParams(superitem)
 
   deselectAllItems()
 
-  active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superglued_container_preedit_params.track_guid)
+  active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superitem_preedit_params.track_guid)
 
-  if action == "Explode" or action == "DePool" then
-    this_is_explode = true
+  if action == "Unglue" or action == "DePool" then
+    this_is_unglue = true
 
-  elseif action == "Unglue" then
-    superglued_container_preglue_state_key_suffix = _pool_key_prefix .. pool_id .. _container_preglue_state_suffix
-    superglued_container_state = getSetItemStateChunk(superglued_container)
+  elseif action == "Edit" then
+    superitem_preglue_state_key_suffix = _pool_key_prefix .. pool_id .. _container_preglue_state_suffix
+    superitem_state = getSetItemStateChunk(superitem)
 
-    storeRetrieveProjectData(superglued_container_preglue_state_key_suffix, superglued_container_state)
+    storeRetrieveProjectData(superitem_preglue_state_key_suffix, superitem_state)
   end
 
-  restored_items = restoreContainedItems(pool_id, active_track, superglued_container, superglued_container_preedit_params, nil, this_is_explode)
+  restored_items = restoreContainedItems(pool_id, active_track, superitem, superitem_preedit_params, nil, this_is_unglue)
 
-  if action == "Unglue" then
-    sizing_region_guid = createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
+  if action == "Edit" then
+    sizing_region_guid = createSizingRegionFromSuperitem(superitem, pool_id)
 
     initSizingRegionCheck(sizing_region_guid, pool_id)
   end
 
-  reaper.DeleteTrackMediaItem(active_track, superglued_container)
+  reaper.DeleteTrackMediaItem(active_track, superitem)
 
   return active_track, restored_items
 end
 
 
-function createSizingRegionFromSupergluedContainer(superglued_container, pool_id)
-  local superglued_container_params, sizing_region_guid
+function createSizingRegionFromSuperitem(superitem, pool_id)
+  local superitem_params, sizing_region_guid
 
-  superglued_container_params = getSetItemParams(superglued_container)
-  sizing_region_guid = getSetSizingRegion(pool_id, superglued_container_params)
+  superitem_params = getSetItemParams(superitem)
+  sizing_region_guid = getSetSizingRegion(pool_id, superitem_params)
   
   return sizing_region_guid
 end
@@ -2689,15 +2685,15 @@ end
 
 
 function handleSizingRegionUserDeletion(sizing_region_params, pool_id, sizing_region_deletion_msg_is_enabled)
-  local sizing_region_deletion_result, user_wants_to_reinstate_sizing_region, user_wants_to_explode, sizing_region_guid, selected_item_count, i, this_selected_item, this_selected_item_instance_pool_id
+  local sizing_region_deletion_result, user_wants_to_reinstate_sizing_region, user_wants_to_unglue, sizing_region_guid, selected_item_count, i, this_selected_item, this_selected_item_instance_pool_id
 
   if sizing_region_deletion_msg_is_enabled == "true" then
-    sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Explode or "no" to reinstate the deleted sizing region.', "MB_Superglue: An active Unglue sizing region got deleted!", _msg_type_yes_no)
+    sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Unglue or "no" to reinstate the deleted sizing region.', "MB_Superglue: An active Edit sizing region got deleted!", _msg_type_yes_no)
     user_wants_to_reinstate_sizing_region = sizing_region_deletion_result == _msg_response_no
-    user_wants_to_explode = sizing_region_deletion_result == _msg_response_yes
+    user_wants_to_unglue = sizing_region_deletion_result == _msg_response_yes
 
   elseif sizing_region_deletion_msg_is_enabled == "false" then
-    user_wants_to_explode = true
+    user_wants_to_unglue = true
   end
 
   if user_wants_to_reinstate_sizing_region then
@@ -2708,7 +2704,7 @@ function handleSizingRegionUserDeletion(sizing_region_params, pool_id, sizing_re
     reaper.Undo_EndBlock(_reinstate_sizing_region_undo_block_string, _api_marker_region_undo_states)
     initSizingRegionCheck(sizing_region_guid, pool_id)
 
-  elseif user_wants_to_explode then
+  elseif user_wants_to_unglue then
     selected_item_count = reaper.CountSelectedMediaItems(_api_current_project)
 
     for i = 0, selected_item_count-1 do
@@ -2722,7 +2718,7 @@ function handleSizingRegionUserDeletion(sizing_region_params, pool_id, sizing_re
 end
 
 
-function initSmartAction(unglue_or_explode)
+function initSmartAction(edit_or_unglue)
   local selected_item_count, pool_id
   
   selected_item_count = doPreGlueChecks()
@@ -2735,9 +2731,9 @@ function initSmartAction(unglue_or_explode)
 
   pool_id = getFirstPoolIdFromSelectedItems(selected_item_count)
 
-  if containerSelectionIsInvalid(selected_item_count, unglue_or_explode) == true then return end
+  if containerSelectionIsInvalid(selected_item_count, edit_or_unglue) == true then return end
 
-  if triggerAction(selected_item_count, unglue_or_explode) == false then 
+  if triggerAction(selected_item_count, edit_or_unglue) == false then 
     reaper.ShowMessageBox(_msg_change_selected_items, "Superglue Smart Action can't determine which script to run.", _msg_type_ok)
     setResetItemSelectionSet(false)
 
@@ -2765,7 +2761,7 @@ function getSmartAction(selected_item_count)
   single_child_instance_is_selected = child_instances_count == 1
 
   if single_parent_instance_is_selected and no_noncontainers_are_selected and no_child_instances_are_selected then
-    return "unglue_or_explode"
+    return "edit_or_unglue"
   
   elseif parent_instances_are_selected and single_child_instance_is_selected then
     return "glue/abort"
@@ -2776,19 +2772,19 @@ function getSmartAction(selected_item_count)
 end
 
 
-function triggerAction(selected_item_count, unglue_or_explode)
+function triggerAction(selected_item_count, edit_or_unglue)
   local superglue_action, glue_abort_dialog
 
   superglue_action = getSmartAction(selected_item_count)
 
-  if superglue_action == "unglue_or_explode" then
-    initUnglueExplode(unglue_or_explode)
+  if superglue_action == "edit_or_unglue" then
+    initEditUnglue(edit_or_unglue)
 
   elseif superglue_action == "glue" then
     initSuperglue()
 
   elseif superglue_action == "glue/abort" then
-    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to superglue them?", "You have selected both superglued container(s) and restored item(s) from an unglued container.", _msg_type_ok_cancel)
+    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to superglue them?", "You have selected both superitem(s) and restored item(s) from an edited container.", _msg_type_ok_cancel)
 
     if glue_abort_dialog == 2 then
       setResetItemSelectionSet(false)
@@ -2806,7 +2802,7 @@ end
 
 
 function initDePool(target_item)
-  local this_is_user_initiated_depool, target_item_params, target_item_state, active_track, restored_items, superglued_container
+  local this_is_user_initiated_depool, target_item_params, target_item_state, active_track, restored_items, superitem
 
   this_is_user_initiated_depool = not target_item
 
@@ -2817,9 +2813,9 @@ function initDePool(target_item)
   target_item_params = getSetItemParams(target_item)
   target_item_state = getSetItemStateChunk(target_item)
   active_track, target_item_params, restored_items = processDePool(target_item, target_item_params, this_is_user_initiated_depool)
-  superglued_container = handleGlue(restored_items, active_track, nil, nil, nil, target_item_params, false, false)
+  superitem = handleGlue(restored_items, active_track, nil, nil, nil, target_item_params, false, false)
 
-  handleDePoolPostGlue(superglued_container, target_item_state, target_item_params)
+  handleDePoolPostGlue(superitem, target_item_state, target_item_params)
 
   if this_is_user_initiated_depool then
     cleanUpAction(_depool_undo_block_string)
@@ -2835,7 +2831,7 @@ function processDePool(target_item, target_item_params, this_is_user_initiated_d
 
   if this_is_user_initiated_depool then
     active_track = reaper.GetMediaItemTrack(target_item)
-    target_item_params.pool_id = initUnglueExplode("DePool")
+    target_item_params.pool_id = initEditUnglue("DePool")
     selected_items_count = reaper.CountSelectedMediaItems(_api_current_project)
 
     for i = 0, selected_items_count-1 do
@@ -2854,7 +2850,7 @@ function processDePool(target_item, target_item_params, this_is_user_initiated_d
 
   elseif this_is_sibling_depool then
     target_item_params.pool_id = storeRetrieveItemData(target_item, _instance_pool_id_key_suffix)
-    active_track, restored_items = processUnglueExplode(target_item, target_item_params.pool_id, "Explode")
+    active_track, restored_items = processEditUnglue(target_item, target_item_params.pool_id, "Unglue")
 
     for i = 1, #restored_items do
       this_restored_item = restored_items[i]
@@ -2867,21 +2863,21 @@ function processDePool(target_item, target_item_params, this_is_user_initiated_d
 end
 
 
-function handleDePoolPostGlue(superglued_container, target_item_state, target_item_params)
+function handleDePoolPostGlue(superitem, target_item_state, target_item_params)
   local active_take, active_take_name, updated_src, new_pool_id
 
-  active_take = reaper.GetActiveTake(superglued_container)
-  active_take_name = getSetItemName(superglued_container)
-  updated_src = getSetItemAudioSrc(superglued_container)
-  new_pool_id = storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix)
+  active_take = reaper.GetActiveTake(superitem)
+  active_take_name = getSetItemName(superitem)
+  updated_src = getSetItemAudioSrc(superitem)
+  new_pool_id = storeRetrieveItemData(superitem, _instance_pool_id_key_suffix)
 
-  getSetItemStateChunk(superglued_container, target_item_state)
-  getSetItemName(superglued_container, active_take_name)
-  storeRetrieveItemData(superglued_container, _instance_pool_id_key_suffix, new_pool_id)
+  getSetItemStateChunk(superitem, target_item_state)
+  getSetItemName(superitem, active_take_name)
+  storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, new_pool_id)
 end
 
 
-function changeSupergluedContainerItemsColor()
+function changeSuperitemItemsColor()
   local current_window, retval, color, all_items_count, i, this_item, this_item_instance_pool_id
 
   current_window = reaper.GetMainHwnd()
