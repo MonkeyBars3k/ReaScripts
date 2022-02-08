@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.760
--- @changelog Superitem info window: Add number of contained items (https://github.com/MonkeyBars3k/ReaScripts/issues/187)
+-- @version 1.761
+-- @changelog Add option: Choose random color on new pool glue (https://github.com/MonkeyBars3k/ReaScripts/issues/188)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,14 +20,14 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
@@ -47,6 +47,7 @@ _reinstate_sizing_region_undo_block_string = "MB_Superglue-Reinstate-Sizing-Regi
 _sizing_region_label = "SG: DO NOT DELETE – Use to increase size – Pool #"
 _sizing_region_color = reaper.ColorToNative(255, 255, 255)|0x1000000
 _api_current_project = 0
+_api_command_flag = 0
 _api_include_all_undo_states = -1
 _api_marker_region_undo_states = 8
 _api_item_image_full_height = 5
@@ -68,6 +69,7 @@ _global_script_item_name_prefix = "sg"
 _global_options_section = "MB_SUPERGLUE-OPTIONS"
 _global_option_toggle_expand_to_time_selection_key = "expand_to_time_selection_enabled"
 _global_option_toggle_item_images_key = "item_images_enabled"
+_global_option_toggle_new_superglue_random_color_key = "new_superglue_random_color_enabled"
 _global_option_propagate_position_default_key = "propagate_position_default"
 _global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
 _global_option_toggle_depool_all_siblings_on_reglue_key = "depool_all_siblings_on_reglue_enabled"
@@ -77,21 +79,28 @@ _all_global_options_params = {
     ["name"] = "expand_to_time_selection",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_expand_to_time_selection_key,
-    ["user_readable_text"] = "Expand superglue to time selection",
+    ["user_readable_text"] = "Expand Superglue to time selection",
     ["default_value"] = "false"
   },
   {
     ["name"] = "item_images",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_item_images_key,
-    ["user_readable_text"] = "Insert item background images on superglue",
+    ["user_readable_text"] = "Insert item background images on Superglue and Edit (overwriting item notes)",
     ["default_value"] = "true"
+  },
+  {
+    ["name"] = "new_superglue_random_color",
+    ["type"] = "checkbox",
+    ["ext_state_key"] = _global_option_toggle_new_superglue_random_color_key,
+    ["user_readable_text"] = "Set newly glued Superitem to random color",
+    ["default_value"] = "false"
   },
   {
     ["name"] = "sizing_region_deletion_msg",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_sizing_region_deletion_msg_key,
-    ["user_readable_text"] = "Prompt on deletion of Edit sizing region (disabled = unglue edited items on sizing region deletion)",
+    ["user_readable_text"] = "Prompt on deletion of Edit sizing region (disabled = Unglue edited items on sizing region deletion)",
     ["default_value"] = "true"
   },
   {
@@ -208,11 +217,11 @@ end
 
 
 function openOptionsWindow()
-  local all_option_controls, options_window, options_window_content, options_window_title, option_form_buttons, option_form_submit, option_form_cancel
+  local all_option_controls, options_window, options_window_content, options_window_title, option_form_buttons, option_form_submit, option_form_cancel, options_window_content_height
 
   all_option_controls = {}
-  options_window = rtk.Window{halign = "center"}
-  options_window_content = rtk.VBox{w = 0.75, margin = "0 35 35 35"}
+  options_window = rtk.Window{halign = "center", margin = 20}
+  options_window_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
   options_window_title = rtk.Heading{"MB_Superglue Global Options", w = 1, margin = 35, halign = "center"}
   option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
   option_form_submit = rtk.Button{"Submit", color = "#656565", textcolor = "#343434", elevation = 0, hover = true, gradient = 0}
@@ -233,6 +242,10 @@ function openOptionsWindow()
   options_window_content:add(option_form_buttons)
   options_window:add(options_window_content)
   options_window:open{halign = "center", valign = "center"}
+
+  options_window_content_height = options_window_content:calc("h")
+  
+  options_window:attr("h", options_window_content_height)
 end
 
 
@@ -412,11 +425,11 @@ end
 
 
 function populateSuperitemWindow(selected_superitem, selected_superitem_params)
-  local item_info_window, item_info_content, item_info_title, item_info, item_info_text
+  local item_info_window, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height
 
-  item_info_window = rtk.Window{halign = "center"}
-  item_info_content = rtk.VBox{w = 0.75, margin = "0 35 35 35"}
-  item_info_title = rtk.Heading{"MB_Superglue Container Item Info", w = 1, margin = 35, halign = "center"}
+  item_info_window = rtk.Window{halign = "center", margin = 20}
+  item_info_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
+  item_info_title = rtk.Heading{"MB_Superglue Superitem Info", w = 1, margin = 35, halign = "center"}
   item_info_name = rtk.Text{getSetItemName(selected_superitem), w = 1, halign = "center", textalign = "center", bmargin = 20, fontscale = 1.3, wrap = "wrap_normal"}
   item_info = ""
 
@@ -431,6 +444,10 @@ function populateSuperitemWindow(selected_superitem, selected_superitem_params)
   item_info_content:add(item_info_text)
   item_info_window:add(item_info_content)
   item_info_window:open{halign = "center", valign = "center"}
+
+  item_info_content_height = item_info_content:calc("h")
+  
+  item_info_window:attr("h", item_info_content_height)
 end
 
 
@@ -572,11 +589,11 @@ function setResetItemSelectionSet(set_reset)
 
   if set then
     -- save selected item selection set to slot 10
-    reaper.Main_OnCommand(41238, 0)
+    reaper.Main_OnCommand(41238, _api_command_flag)
 
   elseif reset then
     -- reset item selection from selection set slot 10
-    reaper.Main_OnCommand(41248, 0)
+    reaper.Main_OnCommand(41248, _api_command_flag)
   end
 end
 
@@ -731,7 +748,7 @@ function superitemSelectionIsInvalid(selected_item_count, action)
     end
   end
   
-  recursive_superitem_is_being_glued = recursiveContainerIsBeingGlued(superitems, restored_items) == true
+  recursive_superitem_is_being_glued = recursiveSuperitemIsBeingGlued(superitems, restored_items) == true
 
   if recursive_superitem_is_being_glued then return true end
 
@@ -780,7 +797,7 @@ function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
 end
 
 
-function recursiveContainerIsBeingGlued(superitems, restored_items)
+function recursiveSuperitemIsBeingGlued(superitems, restored_items)
   local i, this_superitem, this_superitem_instance_pool_id, j, this_restored_item, this_restored_item_parent_pool_id, this_restored_item_is_from_same_pool_as_selected_superitem
 
   for i = 1, #superitems do
@@ -860,7 +877,7 @@ end
 
 
 function deselectAllItems()
-  reaper.Main_OnCommand(40289, 0)
+  reaper.Main_OnCommand(40289, _api_command_flag)
 end
 
 
@@ -907,7 +924,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   end
 
   selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
-  superitem = glueSelectedItemsIntoContainer()
+  superitem = glueSelectedItemsIntoSuperitem()
 
   handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, earliest_item_delta_to_superitem_position, selected_instances_pool_ids, sizing_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
 
@@ -1049,11 +1066,11 @@ function setResetGlueTimeSelection(sizing_params, set_or_reset)
   reset = set_or_reset == "reset"
 
   if set then
-    reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, 0)
+    reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, _api_command_flag)
     reaper.GetSet_LoopTimeRange(true, false, sizing_params.position, sizing_params.end_point, false)
 
   elseif reset then
-    reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, 0)
+    reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, _api_command_flag)
   end
 end
 
@@ -1367,7 +1384,7 @@ end
 
 
 function renderFxToItem()
-  reaper.Main_OnCommand(40209, 0)
+  reaper.Main_OnCommand(40209, _api_command_flag)
 end
 
 
@@ -1465,7 +1482,7 @@ function cropItemToSizingParams(restored_item, sizing_item_params, active_track)
 end
 
 
-function glueSelectedItemsIntoContainer()
+function glueSelectedItemsIntoSuperitem()
   local superitem
 
   glueSelectedItemsToTimeSelection()
@@ -1477,7 +1494,7 @@ end
 
 
 function glueSelectedItemsToTimeSelection()
-  reaper.Main_OnCommand(41588, 0)
+  reaper.Main_OnCommand(41588, _api_command_flag)
 end
 
 
@@ -1534,7 +1551,11 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, earlie
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   pool_parent_params = getSetItemParams(superitem)
 
-  setGluedContainerName(superitem, superitem_init_name, true)
+  if not this_is_reglue then
+    setSuperitemColor()
+  end
+
+  setSuperitemName(superitem, superitem_init_name, true)
   addRemoveItemImage(superitem, "superitem")
   storeRetrieveSuperitemParams(pool_id, _postglue_action_step, superitem)
   storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, pool_id)
@@ -1543,7 +1564,21 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, earlie
 end
 
 
-function setGluedContainerName(item, item_name_ending)
+function setSuperitemColor()
+  local global_option_toggle_new_superglue_random_color = reaper.GetExtState(_global_options_section, _global_option_toggle_new_superglue_random_color_key)
+
+  if global_option_toggle_new_superglue_random_color == "true" then
+    setItemToRandomColor()
+  end
+end
+
+
+function setItemToRandomColor()
+  reaper.Main_OnCommand(40706, _api_command_flag)
+end
+
+
+function setSuperitemName(item, item_name_ending)
   local take, new_item_name
 
   take = reaper.GetActiveTake(item)
@@ -1728,7 +1763,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   superitem_params = getSetItemParams(superitem)
   superitem_params.updated_src = getSetItemAudioSrc(superitem)
   superitem_params.pool_id = restored_items_pool_id
-  superitem = restoreContainerState(superitem, superitem_params)
+  superitem = restoreSuperitemState(superitem, superitem_params)
 
   setRegluePositionDeltas(superitem_params, superitem_last_glue_params)
   adjustPostGlueTakeEnvelopes(superitem)
@@ -1792,7 +1827,7 @@ function getSetItemAudioSrc(item, src)
 end
 
 
-function restoreContainerState(superitem, superitem_params)
+function restoreSuperitemState(superitem, superitem_params)
   local superitem_preglue_state_key_label, retval, superitem_last_glue_state, active_take
 
   superitem_preglue_state_key_label = _pool_key_prefix .. superitem_params.pool_id .. _superitem_preglue_state_suffix
@@ -1873,7 +1908,7 @@ function editAncestors(pool_id, superitem, descendant_nesting_depth_of_active_pa
     retval, parent_pool_ids = serpent.load(parent_pool_ids)
 
     if #parent_pool_ids > 0 then
-      reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, 0)
+      reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, _api_command_flag)
 
       for i = 1, #parent_pool_ids do
         this_parent_pool_id = parent_pool_ids[i]
@@ -1886,7 +1921,7 @@ function editAncestors(pool_id, superitem, descendant_nesting_depth_of_active_pa
         end
       end
 
-      reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, 0)
+      reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, _api_command_flag)
     end
   end
 end
@@ -2160,7 +2195,7 @@ end
 
 
 function deleteActiveTakeFromItems()
-  reaper.Main_OnCommand(40129, 0)
+  reaper.Main_OnCommand(40129, _api_command_flag)
 end
 
 
@@ -2548,7 +2583,7 @@ end
 
 
 function scrollToSelectedItem()
-  reaper.Main_OnCommand(_scroll_action_id, 0)
+  reaper.Main_OnCommand(_scroll_action_id, _api_command_flag)
 end
 
 
