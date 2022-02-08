@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="48ddf335e4d2f8066184550ff9f1de5fe4b06fd8">
+<index version="1" name="MonkeyBars-ReaScripts" commit="bd1b7bfef92f2234fcf9bc2fa82d93fd6545f376">
   <category name="Superglue">
-    <reapack name="MB_Superglue - Change color of all superglued container items in project.lua" type="script" desc="MB_Superglue - Change color of all superglued container items in project">
+    <reapack name="MB_Superglue - Change color of all Superitems in project.lua" type="script" desc="MB_Superglue - Change color of all Superitems in project">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -12,57 +12,73 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.69" author="MonkeyBars" time="2022-01-22T04:44:56Z">
+      <version name="1.69" author="MonkeyBars" time="2022-02-08T04:33:04Z">
         <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/a612482084881c61097ca5fb7dd4c176e9250259/Superglue/MB_Superglue%20-%20Change%20color%20of%20all%20superglued%20container%20items%20in%20project.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Change%20color%20of%20all%20Superitems%20in%20project.lua</source>
       </version>
-    </reapack>
-    <reapack name="MB_Superglue - Display selected superglued container item info.lua" type="script" desc="MB_Superglue - Display selected superglued container item info">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
-}
-]]></description>
-        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
-      </metadata>
-      <version name="1.69" author="MonkeyBars" time="2022-01-22T03:50:10Z">
-        <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/fce67f83b8ce79948db3b3dea0fa1c82683eddab/Superglue/MB_Superglue%20-%20Display%20selected%20superglued%20container%20item%20info.lua</source>
-      </version>
-    </reapack>
-    <reapack name="MB_Superglue - Explode superglued container back into original items irreversibly.lua" type="script" desc="MB_Superglue - Explode superglued items back to original state irreversibly">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
-}
-]]></description>
-        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
-      </metadata>
-      <version name="1.53" author="MonkeyBars" time="2022-01-22T00:52:04Z">
-        <changelog><![CDATA[initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/8e96abcfb96cb15f8384d473c4ed7aa8d5bbad40/Superglue/MB_Superglue%20-%20Explode%20superglued%20container%20back%20into%20original%20items%20irreversibly.lua</source>
-      </version>
-    </reapack>
-    <reapack name="MB_Superglue - Glue selected item(s) reversibly into pooled container item.lua" type="script" desc="MB_Superglue - Glue selected item(s) reversibly into pooled container item, ignoring time selection">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
-}
-]]></description>
-        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
-      </metadata>
-      <version name="1.55" author="MonkeyBars" time="2022-02-03T05:30:19Z">
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
         <changelog><![CDATA[Change script name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/5b34577d453cee6bbb730fc9f098378e414288da/Superglue/MB_Superglue%20-%20Glue%20selected%20item(s)%20reversibly%20into%20pooled%20container%20item.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Change%20color%20of%20all%20Superitems%20in%20project.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB_Superglue - Display selected Superitem info.lua" type="script" desc="MB_Superglue - Display selected Superitem info">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.69" author="MonkeyBars" time="2022-02-08T04:33:04Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Display%20selected%20Superitem%20info.lua</source>
+      </version>
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
+        <changelog><![CDATA[Change script name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Display%20selected%20Superitem%20info.lua</source>
+      </version>
+      <version name="1.759" author="MonkeyBars" time="2022-02-08T05:24:21Z">
+        <changelog><![CDATA[Change function name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/2aaf6bcbcea1cf271faf1740d8befe45591d536c/Superglue/MB_Superglue%20-%20Display%20selected%20Superitem%20info.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB_Superglue - Edit selected Superitem reversibly.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.70" author="MonkeyBars" time="2022-02-08T04:33:04Z">
+        <changelog><![CDATA[Refresh ReaPack]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Edit%20selected%20Superitem%20reversibly.lua</source>
+      </version>
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
+        <changelog><![CDATA[Change nomenclature]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Edit%20selected%20Superitem%20reversibly.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB_Superglue - Glue selected item(s) reversibly into pooling Superitem.lua" type="script" desc="MB_Superglue - Glue selected item(s) reversibly into pooled container item, ignoring time selection">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.55" author="MonkeyBars" time="2022-02-08T04:33:04Z">
+        <changelog><![CDATA[Change script name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Glue%20selected%20item(s)%20reversibly%20into%20pooling%20Superitem.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Open script options window.lua" type="script" desc="MB_Superglue - Open script options window">
@@ -81,7 +97,7 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/88e7ad53b33a43c32036092a88238dca357b5c20/Superglue/MB_Superglue%20-%20Open%20script%20options%20window.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Remove superglued container item from current Pool.lua" type="script" desc="MB_Superglue - DePool superglued container item">
+    <reapack name="MB_Superglue - Remove Superitem from current Pool.lua" type="script" desc="MB_Superglue - DePool superglued container item">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -92,12 +108,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.55" author="MonkeyBars" time="2022-01-19T00:59:47Z">
+      <version name="1.55" author="MonkeyBars" time="2022-02-08T04:33:04Z">
         <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/0c12f894d59566ad29fbe806f01724344422eb34/Superglue/MB_Superglue%20-%20Remove%20superglued%20container%20item%20from%20current%20Pool.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Remove%20Superitem%20from%20current%20Pool.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Toggle option, Detect Unglue sizing region deletion.lua" type="script" desc="MB_Superglue - Toggle option, item background images">
+    <reapack name="MB_Superglue - Toggle option, Detect Edit sizing region deletion.lua" type="script" desc="MB_Superglue - Toggle option, item background images">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -108,16 +124,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.60" author="MonkeyBars" time="2022-01-20T16:40:28Z">
-        <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/0e735320992556a24bd4cc22d0457c4b63921386/Superglue/MB_Superglue%20-%20Toggle%20option,%20Detect%20Unglue%20sizing%20region%20deletion.lua</source>
-      </version>
-      <version name="1.61" author="MonkeyBars" time="2022-01-20T21:53:10Z">
+      <version name="1.61" author="MonkeyBars" time="2022-02-08T04:33:04Z">
         <changelog><![CDATA[String name change]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b220ffc7df9868a00852e4defc0c78260dfa20fe/Superglue/MB_Superglue%20-%20Toggle%20option,%20Detect%20Unglue%20sizing%20region%20deletion.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Toggle%20option,%20Detect%20Edit%20sizing%20region%20deletion.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Toggle option, Expand to time selection.lua" type="script" desc="MB_Superglue - Toggle option, item background images">
+    <reapack name="MB_Superglue - Toggle option, Expand Glue to time selection.lua" type="script" desc="MB_Superglue - Toggle option, item background images">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -128,9 +140,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.62" author="MonkeyBars" time="2022-02-03T05:30:19Z">
+      <version name="1.62" author="MonkeyBars" time="2022-02-08T04:33:04Z">
         <changelog><![CDATA[ReaPack refresh]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/5b34577d453cee6bbb730fc9f098378e414288da/Superglue/MB_Superglue%20-%20Toggle%20option,%20Expand%20to%20time%20selection.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Toggle%20option,%20Expand%20Glue%20to%20time%20selection.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Toggle option, item background images.lua" type="script" desc="MB_Superglue - Toggle option, item background images">
@@ -157,7 +169,7 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/047fa08f0b9aee350fbaa9ff3b19be693eb3ae6e/Superglue/MB_Superglue%20-%20Toggle%20option,%20item%20background%20images.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Unglue superglued container item reversibly.lua" type="script" desc="MB_Superglue - Unglue superglued container item">
+    <reapack name="MB_Superglue - Toggle option, Remove Superitem siblings from pool on Glue.lua" type="script" desc="MB_Superglue - Toggle option, item background images">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -168,16 +180,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.53" author="MonkeyBars" time="2022-01-20T21:53:10Z">
-        <changelog><![CDATA[branding update]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b220ffc7df9868a00852e4defc0c78260dfa20fe/Superglue/MB_Superglue%20-%20Unglue%20superglued%20container%20item%20reversibly.lua</source>
-      </version>
-      <version name="1.70" author="MonkeyBars" time="2022-01-22T16:55:11Z">
-        <changelog><![CDATA[Refresh ReaPack]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/09bfa44d4c68d067454b87505039a35542a21f22/Superglue/MB_Superglue%20-%20Unglue%20superglued%20container%20item%20reversibly.lua</source>
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
+        <changelog><![CDATA[Inital upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Toggle%20option,%20Remove%20Superitem%20siblings%20from%20pool%20on%20Glue.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue Smart Action - Glue or Explode selected item(s) reversibly by context.lua" type="script" desc="MB_Superglue Smart Action - Glue or Unglue selected item(s) reversibly by context, ignoring time selection">
+    <reapack name="MB_Superglue - Unglue selected Superitem back to contained items irreversibly.lua" type="script" desc="MB_Superglue - Unglue selected Superitem back to contained items irreversibly">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -188,12 +196,16 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.55" author="MonkeyBars" time="2022-02-03T05:30:19Z">
-        <changelog><![CDATA[Change script name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/5b34577d453cee6bbb730fc9f098378e414288da/Superglue/MB_Superglue%20Smart%20Action%20-%20Glue%20or%20Explode%20selected%20item(s)%20reversibly%20by%20context.lua</source>
+      <version name="1.53" author="MonkeyBars" time="2022-02-08T04:33:04Z">
+        <changelog><![CDATA[initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Unglue%20selected%20Superitem%20back%20to%20contained%20items%20irreversibly.lua</source>
+      </version>
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
+        <changelog><![CDATA[Change nomenclature]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Unglue%20selected%20Superitem%20back%20to%20contained%20items%20irreversibly.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue Smart Action - Glue or Unglue selected item(s) reversibly by context.lua" type="script" desc="MB_Superglue Smart Action - Reversibly Glue or Unglue selected item(s) by context, ignoring time selection">
+    <reapack name="MB_Superglue Smart Action - Glue or Edit selected item(s) reversibly by context.lua" type="script" desc="MB_Superglue Smart Action - Glue or Edit selected item(s) reversibly by context">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -204,9 +216,33 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.54" author="MonkeyBars" time="2022-02-03T05:30:19Z">
+      <version name="1.54" author="MonkeyBars" time="2022-02-08T04:33:04Z">
         <changelog><![CDATA[Change script name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/5b34577d453cee6bbb730fc9f098378e414288da/Superglue/MB_Superglue%20Smart%20Action%20-%20Glue%20or%20Unglue%20selected%20item(s)%20reversibly%20by%20context.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20Smart%20Action%20-%20Glue%20or%20Edit%20selected%20item(s)%20reversibly%20by%20context.lua</source>
+      </version>
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
+        <changelog><![CDATA[Change nomenclature]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20Smart%20Action%20-%20Glue%20or%20Edit%20selected%20item(s)%20reversibly%20by%20context.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB_Superglue Smart Action - Glue or Unglue selected item(s) by context.lua" type="script" desc="MB_Superglue Smart Action - Glue or Unglue selected item(s) by context">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.55" author="MonkeyBars" time="2022-02-08T04:33:04Z">
+        <changelog><![CDATA[Change script name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20Smart%20Action%20-%20Glue%20or%20Unglue%20selected%20item(s)%20by%20context.lua</source>
+      </version>
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
+        <changelog><![CDATA[Change nomenclature]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20Smart%20Action%20-%20Glue%20or%20Unglue%20selected%20item(s)%20by%20context.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue-Utils.lua" type="script" desc="MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality">
@@ -492,6 +528,30 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/48ddf335e4d2f8066184550ff9f1de5fe4b06fd8/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/48ddf335e4d2f8066184550ff9f1de5fe4b06fd8/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superglued.png">https://github.com/MonkeyBars3k/ReaScripts/raw/48ddf335e4d2f8066184550ff9f1de5fe4b06fd8/Superglue/sg-bg-superglued.png</source>
+      </version>
+      <version name="1.758" author="MonkeyBars" time="2022-02-08T04:33:04Z">
+        <changelog><![CDATA[Change action names back: Unglue > Edit, Explode > Unglue (https://github.com/MonkeyBars3k/ReaScripts/issues/177)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.759" author="MonkeyBars" time="2022-02-08T05:24:21Z">
+        <changelog><![CDATA[Change action names back: Unglue > Edit, Explode > Unglue (https://github.com/MonkeyBars3k/ReaScripts/issues/177)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/2aaf6bcbcea1cf271faf1740d8befe45591d536c/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/2aaf6bcbcea1cf271faf1740d8befe45591d536c/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/2aaf6bcbcea1cf271faf1740d8befe45591d536c/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/2aaf6bcbcea1cf271faf1740d8befe45591d536c/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/2aaf6bcbcea1cf271faf1740d8befe45591d536c/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.760" author="MonkeyBars" time="2022-02-08T05:33:18Z">
+        <changelog><![CDATA[Superitem info window: Add number of contained items (https://github.com/MonkeyBars3k/ReaScripts/issues/187)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/bd1b7bfef92f2234fcf9bc2fa82d93fd6545f376/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/bd1b7bfef92f2234fcf9bc2fa82d93fd6545f376/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/bd1b7bfef92f2234fcf9bc2fa82d93fd6545f376/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/bd1b7bfef92f2234fcf9bc2fa82d93fd6545f376/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/bd1b7bfef92f2234fcf9bc2fa82d93fd6545f376/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
