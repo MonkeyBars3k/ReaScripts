@@ -52,10 +52,10 @@ To change the contents of your Superitem, the **Edit** script opens the created 
 - Superglue uses **item selection set slot 10** and **SWS time selection set slot 5**.
 
 ### Glossary
-- **Ancestor**: A Superitem in which another Superitem or other Superitems are nested. Parents, grandparents, etc. are ancestors
+- **Ancestor**: A Superitem in which another Superitem or other Superitems are nested – parents, grandparents, etc. are ancestors.
 - **Child**: A Superitem which is nested (glued) inside another Superitem (its parent)
-- **Contained items**: Items whose data ("state chunks" in ReaScript parlance) are referenced in a Superitem's data.
-- **Descendant**: A Superitem nested one or more levels inside another Superitem. Children, grandchildren, etc. are descendants
+- **Contained items**: Items whose data ("state chunks" in ReaScript parlance) are referenced in a Superitem's data
+- **Descendant**: A Superitem nested one or more levels inside another Superitem – children, grandchildren, etc. are descendants.
 - **Edit**: Restore a Superitem into its "contained" items reversibly/nondestructively, maintaining the ability to reglue them and retain Superitem properties and update its pool siblings
 - **Instance**: Any Superitem from a given Pool
 - **Nest**: Glue a Superitem into or inside another Superitem
@@ -63,9 +63,9 @@ To change the contents of your Superitem, the **Edit** script opens the created 
 - **Pool**: A group of siblings that update each other if Edited
 - **Reglue**: Run a Superglue Glue script on items restored from an instance (in Edit mode)
 - **Restored items**: Items which reappear after running an Edit or Unglue script on a Superitem
-- **Sibling**: A sibling Superitem is a pooled copy of a Superitem. Edit any sibling, and all its sibling and ancestor Superitems get updated as well
+- **Sibling**: Pooled copy of a Superitem – Edit any sibling, and all its sibling and ancestor Superitems get updated as well.
 - **Smart Action**: Superglue script that tries to guess the user's intention from the item selection – sometimes you'll be prompted what action or warned that none can be determined automagically.
-- **Superitem**: The resulting "container item" after Supergluing. Really it's just a normal Reaper item, but Superglue stores all the data about the items that were glued into it, etc.
+- **Superitem**: The resulting "container item" after Supergluing – really it's just a normal Reaper item, but Superglue stores all the data about the items that were glued into it, etc.
 - **Unglue**: Restore a Superitem into its "contained" items irreversibly/destructively, deleting any connection to their pool and any of the former Superitem's properties
  
 ### History
