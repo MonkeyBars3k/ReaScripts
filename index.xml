@@ -625,7 +625,7 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Superglue has its own script options that can be selected by the user. Just run the script to open the options window and try them out. Scripts are supplied to toggle Boolean (on/off) options.\par}
 {\pard \ql \f0 \sa0 \li720 \fi-360 \endash \tx360\tab You can toggle expansion to time selection in the options window.\sa180\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Tips\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the pooled audio item feature:} Feel free to Superglue a single audio item and make copies of that! Since every Superitem you copy is a pooled audio item, all you need to ensure all the copies stay updated is Edit any one of the pooled Superitems and reglue.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the pooled audio item feature:} Feel free to Superglue a {\i single audio item} and make copies of that! Since every Superitem you copy is a pooled audio item, all you need to ensure all the copies stay updated is to Edit any one of the pooled Superitems and Reglue.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the container feature:} The most basic application of Superglue is probably just treating your Superitem as a container item that can be edited easily later, i.e. a more convenient way to group items.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b Reaper v6.43} or newer\par}
@@ -642,6 +642,22 @@ this FR
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab To create {\b MIDI Superitems}, the script uses "Apply track FX as new take" on each item to get an audio take. When you Edit, the audio take is removed and just the original MIDI take is restored to active. {\i Currently only MIDI on virtual instrument tracks is supported.}\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab When using copies of Superitems, you can't Superglue a copy of itself inside itself, as that would cause an {\b infinite recursion} and probably implode the universe in a Big Crunch type event.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Superglue uses {\b item selection set slot 10} and {\b SWS time selection set slot 5}.\sa180\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Glossary\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Ancestor}: A Superitem in which another Superitem or other Superitems are nested. Parents, grandparents, etc. are ancestors\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Child}: A Superitem which is nested (glued) inside another Superitem (its parent)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Contained items}: Items whose data ("state chunks" in ReaScript parlance) are referenced in a Superitem's data.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Descendant}: A Superitem nested one or more levels inside another Superitem. Children, grandchildren, etc. are descendants\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Edit}: Restore a Superitem into its "contained" items reversibly/nondestructively, maintaining the ability to reglue them and retain Superitem properties and update its pool siblings\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Instance}: Any Superitem from a given Pool\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Nest}: Glue a Superitem into or inside another Superitem\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Parent}: The Superitem in which another Superitem is directly nested\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Pool}: A group of siblings that update each other if Edited\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Reglue}: Run a Superglue Glue script on items restored from an instance (in Edit mode)\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Restored items}: Items which reappear after running an Edit or Unglue script on a Superitem\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Sibling}: A sibling Superitem is a pooled copy of a Superitem. Edit any sibling, and all its sibling and ancestor Superitems get updated as well\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Smart Action}: Superglue script that tries to guess the user's intention from the item selection \u8211- sometimes you'll be prompted what action or warned that none can be determined automagically.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Superitem}: The resulting "container item" after Supergluing. Really it's just a normal Reaper item, but Superglue stores all the data about the items that were glued into it, etc.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Unglue}: Restore a Superitem into its "contained" items irreversibly/destructively, deleting any connection to their pool and any of the former Superitem's properties\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 History\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 matthewjumpsoffbuildings created the powerful, excellent "Glue Groups" scripts: https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window), bugfixes, and additional features.\par}
