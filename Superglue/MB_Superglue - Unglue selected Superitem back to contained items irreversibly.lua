@@ -1,7 +1,7 @@
--- @description MB_Superglue - Explode superglued items back to original state irreversibly
+-- @description MB_Superglue - Unglue selected Superitem back to contained items irreversibly
 -- @author MonkeyBars
--- @version 1.53
--- @changelog initial upload
+-- @version 1.758
+-- @changelog Change nomenclature
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts

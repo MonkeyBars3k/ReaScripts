@@ -1,7 +1,7 @@
--- @description MB_Superglue - Change color of all superglued container items in project
+-- @description MB_Superglue - Change color of all Superitems in project
 -- @author MonkeyBars
--- @version 1.69
--- @changelog Initial upload
+-- @version 1.758
+-- @changelog Change script name
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts

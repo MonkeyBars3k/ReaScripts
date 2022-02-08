@@ -1,7 +1,7 @@
--- @description MB_Superglue Smart Action - Glue or Unglue selected item(s) reversibly by context, ignoring time selection
+-- @description MB_Superglue Smart Action - Glue or Unglue selected item(s) by context
 -- @author MonkeyBars
--- @version 1.55
--- @changelog Change script name
+-- @version 1.758
+-- @changelog Change nomenclature
 -- @provides [main] .
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
