@@ -626,7 +626,8 @@
 {\pard \ql \f0 \sa0 \li720 \fi-360 \endash \tx360\tab You can toggle expansion to time selection in the options window.\sa180\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Tips\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the pooled audio item feature:} Feel free to Superglue a {\i single audio item} and make copies of that! Since every Superitem you copy is a pooled audio item, all you need to ensure all the copies stay updated is to Edit any one of the pooled Superitems and Reglue.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the container feature:} The most basic application of Superglue is probably just treating your Superitem as a container item that can be edited easily later, i.e. a more convenient way to group items.\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Using just the container feature:} The most basic application of Superglue is probably just treating your Superitem as a container item that can be edited easily later, i.e. a more convenient way to group items.\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Check out all the scripts that get installed when you sync the ReaPack repo. There are some very useful utilities, as well as the options window which enables numerous configurations for various use cases.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Notes\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b Reaper v6.43} or newer\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension} and {\b js_ReaScript_API Plugin Extension}\par}
