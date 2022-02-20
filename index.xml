@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="8c57efc7971f5a89f7b20fcef2060a579968e406">
+<index version="1" name="MonkeyBars-ReaScripts" commit="926df556d7fa0cbb8c9746da74739285b6c9ab99">
   <category name="Superglue">
-    <reapack name="MB_Superglue - Display selected Superitem info.lua" type="script" desc="MB_Superglue - Display selected Superitem info">
+    <reapack name="MB_Superglue - Display selected Superglue item info.lua" type="script" desc="MB_Superglue - Display selected Superglue item info">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -12,17 +12,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.69" author="MonkeyBars" time="2022-02-08T04:33:04Z">
-        <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b35559d8d885345911b9c2df45a127dd27abf244/Superglue/MB_Superglue%20-%20Display%20selected%20Superitem%20info.lua</source>
-      </version>
-      <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
-        <changelog><![CDATA[Change script name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Display%20selected%20Superitem%20info.lua</source>
-      </version>
-      <version name="1.759" author="MonkeyBars" time="2022-02-08T05:24:21Z">
-        <changelog><![CDATA[Change function name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/2aaf6bcbcea1cf271faf1740d8befe45591d536c/Superglue/MB_Superglue%20-%20Display%20selected%20Superitem%20info.lua</source>
+      <version name="1.767" author="MonkeyBars" time="2022-02-20T03:39:13Z">
+        <changelog><![CDATA[Change function & script name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/926df556d7fa0cbb8c9746da74739285b6c9ab99/Superglue/MB_Superglue%20-%20Display%20selected%20Superglue%20item%20info.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Edit selected Superitem reversibly.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
@@ -604,6 +596,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.767" author="MonkeyBars" time="2022-02-20T03:39:13Z">
+        <changelog><![CDATA[Naming cleanup Issue 210 (https://github.com/MonkeyBars3k/ReaScripts/issues/210)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/926df556d7fa0cbb8c9746da74739285b6c9ab99/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/926df556d7fa0cbb8c9746da74739285b6c9ab99/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/926df556d7fa0cbb8c9746da74739285b6c9ab99/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/926df556d7fa0cbb8c9746da74739285b6c9ab99/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/926df556d7fa0cbb8c9746da74739285b6c9ab99/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
