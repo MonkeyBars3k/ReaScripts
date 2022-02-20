@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.765
--- @changelog Edit after auto DePool (option enabled): Restored items all at sizing region position (https://github.com/MonkeyBars3k/ReaScripts/issues/199)
+-- @version 1.766
+-- @changelog Reglue: Enable child item info (https://github.com/MonkeyBars3k/ReaScripts/issues/210); Sizing region doesn't get deleted after autoDePool (https://github.com/MonkeyBars3k/ReaScripts/issues/208)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -21,7 +21,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -395,43 +395,68 @@ function openSuperitemInfoWindow()
     return
   end
 
-  selected_superitem = reaper.GetSelectedMediaItem(_api_current_project, 0)
-  selected_superitem_instance_pool_id = storeRetrieveItemData(selected_superitem, _instance_pool_id_key_suffix)
+  selected_item = reaper.GetSelectedMediaItem(_api_current_project, 0)
 
-  if not selected_superitem_instance_pool_id or selected_superitem_instance_pool_id == "" then
-    reaper.ShowMessageBox("Select a Superitem and try again.", "MB_Superglue: The item selected is not a Superitem.", _msg_type_ok)
+  handleSuperitemInfoWindow(selected_item)
+end
+
+
+function handleSuperitemInfoWindow(selected_item)
+  local selected_superitem_instance_pool_id, this_is_superitem, selected_item_parent_pool_id, this_is_child_item, selected_item_params, i
+
+  selected_superitem_instance_pool_id = storeRetrieveItemData(selected_item, _instance_pool_id_key_suffix)
+  this_is_superitem = selected_superitem_instance_pool_id and selected_superitem_instance_pool_id ~= ""
+  selected_item_parent_pool_id = storeRetrieveItemData(selected_item, _parent_pool_id_key_suffix)
+  this_is_child_item = selected_item_parent_pool_id and selected_item_parent_pool_id ~= ""
+
+  if not this_is_superitem and not this_is_child_item then
+    reaper.ShowMessageBox("Select a Superitem or contained item and try again.", "MB_Superglue: The item selected is not associated with Superglue.", _msg_type_ok)
 
     return
   end
 
-  handleSuperitemInfoWindow(selected_superitem, selected_superitem_instance_pool_id)
+  if this_is_superitem then
+    selected_item_params = prepareSuperitemInfo(selected_superitem_instance_pool_id, selected_item_parent_pool_id)
+
+  elseif this_is_child_item then
+    selected_item_params = {
+      {
+        "Parent Pool ID: ",
+        selected_item_parent_pool_id
+      }
+    }
+  end
+
+  for i = 1, #selected_item_params do
+
+    if not selected_item_params[i][2] or selected_item_params[i][2] == "" then
+      selected_item_params[i][2] = "none"
+    end
+  end
+
+  populateSuperitemWindow(selected_item, selected_item_params)
 end
 
 
-function handleSuperitemInfoWindow(selected_superitem, selected_superitem_instance_pool_id)
-  local selected_superitem_parent_pool_id, selected_superitem_descendant_pool_ids_key, retval, selected_superitem_descendant_pool_ids, selected_superitem_descendant_pool_ids_list, stored_item_state_chunks, selected_superitem_contained_items_count, selected_superitem_params
+function prepareSuperitemInfo(selected_superitem_instance_pool_id, selected_item_parent_pool_id)
+  local selected_superitem_descendant_pool_ids_key, retval, selected_superitem_descendant_pool_ids, stored_item_state_chunks, selected_superitem_descendant_pool_ids_list, selected_superitem_contained_items_count, selected_item_params
 
-  selected_superitem_parent_pool_id = storeRetrieveItemData(selected_superitem, _parent_pool_id_key_suffix)
   selected_superitem_descendant_pool_ids_key = _pool_key_prefix .. selected_superitem_instance_pool_id .. _descendant_pool_ids_key_suffix
   retval, selected_superitem_descendant_pool_ids = storeRetrieveProjectData(selected_superitem_descendant_pool_ids_key)
   retval, selected_superitem_descendant_pool_ids = serpent.load(selected_superitem_descendant_pool_ids)
-  selected_superitem_descendant_pool_ids_list = stringifyArray(selected_superitem_descendant_pool_ids)
   retval, stored_item_state_chunks = storeRetrieveProjectData(_pool_key_prefix .. selected_superitem_instance_pool_id .. _pool_contained_item_states_key_suffix)
   retval, stored_item_state_chunks = serpent.load(stored_item_state_chunks)
+  selected_superitem_descendant_pool_ids_list = stringifyArray(selected_superitem_descendant_pool_ids)
   selected_superitem_contained_items_count = getTableSize(stored_item_state_chunks)
-  
-  if not selected_superitem_parent_pool_id or selected_superitem_parent_pool_id == "" then
-    selected_superitem_parent_pool_id = "none"
-  end
 
-  selected_superitem_params = {
+  selected_item_params = {
     {
       "Pool ID: ",
       selected_superitem_instance_pool_id
     },
     {
       "Parent Pool ID: ",
-      selected_superitem_parent_pool_id
+      selected_item_parent_pool_id
     },
     {
       "Descendant Pool IDs: ",
@@ -443,21 +468,21 @@ function handleSuperitemInfoWindow(selected_superitem, selected_superitem_instan
     }
   }
 
-  populateSuperitemWindow(selected_superitem, selected_superitem_params)
+  return selected_item_params
 end
 
 
-function populateSuperitemWindow(selected_superitem, selected_superitem_params)
+function populateSuperitemWindow(selected_item, selected_item_params)
   local item_info_window, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height
 
   item_info_window = rtk.Window{halign = "center", margin = 20}
   item_info_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
-  item_info_title = rtk.Heading{"MB_Superglue Superitem Info", w = 1, margin = 35, halign = "center"}
-  item_info_name = rtk.Text{getSetItemName(selected_superitem), w = 1, halign = "center", textalign = "center", bmargin = 20, fontscale = 1.3, wrap = "wrap_normal"}
+  item_info_title = rtk.Heading{"MB_Superglue Item Info", w = 1, margin = 35, halign = "center"}
+  item_info_name = rtk.Text{getSetItemName(selected_item), w = 1, halign = "center", textalign = "center", bmargin = 20, fontscale = 1.3, wrap = "wrap_normal"}
   item_info = ""
 
-  for i = 1, #selected_superitem_params do
-    item_info = item_info .. selected_superitem_params[i][1] .. selected_superitem_params[i][2] .. "\n"
+  for i = 1, #selected_item_params do
+    item_info = item_info .. selected_item_params[i][1] .. selected_item_params[i][2] .. "\n"
   end
   
   item_info_text = rtk.Text{item_info, wrap = "wrap_normal", spacing = 13}
@@ -1072,11 +1097,11 @@ function setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, 
   obey_time_selection = reaper.GetExtState(_global_options_section, _global_option_toggle_expand_to_time_selection_key)
   user_selected_instance_is_being_reglued = not this_is_parent_update
 
-  if this_is_parent_update then
-    return setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
-
-  elseif user_selected_instance_is_being_reglued then
+  if user_selected_instance_is_being_reglued then
     return setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, pool_id, obey_time_selection)
+
+  elseif this_is_parent_update then
+    return setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
   end
 end
 
@@ -2101,10 +2126,13 @@ function handleEditAncestors(parent_instance_params, parent_pool_id, descendant_
 end
 
 
-function restoreStoredItems(pool_id, active_track, superitem, superitem_preedit_params, this_is_parent_update, this_is_unglue)
-  local retval, stored_item_states_table, pool_item_states_key_label, stored_item_states, restored_items, superitem_postglue_params, item_guid, stored_item_state, restored_instances_near_project_start, restored_item, restored_instance_pool_id, this_instance_params
+function restoreStoredItems(pool_id, active_track, superitem, superitem_preedit_params, this_is_parent_update, action)
+  local this_is_unglue, this_is_depool, retval, stored_item_states_table, pool_item_states_key_label, stored_item_states, restored_items, superitem_postglue_params, item_guid, stored_item_state, restored_instances_near_project_start, restored_item, restored_instance_pool_id, this_instance_params
 
-  if this_is_unglue and _preglue_restored_item_states then
+  this_is_unglue = action == "Unglue"
+  this_is_depool = action == "DePool"
+
+  if (this_is_unglue or this_is_depool) and _preglue_restored_item_states then
     retval, stored_item_states_table = serpent.load(_preglue_restored_item_states)
 
   else
@@ -2121,7 +2149,7 @@ function restoreStoredItems(pool_id, active_track, superitem, superitem_preedit_
     if stored_item_state then
       -- ISN'T THIS OVERWRITING THE ARRAY? PROJECT START UPDATE SEEMS TO BE WORKING CORRECTLY THOUGH
       -- SHOULD "restored_instances_near_project_start" BE RENAMED TO "restored_instance_near_project_start"?
-      restored_instances_near_project_start, restored_item = handleRestoredItem(active_track, stored_item_state, superitem_preedit_params, superitem_postglue_params, this_is_parent_update, this_is_unglue)
+      restored_instances_near_project_start, restored_item = handleRestoredItem(active_track, stored_item_state, superitem_preedit_params, superitem_postglue_params, this_is_parent_update, action)
 
       table.insert(restored_items, restored_item)
     end
@@ -2145,23 +2173,29 @@ function retrieveStoredItemStates(item_state_chunks_string)
 end
 
 
-function handleRestoredItem(active_track, stored_item_state, superitem_preedit_params, superitem_postglue_params, this_is_parent_update, this_is_unglue)
-  local restored_item, restored_item_negative_position_delta, restored_instances_near_project_start, restored_instance_pool_id
+function handleRestoredItem(active_track, stored_item_state, superitem_preedit_params, superitem_postglue_params, this_is_parent_update, action)
+  local restored_item, restored_item_negative_position_delta, restored_instances_near_project_start, restored_instance_pool_id, this_is_first_edit_after_auto_depool
 
-  restored_item = restoreItem(active_track, stored_item_state, this_is_parent_update, this_is_unglue)
+  restored_item = restoreItem(active_track, stored_item_state, this_is_parent_update)
   restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, superitem_preedit_params, superitem_postglue_params, this_is_parent_update)
-
   restored_instances_near_project_start = {}
 
   reaper.SetMediaItemSelected(restored_item, true)
 
   restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
+  this_is_first_edit_after_auto_depool = not restored_instance_pool_id or restored_instance_pool_id == ""
 
-  if this_is_unglue then
+  if this_is_first_edit_after_auto_depool then
+    restored_instance_pool_id = superitem_preedit_params.instance_pool_id
+
+    storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, restored_instance_pool_id)
+  end
+
+  if action == "Unglue" then
     storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, "")
   end
 
-  handleRestoredItemImage(restored_item, restored_instance_pool_id, this_is_unglue)
+  handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
   if restored_item_negative_position_delta then
 
@@ -2171,6 +2205,7 @@ function handleRestoredItem(active_track, stored_item_state, superitem_preedit_p
         ["negative_position_delta"] = restored_item_negative_position_delta
       }
 
+    -- IS THIS CASE EVER POSSIBLE? TABLE IS DECLARED BLANK ABOVE
     elseif restored_instances_near_project_start[restored_instance_pool_id] then
       this_restored_instance_position_is_earlier_than_prev_sibling = restored_item_negative_position_delta < restored_instances_near_project_start[restored_instance_pool_id]
 
@@ -2213,7 +2248,7 @@ function handleInstanceNearProjectStart(superitem, instance_params)
 end
 
 
-function restoreItem(track, state, this_is_parent_update, this_is_unglue)
+function restoreItem(track, state, this_is_parent_update)
   local restored_item
 
   restored_item = reaper.AddMediaItemToTrack(track)
@@ -2307,17 +2342,17 @@ function shiftRestoredItemPositionSinceLastGlue(restored_item_position, superite
 end
 
 
-function handleRestoredItemImage(restored_item, restored_instance_pool_id, this_is_unglue)
+function handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
   local this_restored_item_is_not_instance = not restored_instance_pool_id or restored_instance_pool_id == ""
 
-  if this_is_unglue then
+  if this_restored_item_is_not_instance then
 
-    if this_restored_item_is_not_instance then
+    if action == "Unglue" then
       addRemoveItemImage(restored_item, false)
+    
+    else
+      addRemoveItemImage(restored_item, "restored")
     end
-
-  elseif this_restored_item_is_not_instance then
-    addRemoveItemImage(restored_item, "restored")
   end
 end
 
@@ -2697,7 +2732,7 @@ end
 
 
 function processEditOrUnglue(superitem, pool_id, action)
-  local superitem_preedit_params, active_track, this_is_unglue, superitem_preglue_state_key_suffix, superitem_state, restored_items, sizing_region_guid
+  local superitem_preedit_params, active_track, superitem_preglue_state_key_suffix, superitem_state, restored_items, sizing_region_guid
 
   superitem_preedit_params = getSetItemParams(superitem)
 
@@ -2705,17 +2740,14 @@ function processEditOrUnglue(superitem, pool_id, action)
 
   active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superitem_preedit_params.track_guid)
 
-  if action == "Unglue" or action == "DePool" then
-    this_is_unglue = true
-
-  elseif action == "Edit" then
+  if action == "Edit" then
     superitem_preglue_state_key_suffix = _pool_key_prefix .. pool_id .. _superitem_preglue_state_suffix
     superitem_state = getSetItemStateChunk(superitem)
 
     storeRetrieveProjectData(superitem_preglue_state_key_suffix, superitem_state)
   end
 
-  restored_items = restoreStoredItems(pool_id, active_track, superitem, superitem_preedit_params, nil, this_is_unglue)
+  restored_items = restoreStoredItems(pool_id, active_track, superitem, superitem_preedit_params, nil, action)
 
   if action == "Edit" then
     sizing_region_guid = createSizingRegionFromSuperitem(superitem, pool_id)
