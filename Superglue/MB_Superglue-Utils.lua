@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.766
--- @changelog Reglue: Enable child item info (https://github.com/MonkeyBars3k/ReaScripts/issues/210); Sizing region doesn't get deleted after autoDePool (https://github.com/MonkeyBars3k/ReaScripts/issues/208)
+-- @version 1.767
+-- @changelog Naming cleanup Issue 210 (https://github.com/MonkeyBars3k/ReaScripts/issues/210)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -382,7 +382,7 @@ function resetDePoolAllSiblingsWarning(ext_state_key)
 end
 
 
-function openSuperitemInfoWindow()
+function openItemInfoWindow()
   local selected_item_count, selected_superitem
 
   selected_item_count = reaper.CountSelectedMediaItems(_api_current_project)
@@ -397,11 +397,11 @@ function openSuperitemInfoWindow()
 
   selected_item = reaper.GetSelectedMediaItem(_api_current_project, 0)
 
-  handleSuperitemInfoWindow(selected_item)
+  handleItemInfoWindow(selected_item)
 end
 
 
-function handleSuperitemInfoWindow(selected_item)
+function handleItemInfoWindow(selected_item)
   local selected_superitem_instance_pool_id, this_is_superitem, selected_item_parent_pool_id, this_is_child_item, selected_item_params, i
 
   selected_superitem_instance_pool_id = storeRetrieveItemData(selected_item, _instance_pool_id_key_suffix)
@@ -434,7 +434,7 @@ function handleSuperitemInfoWindow(selected_item)
     end
   end
 
-  populateSuperitemWindow(selected_item, selected_item_params)
+  populateItemInfoWindow(selected_item, selected_item_params)
 end
 
 
@@ -472,7 +472,7 @@ function prepareSuperitemInfo(selected_superitem_instance_pool_id, selected_item
 end
 
 
-function populateSuperitemWindow(selected_item, selected_item_params)
+function populateItemInfoWindow(selected_item, selected_item_params)
   local item_info_window, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height
 
   item_info_window = rtk.Window{halign = "center", margin = 20}
