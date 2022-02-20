@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="17adab66c1407e16a938f1658a43486bc7e9979e">
+<index version="1" name="MonkeyBars-ReaScripts" commit="8c57efc7971f5a89f7b20fcef2060a579968e406">
   <category name="Superglue">
     <reapack name="MB_Superglue - Display selected Superitem info.lua" type="script" desc="MB_Superglue - Display selected Superitem info">
       <metadata>
@@ -596,6 +596,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.766" author="MonkeyBars" time="2022-02-20T03:30:20Z">
+        <changelog><![CDATA[Reglue: Enable child item info (https://github.com/MonkeyBars3k/ReaScripts/issues/210); Sizing region doesn't get deleted after autoDePool (https://github.com/MonkeyBars3k/ReaScripts/issues/208)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8c57efc7971f5a89f7b20fcef2060a579968e406/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
