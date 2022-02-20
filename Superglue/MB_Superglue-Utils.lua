@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.767
--- @changelog Naming cleanup Issue 210 (https://github.com/MonkeyBars3k/ReaScripts/issues/210)
+-- @version 1.768
+-- @changelog Sibling length calculation with position propagate enabled is incorrect (https://github.com/MonkeyBars3k/ReaScripts/issues/200)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2472,7 +2472,7 @@ function handleActivePoolSibling(active_pool_sibling, active_superitem_instance_
   if siblings_are_being_updated then
     attempted_negative_instance_position = adjustActivePoolSibling(active_pool_sibling, active_superitem_instance_params)
 
-    if attempted_negative_instance_position then
+    if attempted_negative_instance_position ~= 0 then
       sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
       parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
     end
@@ -2483,17 +2483,18 @@ end
 
 
 function adjustActivePoolSibling(instance, active_superitem_instance_params)
-  local instance_current_length, instance_adjusted_length, active_instance_length_has_changed, user_wants_to_propagate_length, active_instance_position_has_changed, user_wants_position_change, negative_position_delta
+  local instance_current_length, active_instance_length_has_changed, user_wants_to_propagate_length, instance_adjusted_length, active_instance_position_has_changed, user_wants_position_change, instance_current_src_offset, negative_position_delta
 
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _api_item_length_key)
-  instance_adjusted_length = active_superitem_instance_params.length
-  active_instance_length_has_changed = instance_adjusted_length ~= instance_current_length
+  active_instance_length_has_changed = active_superitem_instance_params.length ~= instance_current_length
 
   if active_instance_length_has_changed then
     user_wants_to_propagate_length = launchPropagateDialog("length")
   end
 
   if user_wants_to_propagate_length == _msg_response_yes then
+    instance_adjusted_length = active_superitem_instance_params.length
+
     reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
   end
 
@@ -2506,7 +2507,10 @@ function adjustActivePoolSibling(instance, active_superitem_instance_params)
   user_wants_position_change = _position_change_response == _msg_response_yes
 
   if user_wants_position_change then
-    negative_position_delta = propagateActivePoolSiblingPosition(instance)
+    instance_current_src_offset, negative_position_delta = propagateActivePoolSiblingPosition(instance)
+    instance_adjusted_length = instance_current_length + instance_current_src_offset - _superitem_instance_offset_delta_since_last_glue + negative_position_delta
+
+    reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
     
     return negative_position_delta
   end
@@ -2523,7 +2527,7 @@ function launchPropagateDialog(param)
 
   elseif param == "position" then
     global_option_param_key = _global_option_propagate_position_default_key
-    message_content_string = "position to match so their audio position remains the same"
+    message_content_string = "left edge position to match so their source audio position remains the same"
     message_title_string = "left edge location"
   end
 
@@ -2558,15 +2562,15 @@ function propagateActivePoolSiblingPosition(instance)
     reaper.SetMediaItemPosition(instance, _position_start_of_project, false)
     reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
 
-    return negative_position_delta
-
   else
     adjustPostGlueTakeEnvelopes(instance)
     reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
     reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, _src_offset_reset_value)
 
-    return nil
+    negative_position_delta = 0
   end
+
+  return instance_current_src_offset, negative_position_delta
 end
 
 
