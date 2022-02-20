@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="8eafede21ce1b6c87eb69dc6b3ce06e3f28a9496">
+<index version="1" name="MonkeyBars-ReaScripts" commit="17adab66c1407e16a938f1658a43486bc7e9979e">
   <category name="Superglue">
     <reapack name="MB_Superglue - Display selected Superitem info.lua" type="script" desc="MB_Superglue - Display selected Superitem info">
       <metadata>
@@ -43,6 +43,10 @@
       <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
         <changelog><![CDATA[Change nomenclature]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Edit%20selected%20Superitem%20reversibly.lua</source>
+      </version>
+      <version name="1.765" author="MonkeyBars" time="2022-02-20T01:49:50Z">
+        <changelog><![CDATA[Change function name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/MB_Superglue%20-%20Edit%20selected%20Superitem%20reversibly.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Glue selected item(s) reversibly into pooling Superitem.lua" type="script" desc="MB_Superglue - Glue selected item(s) reversibly into pooled container item, ignoring time selection">
@@ -199,6 +203,10 @@
       <version name="1.758" author="MonkeyBars" time="2022-02-08T05:10:24Z">
         <changelog><![CDATA[Change nomenclature]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/f55275e7a3881a6c3ae8849cb5348a2a2cf4e943/Superglue/MB_Superglue%20-%20Unglue%20selected%20Superitem%20back%20to%20contained%20items%20irreversibly.lua</source>
+      </version>
+      <version name="1.765" author="MonkeyBars" time="2022-02-20T01:49:50Z">
+        <changelog><![CDATA[Change function name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/MB_Superglue%20-%20Unglue%20selected%20Superitem%20back%20to%20contained%20items%20irreversibly.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue Smart Action - Glue or Edit selected item(s) reversibly by context.lua" type="script" desc="MB_Superglue Smart Action - Glue or Edit selected item(s) reversibly by context">
@@ -580,6 +588,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/8eafede21ce1b6c87eb69dc6b3ce06e3f28a9496/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8eafede21ce1b6c87eb69dc6b3ce06e3f28a9496/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/8eafede21ce1b6c87eb69dc6b3ce06e3f28a9496/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.765" author="MonkeyBars" time="2022-02-20T01:49:50Z">
+        <changelog><![CDATA[Edit after auto DePool (option enabled): Restored items all at sizing region position (https://github.com/MonkeyBars3k/ReaScripts/issues/199)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/17adab66c1407e16a938f1658a43486bc7e9979e/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
