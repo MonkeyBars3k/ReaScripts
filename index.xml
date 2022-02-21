@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="eecad4ece094fd12f70dc022ac4a50dab8186665">
+<index version="1" name="MonkeyBars-ReaScripts" commit="56e548a070b9a7fe26b7313e6eaebeec543b4775">
   <category name="Superglue">
     <reapack name="MB_Superglue - Display selected Superglue item info.lua" type="script" desc="MB_Superglue - Display selected Superglue item info">
       <metadata>
@@ -612,6 +612,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/eecad4ece094fd12f70dc022ac4a50dab8186665/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/eecad4ece094fd12f70dc022ac4a50dab8186665/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/eecad4ece094fd12f70dc022ac4a50dab8186665/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.769" author="MonkeyBars" time="2022-02-21T05:14:46Z">
+        <changelog><![CDATA[Multitake bugs (https://github.com/MonkeyBars3k/ReaScripts/issues/201)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/56e548a070b9a7fe26b7313e6eaebeec543b4775/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/56e548a070b9a7fe26b7313e6eaebeec543b4775/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/56e548a070b9a7fe26b7313e6eaebeec543b4775/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/56e548a070b9a7fe26b7313e6eaebeec543b4775/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/56e548a070b9a7fe26b7313e6eaebeec543b4775/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
