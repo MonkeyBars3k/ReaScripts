@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.768
--- @changelog Sibling length calculation with position propagate enabled is incorrect (https://github.com/MonkeyBars3k/ReaScripts/issues/200)
+-- @version 1.769
+-- @changelog Multitake bugs (https://github.com/MonkeyBars3k/ReaScripts/issues/201)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -21,14 +21,14 @@
 -- General utility functions at bottom
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
@@ -38,6 +38,7 @@ _scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
 _save_time_selection_slot_5_action_id = reaper.NamedCommandLookup("_SWS_SAVETIME5")
 _restore_time_selection_slot_5_action_id = reaper.NamedCommandLookup("_SWS_RESTTIME5")
 _crop_selected_items_to_time_selection_action_id = reaper.NamedCommandLookup("_SWS_AWTRIMCROP")
+_script_brand_name = "MB_Superglue"
 _glue_undo_block_string = "MB_Superglue"
 _edit_undo_block_string = "MB_Superglue-Edit"
 _unglue_undo_block_string = "MB_Superglue-Unglue"
@@ -165,7 +166,8 @@ _double_quotation_mark = "\u{0022}"
 _msg_type_ok = 0
 _msg_type_ok_cancel = 1
 _msg_type_yes_no = 4
-_msg_response_ok = 2
+_msg_response_ok = 1
+_msg_response_cancel = 2
 _msg_response_yes = 6
 _msg_response_no = 7
 _msg_change_selected_items = "Change the items selected and try again."
@@ -238,7 +240,7 @@ function openOptionsWindow()
   all_option_controls = {}
   options_window = rtk.Window{halign = "center", margin = 20}
   options_window_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
-  options_window_title = rtk.Heading{"MB_Superglue Global Options", w = 1, margin = 35, halign = "center"}
+  options_window_title = rtk.Heading{_script_brand_name .. " Global Options", w = 1, margin = 35, halign = "center"}
   option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
   option_form_submit = rtk.Button{"Submit", color = "#656565", textcolor = "#343434", elevation = 0, hover = true, gradient = 0}
   option_form_cancel = rtk.Button{"Cancel"}
@@ -410,7 +412,7 @@ function handleItemInfoWindow(selected_item)
   this_is_child_item = selected_item_parent_pool_id and selected_item_parent_pool_id ~= ""
 
   if not this_is_superitem and not this_is_child_item then
-    reaper.ShowMessageBox("Select a Superitem or contained item and try again.", "MB_Superglue: The item selected is not associated with Superglue.", _msg_type_ok)
+    reaper.ShowMessageBox("Select a Superitem or contained item and try again.", _script_brand_name .. ": The item selected is not associated with " .. _script_brand_name .. ".", _msg_type_ok)
 
     return
   end
@@ -477,7 +479,7 @@ function populateItemInfoWindow(selected_item, selected_item_params)
 
   item_info_window = rtk.Window{halign = "center", margin = 20}
   item_info_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
-  item_info_title = rtk.Heading{"MB_Superglue Item Info", w = 1, margin = 35, halign = "center"}
+  item_info_title = rtk.Heading{_script_brand_name .. " Item Info", w = 1, margin = 35, halign = "center"}
   item_info_name = rtk.Text{getSetItemName(selected_item), w = 1, halign = "center", textalign = "center", bmargin = 20, fontscale = 1.3, wrap = "wrap_normal"}
   item_info = ""
 
@@ -575,7 +577,7 @@ function renderPathIsValid()
   is_other_local_path = not is_win and not is_nix_absolute_path
   
   if is_win_local_path or is_other_local_path then
-    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "Superglue needs a valid file render path.", _msg_type_ok)
+    reaper.ShowMessageBox("Set an absolute path in Project Settings > Media > Path or save your new project and try again.", _script_brand_name .. " needs a valid file render path.", _msg_type_ok)
     
     return false
 
@@ -612,7 +614,7 @@ function requiredLibsAreInstalled()
   end
 
   if not can_get_sws_version or not sws_version then
-    reaper.ShowMessageBox("Please install SWS at https://standingwaterstudios.com/ and try again.", "Superglue requires the SWS plugin extension to work.", _msg_type_ok)
+    reaper.ShowMessageBox("Please install SWS at https://standingwaterstudios.com/ and try again.", _script_brand_name .. " requires the SWS plugin extension to work.", _msg_type_ok)
     
     return false
   end
@@ -744,7 +746,7 @@ function itemsOnMultipleTracksAreSelected(selected_item_count)
   local items_on_multiple_tracks_are_selected = detectSelectedItemsOnMultipleTracks(selected_item_count)
 
   if items_on_multiple_tracks_are_selected == true then 
-      reaper.ShowMessageBox(_msg_change_selected_items, "Superglue only works on items on a single track.", _msg_type_ok)
+      reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " only works on items on a single track.", _msg_type_ok)
       return true
   end
 end
@@ -781,7 +783,7 @@ function superitemSelectionIsInvalid(selected_item_count, action)
   if recursive_superitem_is_being_glued then return true end
 
   if siblings_are_selected then
-    reaper.ShowMessageBox(_msg_change_selected_items, "Superglue can only " .. action .. " one pool instance at a time.", _msg_type_ok)
+    reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " can only " .. action .. " one pool instance at a time.", _msg_type_ok)
     setResetItemSelectionSet(false)
 
     return true
@@ -866,7 +868,7 @@ function recursiveSuperitemIsBeingGlued(superitems, restored_items)
       this_restored_item_is_from_same_pool_as_selected_superitem = this_superitem_instance_pool_id == this_restored_item_parent_pool_id
       
       if this_restored_item_is_from_same_pool_as_selected_superitem then
-        reaper.ShowMessageBox(_msg_change_selected_items, "Superglue can't glue a superitem to an instance from the same pool being Editd – that could destroy the universe!", _msg_type_ok)
+        reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " can't glue a Superitem to an instance from the same pool being Edited – that could destroy the universe!", _msg_type_ok)
         setResetItemSelectionSet(false)
 
         return true
@@ -890,8 +892,12 @@ function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track
     end
   end
 
-  if midi_item_is_selected and track_has_no_virtual_instrument then
-    reaper.ShowMessageBox("Add a virtual instrument to render audio into the superitem or try a different item selection.", "Superglue can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
+  if midi_item_is_selected == "true" and track_has_no_virtual_instrument then
+    reaper.ShowMessageBox("Add a virtual instrument to render audio into the superitem or try a different item selection.", _script_brand_name .. " can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
+
+    return true
+
+  elseif midi_item_is_selected == "abort" then
     return true
   end
 end
@@ -901,6 +907,13 @@ function midiItemIsSelected(item)
   local active_take, active_take_is_midi
 
   active_take = reaper.GetActiveTake(item)
+
+  if not active_take then
+    throwOfflineTakeWarning(false, true)
+
+    return "abort"
+  end
+
   active_take_is_midi = reaper.TakeIsMIDI(active_take)
 
   if active_take and active_take_is_midi then
@@ -908,6 +921,27 @@ function midiItemIsSelected(item)
   else
     return false
   end
+end
+
+
+function throwOfflineTakeWarning(recommend_undo, is_restored_item)
+  local item_string, msg
+
+  if is_restored_item then
+    item_string = "restored item"
+
+  else
+    item_string = "Superitem"
+  end
+
+  if recommend_undo then
+    msg = "It's recommended to undo, remove your " .. item_string .. "'s inactive takes manually, and try again."
+
+  else
+    msg = "Aborting."
+  end
+
+  reaper.ShowMessageBox(msg, _script_brand_name .. ": Your " .. item_string .. "'s inactive takes are offline or have some other weird setting going on.", _msg_type_ok)
 end
 
 
@@ -2441,7 +2475,7 @@ function handleDePoolSibling(active_pool_sibling)
   global_option_toggle_depool_all_siblings_on_reglue_warning = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_warning_key)
 
   if global_option_toggle_depool_all_siblings_on_reglue_warning == "true" and _user_wants_to_depool_all_siblings == nil then
-    _user_wants_to_depool_all_siblings = reaper.ShowMessageBox("Select yes to continue and remove all of this item's siblings from its pool, or no to disable this option.", "Warning: You have the option to remove all sibling instances from pool enabled.", _msg_type_yes_no)
+    _user_wants_to_depool_all_siblings = reaper.ShowMessageBox("Select yes to continue and remove all of this item's siblings from its pool, or no to disable this option.", _script_brand_name .. " Warning: You have the option to remove all sibling instances from pool enabled.", _msg_type_yes_no)
 
     if _user_wants_to_depool_all_siblings == _msg_response_no then
       reaper.SetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key, "false", _api_extstate_persist_enabled)
@@ -2527,8 +2561,8 @@ function launchPropagateDialog(param)
 
   elseif param == "position" then
     global_option_param_key = _global_option_propagate_position_default_key
-    message_content_string = "left edge position to match so their source audio position remains the same"
-    message_title_string = "left edge location"
+    message_content_string = "left edge to match so their source audio position remains the same"
+    message_title_string = "left edge position"
   end
 
   global_option_propagate_default = reaper.GetExtState(_global_options_section, global_option_param_key)
@@ -2636,7 +2670,7 @@ end
   
 
 function initEditOrUnglue(action)
-  local selected_item_count, selected_item_groups, superitems, this_pool_id, other_open_instance
+  local selected_item_count, selected_item_groups, superitems, this_pool_id, other_open_instance, superitem_is_multitake, superitem_takes_count, multitake_msg_user_response
 
   selected_item_count = initAction(action)
   selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superitem"})
@@ -2652,6 +2686,14 @@ function initEditOrUnglue(action)
 
     return
   end
+
+  superitem_is_multitake, superitem_takes_count = superitemHasMultipleTakes()
+
+  if superitem_is_multitake then
+    multitake_msg_user_response = handleMultitakeSuperitem(superitem_takes_count)
+
+    if multitake_msg_user_response == "cancel" then return end
+  end
   
   handleEditOrUnglue(this_pool_id, action)
 
@@ -2663,12 +2705,12 @@ function isNotSingleSuperitem(superitems_count, action)
   local multiitem_result, user_wants_to_edit_1st_superitem
 
   if superitems_count == 0 then
-    reaper.ShowMessageBox(_msg_change_selected_items, "Superglue can only " .. action .. " previously superitems." , _msg_type_ok)
+    reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " can only " .. action .. " previously Superglued Superitems." , _msg_type_ok)
 
     return true
   
   elseif superitems_count > 1 then
-    multiitem_result = reaper.ShowMessageBox("Would you like to " .. action .. " the first selected superitem from the top track only?", "Superglue can only " .. action .. " one superitem per action call.", _msg_type_ok_cancel)
+    multiitem_result = reaper.ShowMessageBox("Would you like to " .. action .. " the first selected superitem from the top track only?", _script_brand_name .. " can only " .. action .. " one Superitem per action call.", _msg_type_ok_cancel)
     user_wants_to_edit_1st_superitem = multiitem_result == _msg_response_ok
 
     if user_wants_to_edit_1st_superitem then
@@ -2700,16 +2742,140 @@ end
 function handleOtherOpenInstance(instance, open_instance_pool_id, action)
   open_instance_pool_id = tostring(open_instance_pool_id)
 
-  reaper.ShowMessageBox("Reglue the other open instance from pool " .. open_instance_pool_id .. " before trying to " .. action .. " this superitem. It will be selected and scrolled to now.", "Superglue can only " .. action .. " one superitem pool instance at a time.", _msg_type_ok)
-  
+  reaper.ShowMessageBox("Reglue the other open instance from pool " .. open_instance_pool_id .. " before trying to " .. action .. " this superitem. It will be selected and scrolled to now.", _script_brand_name .. " can only " .. action .. " one superitem pool instance at a time.", _msg_type_ok)
   deselectAllItems()
   reaper.SetMediaItemSelected(instance, true)
   scrollToSelectedItem()
 end
 
 
+function superitemHasMultipleTakes()
+  local superitem, superitem_takes_count
+
+  superitem = getFirstSelectedItem()
+  superitem_takes_count = reaper.GetMediaItemNumTakes(superitem)
+
+  if superitem_takes_count > 1 then
+    return true, superitem_takes_count
+  end
+end
+
+
 function scrollToSelectedItem()
   reaper.Main_OnCommand(_scroll_action_id, _api_command_flag)
+end
+
+
+function handleMultitakeSuperitem(superitem_takes_count)
+  local user_wants_to_explode_superitem_takes, user_response_explode_in_place, takes_are_valid
+
+  user_wants_to_explode_superitem_takes = reaper.ShowMessageBox("Do you want to explode your Superitem takes in place before Editing?", "The Superitem selected has " .. superitem_takes_count .. " takes in it. " .. _script_brand_name .. " does not support multiple takes on Superitems.", _msg_type_ok_cancel)
+
+  if user_wants_to_explode_superitem_takes == _msg_response_ok then
+    user_response_explode_in_place = reaper.ShowMessageBox("Choose Yes to explode in order or No to explode in place.", "Do you want to explode in order?", _msg_type_yes_no)
+    takes_are_valid = handleSuperitemExplodeInPlace(user_response_explode_in_place)
+
+    if not takes_are_valid then
+      return "cancel"
+    end
+
+  elseif user_wants_to_explode_superitem_takes == _msg_response_cancel then
+    return "cancel"
+  end
+end
+
+
+function handleSuperitemExplodeInPlace(explode_option)
+  local user_wants_to_explode_in_order, superitem, superitem_takes_count, superitem_position, superitem_length, superitem_active_take, superitem_active_take_num, duplicated_item_cropped_take_num, item_data_values, i, this_duplicated_item, this_duplicated_item_new_position, j, this_duplicated_item_new_active_take, targeted_take_is_offline, offline_takes_msg_shown
+
+  if explode_option == _msg_response_yes then
+    user_wants_to_explode_in_order = true
+  end
+
+  superitem = getFirstSelectedItem()
+  superitem_takes_count = reaper.GetMediaItemNumTakes(superitem)
+  superitem_position = reaper.GetMediaItemInfo_Value(superitem, _api_item_position_key)
+  superitem_length = reaper.GetMediaItemInfo_Value(superitem, _api_item_length_key)
+  superitem_active_take = reaper.GetActiveTake(superitem)
+
+  if not superitem_active_take then
+    throwOfflineTakeWarning()
+
+    return false
+  end
+
+  superitem_active_take_num = reaper.GetMediaItemTakeInfo_Value(superitem_active_take, _api_takenumber_key)
+  duplicated_item_cropped_take_num = 0
+  item_data_values = {_instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _item_offset_to_superitem_position_key_suffix, _preglue_active_take_guid_key_suffix}
+
+  for i = 0, superitem_takes_count-2 do
+    duplicateSelectedItems()
+
+    this_duplicated_item = getFirstSelectedItem()
+
+    if user_wants_to_explode_in_order then
+      this_duplicated_item_new_position = superitem_position + (superitem_length * (i + 1))
+
+    else
+      this_duplicated_item_new_position = superitem_position
+    end
+
+    reaper.SetMediaItemPosition(this_duplicated_item, this_duplicated_item_new_position, false)
+
+    for j = 1, #item_data_values do
+      storeRetrieveItemData(this_duplicated_item, item_data_values[j], "")
+    end
+
+    duplicated_item_cropped_take_num = duplicated_item_cropped_take_num + i
+
+    if duplicated_item_cropped_take_num == superitem_active_take_num then
+      duplicated_item_cropped_take_num = duplicated_item_cropped_take_num + 1
+    end
+
+    this_duplicated_item_new_active_take = reaper.GetTake(this_duplicated_item, duplicated_item_cropped_take_num)
+    targeted_take_is_offline = not this_duplicated_item_new_active_take
+
+    if not targeted_take_is_offline then
+      reaper.SetActiveTake(this_duplicated_item_new_active_take)
+      cropSelectedItemsToActiveTakes()
+
+    elseif not offline_takes_msg_shown then
+      throwOfflineTakeWarning(true)
+
+      offline_takes_msg_shown = true
+    end
+
+    removeSuperglueTakeNamePrefix(this_duplicated_item)
+    addRemoveItemImage(this_duplicated_item, false)
+  end
+
+  deselectAllItems()
+  reaper.SetMediaItemSelected(superitem, true)
+  cropSelectedItemsToActiveTakes()
+end
+
+
+function duplicateSelectedItems()
+  reaper.Main_OnCommand(41295, _api_command_flag)
+end
+
+
+function cropSelectedItemsToActiveTakes()
+  reaper.Main_OnCommand(40131, _api_command_flag)
+end
+
+
+function removeSuperglueTakeNamePrefix(item)
+  local active_take_name, superglue_name_prefix, new_take_name
+
+  active_take_name = getSetItemName(item)
+  superglue_name_prefix = string.match(active_take_name, _superitem_name_default_prefix)
+
+  if superglue_name_prefix then
+    new_take_name = string.gsub(active_take_name, _superitem_name_default_prefix, "")
+    
+    getSetItemName(item, new_take_name)
+  end
 end
 
 
@@ -2853,7 +3019,7 @@ function handleSizingRegionUserDeletion(sizing_region_params, pool_id, sizing_re
   local sizing_region_deletion_result, user_wants_to_reinstate_sizing_region, user_wants_to_unglue 
 
   if sizing_region_deletion_msg_is_enabled == "true" then
-    sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Unglue or "no" to reinstate the deleted sizing region.', "MB_Superglue: An active Edit sizing region got deleted!", _msg_type_yes_no)
+    sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Unglue or "no" to reinstate the deleted sizing region.', _script_brand_name .. ": An active Edit sizing region got deleted!", _msg_type_yes_no)
     user_wants_to_reinstate_sizing_region = sizing_region_deletion_result == _msg_response_no
     user_wants_to_unglue = sizing_region_deletion_result == _msg_response_yes
 
@@ -2913,7 +3079,7 @@ function initSmartAction(edit_or_unglue)
   if superitemSelectionIsInvalid(selected_item_count, edit_or_unglue) == true then return end
 
   if triggerAction(selected_item_count, edit_or_unglue) == false then 
-    reaper.ShowMessageBox(_msg_change_selected_items, "Superglue Smart Action can't determine which script to run.", _msg_type_ok)
+    reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " Smart Action can't determine which script to run.", _msg_type_ok)
     setResetItemSelectionSet(false)
 
     return
@@ -2963,7 +3129,7 @@ function triggerAction(selected_item_count, edit_or_unglue)
     initSuperglue()
 
   elseif superglue_action == "glue/abort" then
-    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to superglue them?", "You have selected both superitem(s) and restored item(s) from an edited Superitem.", _msg_type_ok_cancel)
+    glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to Superglue them?", "You have selected both Superitem(s) and restored item(s) from an edited Superitem.", _msg_type_ok_cancel)
 
     if glue_abort_dialog == 2 then
       setResetItemSelectionSet(false)
