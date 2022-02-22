@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.770
--- @changelog Reglue: Take envelope points don't get adjusted if no position propagation but should (https://github.com/MonkeyBars3k/ReaScripts/issues/213)
+-- @version 1.771
+-- @changelog Stretch & take markers support (https://github.com/MonkeyBars3k/ReaScripts/issues/214 https://github.com/MonkeyBars3k/ReaScripts/issues/215)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1874,7 +1874,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   superitem = restoreSuperitemState(superitem, superitem_params)
 
   setRegluePositionDeltas(superitem_params, superitem_last_glue_params)
-  adjustPostGlueTakeEnvelopes(superitem)
+  adjustPostGlueTakeMarkersAndEnvelopes(superitem)
   editAncestors(superitem_params.pool_id, superitem)
   deselectAllItems()
   propagatePoolChanges(superitem_params, sizing_region_guid)
@@ -1976,27 +1976,65 @@ function setRegluePositionDeltas(freshly_superitem_params, superitem_last_glue_p
 end
 
 
-function adjustPostGlueTakeEnvelopes(instance, adjustment_near_project_start)
-  local instance_active_take, take_envelopes_count, instance_src_offset, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_time, adjusted_envelope_point_time
+function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project_start)
+  local instance_active_take, instance_src_offset
 
   if not adjustment_near_project_start then
     adjustment_near_project_start = 0
   end
 
   instance_active_take = reaper.GetActiveTake(instance)
-  take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
   instance_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key)
+
+  adjustTakeEnvelopes(instance_active_take, instance_src_offset, adjustment_near_project_start)
+  adjustTakeMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
+  adjustTakeStretchMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
+end
+
+
+function adjustTakeEnvelopes(instance_active_take, instance_src_offset, adjustment_near_project_start)
+  local take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_position, adjusted_envelope_point_position
+
+  take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
 
   for i = 0, take_envelopes_count-1 do
     this_take_envelope = reaper.GetTakeEnvelope(instance_active_take, i)
     envelope_points_count = reaper.CountEnvelopePoints(this_take_envelope)
 
     for j = 0, envelope_points_count-1 do
-      retval, this_envelope_point_time = reaper.GetEnvelopePoint(this_take_envelope, j)
-      adjusted_envelope_point_time = this_envelope_point_time + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
+      retval, this_envelope_point_position = reaper.GetEnvelopePoint(this_take_envelope, j)
+      adjusted_envelope_point_position = this_envelope_point_position + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
 
-      reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_time, nil, nil, nil, nil, true)
+      reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_position, nil, nil, nil, nil, true)
     end
+  end
+end
+
+
+function adjustTakeMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
+  local take_markers_count, i, this_marker_position, this_marker_name, adjusted_marker_position
+
+  take_markers_count = reaper.GetNumTakeMarkers(instance_active_take)
+
+  for i = 0, take_markers_count-1 do
+    this_marker_position, this_marker_name = reaper.GetTakeMarker(instance_active_take, i)
+    adjusted_marker_position = this_marker_position + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
+
+    reaper.SetTakeMarker(instance_active_take, i, this_marker_name, adjusted_marker_position)
+  end
+end
+
+
+function adjustTakeStretchMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
+  local stretch_markers_count, i, this_marker_position, this_marker_name, adjusted_marker_position
+
+  stretch_markers_count = reaper.GetTakeNumStretchMarkers(instance_active_take)
+
+  for i = 0, stretch_markers_count-1 do
+    retval, this_marker_position = reaper.GetTakeStretchMarker(instance_active_take, i)
+    adjusted_marker_position = this_marker_position + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
+
+    reaper.SetTakeStretchMarker(instance_active_take, i, adjusted_marker_position, adjusted_marker_position)
   end
 end
 
@@ -2549,7 +2587,7 @@ function adjustActivePoolSibling(instance, active_superitem_instance_params)
     return negative_position_delta
 
   else
-    adjustPostGlueTakeEnvelopes(instance)
+    adjustPostGlueTakeMarkersAndEnvelopes(instance)
   end
 end
 
@@ -2595,12 +2633,12 @@ function propagateActivePoolSiblingPosition(instance)
     instance_adjusted_src_offset = instance_current_src_offset - instance_current_position - _superitem_instance_offset_delta_since_last_glue
     negative_position_delta = -instance_adjusted_src_offset
 
-    adjustPostGlueTakeEnvelopes(instance, instance_adjusted_src_offset)
+    adjustPostGlueTakeMarkersAndEnvelopes(instance, instance_adjusted_src_offset)
     reaper.SetMediaItemPosition(instance, _position_start_of_project, false)
     reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
 
   else
-    adjustPostGlueTakeEnvelopes(instance)
+    adjustPostGlueTakeMarkersAndEnvelopes(instance)
     reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
     reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, _src_offset_reset_value)
 
