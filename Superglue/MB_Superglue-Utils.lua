@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.771
--- @changelog Stretch & take markers support (https://github.com/MonkeyBars3k/ReaScripts/issues/214 https://github.com/MonkeyBars3k/ReaScripts/issues/215)
+-- @version 1.772
+-- @changelog Refactor explodeSuperitem() (https://github.com/MonkeyBars3k/ReaScripts/issues/212)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -941,7 +941,7 @@ function throwOfflineTakeWarning(recommend_undo, is_restored_item)
     msg = "Aborting."
   end
 
-  reaper.ShowMessageBox(msg, _script_brand_name .. ": Your " .. item_string .. "'s inactive takes are offline or have some other weird setting going on.", _msg_type_ok)
+  reaper.ShowMessageBox(msg, _script_brand_name .. ": Your " .. item_string .. "'s inactive takes are empty, offline or have some other weird setting going on.", _msg_type_ok)
 end
 
 
@@ -2808,17 +2808,20 @@ end
 
 
 function handleMultitakeSuperitem(superitem_takes_count)
-  local user_wants_to_explode_superitem_takes, user_response_explode_in_place, takes_are_valid
+  local user_wants_to_explode_superitem_takes, user_response_explode_in_place
 
   user_wants_to_explode_superitem_takes = reaper.ShowMessageBox("Do you want to explode your Superitem takes in place before Editing?", "The Superitem selected has " .. superitem_takes_count .. " takes in it. " .. _script_brand_name .. " does not support multiple takes on Superitems.", _msg_type_ok_cancel)
 
   if user_wants_to_explode_superitem_takes == _msg_response_ok then
     user_response_explode_in_place = reaper.ShowMessageBox("Choose Yes to explode in order or No to explode in place.", "Do you want to explode in order?", _msg_type_yes_no)
-    takes_are_valid = handleSuperitemExplodeInPlace(user_response_explode_in_place)
 
-    if not takes_are_valid then
+    superitem, superitem_active_take = checkSuperitemTakesAreValid()
+
+    if not superitem_active_take then
       return "cancel"
     end
+
+    explodeSuperitem(superitem, superitem_active_take, user_response_explode_in_place)
 
   elseif user_wants_to_explode_superitem_takes == _msg_response_cancel then
     return "cancel"
@@ -2826,17 +2829,10 @@ function handleMultitakeSuperitem(superitem_takes_count)
 end
 
 
-function handleSuperitemExplodeInPlace(explode_option)
-  local user_wants_to_explode_in_order, superitem, superitem_takes_count, superitem_position, superitem_length, superitem_active_take, superitem_active_take_num, duplicated_item_cropped_take_num, item_data_values, i, this_duplicated_item, this_duplicated_item_new_position, j, this_duplicated_item_new_active_take, targeted_take_is_offline, offline_takes_msg_shown
-
-  if explode_option == _msg_response_yes then
-    user_wants_to_explode_in_order = true
-  end
+function checkSuperitemTakesAreValid()
+  local superitem, superitem_active_take
 
   superitem = getFirstSelectedItem()
-  superitem_takes_count = reaper.GetMediaItemNumTakes(superitem)
-  superitem_position = reaper.GetMediaItemInfo_Value(superitem, _api_item_position_key)
-  superitem_length = reaper.GetMediaItemInfo_Value(superitem, _api_item_length_key)
   superitem_active_take = reaper.GetActiveTake(superitem)
 
   if not superitem_active_take then
@@ -2845,49 +2841,24 @@ function handleSuperitemExplodeInPlace(explode_option)
     return false
   end
 
-  superitem_active_take_num = reaper.GetMediaItemTakeInfo_Value(superitem_active_take, _api_takenumber_key)
-  duplicated_item_cropped_take_num = 0
+  return superitem, superitem_active_take
+end
+
+
+function explodeSuperitem(superitem, superitem_active_take, explode_option)
+  local user_wants_to_explode_in_order, superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, i, this_duplicated_item_new_active_take, offline_takes_msg_shown
+
+  if explode_option == _msg_response_yes then
+    user_wants_to_explode_in_order = true
+  end
+
+  superitem_takes_count = reaper.GetMediaItemNumTakes(superitem)
+  superitem_params = getSetItemParams(superitem)
+  duplicated_item_target_take_num = 0
   item_data_values = {_instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _item_offset_to_superitem_position_key_suffix, _preglue_active_take_guid_key_suffix}
 
   for i = 0, superitem_takes_count-2 do
-    duplicateSelectedItems()
-
-    this_duplicated_item = getFirstSelectedItem()
-
-    if user_wants_to_explode_in_order then
-      this_duplicated_item_new_position = superitem_position + (superitem_length * (i + 1))
-
-    else
-      this_duplicated_item_new_position = superitem_position
-    end
-
-    reaper.SetMediaItemPosition(this_duplicated_item, this_duplicated_item_new_position, false)
-
-    for j = 1, #item_data_values do
-      storeRetrieveItemData(this_duplicated_item, item_data_values[j], "")
-    end
-
-    duplicated_item_cropped_take_num = duplicated_item_cropped_take_num + i
-
-    if duplicated_item_cropped_take_num == superitem_active_take_num then
-      duplicated_item_cropped_take_num = duplicated_item_cropped_take_num + 1
-    end
-
-    this_duplicated_item_new_active_take = reaper.GetTake(this_duplicated_item, duplicated_item_cropped_take_num)
-    targeted_take_is_offline = not this_duplicated_item_new_active_take
-
-    if not targeted_take_is_offline then
-      reaper.SetActiveTake(this_duplicated_item_new_active_take)
-      cropSelectedItemsToActiveTakes()
-
-    elseif not offline_takes_msg_shown then
-      throwOfflineTakeWarning(true)
-
-      offline_takes_msg_shown = true
-    end
-
-    removeSuperglueTakeNamePrefix(this_duplicated_item)
-    addRemoveItemImage(this_duplicated_item, false)
+    duplicated_item_target_take_num, offline_takes_msg_shown = explodeSuperitemTake(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
   end
 
   deselectAllItems()
@@ -2896,8 +2867,65 @@ function handleSuperitemExplodeInPlace(explode_option)
 end
 
 
+function explodeSuperitemTake(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
+  local this_duplicated_item, this_duplicated_item_new_position, j, this_duplicated_item_new_active_take
+
+  duplicateSelectedItems()
+
+  this_duplicated_item = getFirstSelectedItem()
+
+  if user_wants_to_explode_in_order then
+    this_duplicated_item_new_position = superitem_params.position + (superitem_params.length * (i + 1))
+
+  else
+    this_duplicated_item_new_position = superitem_params.position
+  end
+
+  reaper.SetMediaItemPosition(this_duplicated_item, this_duplicated_item_new_position, false)
+
+  for j = 1, #item_data_values do
+    storeRetrieveItemData(this_duplicated_item, item_data_values[j], "")
+  end
+
+  duplicated_item_target_take_num, this_duplicated_item_new_active_take, offline_takes_msg_shown = handleDuplicatedItemTargetTake(i, this_duplicated_item, duplicated_item_target_take_num, superitem_params, offline_takes_msg_shown)
+
+  removeSuperglueTakeNamePrefix(this_duplicated_item)
+  addRemoveItemImage(this_duplicated_item, false)
+  deselectAllItems()
+  reaper.SetMediaItemSelected(superitem, true)
+
+  return duplicated_item_target_take_num, offline_takes_msg_shown
+end
+
+
 function duplicateSelectedItems()
   reaper.Main_OnCommand(41295, _api_command_flag)
+end
+
+
+function handleDuplicatedItemTargetTake(i, this_duplicated_item, duplicated_item_target_take_num, superitem_params, offline_takes_msg_shown)
+  local this_duplicated_item_new_active_take, targeted_take_is_offline
+
+  duplicated_item_target_take_num = duplicated_item_target_take_num + i
+
+  if duplicated_item_target_take_num == superitem_params.active_take_num then
+    duplicated_item_target_take_num = duplicated_item_target_take_num + 1
+  end
+
+  this_duplicated_item_new_active_take = reaper.GetTake(this_duplicated_item, duplicated_item_target_take_num)
+  targeted_take_is_offline = not this_duplicated_item_new_active_take
+
+  if not targeted_take_is_offline then
+    reaper.SetActiveTake(this_duplicated_item_new_active_take)
+    cropSelectedItemsToActiveTakes()
+
+  elseif not offline_takes_msg_shown then
+    throwOfflineTakeWarning(true)
+
+    offline_takes_msg_shown = true
+  end
+
+  return duplicated_item_target_take_num, this_duplicated_item_new_active_take, offline_takes_msg_shown
 end
 
 
