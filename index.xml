@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="65a307ec1b3ed89319a540b84e4d8ee450efb030">
+<index version="1" name="MonkeyBars-ReaScripts" commit="e24048cb6489e7f0abec442fc21a622a047bfcd3">
   <category name="Superglue">
     <reapack name="MB_Superglue - Display selected Superglue item info.lua" type="script" desc="MB_Superglue - Display selected Superglue item info">
       <metadata>
@@ -636,6 +636,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/65a307ec1b3ed89319a540b84e4d8ee450efb030/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/65a307ec1b3ed89319a540b84e4d8ee450efb030/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/65a307ec1b3ed89319a540b84e4d8ee450efb030/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.772" author="MonkeyBars" time="2022-02-22T05:47:01Z">
+        <changelog><![CDATA[Refactor explodeSuperitem() (https://github.com/MonkeyBars3k/ReaScripts/issues/212)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e24048cb6489e7f0abec442fc21a622a047bfcd3/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e24048cb6489e7f0abec442fc21a622a047bfcd3/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e24048cb6489e7f0abec442fc21a622a047bfcd3/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e24048cb6489e7f0abec442fc21a622a047bfcd3/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e24048cb6489e7f0abec442fc21a622a047bfcd3/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
