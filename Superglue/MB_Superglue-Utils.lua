@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.772
--- @changelog Refactor explodeSuperitem() (https://github.com/MonkeyBars3k/ReaScripts/issues/212)
+-- @version 1.773
+-- @changelog Explode doesn't detect Superglue-relevant take (https://github.com/MonkeyBars3k/ReaScripts/issues/217); Reglue: Take stretch markers' values are getting changed (https://github.com/MonkeyBars3k/ReaScripts/issues/219)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -28,7 +28,7 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_change_response, _user_wants_to_depool_all_siblings
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
@@ -151,6 +151,7 @@ _instance_pool_id_key_suffix = "instance-pool-id"
 _parent_pool_id_key_suffix = "parent-pool-id"
 _last_pool_id_key_suffix = "last-pool-id"
 _preglue_active_take_guid_key_suffix = "preglue-active-take-guid"
+_superglue_active_take_key_suffix = "_superitem-superglue-active-take"
 _glue_data_key_suffix = ":glue"
 _edit_data_key_suffix = ":pre-edit"
 _superitem_params_suffix = "_superitem-params"
@@ -1612,7 +1613,7 @@ function handlePostGlue(selected_items, pool_id, first_selected_item_name, super
   user_selected_instance_is_being_reglued = not this_is_parent_update
   superitem_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
 
-  handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, earliest_item_delta_to_superitem_position, this_is_reglue, this_is_parent_update)
+  handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, this_is_reglue)
   handleDescendantPoolReferences(pool_id, child_instances_pool_ids)
 
   if user_selected_instance_is_being_reglued then
@@ -1651,13 +1652,14 @@ function handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_i
 end
 
 
-function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, earliest_item_delta_to_superitem_position, this_is_reglue, this_is_parent_update)
-  local superitem_preglue_state_key_suffix, superitem_state, pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_params
+function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, this_is_reglue)
+  local pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_params, superitem_active_take, superitem_superglue_active_take_key
 
-  superitem_state = getSetItemStateChunk(superitem)
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   pool_parent_params = getSetItemParams(superitem)
+  superitem_active_take = reaper.GetActiveTake(superitem)
+  superitem_superglue_active_take_key = _api_data_key .. _global_script_prefix .. _pool_key_prefix .. pool_id .. _superglue_active_take_key_suffix
 
   if not this_is_reglue then
     setSuperitemColor()
@@ -1669,6 +1671,7 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, earlie
   storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, pool_id)
   storeRetrieveProjectData(pool_parent_position_key_label, pool_parent_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, pool_parent_params.length)
+  reaper.GetSetMediaItemTakeInfo_String(superitem_active_take, superitem_superglue_active_take_key, "true", true)
 end
 
 
@@ -1977,7 +1980,7 @@ end
 
 
 function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project_start)
-  local instance_active_take, instance_src_offset
+  local instance_active_take, instance_src_offset, marker_and_envelope_point_position_adjustment_delta
 
   if not adjustment_near_project_start then
     adjustment_near_project_start = 0
@@ -1985,14 +1988,15 @@ function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project
 
   instance_active_take = reaper.GetActiveTake(instance)
   instance_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key)
+  marker_and_envelope_point_position_adjustment_delta = instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
 
-  adjustTakeEnvelopes(instance_active_take, instance_src_offset, adjustment_near_project_start)
-  adjustTakeMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
-  adjustTakeStretchMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
+  adjustTakeEnvelopes(instance_active_take, marker_and_envelope_point_position_adjustment_delta)
+  adjustTakeMarkers(instance_active_take, marker_and_envelope_point_position_adjustment_delta)
+  adjustTakeStretchMarkers(instance_active_take, marker_and_envelope_point_position_adjustment_delta)
 end
 
 
-function adjustTakeEnvelopes(instance_active_take, instance_src_offset, adjustment_near_project_start)
+function adjustTakeEnvelopes(instance_active_take, envelope_point_position_adjustment_delta)
   local take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_position, adjusted_envelope_point_position
 
   take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
@@ -2003,7 +2007,7 @@ function adjustTakeEnvelopes(instance_active_take, instance_src_offset, adjustme
 
     for j = 0, envelope_points_count-1 do
       retval, this_envelope_point_position = reaper.GetEnvelopePoint(this_take_envelope, j)
-      adjusted_envelope_point_position = this_envelope_point_position + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
+      adjusted_envelope_point_position = this_envelope_point_position + envelope_point_position_adjustment_delta
 
       reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_position, nil, nil, nil, nil, true)
     end
@@ -2011,30 +2015,31 @@ function adjustTakeEnvelopes(instance_active_take, instance_src_offset, adjustme
 end
 
 
-function adjustTakeMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
+function adjustTakeMarkers(instance_active_take, marker_position_adjustment_delta)
   local take_markers_count, i, this_marker_position, this_marker_name, adjusted_marker_position
 
   take_markers_count = reaper.GetNumTakeMarkers(instance_active_take)
 
   for i = 0, take_markers_count-1 do
     this_marker_position, this_marker_name = reaper.GetTakeMarker(instance_active_take, i)
-    adjusted_marker_position = this_marker_position + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
+    adjusted_marker_position = this_marker_position + marker_position_adjustment_delta
 
     reaper.SetTakeMarker(instance_active_take, i, this_marker_name, adjusted_marker_position)
   end
 end
 
 
-function adjustTakeStretchMarkers(instance_active_take, instance_src_offset, adjustment_near_project_start)
-  local stretch_markers_count, i, this_marker_position, this_marker_name, adjusted_marker_position
+function adjustTakeStretchMarkers(instance_active_take, marker_position_adjustment_delta)
+  local stretch_markers_count, i, this_marker_position, this_marker_source_position, adjusted_marker_position, adjusted_marker_source_position
 
   stretch_markers_count = reaper.GetTakeNumStretchMarkers(instance_active_take)
 
   for i = 0, stretch_markers_count-1 do
-    retval, this_marker_position = reaper.GetTakeStretchMarker(instance_active_take, i)
-    adjusted_marker_position = this_marker_position + instance_src_offset - _superitem_instance_offset_delta_since_last_glue - adjustment_near_project_start
+    retval, this_marker_position, this_marker_source_position = reaper.GetTakeStretchMarker(instance_active_take, i)
+    adjusted_marker_position = this_marker_position + marker_position_adjustment_delta
+    adjusted_marker_source_position = this_marker_source_position + marker_position_adjustment_delta
 
-    reaper.SetTakeStretchMarker(instance_active_take, i, adjusted_marker_position, adjusted_marker_position)
+    reaper.SetTakeStretchMarker(instance_active_take, i, adjusted_marker_position, adjusted_marker_source_position)
   end
 end
 
@@ -2846,7 +2851,7 @@ end
 
 
 function explodeSuperitem(superitem, superitem_active_take, explode_option)
-  local user_wants_to_explode_in_order, superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, i, this_duplicated_item_new_active_take, offline_takes_msg_shown
+  local user_wants_to_explode_in_order, superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, superitem_superglue_active_take_key, i, this_superitem_take, retval, this_superitem_take_active_flag, this_duplicated_item_new_active_take, offline_takes_msg_shown
 
   if explode_option == _msg_response_yes then
     user_wants_to_explode_in_order = true
@@ -2856,6 +2861,21 @@ function explodeSuperitem(superitem, superitem_active_take, explode_option)
   superitem_params = getSetItemParams(superitem)
   duplicated_item_target_take_num = 0
   item_data_values = {_instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _item_offset_to_superitem_position_key_suffix, _preglue_active_take_guid_key_suffix}
+  superitem_superglue_active_take_key = _api_data_key .. _global_script_prefix .. _pool_key_prefix .. superitem_params.instance_pool_id .. _superglue_active_take_key_suffix
+  superitem_params.superglue_active_take_num = -1
+
+  for i = 0, superitem_takes_count-1 do
+    this_superitem_take = reaper.GetTake(superitem, i)
+    retval, this_superitem_take_active_flag = reaper.GetSetMediaItemTakeInfo_String(this_superitem_take, superitem_superglue_active_take_key, "", false)
+
+    if this_superitem_take_active_flag == "true" then
+      superitem_params.superglue_active_take_num = i
+
+      reaper.SetActiveTake(this_superitem_take)
+
+      break
+    end
+  end
 
   for i = 0, superitem_takes_count-2 do
     duplicated_item_target_take_num, offline_takes_msg_shown = explodeSuperitemTake(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
@@ -2908,7 +2928,7 @@ function handleDuplicatedItemTargetTake(i, this_duplicated_item, duplicated_item
 
   duplicated_item_target_take_num = duplicated_item_target_take_num + i
 
-  if duplicated_item_target_take_num == superitem_params.active_take_num then
+  if duplicated_item_target_take_num == superitem_params.superglue_active_take_num then
     duplicated_item_target_take_num = duplicated_item_target_take_num + 1
   end
 
