@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.769
--- @changelog Multitake bugs (https://github.com/MonkeyBars3k/ReaScripts/issues/201)
+-- @version 1.770
+-- @changelog Reglue: Take envelope points don't get adjusted if no position propagation but should (https://github.com/MonkeyBars3k/ReaScripts/issues/213)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2547,6 +2547,9 @@ function adjustActivePoolSibling(instance, active_superitem_instance_params)
     reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
     
     return negative_position_delta
+
+  else
+    adjustPostGlueTakeEnvelopes(instance)
   end
 end
 
