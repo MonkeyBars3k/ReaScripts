@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.775
--- @changelog Add option: Adjust length propagation to stretched value (https://github.com/MonkeyBars3k/ReaScripts/issues/211); Length propagation dialog runs on every sibling update (https://github.com/MonkeyBars3k/ReaScripts/issues/220); Length propagation checks against siblings (https://github.com/MonkeyBars3k/ReaScripts/issues/221)
+-- @version 1.776
+-- @changelog new_superglue_random_color
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -254,6 +254,15 @@ function toggleOption(option_name)
 
   elseif current_val == "true" then
     new_val = "false"
+
+  elseif current_val == "always" then
+    new_val = "ask"
+
+  elseif current_val == "ask" then
+    new_val = "no"
+
+  elseif current_val == "no" then
+    new_val = "always"
   end
 
   reaper.SetExtState(_global_options_section, active_option.ext_state_key, new_val, true)
