@@ -39,6 +39,7 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
 - **Using just the container feature:** The most basic application of Superglue is probably just treating your Superitem as a container item that can be edited easily later, i.e. a more convenient way to group items.
 - Check out **all the scripts** that get installed when you sync the ReaPack repo. There are some very useful utilities.
 - Make sure to examine the **options window** which enables numerous configurations for various use cases.
+- While Superglue does add a default Pool indicator prefix to Superitem take names, you may end up changing the name. In this and other cases, it's useful to open up the **Superglue item info window** to see its Parent Pool ID and other relevant Superglue data.
 
 ### Requirements
 - Requires **Reaper v6.43** or newer
