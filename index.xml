@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="3a3517b1d2ba326f918f013d948d0f009eae5881">
+<index version="1" name="MonkeyBars-ReaScripts" commit="29aaf5ca254f1e0ec94e44d9677ec66cb54252a0">
   <category name="Superglue">
     <reapack name="MB_Superglue - Display selected Superglue item info.lua" type="script" desc="MB_Superglue - Display selected Superglue item info">
       <metadata>
@@ -660,6 +660,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/3a3517b1d2ba326f918f013d948d0f009eae5881/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3a3517b1d2ba326f918f013d948d0f009eae5881/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3a3517b1d2ba326f918f013d948d0f009eae5881/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.775" author="MonkeyBars" time="2022-02-23T22:38:18Z">
+        <changelog><![CDATA[Add option: Adjust length propagation to stretched value (https://github.com/MonkeyBars3k/ReaScripts/issues/211); Length propagation dialog runs on every sibling update (https://github.com/MonkeyBars3k/ReaScripts/issues/220); Length propagation checks against siblings (https://github.com/MonkeyBars3k/ReaScripts/issues/221)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/29aaf5ca254f1e0ec94e44d9677ec66cb54252a0/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/29aaf5ca254f1e0ec94e44d9677ec66cb54252a0/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/29aaf5ca254f1e0ec94e44d9677ec66cb54252a0/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/29aaf5ca254f1e0ec94e44d9677ec66cb54252a0/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/29aaf5ca254f1e0ec94e44d9677ec66cb54252a0/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
