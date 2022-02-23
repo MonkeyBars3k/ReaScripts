@@ -28,11 +28,11 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
   - A.k.a.: Glue Groups, Item Containers, Container Items, Pooled Item Boxes, Pooled Audio Items
 - Provides the missing **pooled audio items** feature in Reaper!
   - Superitem copies are **pooled by default**. Editing and regluing one Superitem **updates all instances**.
-  - Run the script to Remove Superitem from current Pool to place a Superitem on its own new Pool.
-  - Disable Superitem pooling by enabling the option to Remove Superitem siblings from Pool on Glue. Careful: this removes formerly copied Superitems from their pools. If you want a mix of pooled and unpooled Superitems, it's recommended to run the script to Remove Superitem from Pool manually as needed.
+  - Run the script to **Remove Superitem from current Pool** to place a Superitem on its own new Pool.
+  - Disable Superitem pooling by enabling the option to **Remove Superitem siblings from Pool on Glue**. Careful: this removes formerly copied Superitems from their pools. If you want a mix of pooled and unpooled Superitems, it's recommended to run the script to Remove Superitem from Pool manually as needed.
 - Supports **nesting Superitems** inside _other_ Superitems! When you update the nested Superitem, Superglue checks the parent item and updates that Superitem as well. There is no limit in the code as to how many times you can nest Superitems – tested with 20 levels of nesting.
-- Superglue has its own script options that can be selected by the user. Just run the script to open the options window and try them out. Scripts are supplied to toggle Boolean (on/off) options.
-  - You can toggle expansion to time selection in the options window.
+- Superglue has its own script options that can be selected by the user. Just run the script to **open the options window** and try them out. Scripts are supplied to toggle Boolean (on/off) options.
+  - You can **toggle expansion to time selection** in the options window.
 
 ### Tips
 - **Using just the pooled audio item feature:** Feel free to Superglue a _single audio item_ and make copies of that! Since every Superitem you copy is a pooled audio item, all you need to ensure all the copies stay updated is to Edit any one of the pooled Superitems and Reglue.
