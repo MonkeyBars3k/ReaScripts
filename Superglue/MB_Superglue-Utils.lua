@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.776
--- @changelog new_superglue_random_color
+-- @version 1.778
+-- @changelog Make toggle scripts for all options (https://github.com/MonkeyBars3k/ReaScripts/issues/222) - REUPLOAD CORRECTING MISTAKEN DEPLOYMENT
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
