@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.777
--- @changelog Clean up Preglue functions (https://github.com/MonkeyBars3k/ReaScripts/issues/223)
+-- @version 1.776
+-- @changelog new_superglue_random_color
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -17,10 +17,10 @@
 -- Superglue uses the great GUI library Reaper Toolkit (https://reapertoolkit.dev/) 
 -- Superglue uses serpent, a serialization library for LUA, for table-string and string-table conversion. https://github.com/pkulchenko/serpent
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
--- Data is also stored in media items' and take P_EXT.
+-- Data is also stored in media items' P_EXT.
 -- General utility functions at bottom
 
--- for dev only:
+-- for dev only
 -- require("sg-dev-functions")
  
 
@@ -28,7 +28,7 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_playrate, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_propagate_response, _active_instance_length_has_changed, _length_propagate_response, _playrate_affects_propagation_response, _user_wants_to_depool_all_siblings, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_playrate_affects_propagation_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _all_global_options_params
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_playrate, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_propagate_response, _active_instance_length_has_changed, _length_propagate_response, _playrate_affects_propagation_response, _user_wants_to_depool_all_siblings, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_playrate_affects_propagation_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
@@ -125,13 +125,12 @@ _global_option_toggle_expand_to_time_selection_key = "expand_to_time_selection_e
 _global_option_toggle_auto_increase_channel_count_key = "auto_increase_channel_count_enabled"
 _global_option_toggle_item_images_key = "item_images_enabled"
 _global_option_toggle_new_superglue_random_color_key = "new_superglue_random_color_enabled"
+_global_option_propagate_position_default_key = "propagate_position_default"
+_global_option_propagate_length_default_key = "propagate_length_default"
+_global_option_playrate_affects_propagation_default_key = "playrate_affects_propagation_by_default"
 _global_option_toggle_sizing_region_deletion_msg_key = "sizing_region_deletion_msg_enabled"
 _global_option_toggle_depool_all_siblings_on_reglue_key = "depool_all_siblings_on_reglue_enabled"
 _global_option_toggle_depool_all_siblings_on_reglue_warning_key = "depool_all_siblings_on_reglue_warning_enabled"
-_global_option_maintain_source_position_default_key = "maintain_source_position_default"
-_global_option_propagate_position_default_key = "propagate_position_default"
-_global_option_propagate_length_default_key = "propagate_length_default"
-_global_option_playrate_affects_propagation_default_key = "playrate_affects_propagation_default"
 _all_global_options_params = {
   {
     ["name"] = "expand_to_time_selection",
@@ -174,18 +173,6 @@ _all_global_options_params = {
     ["ext_state_key"] = _global_option_toggle_depool_all_siblings_on_reglue_key,
     ["user_readable_text"] = "Remove all sibling instances from pool on Reglue (disable & undo pooling)",
     ["default_value"] = "false"
-  },
-  {
-    ["name"] = "maintain_source_position_default",
-    ["type"] = "dropdown",
-    ["ext_state_key"] = _global_option_maintain_source_position_default_key,
-    ["user_readable_text"] = "Maintain audio source position of siblings on Reglue by default",
-    ["values"] = {
-      {"always", "Always propagate"},
-      {"ask", "Ask"},
-      {"no", "Don't propagate"}
-    },
-    ["default_value"] = "always"
   },
   {
     ["name"] = "propagate_position_change_default",
@@ -1036,7 +1023,7 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, depool_superitem_params, this_is_parent_update)
-  local first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, this_is_reglue, selected_item_states, selected_instances_pool_ids, selected_items_length, superitem
+  local first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, this_is_reglue, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position, selected_items_length, superitem
 
   first_selected_item = getFirstSelectedItem()
   first_selected_item_name = getSetItemName(first_selected_item)
@@ -1044,10 +1031,11 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   deselectAllItems()
 
   pool_id, sizing_params, time_selection_was_set_by_code, this_is_reglue = setUpGlue(depool_superitem_params, this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items)
-  selected_item_states, selected_instances_pool_ids, selected_items_length = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
+-- IS earliest_item_delta_to_superitem_position ACTUALLY BEING UTILIZED ANYWHERE?
+  selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position, selected_items_length = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
   superitem = glueSelectedItemsIntoSuperitem()
 
-  handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, selected_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+  handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, earliest_item_delta_to_superitem_position, selected_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
 
   return superitem
 end
@@ -1434,8 +1422,9 @@ end
 
 
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
-  local selected_item_states, selected_instances_pool_ids, i, selected_items_position, last_selected_item_position, last_selected_item_length, selected_items_end_point, selected_items_length
+  local earliest_item_delta_to_superitem_position, selected_item_states, selected_instances_pool_ids, i, selected_items_position, last_selected_item_position, last_selected_item_length, selected_items_end_point, selected_items_length
 
+  earliest_item_delta_to_superitem_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
   selected_item_states, selected_instances_pool_ids = getItemStates(selected_items, pool_id)
 
   storeItemStates(pool_id, selected_item_states)
@@ -1454,15 +1443,16 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, first_select
   selected_items_end_point = last_selected_item_position + last_selected_item_length
   selected_items_length = selected_items_end_point - selected_items_position
 
-  return selected_item_states, selected_instances_pool_ids, selected_items_length
+  return selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position, selected_items_length
 end
 
 
 function setPreglueItemsData(preglue_items, pool_id, sizing_params)
-  local this_is_new_glue, this_is_reglue_or_depool, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superitem_position
+  local this_is_new_glue, this_is_reglue_or_depool, earliest_item_delta_to_superitem_position, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superitem_position
 
   this_is_new_glue = not sizing_params
   this_is_reglue_or_depool = sizing_params
+  earliest_item_delta_to_superitem_position = 0
 
   for i = 1, #preglue_items do
     this_item = preglue_items[i]
@@ -1483,9 +1473,12 @@ function setPreglueItemsData(preglue_items, pool_id, sizing_params)
     end
     
     this_item_delta_to_superitem_position = this_item_position - offset_position
+    earliest_item_delta_to_superitem_position = math.min(earliest_item_delta_to_superitem_position, this_item_delta_to_superitem_position)
 
     storeRetrieveItemData(this_item, _item_offset_to_superitem_position_key_suffix, this_item_delta_to_superitem_position)
   end
+
+  return earliest_item_delta_to_superitem_position
 end
 
 
@@ -1667,7 +1660,7 @@ function glueSelectedItemsToTimeSelection()
 end
 
 
-function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, child_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, earliest_item_delta_to_superitem_position, child_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
   local user_selected_instance_is_being_reglued, superitem_init_name
 
   user_selected_instance_is_being_reglued = not this_is_parent_update
