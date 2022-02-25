@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.778
--- @changelog Make toggle scripts for all options (https://github.com/MonkeyBars3k/ReaScripts/issues/222) - REUPLOAD CORRECTING MISTAKEN DEPLOYMENT
+-- @version 1.779
+-- @changelog Clean up Preglue functions (https://github.com/MonkeyBars3k/ReaScripts/issues/223); Length doesn't propagate (https://github.com/MonkeyBars3k/ReaScripts/issues/225)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1023,7 +1023,7 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, restored_items_position_adjustment, depool_superitem_params, this_is_parent_update)
-  local first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, this_is_reglue, selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position, selected_items_length, superitem
+  local first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, this_is_reglue, selected_item_states, selected_instances_pool_ids, selected_items_length, superitem
 
   first_selected_item = getFirstSelectedItem()
   first_selected_item_name = getSetItemName(first_selected_item)
@@ -1031,11 +1031,10 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   deselectAllItems()
 
   pool_id, sizing_params, time_selection_was_set_by_code, this_is_reglue = setUpGlue(depool_superitem_params, this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items)
--- IS earliest_item_delta_to_superitem_position ACTUALLY BEING UTILIZED ANYWHERE?
-  selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position, selected_items_length = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
+  selected_item_states, selected_instances_pool_ids, selected_items_length = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
   superitem = glueSelectedItemsIntoSuperitem()
 
-  handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, earliest_item_delta_to_superitem_position, selected_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+  handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, selected_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
 
   return superitem
 end
@@ -1422,9 +1421,9 @@ end
 
 
 function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
-  local earliest_item_delta_to_superitem_position, selected_item_states, selected_instances_pool_ids, i, selected_items_position, last_selected_item_position, last_selected_item_length, selected_items_end_point, selected_items_length
+  local selected_item_states, selected_instances_pool_ids, i, selected_items_position, last_selected_item_position, last_selected_item_length, selected_items_end_point, selected_items_length
 
-  earliest_item_delta_to_superitem_position = setPreglueItemsData(selected_items, pool_id, sizing_params)
+  setPreglueItemsData(selected_items, pool_id, sizing_params)
   selected_item_states, selected_instances_pool_ids = getItemStates(selected_items, pool_id)
 
   storeItemStates(pool_id, selected_item_states)
@@ -1443,16 +1442,15 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, first_select
   selected_items_end_point = last_selected_item_position + last_selected_item_length
   selected_items_length = selected_items_end_point - selected_items_position
 
-  return selected_item_states, selected_instances_pool_ids, earliest_item_delta_to_superitem_position, selected_items_length
+  return selected_item_states, selected_instances_pool_ids, selected_items_length
 end
 
 
 function setPreglueItemsData(preglue_items, pool_id, sizing_params)
-  local this_is_new_glue, this_is_reglue_or_depool, earliest_item_delta_to_superitem_position, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position, this_item_delta_to_superitem_position
+  local this_is_new_glue, this_is_reglue_or_depool, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position
 
   this_is_new_glue = not sizing_params
   this_is_reglue_or_depool = sizing_params
-  earliest_item_delta_to_superitem_position = 0
 
   for i = 1, #preglue_items do
     this_item = preglue_items[i]
@@ -1471,14 +1469,7 @@ function setPreglueItemsData(preglue_items, pool_id, sizing_params)
     elseif this_is_reglue_or_depool then
       offset_position = math.min(first_item_position, sizing_params.position)
     end
-    
-    this_item_delta_to_superitem_position = this_item_position - offset_position
-    earliest_item_delta_to_superitem_position = math.min(earliest_item_delta_to_superitem_position, this_item_delta_to_superitem_position)
-
-    storeRetrieveItemData(this_item, _item_offset_to_superitem_position_key_suffix, this_item_delta_to_superitem_position)
   end
-
-  return earliest_item_delta_to_superitem_position
 end
 
 
@@ -1660,7 +1651,7 @@ function glueSelectedItemsToTimeSelection()
 end
 
 
-function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, earliest_item_delta_to_superitem_position, child_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, child_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
   local user_selected_instance_is_being_reglued, superitem_init_name
 
   user_selected_instance_is_being_reglued = not this_is_parent_update
@@ -2622,39 +2613,8 @@ function adjustActivePoolSibling(instance, active_superitem_instance_params)
   global_option_playrate_affects_propagation = reaper.GetExtState(_global_options_section, _global_option_playrate_affects_propagation_default_key)
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _api_item_length_key)
 
-  adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, global_option_playrate_affects_propagation)
   adjustActivePoolSiblingPosition(instance, instance_current_length, global_option_playrate_affects_propagation)
-end
-
-
-function adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, global_option_playrate_affects_propagation)
-  local user_wants_to_propagate_length, user_wants_playrate_to_affect_propagation, instance_active_take, instance_active_take_playrate, instance_adjusted_length
-
-  if not _length_propagate_response and _active_instance_length_has_changed then
-    _length_propagate_response = launchPropagateDialog("length")
-  end
-
-  user_wants_to_propagate_length = _length_propagate_response == _msg_response_yes
-
-  if user_wants_to_propagate_length then
-
-    if not _playrate_affects_propagation_response and global_option_playrate_affects_propagation == "ask" then
-      _playrate_affects_propagation_response = reaper.ShowMessageBox("", "Do you want sibling Superitems' take playrate to affect their new position and/or length?", _msg_type_yes_no)
-    end
-
-    user_wants_playrate_to_affect_propagation = global_option_playrate_affects_propagation == "always" or _playrate_affects_propagation_response == _msg_response_yes
-
-    if user_wants_playrate_to_affect_propagation then
-      instance_active_take = reaper.GetActiveTake(instance)
-      instance_active_take_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_playrate)
-      instance_adjusted_length = active_superitem_instance_params.length / instance_active_take_playrate
-
-    else
-      instance_adjusted_length = active_superitem_instance_params.length
-    end
-
-    reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
-  end
+  adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, global_option_playrate_affects_propagation)
 end
 
 
@@ -2690,6 +2650,37 @@ function adjustActivePoolSiblingPosition(instance, instance_current_length, glob
 
   else
     adjustPostGlueTakeMarkersAndEnvelopes(instance)
+  end
+end
+
+
+function adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, global_option_playrate_affects_propagation)
+  local user_wants_to_propagate_length, user_wants_playrate_to_affect_propagation, instance_active_take, instance_active_take_playrate, instance_adjusted_length
+
+  if not _length_propagate_response and _active_instance_length_has_changed then
+    _length_propagate_response = launchPropagateDialog("length")
+  end
+
+  user_wants_to_propagate_length = _length_propagate_response == _msg_response_yes
+
+  if user_wants_to_propagate_length then
+
+    if not _playrate_affects_propagation_response and global_option_playrate_affects_propagation == "ask" then
+      _playrate_affects_propagation_response = reaper.ShowMessageBox("", "Do you want sibling Superitems' take playrate to affect their new position and/or length?", _msg_type_yes_no)
+    end
+
+    user_wants_playrate_to_affect_propagation = global_option_playrate_affects_propagation == "always" or _playrate_affects_propagation_response == _msg_response_yes
+
+    if user_wants_playrate_to_affect_propagation then
+      instance_active_take = reaper.GetActiveTake(instance)
+      instance_active_take_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_playrate)
+      instance_adjusted_length = active_superitem_instance_params.length / instance_active_take_playrate
+
+    else
+      instance_adjusted_length = active_superitem_instance_params.length
+    end
+
+    reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
   end
 end
 
