@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.780
--- @changelog Increased length from contained items doesn't propagate (https://github.com/MonkeyBars3k/ReaScripts/issues/226)
+-- @version 1.781
+-- @changelog rtk windows opening at varying widths in different resolutions (https://github.com/MonkeyBars3k/ReaScripts/issues/227)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -271,11 +271,11 @@ end
 
 
 function openOptionsWindow()
-  local all_option_controls, options_window, options_window_content, options_window_title, option_form_buttons, option_form_submit, option_form_cancel
+  local all_option_controls, option_window_width, options_window, options_window_content, options_window_title, option_form_buttons, option_form_submit, option_form_cancel
 
   all_option_controls = {}
   options_window = rtk.Window{halign = "center", margin = 20}
-  options_window_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
+  options_window_content = rtk.VBox{w = 0.85, padding = "0 20 20 20"}
   options_window_title = rtk.Heading{_script_brand_name .. " Global Options", w = 1, margin = 35, halign = "center"}
   option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
   option_form_submit = rtk.Button{"Submit", color = "#656565", textcolor = "#343434", elevation = 0, hover = true, gradient = 0}
@@ -298,15 +298,17 @@ end
 
 
 function populateOptionsWindow(option_form_buttons, options_window_content, options_window)
-  local options_window_content_height
+  local options_window_content_height, options_window_width
 
   options_window_content:add(option_form_buttons)
   options_window:add(options_window_content)
   options_window:open{halign = "center", valign = "center"}
 
-  options_window_content_height = options_window_content:calc("h")
+  options_window_content_height = options_window_content:calc("h") / rtk.scale.system
+  options_window_width = 800
   
   options_window:attr("h", options_window_content_height)
+  options_window:attr("w", options_window_width)
 end
 
 
@@ -511,7 +513,7 @@ end
 
 
 function populateItemInfoWindow(selected_item, selected_item_params)
-  local item_info_window, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height
+  local item_info_window, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height, item_info_window_width
 
   item_info_window = rtk.Window{halign = "center", margin = 20}
   item_info_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
@@ -532,8 +534,10 @@ function populateItemInfoWindow(selected_item, selected_item_params)
   item_info_window:open{halign = "center", valign = "center"}
 
   item_info_content_height = item_info_content:calc("h")
+  item_info_window_width = 800
   
   item_info_window:attr("h", item_info_content_height)
+  item_info_window:attr("w", item_info_window_width)
 end
 
 
