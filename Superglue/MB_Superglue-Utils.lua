@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.779
--- @changelog Clean up Preglue functions (https://github.com/MonkeyBars3k/ReaScripts/issues/223); Length doesn't propagate (https://github.com/MonkeyBars3k/ReaScripts/issues/225)
+-- @version 1.780
+-- @changelog Increased length from contained items doesn't propagate (https://github.com/MonkeyBars3k/ReaScripts/issues/226)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -28,7 +28,7 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_playrate, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_propagate_response, _active_instance_length_has_changed, _length_propagate_response, _playrate_affects_propagation_response, _user_wants_to_depool_all_siblings, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_playrate_affects_propagation_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_playrate, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_propagate_response, _active_instance_length_has_changed, _pool_parent_last_glue_length, _length_propagate_response, _playrate_affects_propagation_response, _user_wants_to_depool_all_siblings, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_playrate_affects_propagation_default_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
@@ -117,6 +117,7 @@ _ancestor_pools_params = {}
 _position_changed_since_last_glue = false
 _position_propagate_response = nil
 _active_instance_length_has_changed = nil
+_pool_parent_last_glue_length = nil
 _length_propagate_response = nil
 _playrate_affects_propagation_response = nil
 _user_wants_to_depool_all_siblings = nil
@@ -1161,10 +1162,13 @@ end
 
 
 function setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items)
-  local obey_time_selection, user_selected_instance_is_being_reglued
+  local obey_time_selection, user_selected_instance_is_being_reglued, pool_parent_length_key_label, retval
 
   obey_time_selection = reaper.GetExtState(_global_options_section, _global_option_toggle_expand_to_time_selection_key)
   user_selected_instance_is_being_reglued = not this_is_parent_update
+  pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
+  retval, _pool_parent_last_glue_length = storeRetrieveProjectData(pool_parent_length_key_label)
+  _pool_parent_last_glue_length = tonumber(_pool_parent_last_glue_length)
 
   if user_selected_instance_is_being_reglued then
     return setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, pool_id, obey_time_selection)
@@ -1176,18 +1180,15 @@ end
 
 
 function setUpParentUpdate(first_selected_item_track, pool_id, restored_items_position_adjustment, obey_time_selection)
-  local pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_length, pool_parent_last_glue_end_point, sizing_params, time_selection_was_set_by_code
+  local pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_end_point, sizing_params, time_selection_was_set_by_code
 
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
-  pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   retval, pool_parent_last_glue_position = storeRetrieveProjectData(pool_parent_position_key_label)
-  retval, pool_parent_last_glue_length = storeRetrieveProjectData(pool_parent_length_key_label)
   pool_parent_last_glue_position = tonumber(pool_parent_last_glue_position)
-  pool_parent_last_glue_length = tonumber(pool_parent_last_glue_length)
-  pool_parent_last_glue_end_point = pool_parent_last_glue_position + pool_parent_last_glue_length
+  pool_parent_last_glue_end_point = pool_parent_last_glue_position + _pool_parent_last_glue_length
   sizing_params = {
     ["position"] = pool_parent_last_glue_position - restored_items_position_adjustment,
-    ["length"] = pool_parent_last_glue_length - restored_items_position_adjustment,
+    ["length"] = _pool_parent_last_glue_length - restored_items_position_adjustment,
     ["end_point"] = pool_parent_last_glue_end_point - restored_items_position_adjustment
   }
 
@@ -1424,6 +1425,7 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, first_select
   local selected_item_states, selected_instances_pool_ids, i, selected_items_position, last_selected_item_position, last_selected_item_length, selected_items_end_point, selected_items_length
 
   setPreglueItemsData(selected_items, pool_id, sizing_params)
+
   selected_item_states, selected_instances_pool_ids = getItemStates(selected_items, pool_id)
 
   storeItemStates(pool_id, selected_item_states)
@@ -1697,16 +1699,16 @@ end
 
 
 function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, selected_items_length, this_is_reglue)
-  local pool_parent_position_key_label, pool_parent_length_key_label, pool_parent_params, superitem_active_take, superitem_superglue_active_take_key
+  local pool_parent_position_key_label, pool_parent_length_key_label, superitem_params, superitem_active_take, superitem_superglue_active_take_key
 
   pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
-  pool_parent_params = getSetItemParams(superitem)
+  superitem_params = getSetItemParams(superitem)
   superitem_active_take = reaper.GetActiveTake(superitem)
   superitem_superglue_active_take_key = _api_data_key .. _global_script_prefix .. _pool_key_prefix .. pool_id .. _superglue_active_take_key_suffix
 
   if not _active_instance_length_has_changed then
-    _active_instance_length_has_changed = pool_parent_params.length ~= selected_items_length
+    _active_instance_length_has_changed = _pool_parent_last_glue_length ~= selected_items_length
   end
 
   if not this_is_reglue then
@@ -1717,8 +1719,8 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
   addRemoveItemImage(superitem, "superitem")
   storeRetrieveSuperitemParams(pool_id, _postglue_action_step, superitem)
   storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, pool_id)
-  storeRetrieveProjectData(pool_parent_position_key_label, pool_parent_params.position)
-  storeRetrieveProjectData(pool_parent_length_key_label, pool_parent_params.length)
+  storeRetrieveProjectData(pool_parent_position_key_label, superitem_params.position)
+  storeRetrieveProjectData(pool_parent_length_key_label, superitem_params.length)
   reaper.GetSetMediaItemTakeInfo_String(superitem_active_take, superitem_superglue_active_take_key, "true", true)
 end
 
@@ -2281,7 +2283,7 @@ function restoreStoredItems(pool_id, active_track, superitem, superitem_preedit_
   end
 
   for restored_instance_pool_id, this_instance_params in pairs(restored_instances_near_project_start) do
-    handleInstanceNearProjectStart(superitem, this_instance_params, this_is_parent_update)
+    handleRestoredInstanceNearProjectStart(superitem, this_instance_params, this_is_parent_update)
   end
 
   return restored_items
@@ -2347,7 +2349,7 @@ function handleRestoredItem(active_track, stored_item_state, superitem_preedit_p
 end
 
 
-function handleInstanceNearProjectStart(superitem, instance_params)
+function handleRestoredInstanceNearProjectStart(superitem, instance_params)
   local superitem_params, restored_instance_last_glue_delta_to_parent, instance_adjusted_position, instance_is_closer_to_project_start_than_negative_position_change, instance_adjustment_delta, instance_active_take, instance_current_src_offset, instance_adjusted_src_offset
   
   superitem_params = getSetItemParams(superitem)
@@ -2608,18 +2610,18 @@ end
 
 
 function adjustActivePoolSibling(instance, active_superitem_instance_params)
-  local global_option_playrate_affects_propagation, instance_current_length
+  local global_option_playrate_affects_propagation, instance_current_length, instance_position_change_affect_on_length
 
   global_option_playrate_affects_propagation = reaper.GetExtState(_global_options_section, _global_option_playrate_affects_propagation_default_key)
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _api_item_length_key)
-
-  adjustActivePoolSiblingPosition(instance, instance_current_length, global_option_playrate_affects_propagation)
-  adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, global_option_playrate_affects_propagation)
+  instance_position_change_affect_on_length = adjustActivePoolSiblingPosition(instance, instance_current_length, global_option_playrate_affects_propagation)
+  
+  adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, instance_position_change_affect_on_length, global_option_playrate_affects_propagation)
 end
 
 
 function adjustActivePoolSiblingPosition(instance, instance_current_length, global_option_playrate_affects_propagation)
-  local active_instance_position_has_changed, user_wants_position_change, user_wants_playrate_to_affect_propagation, instance_current_src_offset, negative_position_delta, instance_active_take_playrate, instance_length_adjustment_delta, instance_adjusted_length
+  local active_instance_position_has_changed, user_wants_position_propagation, instance_current_src_offset, instance_position_change_affect_on_length, instance_active_take_playrate, instance_adjusted_length
 
   active_instance_position_has_changed = not _position_propagate_response and _position_changed_since_last_glue == true
 
@@ -2627,57 +2629,43 @@ function adjustActivePoolSiblingPosition(instance, instance_current_length, glob
     _position_propagate_response = launchPropagateDialog("position")
   end
 
-  user_wants_position_change = _position_propagate_response == _msg_response_yes
+  user_wants_position_propagation = _position_propagate_response == _msg_response_yes
 
-  if user_wants_position_change then
-    if not _playrate_affects_propagation_response and global_option_playrate_affects_propagation == "ask" then
-      _playrate_affects_propagation_response = reaper.ShowMessageBox("", "Do you want sibling Superitems' take playrate to affect their new length?", _msg_type_yes_no)
-    end
-
-    user_wants_playrate_to_affect_propagation = global_option_playrate_affects_propagation == "always" or _playrate_affects_propagation_response == _msg_response_yes
-    instance_current_src_offset, negative_position_delta, instance_active_take_playrate = propagateActivePoolSiblingPosition(instance, user_wants_playrate_to_affect_propagation)
-    instance_length_adjustment_delta = instance_current_src_offset - _superitem_instance_offset_delta_since_last_glue + negative_position_delta
-
-    if user_wants_playrate_to_affect_propagation then
-      instance_length_adjustment_delta = instance_length_adjustment_delta / instance_active_take_playrate
-    end
-
-    instance_adjusted_length = instance_current_length + instance_length_adjustment_delta
-
-    reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
-    
-    return negative_position_delta
+  if user_wants_position_propagation then
+    instance_current_src_offset, instance_position_change_affect_on_length, instance_active_take_playrate = propagateActivePoolSiblingPosition(instance, global_option_playrate_affects_propagation)
 
   else
     adjustPostGlueTakeMarkersAndEnvelopes(instance)
+
+    instance_position_change_affect_on_length = 0
   end
+    
+  return instance_position_change_affect_on_length
 end
 
 
-function adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, global_option_playrate_affects_propagation)
-  local user_wants_to_propagate_length, user_wants_playrate_to_affect_propagation, instance_active_take, instance_active_take_playrate, instance_adjusted_length
+function adjustActivePoolSiblingLength(instance, instance_current_length, active_superitem_instance_params, instance_position_change_affect_on_length, global_option_playrate_affects_propagation)
+  local user_wants_length_propagation, user_wants_playrate_to_affect_propagation, instance_active_take, instance_active_take_playrate, instance_adjusted_length
 
   if not _length_propagate_response and _active_instance_length_has_changed then
     _length_propagate_response = launchPropagateDialog("length")
   end
 
-  user_wants_to_propagate_length = _length_propagate_response == _msg_response_yes
+  user_wants_length_propagation = _length_propagate_response == _msg_response_yes
 
-  if user_wants_to_propagate_length then
+  if user_wants_length_propagation then
 
     if not _playrate_affects_propagation_response and global_option_playrate_affects_propagation == "ask" then
       _playrate_affects_propagation_response = reaper.ShowMessageBox("", "Do you want sibling Superitems' take playrate to affect their new position and/or length?", _msg_type_yes_no)
     end
 
     user_wants_playrate_to_affect_propagation = global_option_playrate_affects_propagation == "always" or _playrate_affects_propagation_response == _msg_response_yes
+    instance_adjusted_length = active_superitem_instance_params.length + instance_position_change_affect_on_length
 
     if user_wants_playrate_to_affect_propagation then
       instance_active_take = reaper.GetActiveTake(instance)
       instance_active_take_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_playrate)
-      instance_adjusted_length = active_superitem_instance_params.length / instance_active_take_playrate
-
-    else
-      instance_adjusted_length = active_superitem_instance_params.length
+      instance_adjusted_length = instance_adjusted_length / instance_active_take_playrate
     end
 
     reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
@@ -2713,14 +2701,48 @@ function launchPropagateDialog(param)
 end
 
 
-function propagateActivePoolSiblingPosition(instance, user_wants_playrate_to_affect_propagation)
-  local instance_active_take, instance_current_position, instance_current_src_offset, instance_active_take_playrate, instance_position_adjustment_delta, instance_adjusted_position, instance_would_get_adjusted_before_project_start, instance_src_offset_adjustment_delta, instance_adjusted_src_offset, negative_position_delta
+function propagateActivePoolSiblingPosition(instance, global_option_playrate_affects_propagation)
+  local instance_active_take, instance_current_position, instance_current_src_offset, instance_active_take_playrate, user_wants_playrate_to_affect_propagation, instance_adjusted_position, instance_would_get_adjusted_before_project_start, instance_position_change_affect_on_length
+
+  instance_active_take, instance_current_position, instance_current_src_offset, instance_active_take_playrate, user_wants_playrate_to_affect_propagation, instance_adjusted_position, instance_would_get_adjusted_before_project_start = setUpSiblingPositionPropagation(instance, global_option_playrate_affects_propagation)
+
+  if instance_would_get_adjusted_before_project_start then
+    instance_position_change_affect_on_length = propagatePositionOnSiblingNearProjectStart(instance, instance_active_take, instance_current_src_offset, instance_current_position, instance_active_take_playrate, user_wants_playrate_to_affect_propagation)
+
+  else
+    adjustPostGlueTakeMarkersAndEnvelopes(instance)
+    reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
+    reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, _src_offset_reset_value)
+
+    instance_position_change_affect_on_length = 0
+  end
+
+  if user_wants_playrate_to_affect_propagation then
+    instance_position_change_affect_on_length = instance_position_change_affect_on_length / instance_active_take_playrate
+  end
+
+  if instance_position_change_affect_on_length ~= 0 then
+    _active_instance_length_has_changed = true
+  end
+
+  return instance_current_src_offset, instance_position_change_affect_on_length, instance_active_take_playrate
+end
+
+
+function setUpSiblingPositionPropagation(instance, global_option_playrate_affects_propagation)
+  local instance_active_take, instance_current_position, instance_current_src_offset, instance_active_take_playrate, instance_position_adjustment_delta, user_wants_playrate_to_affect_propagation, instance_adjusted_position, instance_would_get_adjusted_before_project_start
 
   instance_active_take = reaper.GetActiveTake(instance)
   instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
   instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key)
   instance_active_take_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_playrate)
   instance_position_adjustment_delta = _superitem_instance_offset_delta_since_last_glue - instance_current_src_offset
+
+  if not _playrate_affects_propagation_response and global_option_playrate_affects_propagation == "ask" then
+    _playrate_affects_propagation_response = reaper.ShowMessageBox("", "Do you want sibling Superitems' take playrate to affect their new length?", _msg_type_yes_no)
+  end
+
+  user_wants_playrate_to_affect_propagation = global_option_playrate_affects_propagation == "always" or _playrate_affects_propagation_response == _msg_response_yes
 
   if user_wants_playrate_to_affect_propagation then
     instance_position_adjustment_delta = instance_position_adjustment_delta / instance_active_take_playrate
@@ -2729,29 +2751,23 @@ function propagateActivePoolSiblingPosition(instance, user_wants_playrate_to_aff
   instance_adjusted_position = instance_current_position + instance_position_adjustment_delta
   instance_would_get_adjusted_before_project_start = instance_adjusted_position < _position_start_of_project
 
-  if instance_would_get_adjusted_before_project_start then
-    instance_src_offset_adjustment_delta = -instance_current_position - _superitem_instance_offset_delta_since_last_glue
+  return instance_active_take, instance_current_position, instance_current_src_offset, instance_active_take_playrate, user_wants_playrate_to_affect_propagation, instance_adjusted_position, instance_would_get_adjusted_before_project_start
+end
 
-    if user_wants_playrate_to_affect_propagation then
-      instance_src_offset_adjustment_delta = instance_src_offset_adjustment_delta / instance_active_take_playrate
-    end
 
-    instance_adjusted_src_offset = instance_current_src_offset + instance_src_offset_adjustment_delta
-    negative_position_delta = -instance_adjusted_src_offset
+function propagatePositionOnSiblingNearProjectStart(instance, instance_active_take, instance_current_src_offset, instance_current_position, instance_active_take_playrate, user_wants_playrate_to_affect_propagation)
+  local instance_src_offset_adjustment_delta, instance_adjusted_src_offset, instance_position_change_affect_on_length
 
-    adjustPostGlueTakeMarkersAndEnvelopes(instance, instance_adjusted_src_offset)
-    reaper.SetMediaItemPosition(instance, _position_start_of_project, false)
-    reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
+  instance_src_offset_adjustment_delta = -instance_current_position - _superitem_instance_offset_delta_since_last_glue
 
-  else
-    adjustPostGlueTakeMarkersAndEnvelopes(instance)
-    reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
-    reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, _src_offset_reset_value)
+  instance_adjusted_src_offset = instance_current_src_offset + instance_src_offset_adjustment_delta
+  instance_position_change_affect_on_length = -instance_adjusted_src_offset
 
-    negative_position_delta = 0
-  end
+  adjustPostGlueTakeMarkersAndEnvelopes(instance, instance_adjusted_src_offset)
+  reaper.SetMediaItemPosition(instance, _position_start_of_project, false)
+  reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
 
-  return instance_current_src_offset, negative_position_delta, instance_active_take_playrate
+  return instance_position_change_affect_on_length
 end
 
 
