@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.781
--- @changelog rtk windows opening at varying widths in different resolutions (https://github.com/MonkeyBars3k/ReaScripts/issues/227)
+-- @version 1.782
+-- @changelog CONT: rtk windows opening at varying widths in different resolutions (https://github.com/MonkeyBars3k/ReaScripts/issues/227)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -298,17 +298,15 @@ end
 
 
 function populateOptionsWindow(option_form_buttons, options_window_content, options_window)
-  local options_window_content_height, options_window_width
+  local options_window_content_height
 
   options_window_content:add(option_form_buttons)
   options_window:add(options_window_content)
   options_window:open{halign = "center", valign = "center"}
 
   options_window_content_height = options_window_content:calc("h") / rtk.scale.system
-  options_window_width = 800
   
   options_window:attr("h", options_window_content_height)
-  options_window:attr("w", options_window_width)
 end
 
 
@@ -456,7 +454,7 @@ function handleItemInfoWindow(selected_item)
   end
 
   if this_is_superitem then
-    selected_item_params = prepareSuperitemInfo(selected_superitem_instance_pool_id, selected_item_parent_pool_id)
+    selected_item_params = prepareItemInfo(selected_superitem_instance_pool_id, selected_item_parent_pool_id)
 
   elseif this_is_child_item then
     selected_item_params = {
@@ -478,7 +476,7 @@ function handleItemInfoWindow(selected_item)
 end
 
 
-function prepareSuperitemInfo(selected_superitem_instance_pool_id, selected_item_parent_pool_id)
+function prepareItemInfo(selected_superitem_instance_pool_id, selected_item_parent_pool_id)
   local selected_superitem_descendant_pool_ids_key, retval, selected_superitem_descendant_pool_ids, stored_item_state_chunks, selected_superitem_descendant_pool_ids_list, selected_superitem_contained_items_count, selected_item_params
 
   selected_superitem_descendant_pool_ids_key = _pool_key_prefix .. selected_superitem_instance_pool_id .. _descendant_pool_ids_key_suffix
@@ -513,7 +511,7 @@ end
 
 
 function populateItemInfoWindow(selected_item, selected_item_params)
-  local item_info_window, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height, item_info_window_width
+  local item_info_window, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height
 
   item_info_window = rtk.Window{halign = "center", margin = 20}
   item_info_content = rtk.VBox{w = 0.75, padding = "0 20 20 20"}
@@ -533,11 +531,9 @@ function populateItemInfoWindow(selected_item, selected_item_params)
   item_info_window:add(item_info_content)
   item_info_window:open{halign = "center", valign = "center"}
 
-  item_info_content_height = item_info_content:calc("h")
-  item_info_window_width = 800
+  item_info_content_height = item_info_content:calc("h") / rtk.scale.system
   
   item_info_window:attr("h", item_info_content_height)
-  item_info_window:attr("w", item_info_window_width)
 end
 
 
