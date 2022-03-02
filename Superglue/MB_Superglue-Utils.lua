@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.784
--- @changelog Remove from Pool doesn't recolor item if enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/228)
+-- @version 1.785
+-- @changelog Issue 228 fix
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1725,6 +1725,10 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
     _active_instance_length_has_changed = _pool_parent_last_glue_length ~= selected_items_length
   end
 
+  if not this_is_reglue then
+    setSuperitemColor()
+  end
+
   setSuperitemName(superitem, superitem_init_name)
   addRemoveItemImage(superitem, "superitem")
   storeRetrieveSuperitemParams(pool_id, _postglue_action_step, superitem)
@@ -1732,42 +1736,6 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
   storeRetrieveProjectData(pool_parent_position_key_label, superitem_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, superitem_params.length)
   reaper.GetSetMediaItemTakeInfo_String(superitem_active_take, superitem_superglue_active_take_key, "true", true)
-end
-
-
-function setSuperitemName(item, superitem_name_ending)
-  local take, new_superitem_name
-
-  take = reaper.GetActiveTake(item)
-  new_superitem_name = _superitem_name_prefix .. superitem_name_ending
-
-  reaper.GetSetMediaItemTakeInfo_String(take, _api_take_name_key, new_superitem_name, true)
-end
-
-
-function storeRetrieveSuperitemParams(pool_id, action_step, superitem)
-  local retrieve, store, superitem_params_key_label, retval, superitem_params
-
-  retrieve = not superitem
-  store = superitem
-  superitem_params_key_label = _pool_key_prefix .. pool_id .. _separator .. action_step .. _superitem_params_suffix
-
-  if retrieve then
-    retval, superitem_params = storeRetrieveProjectData(superitem_params_key_label)
-    retval, superitem_params = serpent.load(superitem_params)
-
-    if superitem_params then
-      superitem_params.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superitem_params.track_guid)
-    end
-
-    return superitem_params
-
-  elseif store then
-    superitem_params = getSetItemParams(superitem)
-    superitem_params = serpent.dump(superitem_params)
-
-    storeRetrieveProjectData(superitem_params_key_label, superitem_params)
-  end
 end
 
 
@@ -1811,6 +1779,16 @@ function getSetItemParams(item, params)
 end
 
 
+function setSuperitemName(item, superitem_name_ending)
+  local take, new_superitem_name
+
+  take = reaper.GetActiveTake(item)
+  new_superitem_name = _superitem_name_prefix .. superitem_name_ending
+
+  reaper.GetSetMediaItemTakeInfo_String(take, _api_take_name_key, new_superitem_name, true)
+end
+
+
 function addRemoveItemImage(item, type_or_remove)
   local item_images_are_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_item_images_key) == "true"
 
@@ -1836,6 +1814,46 @@ function addRemoveItemImage(item, type_or_remove)
 
     reaper.BR_SetMediaItemImageResource(item, img_path, _api_item_image_full_height)
   end
+end
+
+
+function storeRetrieveSuperitemParams(pool_id, action_step, superitem)
+  local retrieve, store, superitem_params_key_label, retval, superitem_params
+
+  retrieve = not superitem
+  store = superitem
+  superitem_params_key_label = _pool_key_prefix .. pool_id .. _separator .. action_step .. _superitem_params_suffix
+
+  if retrieve then
+    retval, superitem_params = storeRetrieveProjectData(superitem_params_key_label)
+    retval, superitem_params = serpent.load(superitem_params)
+
+    if superitem_params then
+      superitem_params.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superitem_params.track_guid)
+    end
+
+    return superitem_params
+
+  elseif store then
+    superitem_params = getSetItemParams(superitem)
+    superitem_params = serpent.dump(superitem_params)
+
+    storeRetrieveProjectData(superitem_params_key_label, superitem_params)
+  end
+end
+
+
+function setSuperitemColor()
+  local global_option_toggle_new_superglue_random_color = reaper.GetExtState(_global_options_section, _global_option_toggle_new_superglue_random_color_key)
+
+  if global_option_toggle_new_superglue_random_color == "true" then
+    setItemToRandomColor()
+  end
+end
+
+
+function setItemToRandomColor()
+  reaper.Main_OnCommand(40706, _api_command_flag)
 end
 
 
@@ -3499,20 +3517,6 @@ function handleDePoolPostGlue(superitem, target_item_state, target_item_params)
   setSuperitemColor()
 
   return new_pool_id
-end
-
-
-function setSuperitemColor()
-  local global_option_toggle_new_superglue_random_color = reaper.GetExtState(_global_options_section, _global_option_toggle_new_superglue_random_color_key)
-
-  if global_option_toggle_new_superglue_random_color == "true" then
-    setItemToRandomColor()
-  end
-end
-
-
-function setItemToRandomColor()
-  reaper.Main_OnCommand(40706, _api_command_flag)
 end
 
 
