@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.783
--- @changelog Add option: Abstract out source placement propagation (https://github.com/MonkeyBars3k/ReaScripts/issues/218)
+-- @version 1.784
+-- @changelog Remove from Pool doesn't recolor item if enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/228)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -21,7 +21,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -1725,10 +1725,6 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
     _active_instance_length_has_changed = _pool_parent_last_glue_length ~= selected_items_length
   end
 
-  if not this_is_reglue then
-    setSuperitemColor()
-  end
-
   setSuperitemName(superitem, superitem_init_name)
   addRemoveItemImage(superitem, "superitem")
   storeRetrieveSuperitemParams(pool_id, _postglue_action_step, superitem)
@@ -1736,20 +1732,6 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
   storeRetrieveProjectData(pool_parent_position_key_label, superitem_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, superitem_params.length)
   reaper.GetSetMediaItemTakeInfo_String(superitem_active_take, superitem_superglue_active_take_key, "true", true)
-end
-
-
-function setSuperitemColor()
-  local global_option_toggle_new_superglue_random_color = reaper.GetExtState(_global_options_section, _global_option_toggle_new_superglue_random_color_key)
-
-  if global_option_toggle_new_superglue_random_color == "true" then
-    setItemToRandomColor()
-  end
-end
-
-
-function setItemToRandomColor()
-  reaper.Main_OnCommand(40706, _api_command_flag)
 end
 
 
@@ -3514,8 +3496,23 @@ function handleDePoolPostGlue(superitem, target_item_state, target_item_params)
   getSetItemStateChunk(superitem, target_item_state)
   getSetItemName(superitem, active_take_name)
   storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, new_pool_id)
+  setSuperitemColor()
 
   return new_pool_id
+end
+
+
+function setSuperitemColor()
+  local global_option_toggle_new_superglue_random_color = reaper.GetExtState(_global_options_section, _global_option_toggle_new_superglue_random_color_key)
+
+  if global_option_toggle_new_superglue_random_color == "true" then
+    setItemToRandomColor()
+  end
+end
+
+
+function setItemToRandomColor()
+  reaper.Main_OnCommand(40706, _api_command_flag)
 end
 
 
