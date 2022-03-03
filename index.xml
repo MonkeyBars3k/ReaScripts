@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="007ba6b4efecb0746b9725adb06075dc792565bf">
+<index version="1" name="MonkeyBars-ReaScripts" commit="f1e5191b0e9540c3d2ae26bfe480a883526fb504">
   <category name="Superglue">
     <reapack name="MB_Superglue - Cycle option, Propagate left edge position change to siblings.lua" type="script" desc="MB_Superglue - Cycle option, Propagate left edge position change to siblings">
       <metadata>
@@ -820,6 +820,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/007ba6b4efecb0746b9725adb06075dc792565bf/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/007ba6b4efecb0746b9725adb06075dc792565bf/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/007ba6b4efecb0746b9725adb06075dc792565bf/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.785" author="MonkeyBars" time="2022-03-02T22:21:01Z">
+        <changelog><![CDATA[Issue 228 fix]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/f1e5191b0e9540c3d2ae26bfe480a883526fb504/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/f1e5191b0e9540c3d2ae26bfe480a883526fb504/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/f1e5191b0e9540c3d2ae26bfe480a883526fb504/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/f1e5191b0e9540c3d2ae26bfe480a883526fb504/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/f1e5191b0e9540c3d2ae26bfe480a883526fb504/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
