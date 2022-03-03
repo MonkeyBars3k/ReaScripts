@@ -39,6 +39,7 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
 - **Using just the container feature:** The most basic application of Superglue is probably just treating your Superitem as a container item that can be edited easily later, i.e. a more convenient way to group items.
 - Check out **all the scripts** that get installed when you sync the ReaPack repo. There are some very useful utilities.
 - Make sure to examine the **options window** which enables numerous configurations for various use cases.
+- Contained Items can extend beyond your Superitem edges, enabling an **extradimensional pocket to hide items in your project** without having to hide a track or add muted items anywhere.
 - While Superglue does add a default Pool indicator prefix to Superitem take names, you may end up changing the name. In this and other cases, it's useful to open up the **Superglue item info window** to see its Parent Pool ID and other relevant Superglue data.
 
 ### Requirements
@@ -53,7 +54,7 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
 - Currently only **MIDI on virtual instrument tracks** is supported.
 - To create **MIDI Superitems**, the script uses "Apply track FX as new take" on each item to get an audio take. When you Edit, the audio take is removed and just the original MIDI take is made active.
 #### Editing Superitems
-- When you Edit a Superitem, a **special white region** is automatically created so you can expand the size of the Superitem past its contained items once it is reglued. Superglue displays a warning message should you delete this "sizing region". (This message can be disabled in the options, in which case when you delete the sizing region, the items will revert to their presuperglued state as if you had Unglued.) **Be careful undoing** sizing region deletion, as the defer loop (constantly checking for sizing region deletion by the user) often gets confused.
+- When you Edit a Superitem, a **special white region** is automatically created so you can alter the Superitem's eventual edge positions after Reglue. Superglue displays a warning message should you delete this "sizing region". (This message can be disabled in the options, in which case when you delete the sizing region, the items will revert to their presuperglued state as if you had Unglued.) **Be careful undoing** sizing region deletion, as the defer loop (constantly checking for sizing region deletion by the user) often gets confused.
 - Be careful Editing a parent Superitem **near project start**. If a child Superitem would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its sibling pooled Superitems.
 - Remember that **restored items can extend beyond the size of your Superitem** on Edit. Stay aware of content in tracks (such as items, track envelopes, etc.) nearby.
 - Reaper throws warnings that scripts are "running again" in various situations with Superglue (since it runs defer scripts), such as when you **Edit more than one Superitem** at the same time, and other cases. In Reaper's dialog, just select that you want to allow the Superglue script in question to run (always, if you don't like getting prompted). ReaScript devs can't get around this message until [this FR](https://forum.cockos.com/showthread.php?t=202416) is implemented.
@@ -70,7 +71,7 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
 - **Child**: A Superitem which is nested (superglued) inside another Superitem (its parent)
 - **Contained items**: Items whose data ("state chunks" in ReaScript parlance) are referenced in a Superitem's data
 - **Descendant**: A Superitem nested one or more levels inside another Superitem – children, grandchildren, etc. are descendants.
-- **Edit**: Restore a Superitem into its "contained" items reversibly/nondestructively, maintaining the ability to reglue them and retain Superitem properties and update its pool siblings
+- **Edit**: Restore a Superitem into its "contained" items reversibly/nondestructively, maintaining the ability to Reglue them and retain Superitem properties and update its pool siblings
 - **Instance**: Any Superitem from a given Pool
 - **Nest**: Superglue a Superitem into or inside another Superitem
 - **Parent**: The Superitem in which another Superitem is directly nested

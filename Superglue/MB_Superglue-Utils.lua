@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.785
--- @changelog Issue 228 fix
+-- @version 1.786
+-- @changelog Sizing region & time selection can shrink final Superitem size (https://github.com/MonkeyBars3k/ReaScripts/issues/207); Restored item bg image not loading in (https://github.com/MonkeyBars3k/ReaScripts/issues/229)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -21,14 +21,14 @@
 -- General utility functions at bottom
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_playrate, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_reset_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _ancestor_pools_params, _position_changed_since_last_glue, _position_propagate_response, _active_instance_length_has_changed, _pool_parent_last_glue_length, _length_propagate_response, _maintain_source_position_response, _playrate_affects_propagation_response, _user_wants_to_depool_all_siblings, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_take_playrate, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _sizing_region_defer_loop_suffix, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _item_offset_to_superitem_position_key_suffix, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _take_playrate_default_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _contained_items_outside, _ancestor_pools_params, _position_changed_since_last_glue, _position_propagate_response, _active_instance_length_has_changed, _pool_parent_last_glue_length, _length_propagate_response, _maintain_source_position_response, _playrate_affects_propagation_response, _user_wants_to_depool_all_siblings, _global_options_section, _global_option_toggle_expand_to_time_selection_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_sizing_region_deletion_msg_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
@@ -46,7 +46,7 @@ _depool_undo_block_string = "MB_Superglue-DePool"
 _smart_action_undo_block_string = "MB_Superglue-Smart-Action"
 _color_undo_block_string = "MB_Superglue-Color"
 _reinstate_sizing_region_undo_block_string = "MB_Superglue-Reinstate-Sizing-Region"
-_sizing_region_label = "SG: DO NOT DELETE – Use to increase size – Pool #"
+_sizing_region_label = "SG: DO NOT DELETE – Use to set Superitem edges – Pool #"
 _sizing_region_color = reaper.ColorToNative(255, 255, 255)|0x1000000
 _api_current_project = 0
 _api_command_flag = 0
@@ -106,13 +106,15 @@ _msg_change_selected_items = "Change the items selected and try again."
 _data_storage_track = reaper.GetMasterTrack(_api_current_project)
 _active_glue_pool_id = nil
 _position_start_of_project = 0
-_src_offset_reset_value = 0
+_src_offset_default_value = 0
+_take_playrate_default_value = 1
 _sizing_region_1st_display_num = 0
 _sizing_region_defer_timing = 0.5
 _superitem_instance_offset_delta_since_last_glue = 0
 _restored_items_project_start_position_delta = 0
 _last_glue_stored_item_states = nil
 _preglue_restored_item_states = nil
+_contained_items_outside = nil
 _ancestor_pools_params = {}
 _position_changed_since_last_glue = false
 _position_propagate_response = nil
@@ -583,7 +585,7 @@ end
 function initAction(action)
   local selected_item_count
 
-  selected_item_count = doPreGlueChecks()
+  selected_item_count = doPreGlueChecks(action)
 
   if selected_item_count == false then return false end
 
@@ -597,7 +599,7 @@ function initAction(action)
 end
 
 
-function doPreGlueChecks()
+function doPreGlueChecks(action)
   local selected_item_count
 
   if renderPathIsValid() == false then return false end
@@ -607,6 +609,12 @@ function doPreGlueChecks()
   if itemsAreSelected(selected_item_count) == false then return false end
 
   if requiredLibsAreInstalled() == false then return false end
+
+  if action == "glue" then
+    
+    if itemsAreOffscreen(selected_item_count, action) == true then return false end
+  
+  end
 
   return selected_item_count
 end
@@ -668,6 +676,56 @@ function requiredLibsAreInstalled()
     
     return false
   end
+end
+
+
+function itemsAreOffscreen(item_count, action)
+  local i, this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg_text_start, offscreen_msg_text_end, offscreen_msg_text_item_type, offscreen_msg_text, items_offscreen_response
+
+  for i = 0, item_count-1 do
+    this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg_text_start, offscreen_msg_text_end = getOffscreenItemParams(i)
+
+    if this_selected_item_is_before_arrange_view or this_selected_item_is_after_arrange_view then
+    
+      if action == "glue" then
+        offscreen_msg_text_item_type = "selected"
+        offscreen_msg_text = _script_brand_name .. ": " .. offscreen_msg_text_start .. offscreen_msg_text_item_type .. offscreen_msg_text_end
+        items_offscreen_response = reaper.ShowMessageBox("Select OK to continue with the items selected or Cancel to abort.", offscreen_msg_text, _msg_type_ok_cancel)
+
+        if items_offscreen_response == _msg_response_ok then
+          return false
+
+        else
+          return true
+        end
+
+      elseif action == "Edit" or action == "Unglue" then
+        offscreen_msg_text_item_type = "restored"
+        offscreen_msg_text = offscreen_msg_text_start .. offscreen_msg_text_item_type .. offscreen_msg_text_end
+
+        reaper.ShowMessageBox(offscreen_msg_text, _script_brand_name .. " Warning", _msg_type_ok)
+
+        break
+      end
+    end
+  end
+end
+
+
+function getOffscreenItemParams(i)
+  local this_selected_item, this_selected_item_position, this_selected_item_length, this_selected_item_end_point,  arrange_start_time, arrange_end_time, this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg_text_start, offscreen_msg_text_end
+
+  this_selected_item = reaper.GetSelectedMediaItem(_api_current_project, i)
+  this_selected_item_position = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_position_key)
+  this_selected_item_length = reaper.GetMediaItemInfo_Value(this_selected_item, _api_item_length_key)
+  this_selected_item_end_point = this_selected_item_position + this_selected_item_length
+  arrange_start_time, arrange_end_time = reaper.GetSet_ArrangeView2(_api_current_project, false, 0, 0)
+  this_selected_item_is_before_arrange_view = this_selected_item_position < arrange_start_time
+  this_selected_item_is_after_arrange_view = this_selected_item_end_point > arrange_end_time
+  offscreen_msg_text_start = "One or more "
+  offscreen_msg_text_end = " items extend beyond the current visible Arrange window view."
+
+  return this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg_text_start, offscreen_msg_text_end
 end
 
 
@@ -1046,7 +1104,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   deselectAllItems()
 
   pool_id, sizing_params, time_selection_was_set_by_code, this_is_reglue = setUpGlue(depool_superitem_params, this_is_parent_update, first_selected_item_track, pool_id, restored_items_position_adjustment, sizing_region_guid, selected_items)
-  selected_item_states, selected_instances_pool_ids, selected_items_length = handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
+  selected_item_states, selected_instances_pool_ids, selected_items_length = handlePreglueItems(selected_items, pool_id, sizing_params, this_is_parent_update)
   superitem = glueSelectedItemsIntoSuperitem()
 
   handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, selected_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
@@ -1100,6 +1158,7 @@ function setUpGlue(depool_superitem_params, this_is_parent_update, first_selecte
 
   if this_is_new_glue then
     pool_id = handlePoolId()
+    sizing_params = calculateSizingTimeSelection(selected_items, sizing_params)
 
     if this_is_depool then
       pool_contained_item_states_key = _pool_key_prefix .. pool_id .. _pool_contained_item_states_key_suffix
@@ -1243,9 +1302,8 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, active_track, selec
   sizing_region_defer_loop_is_active_key = _pool_key_prefix .. pool_id .. _sizing_region_defer_loop_suffix
 
   if is_active_superitem_reglue then
-    if obey_time_selection == "false" or (obey_time_selection == "true" and no_time_selection_exists) then
-      sizing_params = calculateSizingTimeSelection(selected_items, sizing_params)
 
+    if obey_time_selection == "false" or (obey_time_selection == "true" and no_time_selection_exists) then
       setResetGlueTimeSelection(sizing_params, "set")
 
       time_selection_was_set_by_code = true
@@ -1402,19 +1460,28 @@ function calculateSizingTimeSelection(selected_items, sizing_params)
 
     if earliest_selected_item_position then
       earliest_selected_item_position = math.min(earliest_selected_item_position, this_selected_item_position)
+
     else
       earliest_selected_item_position = this_selected_item_position
     end
-
+    
     if latest_selected_item_end_point then
       latest_selected_item_end_point = math.max(latest_selected_item_end_point, this_selected_item_end_point)
+    
     else
       latest_selected_item_end_point = this_selected_item_end_point
     end
   end
 
-  sizing_params.position = math.min(sizing_params.position, earliest_selected_item_position)
-  sizing_params.end_point = math.max(sizing_params.end_point, latest_selected_item_end_point)
+  if not sizing_params then
+    sizing_params = {
+      ["position"] = earliest_selected_item_position,
+      ["end_point"] = latest_selected_item_end_point
+    }
+
+  else
+    sizing_params.position = math.min(sizing_params.position, earliest_selected_item_position)
+  end
 
   return sizing_params
 end
@@ -1435,7 +1502,7 @@ function setUpDePool(depool_superitem_params)
 end
 
 
-function handlePreglueItems(selected_items, pool_id, sizing_params, first_selected_item_track, this_is_parent_update)
+function handlePreglueItems(selected_items, pool_id, sizing_params, this_is_parent_update)
   local selected_item_states, selected_instances_pool_ids, i, selected_items_position, last_selected_item_position, last_selected_item_length, selected_items_end_point, selected_items_length
 
   setPreglueItemsData(selected_items, pool_id, sizing_params)
@@ -1445,10 +1512,13 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, first_select
   storeItemStates(pool_id, selected_item_states)
   selectDeselectItems(selected_items, true)
 
-  if this_is_parent_update then
+  sizing_params.position = round(sizing_params.position, _api_time_value_decimal_resolution)
+  sizing_params.end_point = round(sizing_params.end_point, _api_time_value_decimal_resolution)
+
+  if not this_is_parent_update then
 
     for i = 1, #selected_items do
-      cropItemToSizingParams(selected_items[i], sizing_params, first_selected_item_track)
+      cropItemToSizingParams(selected_items[i], sizing_params)
     end
   end
 
@@ -1604,37 +1674,108 @@ function selectDeselectItems(items, select_deselect)
 end
 
 
-function cropItemToSizingParams(restored_item, sizing_item_params, active_track)
-  local restored_item_params, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_parent_pool_id, right_hand_split_item, restored_item_cropped_position_delta, restored_item_active_take, restored_vs_sizing_item_length_delta, restored_item_new_length, end_point_delta
+function cropItemToSizingParams(restored_item, sizing_params)
+  local restored_item_params, restored_item_ends_before_parent, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_starts_after_parent, end_point_delta
 
-  restored_item_params = getSetItemParams(restored_item)
+  restored_item_params, restored_item_ends_before_parent, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_starts_after_parent = getItemCropParams(restored_item, sizing_params)
 
-  restored_item_starts_before_parent = round(restored_item_params.position, _api_time_value_decimal_resolution) < round(sizing_item_params.position, _api_time_value_decimal_resolution)
-  restored_item_ends_later_than_parent = round(restored_item_params.end_point, _api_time_value_decimal_resolution) > round(sizing_item_params.end_point, _api_time_value_decimal_resolution)
-  restored_item_parent_pool_id = storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix)
-
-  if restored_item_starts_before_parent then
-    restored_item_cropped_position_delta = sizing_item_params.position - restored_item_params.position
-    restored_item_active_take = reaper.GetTake(restored_item, restored_item_params.active_take_num)
-
-    reaper.SetMediaItemPosition(restored_item, sizing_item_params.position, true)
-    reaper.SetMediaItemTakeInfo_Value(restored_item_active_take, _api_take_src_offset_key, restored_item_cropped_position_delta)
-
-    restored_item_params.length = reaper.GetMediaItemInfo_Value(restored_item, _api_item_length_key)
-    restored_vs_sizing_item_length_delta = restored_item_params.length - sizing_item_params.length
+  if restored_item_ends_before_parent or restored_item_starts_after_parent then
+    reaper.SetMediaItemSelected(restored_item, false)
     
-    if restored_vs_sizing_item_length_delta > 0 then
-      restored_item_new_length = restored_item_params.length - restored_vs_sizing_item_length_delta
-      
+    if not _contained_items_outside then
+      _contained_items_outside = {}
+    end
+
+    table.insert(_contained_items_outside, restored_item)
+
+  else
+
+    if restored_item_starts_before_parent then
+      cropItemStartingBeforeParent(restored_item, restored_item_params, sizing_params)  
+    end
+
+    if restored_item_ends_later_than_parent then
+      end_point_delta = restored_item_params.end_point - sizing_params.end_point
+      restored_item_new_length = restored_item_params.length - end_point_delta
+
       reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
     end
   end
+end
 
-  if restored_item_ends_later_than_parent then
-    end_point_delta = restored_item_params.end_point - sizing_item_params.end_point
-    restored_item_new_length = restored_item_params.length - end_point_delta
+
+function getItemCropParams(restored_item, sizing_params)
+  local restored_item_params, restored_item_ends_before_parent, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_starts_after_parent
+
+  restored_item_params = getSetItemParams(restored_item)
+  restored_item_params.position = round(restored_item_params.position, _api_time_value_decimal_resolution)
+  restored_item_params.end_point = round(restored_item_params.end_point, _api_time_value_decimal_resolution)
+  restored_item_ends_before_parent = restored_item_params.end_point < sizing_params.position
+  restored_item_starts_before_parent = restored_item_params.position < sizing_params.position
+  restored_item_ends_later_than_parent = restored_item_params.end_point > sizing_params.end_point
+  restored_item_starts_after_parent = restored_item_params.position > sizing_params.end_point
+
+  return restored_item_params, restored_item_ends_before_parent, restored_item_starts_before_parent, restored_item_ends_later_than_parent, restored_item_starts_after_parent
+end
+
+
+function cropItemStartingBeforeParent(restored_item, restored_item_params, sizing_params)
+  local restored_item_cropped_position_delta, restored_item_active_take, restored_vs_sizing_item_length_delta, restored_item_new_length
+
+  restored_item_cropped_position_delta = sizing_params.position - restored_item_params.position
+  restored_item_active_take = reaper.GetTake(restored_item, restored_item_params.active_take_num)
+
+  reaper.SetMediaItemPosition(restored_item, sizing_params.position, true)
+  reaper.SetMediaItemTakeInfo_Value(restored_item_active_take, _api_take_src_offset_key, restored_item_cropped_position_delta)
+
+  restored_item_params.length = reaper.GetMediaItemInfo_Value(restored_item, _api_item_length_key)
+  sizing_params.length = sizing_params.end_point - sizing_params.position
+  restored_vs_sizing_item_length_delta = restored_item_params.length - sizing_params.length
+ 
+  if restored_vs_sizing_item_length_delta > 0 then
+    restored_item_new_length = restored_item_params.length - restored_vs_sizing_item_length_delta
     
     reaper.SetMediaItemLength(restored_item, restored_item_new_length, false)
+  end
+end
+
+
+function getSetItemParams(item, params)
+  local get, set, track, retval, track_guid, active_take, active_take_num, item_params
+
+  get = not params
+  set = params
+
+  if get then
+    track = reaper.GetMediaItemTrack(item)
+    retval, track_guid = reaper.GetSetMediaTrackInfo_String(track, "GUID", "", false)
+    active_take = reaper.GetActiveTake(item)
+
+    if active_take then
+      active_take_num = reaper.GetMediaItemTakeInfo_Value(active_take, _api_takenumber_key)
+    end
+
+    item_params = {
+      ["item_guid"] = reaper.BR_GetMediaItemGUID(item),
+      ["state"] = getSetItemStateChunk(item),
+      ["track_guid"] = track_guid,
+      ["active_take_num"] = active_take_num,
+      ["position"] = reaper.GetMediaItemInfo_Value(item, _api_item_position_key),
+      ["length"] = reaper.GetMediaItemInfo_Value(item, _api_item_length_key),
+      ["instance_pool_id"] = storeRetrieveItemData(item, _instance_pool_id_key_suffix),
+      ["parent_pool_id"] = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
+    }
+    item_params.end_point = item_params.position + item_params.length
+
+    if active_take then
+      item_params.source_offset = reaper.GetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key)
+    end
+
+    return item_params
+
+  elseif set then
+    reaper.SetMediaItemInfo_Value(item, _api_item_position_key, params.position)
+    reaper.SetMediaItemInfo_Value(item, _api_item_length_key, params.length)
   end
 end
 
@@ -1668,21 +1809,22 @@ end
 
 
 function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, child_instances_pool_ids, sizing_params, selected_items_length, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
-  local user_selected_instance_is_being_reglued, superitem_init_name
+  local superitem_init_name
 
-  user_selected_instance_is_being_reglued = not this_is_parent_update
   superitem_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
 
   handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, selected_items_length, this_is_reglue)
   handleDescendantPoolReferences(pool_id, child_instances_pool_ids)
 
-  if user_selected_instance_is_being_reglued then
+  if not this_is_parent_update then
     handleParentPoolReferencesInChildPools(pool_id, child_instances_pool_ids)
   end
 
   if time_selection_was_set_by_code then
     setResetGlueTimeSelection(sizing_params, "reset")
   end
+
+  deleteContainedItemsOutsizeSizingRegion()
 end
 
 
@@ -1736,46 +1878,6 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
   storeRetrieveProjectData(pool_parent_position_key_label, superitem_params.position)
   storeRetrieveProjectData(pool_parent_length_key_label, superitem_params.length)
   reaper.GetSetMediaItemTakeInfo_String(superitem_active_take, superitem_superglue_active_take_key, "true", true)
-end
-
-
-function getSetItemParams(item, params)
-  local get, set, track, retval, track_guid, active_take, active_take_num, item_params
-
-  get = not params
-  set = params
-
-  if get then
-    track = reaper.GetMediaItemTrack(item)
-    retval, track_guid = reaper.GetSetMediaTrackInfo_String(track, "GUID", "", false)
-    active_take = reaper.GetActiveTake(item)
-
-    if active_take then
-      active_take_num = reaper.GetMediaItemTakeInfo_Value(active_take, _api_takenumber_key)
-    end
-
-    item_params = {
-      ["item_guid"] = reaper.BR_GetMediaItemGUID(item),
-      ["state"] = getSetItemStateChunk(item),
-      ["track_guid"] = track_guid,
-      ["active_take_num"] = active_take_num,
-      ["position"] = reaper.GetMediaItemInfo_Value(item, _api_item_position_key),
-      ["length"] = reaper.GetMediaItemInfo_Value(item, _api_item_length_key),
-      ["instance_pool_id"] = storeRetrieveItemData(item, _instance_pool_id_key_suffix),
-      ["parent_pool_id"] = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
-    }
-    item_params.end_point = item_params.position + item_params.length
-
-    if active_take then
-      item_params.source_offset = reaper.GetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key)
-    end
-
-    return item_params
-
-  elseif set then
-    reaper.SetMediaItemInfo_Value(item, _api_item_position_key, params.position)
-    reaper.SetMediaItemInfo_Value(item, _api_item_length_key, params.length)
-  end
 end
 
 
@@ -1925,6 +2027,23 @@ function storeParentPoolReferencesInChildPool(preglue_child_instance_pool_id, ac
 end
 
 
+function deleteContainedItemsOutsizeSizingRegion()
+  local i, this_contained_item_outside, this_contained_item_track
+
+  if _contained_items_outside then
+
+    for i = 1, #_contained_items_outside do
+      this_contained_item_outside = _contained_items_outside[i]
+      this_contained_item_track = reaper.GetMediaItem_Track(this_contained_item_outside)
+      
+      reaper.DeleteTrackMediaItem(this_contained_item_track, this_contained_item_outside)
+    end
+  end
+
+  _contained_items_outside = nil
+end
+
+
 function handleReglue(selected_items, first_selected_item_track, restored_items_pool_id)
   local superitem_last_glue_params, retval, all_pool_ids_with_active_sizing_regions, sizing_region_guid, superitem, superitem_params
 
@@ -2013,7 +2132,7 @@ function restoreSuperitemState(superitem, superitem_params)
     getSetItemStateChunk(superitem, superitem_last_glue_state)
     getSetItemAudioSrc(superitem, superitem_params.updated_src)
     getSetItemParams(superitem, superitem_params)
-    reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, _src_offset_reset_value)
+    reaper.SetMediaItemTakeInfo_Value(active_take, _api_take_src_offset_key, _src_offset_default_value)
   end
 
   return superitem
@@ -2324,6 +2443,9 @@ function handleRestoredItem(active_track, stored_item_state, superitem_preedit_p
   reaper.SetMediaItemSelected(restored_item, true)
 
   restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
+
+  handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
+
   this_is_first_edit_after_auto_depool = not restored_instance_pool_id or restored_instance_pool_id == ""
 
   if this_is_first_edit_after_auto_depool then
@@ -2335,8 +2457,6 @@ function handleRestoredItem(active_track, stored_item_state, superitem_preedit_p
   if action == "Unglue" then
     storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, "")
   end
-
-  handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
   if restored_item_negative_position_delta then
 
@@ -2370,7 +2490,6 @@ function handleRestoredInstanceNearProjectStart(superitem, instance_params)
   restored_instance_last_glue_delta_to_parent = storeRetrieveItemData(instance_params.item, _item_offset_to_superitem_position_key_suffix)
   restored_instance_last_glue_delta_to_parent = tonumber(restored_instance_last_glue_delta_to_parent)
   instance_adjusted_position = superitem_params.position + restored_instance_last_glue_delta_to_parent + instance_params.negative_position_delta
-
   instance_is_closer_to_project_start_than_negative_position_change = instance_adjusted_position < -instance_params.negative_position_delta
 
   if instance_is_closer_to_project_start_than_negative_position_change then
@@ -2722,7 +2841,7 @@ function handleActivePoolSiblingPosition(sibling, sibling_active_take, user_want
       reaper.SetMediaItemPosition(sibling, sibling_adjusted_position, false)
 
       if user_wants_source_position_maintained then
-        reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, _src_offset_reset_value)
+        reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, _src_offset_default_value)
       end
 
       sibling_position_change_affect_on_length = 0
@@ -2769,7 +2888,7 @@ function propagatePositionOnSiblingNearProjectStart(sibling, sibling_active_take
   local sibling_src_offset_adjustment_delta, sibling_adjusted_src_offset, sibling_position_change_affect_on_length
 
 
-  if sibling_active_take_playrate ~= 1 then
+  if sibling_active_take_playrate ~= _take_playrate_default_value then
     sibling_src_offset_adjustment_delta = (-sibling_current_position * sibling_active_take_playrate) - _superitem_instance_offset_delta_since_last_glue 
 
   else
@@ -2794,12 +2913,12 @@ function adjustActivePoolSiblingSourcePosition(sibling, sibling_active_take, sib
   local sibling_adjusted_src_offset
 
   if user_wants_position_propagation then
-    sibling_adjusted_src_offset = 0
+    sibling_adjusted_src_offset = _src_offset_default_value
 
-    if sibling_active_take_playrate ~= 1 then
+    if sibling_active_take_playrate ~= _take_playrate_default_value then
       sibling_adjusted_src_offset = (_superitem_instance_offset_delta_since_last_glue * sibling_active_take_playrate) - _superitem_instance_offset_delta_since_last_glue
         
-      if sibling_current_src_offset ~= 0 then
+      if sibling_current_src_offset ~= _src_offset_default_value then
         sibling_adjusted_src_offset = sibling_adjusted_src_offset + sibling_current_src_offset - (sibling_current_src_offset * sibling_active_take_playrate)
       end
     end
@@ -3156,7 +3275,7 @@ end
 
 
 function handleEditOrUnglue(pool_id, action)
-  local superitem, undo_block_string
+  local superitem, undo_block_string, active_track, restored_items
 
   superitem = getFirstSelectedItem()
 
@@ -3169,11 +3288,13 @@ function handleEditOrUnglue(pool_id, action)
     undo_block_string = _unglue_undo_block_string
   end
 
-  processEditOrUnglue(superitem, pool_id, action)
+  active_track, restored_items = processEditOrUnglue(superitem, pool_id, action)
 
   if action ~= "DePool" then
     cleanUpAction(undo_block_string)
   end
+
+  itemsAreOffscreen(#restored_items, action)
 end
 
 
@@ -3514,6 +3635,7 @@ function handleDePoolPostGlue(superitem, target_item_state, target_item_params)
   getSetItemStateChunk(superitem, target_item_state)
   getSetItemName(superitem, active_take_name)
   storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, new_pool_id)
+  reaper.SetMediaItemSelected(superitem, true)
   setSuperitemColor()
 
   return new_pool_id
