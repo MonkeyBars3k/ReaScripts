@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.787
--- @changelog Issue 207: time selection
+-- @version 1.788
+-- @changelog Delete sizing region with warning option off doesn't Unglue restored items (https://github.com/MonkeyBars3k/ReaScripts/issues/231)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -3419,6 +3419,7 @@ end
 function handleSizingRegionUserDeletion(sizing_region_params, pool_id, sizing_region_deletion_msg_is_enabled)
   local sizing_region_deletion_result, user_wants_to_reinstate_sizing_region, user_wants_to_unglue 
 
+
   if sizing_region_deletion_msg_is_enabled == "true" then
     sizing_region_deletion_result = reaper.ShowMessageBox('Select "yes" to Unglue or "no" to reinstate the deleted sizing region.', _script_brand_name .. ": An active Edit sizing region got deleted!", _msg_type_yes_no)
     user_wants_to_reinstate_sizing_region = sizing_region_deletion_result == _msg_response_no
@@ -3447,7 +3448,7 @@ function dePoolSelectedRestoredItems()
     this_selected_item_instance_pool_id = storeRetrieveItemData(this_selected_item, _instance_pool_id_key_suffix)
 
     storeRetrieveItemData(this_selected_item, _parent_pool_id_key_suffix, "")
-    handleRestoredItemImage(this_selected_item, this_selected_item_instance_pool_id, true)
+    handleRestoredItemImage(this_selected_item, this_selected_item_instance_pool_id, "Unglue")
   end
 end
 
