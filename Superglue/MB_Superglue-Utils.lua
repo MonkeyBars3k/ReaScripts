@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.791
--- @changelog Remove comments
+-- @version 1.792
+-- @changelog Fix comments
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2086,7 +2086,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   superitem = restoreSuperitemState(superitem, superitem_params)
 
   setRegluePositionDeltas(superitem_params, superitem_last_glue_params)
-  -- adjustPostGlueTakeMarkersAndEnvelopes(superitem)
+  adjustPostGlueTakeMarkersAndEnvelopes(superitem)
   editAncestors(superitem_params.pool_id, superitem)
   deselectAllItems()
   propagatePoolChanges(superitem_params, sizing_region_guid)
