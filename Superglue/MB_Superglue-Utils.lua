@@ -2769,17 +2769,10 @@ end
 
 
 function adjustPoolSibling(sibling, sibling_active_take, active_superitem_instance_params)
-  local sibling_playrate, sibling_playrate_is_altered
+  local sibling_playrate
   
   sibling_playrate = reaper.GetMediaItemTakeInfo_Value(sibling_active_take, _api_playrate_key)
-  sibling_playrate_is_altered = sibling_playrate ~= _playrate_default_value
-
-  if sibling_playrate_is_altered then
-    _user_wants_propagation_option["playrate_toggle"] = getUserPropagationChoice("playrate_toggle", _global_option_playrate_affects_propagation_default_key)
-
-  else
-    _user_wants_propagation_option["playrate_toggle"] = false
-  end
+  _user_wants_propagation_option["playrate_toggle"] = getUserPropagationChoice("playrate_toggle", _global_option_playrate_affects_propagation_default_key)
 
   setUpPoolSiblingPositionAdjustment(sibling, sibling_active_take, sibling_playrate, active_superitem_instance_params)
   adjustPoolSiblingLength(sibling, sibling_playrate, active_superitem_instance_params)
@@ -2787,18 +2780,19 @@ end
 
 
 function setUpPoolSiblingPositionAdjustment(sibling, sibling_active_take, sibling_playrate, active_superitem_instance_params)
-  local retval, sibling_current_src_offset, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start
+  local retval, sibling_current_src_offset, superitem_preedit_params, sibling_would_get_adjusted_before_project_start
 
   sibling_current_src_offset = reaper.GetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, "", false)
   _user_wants_propagation_option["position"] = getUserPropagationChoice("position", _global_option_propagate_position_default_key)
   _user_wants_propagation_option["source_position"] = getUserPropagationChoice("source_position", _global_option_maintain_source_position_default_key)
+  superitem_preedit_params = storeRetrieveSuperitemParams(active_superitem_instance_params.pool_id, _preedit_action_step)
 
   if _user_wants_propagation_option["position"] then
-    sibling_would_get_adjusted_before_project_start = handlePoolSiblingPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params)
+    sibling_would_get_adjusted_before_project_start = handlePoolSiblingPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params, superitem_preedit_params)
   end
 
   if _user_wants_propagation_option["source_position"] and not sibling_would_get_adjusted_before_project_start then
-    adjustPoolSiblingSourcePosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params)
+    adjustPoolSiblingSourcePosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params, superitem_preedit_params)
   end
 end
 
@@ -2862,7 +2856,7 @@ function getPropagateDialogValues()
 end
 
 
-function handlePoolSiblingPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params)
+function handlePoolSiblingPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params, superitem_preedit_params)
   local sibling_current_position, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start
 
   sibling_current_position, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start = getSiblingPositionPropagationParams(sibling, sibling_current_src_offset, sibling_playrate)
@@ -2870,7 +2864,7 @@ function handlePoolSiblingPosition(sibling, sibling_active_take, sibling_current
   if _user_wants_propagation_option["position"] then
 
     if sibling_would_get_adjusted_before_project_start then
-      handleSiblingNearProjectStart(sibling, sibling_current_position, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params)
+      handleSiblingNearProjectStart(sibling, sibling_current_position, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params, superitem_preedit_params)
 
     else
       adjustPostGlueTakeMarkersAndEnvelopes(sibling)
@@ -2908,63 +2902,22 @@ function getSiblingPositionPropagationParams(sibling, sibling_current_src_offset
 end
 
 
-function handleSiblingNearProjectStart(sibling, sibling_current_position, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params)
+function handleSiblingNearProjectStart(sibling, sibling_current_position, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params, superitem_preedit_params)
   local sibling_is_exactly_at_project_start, sibling_src_offset_adjustment_delta, sibling_adjusted_src_offset
 
   sibling_is_exactly_at_project_start = sibling_current_position == _position_start_of_project
 
-  if sibling_is_exactly_at_project_start then
+  if _user_wants_propagation_option["source_position"] then
 
-    if _user_wants_propagation_option["source_position"] then
-
-      if _user_wants_propagation_option["playrate_toggle"] then
-        log("case 1")
-        sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - _superitem_instance_offset_delta_since_last_glue
-
-      else
-        log("case 2")
-        sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - _superitem_instance_offset_delta_since_last_glue
-      end
+    if sibling_is_exactly_at_project_start then
+      sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - superitem_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
 
     else
-
-      if _user_wants_propagation_option["playrate_toggle"] then
-        log("case 3")
-        sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset
-
-      else
-        log("case 4")
-        sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset
-      end
+      sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - superitem_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue - (sibling_current_position * sibling_playrate)
     end
 
   else
-
-    if _user_wants_propagation_option["source_position"] then
-
-      if _user_wants_propagation_option["playrate_toggle"] then
-        log("case 5")
--- -2.98
-        -- sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - ((_superitem_instance_offset_delta_since_last_glue - sibling_current_position) * sibling_playrate)
-        sibling_src_offset_adjustment_delta = -_superitem_instance_offset_delta_since_last_glue + (active_superitem_instance_params.source_offset / sibling_playrate)
-
-      else
-        log("case 6")
-        sibling_src_offset_adjustment_delta = -_superitem_instance_offset_delta_since_last_glue + (active_superitem_instance_params.source_offset / sibling_playrate)
-      end
-
-    else
-
-      if _user_wants_propagation_option["playrate_toggle"] then
-        log("case 7")
-        -- sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - ((_superitem_instance_offset_delta_since_last_glue - sibling_current_position) * sibling_playrate)
-        sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - _superitem_instance_offset_delta_since_last_glue - sibling_current_position
-    
-      else
-        log("case 8")
-        sibling_src_offset_adjustment_delta = active_superitem_instance_params.source_offset - _superitem_instance_offset_delta_since_last_glue - sibling_current_position
-      end
-    end
+    sibling_src_offset_adjustment_delta = 0
   end
 
   sibling_adjusted_src_offset = sibling_current_src_offset + sibling_src_offset_adjustment_delta
@@ -2972,19 +2925,11 @@ function handleSiblingNearProjectStart(sibling, sibling_current_position, siblin
   adjustPostGlueTakeMarkersAndEnvelopes(sibling, sibling_adjusted_src_offset)
   reaper.SetMediaItemPosition(sibling, _position_start_of_project, false)
   reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, sibling_adjusted_src_offset)
-
-
--- logV("sibling_current_src_offset",sibling_current_src_offset)
--- logV("sibling_current_position",sibling_current_position)
--- logV("active_superitem_instance_params.source_offset",active_superitem_instance_params.source_offset)
--- logV("_superitem_instance_offset_delta_since_last_glue",_superitem_instance_offset_delta_since_last_glue)
 end
 
 
-function adjustPoolSiblingSourcePosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params)
-  local sibling_adjusted_src_offset, superitem_preedit_params
-
-  superitem_preedit_params = storeRetrieveSuperitemParams(active_superitem_instance_params.pool_id, _preedit_action_step)
+function adjustPoolSiblingSourcePosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, active_superitem_instance_params, superitem_preedit_params)
+  local sibling_adjusted_src_offset
 
   if _user_wants_propagation_option["position"] then
     sibling_adjusted_src_offset = sibling_current_src_offset + active_superitem_instance_params.source_offset - superitem_preedit_params.source_offset
@@ -3004,8 +2949,7 @@ function adjustPoolSiblingLength(sibling, sibling_playrate, active_superitem_ins
   _user_wants_propagation_option["length"] = getUserPropagationChoice("length", _global_option_propagate_length_default_key)
 
   if _user_wants_propagation_option["length"] then
-
-    _user_wants_propagation_option["playrate_toggle"] = getUserPropagationChoice("playrate_toggle", _global_option_length_propagation_type_default_key)
+    _user_wants_propagation_option["playrate_toggle"] = getUserPropagationChoice("playrate_toggle", _global_option_playrate_affects_propagation_default_key)
     _user_wants_propagation_option["absolute_length_propagation"] = getUserPropagationChoice("absolute_length_propagation", _global_option_length_propagation_type_default_key)
 
     if _user_wants_propagation_option["absolute_length_propagation"] then
@@ -3016,13 +2960,11 @@ function adjustPoolSiblingLength(sibling, sibling_playrate, active_superitem_ins
       end
 
     else
-      sibling_length_adjustment_delta = _reglue_position_change_affect_on_length
+      sibling_adjusted_length = sibling_current_length + _reglue_position_change_affect_on_length
 
       if _user_wants_propagation_option["playrate_toggle"] then
-        sibling_length_adjustment_delta = _reglue_position_change_affect_on_length / sibling_playrate
+        sibling_adjusted_length = sibling_current_length + (_reglue_position_change_affect_on_length / sibling_playrate)
       end
-
-      sibling_adjusted_length = sibling_current_length + sibling_length_adjustment_delta
     end
 
     reaper.SetMediaItemLength(sibling, sibling_adjusted_length, false)
