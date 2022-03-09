@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.790
--- @changelog Take marker adjustment with propagation off (https://github.com/MonkeyBars3k/ReaScripts/issues/238)
+-- @version 1.791
+-- @changelog Remove comments
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -21,7 +21,7 @@
 -- General utility functions at bottom
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -2222,14 +2222,6 @@ function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project
       take_marker_position_adjustment_delta = adjustment_near_project_start - instance_current_src_offset + (instance_position * instance_playrate)
     end
   end
-
--- log("unit")
--- logV("position_adjustment_delta",position_adjustment_delta)
--- logV("instance_current_src_offset",instance_current_src_offset)
--- logV("instance_position",instance_position)
--- logV("adjustment_near_project_start",adjustment_near_project_start)
--- logV("_superitem_instance_offset_delta_since_last_glue",_superitem_instance_offset_delta_since_last_glue)
--- logV("fresh_glue_source_offset",fresh_glue_source_offset)
 
   adjustTakeEnvelopes(instance_active_take, envelope_point_position_adjustment_delta)
   adjustTakeMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
