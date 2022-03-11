@@ -2659,7 +2659,7 @@ end
 
 function adjustRestoredItem(restored_item, this_is_parent_update)
   local restored_item_params, adjusted_restored_item_position_is_before_project_start, restored_item_negative_position
--- logStr(this_is_parent_update)
+
   if not this_is_parent_update then
     restored_item_params = getSetItemParams(restored_item)
     restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item, restored_item_params)
@@ -2848,40 +2848,41 @@ function updateSuperitemChangedByReglue(active_pool_sibling, sibling_active_take
 
   getSetWipeItemAudioSrc(active_pool_sibling, current_superitem_updated_src)
 
-  if siblings_are_being_updated then
+  -- if siblings_are_being_updated then
     attempted_negative_instance_position = adjustSuperitemChangedByReglue(active_pool_sibling, sibling_active_take, this_is_parent_update)
 
     if attempted_negative_instance_position ~= 0 then
       sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
       parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
     end
-  end
+  -- end
 
   return parent_pools_near_project_start
 end
 
 
 function adjustSuperitemChangedByReglue(sibling, sibling_active_take, this_is_parent_update)
-  local sibling_playrate
+  local this_superitem_parent_pool_id, this_superitem_is_child, sibling_playrate
   
+  this_superitem_parent_pool_id = storeRetrieveItemData(sibling, _parent_pool_id_key_suffix)
+  this_superitem_is_child = this_superitem_parent_pool_id and this_superitem_parent_pool_id ~= ""
   sibling_playrate = reaper.GetMediaItemTakeInfo_Value(sibling_active_take, _api_playrate_key)
   _user_wants_propagation_option["playrate_toggle"] = getUserPropagationChoice("playrate_toggle", _global_option_playrate_affects_propagation_default_key)
 
-  setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update)
+  setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update, this_superitem_is_child)
 
-  if not this_is_parent_update then
+  if not this_is_parent_update and not this_superitem_is_child then
     adjustSuperitemLength(sibling, sibling_playrate)
   end
 end
 
 
-function setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update)
+function setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update, this_superitem_is_child)
   local sibling_current_src_offset, this_is_edited_pool_update, pool_fresh_glue_params, pool_preedit_params, sibling_would_get_adjusted_before_project_start
 
   sibling_current_src_offset = reaper.GetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, "", false)
   _user_wants_propagation_option["position"] = getUserPropagationChoice("position", _global_option_propagate_position_default_key)
   _user_wants_propagation_option["source_position"] = getUserPropagationChoice("source_position", _global_option_maintain_source_position_default_key)
-  -- this_is_parent_update = _current_pool_fresh_glue_params and _current_pool_preedit_params
   this_is_edited_pool_update = not _current_pool_fresh_glue_params or not _current_pool_preedit_params
 
   if this_is_parent_update then
@@ -2894,11 +2895,11 @@ function setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_
   end
 
   if _user_wants_propagation_option["position"] and not this_is_parent_update then
-    sibling_would_get_adjusted_before_project_start = handleSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
+    sibling_would_get_adjusted_before_project_start = adjustSuperitemPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
   end
 
-  if _user_wants_propagation_option["source_position"] and not sibling_would_get_adjusted_before_project_start then
-    adjustSuperitemSourcePosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
+  if _user_wants_propagation_option["source_position"] and not sibling_would_get_adjusted_before_project_start and not this_is_parent_update then
+    adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, this_is_parent_update, this_superitem_is_child)
   end
 end
 
@@ -2962,7 +2963,7 @@ function getPropagateDialogValues()
 end
 
 
-function handleSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
+function adjustSuperitemPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
   local sibling_current_position, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start, take_markers_source_offset
 
   sibling_current_position, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start = getPositionPropagationParams(sibling, sibling_current_src_offset, sibling_playrate)
@@ -3036,25 +3037,32 @@ function handleSuperitemNearProjectStart(sibling, sibling_current_position, sibl
 end
 
 
-function adjustSuperitemSourcePosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
+function adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, this_is_parent_update, this_superitem_is_child)
   local sibling_adjusted_src_offset
 
   if _user_wants_propagation_option["position"] then
-
--- log("=== adjustSuperitemSourcePosition ===")
--- logV("sibling_current_src_offset",sibling_current_src_offset)
--- logV("_current_pool_fresh_glue_params.source_offset",_current_pool_fresh_glue_params.source_offset)
--- logV("_current_pool_preedit_params.source_offset",_current_pool_preedit_params.source_offset)
-
-    sibling_adjusted_src_offset = sibling_current_src_offset + pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset
+    sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
   else
-    sibling_adjusted_src_offset = sibling_current_src_offset + pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
+    sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
   end
 
-  _active_superitem_source_position_adjustment_delta = pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset
+  if this_is_parent_update and not this_superitem_is_child then
+    sibling_adjusted_src_offset = sibling_current_src_offset
+  end
+
+  _active_superitem_source_position_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
   reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, sibling_adjusted_src_offset)
+
+-- log("=== adjustSuperitemSourceOffset ===")
+-- local name = getSetItemName(sibling)
+-- log(name)
+-- logV("sibling_current_src_offset",sibling_current_src_offset)
+-- logV("_edited_pool_fresh_glue_params.source_offset",_edited_pool_fresh_glue_params.source_offset)
+-- logV("_edited_pool_preedit_params.source_offset",_edited_pool_preedit_params.source_offset)
+-- logV("pool_fresh_glue_params.source_offset",pool_fresh_glue_params.source_offset)
+-- logV("_superitem_instance_offset_delta_since_last_glue",_superitem_instance_offset_delta_since_last_glue)
 end
 
 
