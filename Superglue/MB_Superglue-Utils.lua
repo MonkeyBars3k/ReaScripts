@@ -2871,7 +2871,7 @@ function adjustSuperitemChangedByReglue(sibling, sibling_active_take, this_is_pa
 
   setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update, this_superitem_is_child)
 
-  if not this_is_parent_update and not this_superitem_is_child then
+  if not this_is_parent_update then
     adjustSuperitemLength(sibling, sibling_playrate)
   end
 end
@@ -2894,7 +2894,7 @@ function setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_
     pool_preedit_params = _edited_pool_preedit_params
   end
 
-  if _user_wants_propagation_option["position"] and not this_is_parent_update then
+  if _user_wants_propagation_option["position"] and not this_is_parent_update and not this_superitem_is_child then
     sibling_would_get_adjusted_before_project_start = adjustSuperitemPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
   end
 
@@ -3049,20 +3049,14 @@ function adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_curre
 
   if this_is_parent_update and not this_superitem_is_child then
     sibling_adjusted_src_offset = sibling_current_src_offset
+
+  elseif this_superitem_is_child then
+    sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
   end
 
   _active_superitem_source_position_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
   reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, sibling_adjusted_src_offset)
-
--- log("=== adjustSuperitemSourceOffset ===")
--- local name = getSetItemName(sibling)
--- log(name)
--- logV("sibling_current_src_offset",sibling_current_src_offset)
--- logV("_edited_pool_fresh_glue_params.source_offset",_edited_pool_fresh_glue_params.source_offset)
--- logV("_edited_pool_preedit_params.source_offset",_edited_pool_preedit_params.source_offset)
--- logV("pool_fresh_glue_params.source_offset",pool_fresh_glue_params.source_offset)
--- logV("_superitem_instance_offset_delta_since_last_glue",_superitem_instance_offset_delta_since_last_glue)
 end
 
 
