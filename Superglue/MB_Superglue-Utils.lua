@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.793
--- @changelog Parent render contents placement wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/240); Refactors (https://github.com/MonkeyBars3k/ReaScripts/issues/241)
+-- @version 1.794
+-- @changelog Refactor / Correct nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/241)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1144,7 +1144,7 @@ function refreshUI()
 end
 
 
-function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, depool_superitem_params, this_is_parent_update)
+function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, depool_superitem_params, this_is_ancestor_update)
   local this_is_depool, first_selected_item, first_selected_item_name, sizing_params, time_selection_was_set_by_code, this_is_reglue, selected_item_states, selected_instances_pool_ids, selected_items_params, superitem
 
   this_is_depool = depool_superitem_params ~= nil
@@ -1153,11 +1153,11 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
 
   deselectAllItems()
 
-  pool_id, sizing_params, time_selection_was_set_by_code, this_is_reglue = setUpGlue(depool_superitem_params, this_is_parent_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
-  selected_item_states, selected_instances_pool_ids, selected_items_params = handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_parent_update, this_is_depool)
+  pool_id, sizing_params, time_selection_was_set_by_code, this_is_reglue = setUpGlue(depool_superitem_params, this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
+  selected_item_states, selected_instances_pool_ids, selected_items_params = handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_ancestor_update, this_is_depool)
   superitem = glueSelectedItemsIntoSuperitem()
 
-  handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, selected_instances_pool_ids, sizing_params, selected_items_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+  handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, selected_instances_pool_ids, sizing_params, selected_items_params, this_is_reglue, this_is_ancestor_update, time_selection_was_set_by_code)
 
   return superitem
 end
@@ -1199,7 +1199,7 @@ function getSetItemName(item, new_name, add_or_remove)
 end
 
 
-function setUpGlue(depool_superitem_params, this_is_parent_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
+function setUpGlue(depool_superitem_params, this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
   local this_is_new_glue, this_is_depool, this_is_reglue, sizing_params, time_selection_was_set_by_code, global_option_toggle_depool_all_siblings_on_reglue, pool_contained_item_states_key, retval
 
   this_is_new_glue = not pool_id
@@ -1221,7 +1221,7 @@ function setUpGlue(depool_superitem_params, this_is_parent_update, first_selecte
     end
 
   elseif this_is_reglue then
-    sizing_params, time_selection_was_set_by_code = setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
+    sizing_params, time_selection_was_set_by_code = setUpReglue(this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
     global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
 
     if global_option_toggle_depool_all_siblings_on_reglue then  
@@ -1322,11 +1322,11 @@ function calculateSizingTimeSelection(selected_items, sizing_params)
 end
 
 
-function setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
+function setUpReglue(this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
   local obey_time_selection, user_selected_instance_is_being_reglued, pool_parent_length_key_label, retval
 
   obey_time_selection = reaper.GetExtState(_global_options_section, _global_option_toggle_time_selection_sets_edges_key)
-  user_selected_instance_is_being_reglued = not this_is_parent_update
+  user_selected_instance_is_being_reglued = not this_is_ancestor_update
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   retval, _pool_parent_last_glue_length = storeRetrieveProjectData(pool_parent_length_key_label)
   _pool_parent_last_glue_length = tonumber(_pool_parent_last_glue_length)
@@ -1334,7 +1334,7 @@ function setUpReglue(this_is_parent_update, first_selected_item_track, pool_id, 
   if user_selected_instance_is_being_reglued then
     return setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item_track, selected_items, pool_id, obey_time_selection)
 
-  elseif this_is_parent_update then
+  elseif this_is_ancestor_update then
     return setUpParentUpdate(first_selected_item_track, pool_id, obey_time_selection)
   end
 end
@@ -1564,7 +1564,7 @@ function setUpDePool(depool_superitem_params)
 end
 
 
-function handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_parent_update, this_is_depool)
+function handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_ancestor_update, this_is_depool)
   local selected_item_states, selected_instances_pool_ids, i, selected_items_params, last_selected_item_position, last_selected_item_length
 
   setPreglueItemsData(selected_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
@@ -1800,15 +1800,15 @@ function glueSelectedItemsToTimeSelection()
 end
 
 
-function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, child_instances_pool_ids, sizing_params, selected_items_params, this_is_reglue, this_is_parent_update, time_selection_was_set_by_code)
+function handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, child_instances_pool_ids, sizing_params, selected_items_params, this_is_reglue, this_is_ancestor_update, time_selection_was_set_by_code)
   local superitem_init_name
 
   superitem_init_name = handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_item_name)
 
-  handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, selected_items_params, sizing_params, this_is_reglue, this_is_parent_update)
+  handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, selected_items_params, sizing_params, this_is_reglue, this_is_ancestor_update)
   handleDescendantPoolReferences(pool_id, child_instances_pool_ids)
 
-  if not this_is_parent_update then
+  if not this_is_ancestor_update then
     handleParentPoolReferencesInChildPools(pool_id, child_instances_pool_ids)
     deleteContainedItemsOutsizeSizingRegion()
   end
@@ -1845,7 +1845,7 @@ function handleAddtionalItemCountLabel(selected_items, pool_id, first_selected_i
 end
 
 
-function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, selected_items_params, sizing_params, this_is_reglue, this_is_parent_update)
+function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, selected_items_params, sizing_params, this_is_reglue, this_is_ancestor_update)
   local superitem_active_take, pool_parent_position_key_label, pool_parent_length_key_label, superitem_params, freshly_depooled_superitem_key_label
 
   superitem_active_take = reaper.GetActiveTake(superitem)
@@ -1855,7 +1855,7 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
   freshly_depooled_superitem_key_label = _pool_key_prefix .. pool_id .. _freshly_depooled_superitem_flag
 
   if this_is_reglue then
-     cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_params, selected_items_params, this_is_parent_update)
+     cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_params, selected_items_params, this_is_ancestor_update)
 
   else
     setSuperitemColor()
@@ -1895,7 +1895,7 @@ function refreshActiveTakeFlag(item, active_take, pool_id)
 end
 
 
-function cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_params, selected_items_params, this_is_parent_update)
+function cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_params, selected_items_params, this_is_ancestor_update)
   local selected_items_start_before_sizer, selected_items_end_after_sizer, selected_items_position_delta_to_sizer, new_superitem_length
 
   selected_items_start_before_sizer = selected_items_params.position < sizing_params.position
@@ -1908,7 +1908,7 @@ function cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_pa
     reaper.SetMediaItemPosition(superitem, sizing_params.position, false)
     reaper.SetMediaItemLength(superitem, new_superitem_length, false)
 
-    if not this_is_parent_update then
+    if not this_is_ancestor_update then
       reaper.SetMediaItemTakeInfo_Value(superitem_active_take, _api_take_src_offset_key, selected_items_position_delta_to_sizer)
     end
   end
@@ -2470,7 +2470,7 @@ function setUpAncestorEdits(parent_instance_params, parent_pool_id, descendant_n
 
   deselectAllItems()
 
-  restored_items = restoreStoredItems(parent_pool_id, parent_edit_temp_track, superitem, true)
+  restored_items = restoreStoredItems(parent_pool_id, parent_edit_temp_track, superitem, true, nil)
   parent_instance_params.track = parent_edit_temp_track
   parent_instance_params.restored_items = restored_items
   _ancestor_pools_params[parent_pool_id] = parent_instance_params
@@ -2480,8 +2480,32 @@ function setUpAncestorEdits(parent_instance_params, parent_pool_id, descendant_n
 end
 
 
-function restoreStoredItems(pool_id, active_track, superitem, this_is_parent_update, action)
-  local this_is_unglue, this_is_depool, retval, stored_item_states_table, pool_item_states_key_label, stored_item_states, restored_items, restored_instances_near_project_start, first_item_offset_to_superitem_position_key_label, freshly_depooled_superitem_key_label, item_guid, stored_item_state, restored_item
+function restoreStoredItems(pool_id, active_track, superitem, this_is_ancestor_update, action)
+  local stored_item_states_table, restored_items, restored_instances_near_project_start, item_guid, stored_item_state, restored_item
+
+  stored_item_states_table = getStoredItemStatesTable(pool_id, action)
+  restored_items = {}
+  restored_instances_near_project_start = {}
+
+  defineStoredItemsParams(pool_id)
+
+  for item_guid, stored_item_state in pairs(stored_item_states_table) do
+
+    if stored_item_state then
+      restored_item, restored_instances_near_project_start = handleRestoredItem(active_track, stored_item_state, restored_instances_near_project_start, this_is_ancestor_update, action)
+
+      table.insert(restored_items, restored_item)
+    end
+  end
+
+  handleRestoredInstancesNearProjectStart(restored_instances_near_project_start, superitem)
+
+  return restored_items
+end
+
+
+function getStoredItemStatesTable(pool_id, action)
+  local this_is_unglue, this_is_depool, retval, stored_item_states_table, pool_item_states_key_label, stored_item_states
 
   this_is_unglue = action == "Unglue"
   this_is_depool = action == "DePool"
@@ -2495,8 +2519,23 @@ function restoreStoredItems(pool_id, active_track, superitem, this_is_parent_upd
     stored_item_states_table = retrieveStoredItemStates(stored_item_states)
   end
 
-  restored_items = {}
-  restored_instances_near_project_start = {}
+  return stored_item_states_table
+end
+
+
+function retrieveStoredItemStates(item_state_chunks_string)
+  local retval, item_state_chunks_table
+
+  retval, item_state_chunks_table = serpent.load(item_state_chunks_string)
+  item_state_chunks_table.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, item_state_chunks_table.track_guid)
+
+  return item_state_chunks_table
+end
+
+
+function defineStoredItemsParams(pool_id)
+  local first_item_offset_to_superitem_position_key_label, freshly_depooled_superitem_key_label, retval
+
   first_item_offset_to_superitem_position_key_label = _pool_key_prefix .. pool_id .. _first_item_offset_to_superitem_position_key_suffix
   freshly_depooled_superitem_key_label = _pool_key_prefix .. pool_id .. _freshly_depooled_superitem_flag
   retval, _first_restored_item_last_glue_delta_to_parent = storeRetrieveProjectData(first_item_offset_to_superitem_position_key_label)
@@ -2513,70 +2552,44 @@ function restoreStoredItems(pool_id, active_track, superitem, this_is_parent_upd
   if not _first_restored_item_last_glue_delta_to_parent or _first_restored_item_last_glue_delta_to_parent == "" then
     _first_restored_item_last_glue_delta_to_parent = 0
   end
-
-  for item_guid, stored_item_state in pairs(stored_item_states_table) do
-
-    if stored_item_state then
-      restored_item, restored_instances_near_project_start = handleRestoredItem(active_track, stored_item_state, restored_instances_near_project_start, this_is_parent_update, action)
-
-      table.insert(restored_items, restored_item)
-    end
-  end
-
-  handleRestoredInstancesNearProjectStart(restored_instances_near_project_start, superitem)
-
-  return restored_items
 end
 
 
-function retrieveStoredItemStates(item_state_chunks_string)
-  local retval, item_state_chunks_table
-
-  retval, item_state_chunks_table = serpent.load(item_state_chunks_string)
-  item_state_chunks_table.track = reaper.BR_GetMediaTrackByGUID(_api_current_project, item_state_chunks_table.track_guid)
-
-  return item_state_chunks_table
-end
-
-
-function handleRestoredItem(active_track, stored_item_state, restored_instances_near_project_start, this_is_parent_update, action)
+function handleRestoredItem(active_track, stored_item_state, restored_instances_near_project_start, this_is_ancestor_update, action)
   local restored_item, restored_instance_pool_id, restored_item_negative_position_delta, this_is_first_edit_after_auto_depool
 
-  restored_item = restoreItem(active_track, stored_item_state, this_is_parent_update)
+  restored_item = restoreItem(active_track, stored_item_state, this_is_ancestor_update)
   restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
 
   reaper.SetMediaItemSelected(restored_item, true)
   handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
-  if not this_is_parent_update then
+  if not this_is_ancestor_update then
     restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item)
   end
 
-  if restored_item_negative_position_delta then
-
-    if restored_instance_pool_id and not restored_instances_near_project_start[restored_instance_pool_id] then
-      restored_instances_near_project_start[restored_instance_pool_id] = {
-        ["item"] = restored_item,
-        ["negative_position_delta"] = restored_item_negative_position_delta
-      }
-
-    elseif restored_instances_near_project_start[restored_instance_pool_id] then
-      this_restored_instance_position_is_earlier_than_prev_sibling = restored_item_negative_position_delta < restored_instances_near_project_start[restored_instance_pool_id].negative_position_delta
-
-      if this_restored_instance_position_is_earlier_than_prev_sibling then
-        restored_instances_near_project_start[restored_instance_pool_id] = {
-          ["item"] = restored_item,
-          ["negative_position_delta"] = restored_item_negative_position_delta
-        }
-      end
-    end
-  end
+  restored_instances_near_project_start[restored_instance_pool_id] = defineRestoredInstanceNearProjectStartParams(restored_instances_near_project_start, restored_instance_pool_id, restored_item, restored_item_negative_position_delta)
 
   if action == "Unglue" then
     storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, "")
   end
   
   return restored_item, restored_instances_near_project_start
+end
+
+
+function handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
+  local this_restored_item_is_not_instance = not restored_instance_pool_id or restored_instance_pool_id == ""
+
+  if this_restored_item_is_not_instance then
+
+    if action == "Unglue" then
+      addRemoveItemImage(restored_item, false)
+    
+    else
+      addRemoveItemImage(restored_item, "restored")
+    end
+  end
 end
 
 
@@ -2607,14 +2620,14 @@ function handleRestoredInstancesNearProjectStart(restored_instances_near_project
 end
 
 
-function restoreItem(track, state, this_is_parent_update)
+function restoreItem(track, state, this_is_ancestor_update)
   local restored_item
 
   restored_item = reaper.AddMediaItemToTrack(track)
 
   getSetItemStateChunk(restored_item, state)
 
-  if not this_is_parent_update then
+  if not this_is_ancestor_update then
     restoreOriginalTake(restored_item)
   end
 
@@ -2705,82 +2718,94 @@ function shiftRestoredItemPositionSinceLastGlue(restored_item, restored_item_par
 end
 
 
-function handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
-  local this_restored_item_is_not_instance = not restored_instance_pool_id or restored_instance_pool_id == ""
+function defineRestoredInstanceNearProjectStartParams(restored_instances_near_project_start, restored_instance_pool_id, restored_item, restored_item_negative_position_delta)
+  local this_restored_instance_position_is_earlier_than_prev_sibling
 
-  if this_restored_item_is_not_instance then
+  if restored_item_negative_position_delta then
 
-    if action == "Unglue" then
-      addRemoveItemImage(restored_item, false)
-    
-    else
-      addRemoveItemImage(restored_item, "restored")
+    if restored_instance_pool_id and not restored_instances_near_project_start[restored_instance_pool_id] then
+      restored_instances_near_project_start[restored_instance_pool_id] = {
+        ["item"] = restored_item,
+        ["negative_position_delta"] = restored_item_negative_position_delta
+      }
+
+    elseif restored_instances_near_project_start[restored_instance_pool_id] then
+      this_restored_instance_position_is_earlier_than_prev_sibling = restored_item_negative_position_delta < restored_instances_near_project_start[restored_instance_pool_id].negative_position_delta
+
+      if this_restored_instance_position_is_earlier_than_prev_sibling then
+        restored_instances_near_project_start[restored_instance_pool_id] = {
+          ["item"] = restored_item,
+          ["negative_position_delta"] = restored_item_negative_position_delta
+        }
+      end
     end
   end
+
+  return restored_instances_near_project_start[restored_instance_pool_id]
 end
 
 
 function reglueChangedSuperitems(sizing_region_guid)
-  local this_is_parent_update, parent_pools_near_project_start, ancestor_pools_params_sorted_by_ascending_nesting_depth, i, this_parent_pool_params, this_parent_pool_id
+  local this_is_ancestor_update, ancestor_pools_near_project_start, ancestor_pools_params_sorted_by_ascending_nesting_depth, i, this_ancestor_pool_id
 
-  this_is_parent_update = false
-  parent_pools_near_project_start = handleSuperitemsChangedByReglue(this_is_parent_update)
-  ancestor_pools_params_sorted_by_ascending_nesting_depth = sortParentUpdatesByNestingDepth()
+  this_is_ancestor_update = false
+  ancestor_pools_near_project_start = handleSuperitemsChangedByReglue(this_is_ancestor_update)
+  ancestor_pools_params_sorted_by_ascending_nesting_depth = sortAncestorUpdatesByNestingDepth()
 
   for i = 1, #ancestor_pools_params_sorted_by_ascending_nesting_depth do
     _current_pool_fresh_glue_params = ancestor_pools_params_sorted_by_ascending_nesting_depth[i]
-    this_parent_pool_id = tostring(_current_pool_fresh_glue_params.pool_id)
-    _restored_items_project_start_position_delta = parent_pools_near_project_start[this_parent_pool_id]
-    _current_pool_preedit_params = storeRetrieveSuperitemParams(this_parent_pool_id, _preedit_action_step)
+    this_ancestor_pool_id = tostring(_current_pool_fresh_glue_params.pool_id)
+    _restored_items_project_start_position_delta = ancestor_pools_near_project_start[this_ancestor_pool_id]
+    _current_pool_preedit_params = storeRetrieveSuperitemParams(this_ancestor_pool_id, _preedit_action_step)
 
     if _restored_items_project_start_position_delta then
-      adjustParentPoolChildren(this_parent_pool_id, _edited_pool_fresh_glue_params.pool_id)
+      adjustParentPoolChildren(this_ancestor_pool_id, _edited_pool_fresh_glue_params.pool_id)
 
     else
       _restored_items_project_start_position_delta = 0
     end
       
-    reglueParent(sizing_region_guid)
+    reglueAncestor(sizing_region_guid)
   end
 
   reaper.ClearPeakCache()
 end
 
 
-function handleSuperitemsChangedByReglue(this_is_parent_update)
-  local all_items_count, parent_pools_near_project_start, i, this_item, this_active_pool_sibling, global_option_toggle_depool_all_siblings_on_reglue, this_sibling_active_take
+function handleSuperitemsChangedByReglue(this_is_ancestor_update)
+  local all_items_count, ancestor_pools_near_project_start, i, this_item, this_active_pool_instance, global_option_toggle_depool_all_siblings_on_reglue, this_instance_active_take
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
-  parent_pools_near_project_start = {}
+  ancestor_pools_near_project_start = {}
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(_api_current_project, i)
-    this_active_pool_sibling = getSuperitemChangedByReglue(this_item, this_is_parent_update)
+    this_active_pool_instance = getSuperitemChangedByReglue(this_item, this_is_ancestor_update)
 
-    if this_active_pool_sibling then
+    if this_active_pool_instance then
       global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
 
       if global_option_toggle_depool_all_siblings_on_reglue == "true" then
-        global_option_toggle_depool_all_siblings_on_reglue = handleDePoolSibling(this_active_pool_sibling)
+        global_option_toggle_depool_all_siblings_on_reglue = handleDePoolSibling(this_active_pool_instance)
       
       elseif global_option_toggle_depool_all_siblings_on_reglue == "false" then
-        this_sibling_active_take = reaper.GetActiveTake(this_active_pool_sibling)
-        parent_pools_near_project_start = updateSuperitemChangedByReglue(this_active_pool_sibling, this_sibling_active_take, this_item, parent_pools_near_project_start, this_is_parent_update)
+        this_instance_active_take = reaper.GetActiveTake(this_active_pool_instance)
+        ancestor_pools_near_project_start = updateSuperitemChangedByReglue(this_active_pool_instance, this_instance_active_take, this_item, ancestor_pools_near_project_start, this_is_ancestor_update)
       end
     end
   end
 
-  return parent_pools_near_project_start
+  return ancestor_pools_near_project_start
 end
 
 
-function getSuperitemChangedByReglue(item, this_is_parent_update)
-  local item_instance_pool_id, item_is_instance, fresh_glue_params, item_is_active_superitem_pool_instance, instance_current_src, this_instance_needs_update
+function getSuperitemChangedByReglue(item, this_is_ancestor_update)
+  local item_instance_pool_id, item_is_instance, fresh_glue_params, item_is_active_pool_instance, instance_current_src, this_instance_needs_update
 
   item_instance_pool_id = storeRetrieveItemData(item, _instance_pool_id_key_suffix)
   item_is_instance = item_instance_pool_id and item_instance_pool_id ~= ""
 
-  if this_is_parent_update then
+  if this_is_ancestor_update then
     fresh_glue_params = _current_pool_fresh_glue_params
 
   else
@@ -2788,14 +2813,15 @@ function getSuperitemChangedByReglue(item, this_is_parent_update)
   end
 
   if item_is_instance then
+
     if not fresh_glue_params.instance_pool_id or fresh_glue_params.instance_pool_id == "" then
       fresh_glue_params.instance_pool_id = fresh_glue_params.pool_id
       fresh_glue_params.instance_pool_id = tostring(fresh_glue_params.instance_pool_id)
     end
 
-    item_is_active_superitem_pool_instance = item_instance_pool_id == fresh_glue_params.instance_pool_id
+    item_is_active_pool_instance = item_instance_pool_id == fresh_glue_params.instance_pool_id
     
-    if item_is_active_superitem_pool_instance then
+    if item_is_active_pool_instance then
       instance_current_src = getSetWipeItemAudioSrc(item)
       this_instance_needs_update = instance_current_src ~= fresh_glue_params.updated_src
 
@@ -2834,56 +2860,56 @@ function handleDePoolSibling(active_pool_sibling)
 end
 
 
-function updateSuperitemChangedByReglue(active_pool_sibling, sibling_active_take, item, parent_pools_near_project_start, this_is_parent_update)
-  local siblings_are_being_updated, current_superitem_updated_src, attempted_negative_instance_position, sibling_parent_pool_id, parent_active_take, parent_playrate, parent_current_src_offset, parent_adjusted_src_offset
+function updateSuperitemChangedByReglue(active_pool_instance, instance_active_take, item, ancestor_pools_near_project_start, this_is_ancestor_update)
+  local siblings_are_being_updated, current_pool_updated_src, attempted_negative_instance_position, instance_parent_pool_id, parent_active_take, parent_playrate, parent_current_src_offset, parent_adjusted_src_offset
 
-  siblings_are_being_updated = not this_is_parent_update
+  siblings_are_being_updated = not this_is_ancestor_update
 
-  if this_is_parent_update then
-    current_superitem_updated_src =  _current_pool_fresh_glue_params.updated_src
+  if this_is_ancestor_update then
+    current_pool_updated_src =  _current_pool_fresh_glue_params.updated_src
 
   elseif siblings_are_being_updated then
-    current_superitem_updated_src = _edited_pool_fresh_glue_params.updated_src
+    current_pool_updated_src = _edited_pool_fresh_glue_params.updated_src
   end
 
-  getSetWipeItemAudioSrc(active_pool_sibling, current_superitem_updated_src)
+  getSetWipeItemAudioSrc(active_pool_instance, current_pool_updated_src)
 
-  attempted_negative_instance_position = adjustSuperitemChangedByReglue(active_pool_sibling, sibling_active_take, this_is_parent_update)
+  attempted_negative_instance_position = adjustSuperitemChangedByReglue(active_pool_instance, instance_active_take, this_is_ancestor_update)
 
   if attempted_negative_instance_position ~= 0 then
-    sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
-    parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
+    instance_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
+    ancestor_pools_near_project_start[instance_parent_pool_id] = attempted_negative_instance_position
   end
 
-  return parent_pools_near_project_start
+  return ancestor_pools_near_project_start
 end
 
 
-function adjustSuperitemChangedByReglue(sibling, sibling_active_take, this_is_parent_update)
-  local this_superitem_parent_pool_id, this_superitem_is_child, sibling_playrate
+function adjustSuperitemChangedByReglue(instance, instance_active_take, this_is_ancestor_update)
+  local this_instance_parent_pool_id, this_instance_is_child, instance_payrate
   
-  this_superitem_parent_pool_id = storeRetrieveItemData(sibling, _parent_pool_id_key_suffix)
-  this_superitem_is_child = this_superitem_parent_pool_id and this_superitem_parent_pool_id ~= ""
-  sibling_playrate = reaper.GetMediaItemTakeInfo_Value(sibling_active_take, _api_playrate_key)
+  this_instance_parent_pool_id = storeRetrieveItemData(instance, _parent_pool_id_key_suffix)
+  this_instance_is_child = this_instance_parent_pool_id and this_instance_parent_pool_id ~= ""
+  instance_payrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_playrate_key)
   _user_wants_propagation_option["playrate_toggle"] = getUserPropagationChoice("playrate_toggle", _global_option_playrate_affects_propagation_default_key)
 
-  setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update, this_superitem_is_child)
+  setUpSuperitemPositionAdjustment(instance, instance_active_take, instance_payrate, this_is_ancestor_update, this_instance_is_child)
 
-  if not this_is_parent_update then
-    adjustSuperitemLength(sibling, sibling_playrate, this_superitem_is_child)
+  if not this_is_ancestor_update then
+    adjustSuperitemLength(instance, instance_payrate, this_instance_is_child)
   end
 end
 
 
-function setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update, this_superitem_is_child)
-  local sibling_current_src_offset, this_is_edited_pool_update, pool_fresh_glue_params, pool_preedit_params, sibling_would_get_adjusted_before_project_start
+function setUpSuperitemPositionAdjustment(instance, instance_active_take, instance_payrate, this_is_ancestor_update, this_instance_is_child)
+  local instance_current_src_offset, this_is_edited_pool_update, pool_fresh_glue_params, pool_preedit_params, instance_would_get_adjusted_before_project_start
 
-  sibling_current_src_offset = reaper.GetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, "", false)
+  instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, "", false)
   _user_wants_propagation_option["position"] = getUserPropagationChoice("position", _global_option_propagate_position_default_key)
   _user_wants_propagation_option["source_position"] = getUserPropagationChoice("source_position", _global_option_maintain_source_position_default_key)
   this_is_edited_pool_update = not _current_pool_fresh_glue_params or not _current_pool_preedit_params
 
-  if this_is_parent_update then
+  if this_is_ancestor_update then
     pool_fresh_glue_params = _current_pool_fresh_glue_params
     pool_preedit_params = _current_pool_preedit_params
 
@@ -2892,12 +2918,12 @@ function setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_
     pool_preedit_params = _edited_pool_preedit_params
   end
 
-  if _user_wants_propagation_option["position"] and not this_is_parent_update then
-    sibling_would_get_adjusted_before_project_start = adjustSuperitemPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
+  if _user_wants_propagation_option["position"] and not this_is_ancestor_update then
+    instance_would_get_adjusted_before_project_start = adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_payrate, pool_fresh_glue_params, pool_preedit_params)
   end
 
-  if _user_wants_propagation_option["source_position"] and not sibling_would_get_adjusted_before_project_start then
-    adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, this_is_parent_update, this_superitem_is_child)
+  if _user_wants_propagation_option["source_position"] and not instance_would_get_adjusted_before_project_start then
+    adjustSuperitemSourceOffset(instance, instance_active_take, instance_current_src_offset, this_is_ancestor_update, this_instance_is_child)
   end
 end
 
@@ -2961,108 +2987,116 @@ function getPropagateDialogValues()
 end
 
 
-function adjustSuperitemPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
-  local sibling_current_position, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start, take_markers_source_offset
+function adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_payrate, pool_fresh_glue_params, pool_preedit_params)
+  local instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start, take_markers_source_offset
 
-  sibling_current_position, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start = getPositionPropagationParams(sibling, sibling_current_src_offset, sibling_playrate)
+  instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start = getPositionPropagationParams(instance, instance_current_src_offset, instance_payrate)
 
   if _user_wants_propagation_option["position"] then
 
-    if sibling_would_get_adjusted_before_project_start then
-      handleSuperitemNearProjectStart(sibling, sibling_current_position, sibling_active_take, sibling_current_src_offset, sibling_playrate)
+    if instance_would_get_adjusted_before_project_start then
+      handleSuperitemNearProjectStart(instance, instance_current_position, instance_active_take, instance_current_src_offset, instance_payrate)
 
     else
       take_markers_source_offset = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
-      adjustPostGlueTakeMarkersAndEnvelopes(sibling, nil, take_markers_source_offset)
-      reaper.SetMediaItemPosition(sibling, sibling_adjusted_position, false)
+      adjustPostGlueTakeMarkersAndEnvelopes(instance, nil, take_markers_source_offset)
+      reaper.SetMediaItemPosition(instance, instance_adjusted_position, false)
 
       if _user_wants_propagation_option["source_position"] then
-        reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, sibling_current_src_offset)
+        reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, instance_current_src_offset)
       end
 
       _sibling_position_change_affect_on_length = 0
     end
 
   else
-    adjustPostGlueTakeMarkersAndEnvelopes(sibling)
+    adjustPostGlueTakeMarkersAndEnvelopes(instance)
   end
 
-  return sibling_would_get_adjusted_before_project_start
+  return instance_would_get_adjusted_before_project_start
 end
 
 
-function getPositionPropagationParams(sibling, sibling_current_src_offset, sibling_playrate)
-  local sibling_current_position, sibling_position_adjustment_delta, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start
+function getPositionPropagationParams(instance, instance_current_src_offset, instance_payrate)
+  local instance_current_position, instance_position_adjustment_delta, instance_adjusted_position, instance_would_get_adjusted_before_project_start
 
-  sibling_current_position = reaper.GetMediaItemInfo_Value(sibling, _api_item_position_key)
-  sibling_position_adjustment_delta = _superitem_instance_offset_delta_since_last_glue
+  instance_current_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
+  instance_position_adjustment_delta = _superitem_instance_offset_delta_since_last_glue
 
   if _user_wants_propagation_option["playrate_toggle"] then
-    sibling_position_adjustment_delta = sibling_position_adjustment_delta / sibling_playrate
+    instance_position_adjustment_delta = instance_position_adjustment_delta / instance_payrate
   end
 
-  sibling_adjusted_position = sibling_current_position + sibling_position_adjustment_delta
-  sibling_would_get_adjusted_before_project_start = sibling_adjusted_position < _position_start_of_project
+  instance_adjusted_position = instance_current_position + instance_position_adjustment_delta
+  instance_would_get_adjusted_before_project_start = instance_adjusted_position < _position_start_of_project
 
-  return sibling_current_position, sibling_adjusted_position, sibling_would_get_adjusted_before_project_start
+  return instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start
 end
 
 
-function handleSuperitemNearProjectStart(sibling, sibling_current_position, sibling_active_take, sibling_current_src_offset, sibling_playrate)
-  local sibling_is_exactly_at_project_start, this_is_parent_update, this_is_edited_pool_update, pool_fresh_glue_params, pool_preedit_params, sibling_src_offset_adjustment_delta, sibling_adjusted_src_offset
+function handleSuperitemNearProjectStart(instance, instance_current_position, instance_active_take, instance_current_src_offset, instance_payrate)
+  local instance_is_exactly_at_project_start, this_is_edited_pool_update, pool_fresh_glue_params, pool_preedit_params, instance_src_offset_adjustment_delta, instance_adjusted_src_offset
 
-  sibling_is_exactly_at_project_start = sibling_current_position == _position_start_of_project
+  instance_is_exactly_at_project_start = instance_current_position == _position_start_of_project
 
   if _user_wants_propagation_option["source_position"] then
 
-    if sibling_is_exactly_at_project_start then
-      sibling_src_offset_adjustment_delta = pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
+    if instance_is_exactly_at_project_start then
+      instance_src_offset_adjustment_delta = pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
 
     else
-      sibling_src_offset_adjustment_delta = pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue - (sibling_current_position * sibling_playrate)
+      instance_src_offset_adjustment_delta = pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue - (instance_current_position * instance_payrate)
     end
 
   else
-    sibling_src_offset_adjustment_delta = 0
+    instance_src_offset_adjustment_delta = 0
   end
 
-  sibling_adjusted_src_offset = sibling_current_src_offset + sibling_src_offset_adjustment_delta
+  instance_adjusted_src_offset = instance_current_src_offset + instance_src_offset_adjustment_delta
 
-  adjustPostGlueTakeMarkersAndEnvelopes(sibling, sibling_adjusted_src_offset)
-  reaper.SetMediaItemPosition(sibling, _position_start_of_project, false)
-  reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, sibling_adjusted_src_offset)
+  adjustPostGlueTakeMarkersAndEnvelopes(instance, instance_adjusted_src_offset)
+  reaper.SetMediaItemPosition(instance, _position_start_of_project, false)
+  reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
 end
 
 
-function adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, this_is_parent_update, this_superitem_is_child)
-  local sibling_adjusted_src_offset
+function adjustSuperitemSourceOffset(instance, instance_active_take, instance_current_src_offset, this_is_ancestor_update, this_instance_is_child)
+  local instance_adjusted_src_offset
 
   if _user_wants_propagation_option["position"] then
-    sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
+    instance_adjusted_src_offset = instance_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
-    if this_is_parent_update and not this_superitem_is_child then
-      sibling_adjusted_src_offset = sibling_current_src_offset
+    if this_is_ancestor_update and not this_instance_is_child then
+      -- 5.703
+-- NEED THE POSITION DELTA FROM INSTANCE TO START OF PARENT???
+      instance_adjusted_src_offset = instance_current_src_offset
     end
 
   else
-    sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
+    instance_adjusted_src_offset = instance_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
 
-    if this_is_parent_update then
-      sibling_adjusted_src_offset = sibling_current_src_offset
+    if this_is_ancestor_update then
+      instance_adjusted_src_offset = instance_current_src_offset
     end
   end
 
   _active_superitem_source_position_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
-  reaper.SetMediaItemTakeInfo_Value(sibling_active_take, _api_take_src_offset_key, sibling_adjusted_src_offset)
+  reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
+
+
+logV("instance_current_src_offset",instance_current_src_offset)
+logV("_edited_pool_fresh_glue_params.source_offset",_edited_pool_fresh_glue_params.source_offset)
+logV("_edited_pool_preedit_params.source_offset",_edited_pool_preedit_params.source_offset)
+logV("_superitem_instance_offset_delta_since_last_glue",_superitem_instance_offset_delta_since_last_glue)
 end
 
 
-function adjustSuperitemLength(sibling, sibling_playrate, this_superitem_is_child)
-  local sibling_current_length, sibling_length_adjustment_delta, user_wants_relative_length_propagation, sibling_adjusted_length
+function adjustSuperitemLength(instance, instance_payrate, this_instance_is_child)
+  local instance_current_length, instance_length_adjustment_delta, user_wants_relative_length_propagation, instance_adjusted_length
 
-  sibling_current_length = reaper.GetMediaItemInfo_Value(sibling, _api_item_length_key)
+  instance_current_length = reaper.GetMediaItemInfo_Value(instance, _api_item_length_key)
   _user_wants_propagation_option["length"] = getUserPropagationChoice("length", _global_option_propagate_length_default_key)
 
   if _user_wants_propagation_option["length"] then
@@ -3071,26 +3105,26 @@ function adjustSuperitemLength(sibling, sibling_playrate, this_superitem_is_chil
     user_wants_relative_length_propagation = not _user_wants_propagation_option["absolute_length_propagation"]
 
     if _user_wants_propagation_option["absolute_length_propagation"] then
-      sibling_adjusted_length = _edited_pool_fresh_glue_params.length
+      instance_adjusted_length = _edited_pool_fresh_glue_params.length
 
       if _user_wants_propagation_option["playrate_toggle"] then
-        sibling_adjusted_length = _edited_pool_fresh_glue_params.length / sibling_playrate
+        instance_adjusted_length = _edited_pool_fresh_glue_params.length / instance_payrate
       end
 
     elseif user_wants_relative_length_propagation then
-      sibling_adjusted_length = sibling_current_length + _reglue_position_change_affect_on_length
+      instance_adjusted_length = instance_current_length + _reglue_position_change_affect_on_length
 
       if _user_wants_propagation_option["playrate_toggle"] then
-        sibling_adjusted_length = sibling_current_length + (_reglue_position_change_affect_on_length / sibling_playrate)
+        instance_adjusted_length = instance_current_length + (_reglue_position_change_affect_on_length / instance_payrate)
       end
     end
 
-    reaper.SetMediaItemLength(sibling, sibling_adjusted_length, false)
+    reaper.SetMediaItemLength(instance, instance_adjusted_length, false)
   end
 end
 
 
-function sortParentUpdatesByNestingDepth()
+function sortAncestorUpdatesByNestingDepth()
   local pool_id, this_parent_instance_params, ancestor_pools_params_sorted_by_ascending_nesting_depth
 
   ancestor_pools_params_sorted_by_ascending_nesting_depth = {}
@@ -3135,19 +3169,19 @@ function adjustParentPoolChildren(parent_pool_id, active_pool_id)
 end
 
 
-function reglueParent(sizing_region_guid)
-  local this_is_parent_update, selected_items, parent_instance
+function reglueAncestor(sizing_region_guid)
+  local this_is_ancestor_update, selected_items, parent_instance
 
   deselectAllItems()
   selectDeselectItems(_current_pool_fresh_glue_params.restored_items, true)
 
-  this_is_parent_update = true
+  this_is_ancestor_update = true
   selected_items = getSelectedItems(#_current_pool_fresh_glue_params.restored_items)
-  parent_instance = handleGlue(selected_items, _current_pool_fresh_glue_params.track, _current_pool_fresh_glue_params.pool_id, sizing_region_guid, nil, this_is_parent_update)
+  parent_instance = handleGlue(selected_items, _current_pool_fresh_glue_params.track, _current_pool_fresh_glue_params.pool_id, sizing_region_guid, nil, this_is_ancestor_update)
   _current_pool_fresh_glue_params.updated_src = getSetWipeItemAudioSrc(parent_instance)
 
   deselectAllItems()
-  handleSuperitemsChangedByReglue(this_is_parent_update)
+  handleSuperitemsChangedByReglue(this_is_ancestor_update)
   reaper.DeleteTrack(_current_pool_fresh_glue_params.track)
 end
   
