@@ -2548,7 +2548,9 @@ function handleRestoredItem(active_track, stored_item_state, restored_instances_
   reaper.SetMediaItemSelected(restored_item, true)
   handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
-  restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, this_is_parent_update)
+  if not this_is_parent_update then
+    restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item)
+  end
 
   if restored_item_negative_position_delta then
 
@@ -2657,22 +2659,20 @@ function deleteActiveTakeFromItems()
 end
 
 
-function adjustRestoredItem(restored_item, this_is_parent_update)
+function adjustRestoredItem(restored_item)
   local restored_item_params, adjusted_restored_item_position_is_before_project_start, restored_item_negative_position
 
-  if not this_is_parent_update then
-    restored_item_params = getSetItemParams(restored_item)
-    restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item, restored_item_params)
-    adjusted_restored_item_position_is_before_project_start = restored_item_params.position < 0
+  restored_item_params = getSetItemParams(restored_item)
+  restored_item_params.position = shiftRestoredItemPositionSinceLastGlue(restored_item, restored_item_params)
+  adjusted_restored_item_position_is_before_project_start = restored_item_params.position < 0
 
-    if adjusted_restored_item_position_is_before_project_start then
-      restored_item_negative_position = restored_item_params.position
+  if adjusted_restored_item_position_is_before_project_start then
+    restored_item_negative_position = restored_item_params.position
 
-      return restored_item, restored_item_negative_position
-    end
-
-    reaper.SetMediaItemPosition(restored_item, restored_item_params.position, false)
+    return restored_item, restored_item_negative_position
   end
+
+  reaper.SetMediaItemPosition(restored_item, restored_item_params.position, false)
 
   return restored_item
 end
@@ -2848,14 +2848,12 @@ function updateSuperitemChangedByReglue(active_pool_sibling, sibling_active_take
 
   getSetWipeItemAudioSrc(active_pool_sibling, current_superitem_updated_src)
 
-  -- if siblings_are_being_updated then
-    attempted_negative_instance_position = adjustSuperitemChangedByReglue(active_pool_sibling, sibling_active_take, this_is_parent_update)
+  attempted_negative_instance_position = adjustSuperitemChangedByReglue(active_pool_sibling, sibling_active_take, this_is_parent_update)
 
-    if attempted_negative_instance_position ~= 0 then
-      sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
-      parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
-    end
-  -- end
+  if attempted_negative_instance_position ~= 0 then
+    sibling_parent_pool_id = storeRetrieveItemData(item, _parent_pool_id_key_suffix)
+    parent_pools_near_project_start[sibling_parent_pool_id] = attempted_negative_instance_position
+  end
 
   return parent_pools_near_project_start
 end
@@ -2872,7 +2870,7 @@ function adjustSuperitemChangedByReglue(sibling, sibling_active_take, this_is_pa
   setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_playrate, this_is_parent_update, this_superitem_is_child)
 
   if not this_is_parent_update then
-    adjustSuperitemLength(sibling, sibling_playrate)
+    adjustSuperitemLength(sibling, sibling_playrate, this_superitem_is_child)
   end
 end
 
@@ -2894,11 +2892,11 @@ function setUpSuperitemPositionAdjustment(sibling, sibling_active_take, sibling_
     pool_preedit_params = _edited_pool_preedit_params
   end
 
-  if _user_wants_propagation_option["position"] and not this_is_parent_update and not this_superitem_is_child then
+  if _user_wants_propagation_option["position"] and not this_is_parent_update then
     sibling_would_get_adjusted_before_project_start = adjustSuperitemPosition(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, pool_fresh_glue_params, pool_preedit_params)
   end
 
-  if _user_wants_propagation_option["source_position"] and not sibling_would_get_adjusted_before_project_start and not this_is_parent_update then
+  if _user_wants_propagation_option["source_position"] and not sibling_would_get_adjusted_before_project_start then
     adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_current_src_offset, sibling_playrate, this_is_parent_update, this_superitem_is_child)
   end
 end
@@ -3043,15 +3041,16 @@ function adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_curre
   if _user_wants_propagation_option["position"] then
     sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
+    if this_is_parent_update and not this_superitem_is_child then
+      sibling_adjusted_src_offset = sibling_current_src_offset
+    end
+
   else
     sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
-  end
 
-  if this_is_parent_update and not this_superitem_is_child then
-    sibling_adjusted_src_offset = sibling_current_src_offset
-
-  elseif this_superitem_is_child then
-    sibling_adjusted_src_offset = sibling_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
+    if this_is_parent_update then
+      sibling_adjusted_src_offset = sibling_current_src_offset
+    end
   end
 
   _active_superitem_source_position_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
@@ -3060,8 +3059,8 @@ function adjustSuperitemSourceOffset(sibling, sibling_active_take, sibling_curre
 end
 
 
-function adjustSuperitemLength(sibling, sibling_playrate)
-  local sibling_current_length, sibling_length_adjustment_delta, sibling_adjusted_length
+function adjustSuperitemLength(sibling, sibling_playrate, this_superitem_is_child)
+  local sibling_current_length, sibling_length_adjustment_delta, user_wants_relative_length_propagation, sibling_adjusted_length
 
   sibling_current_length = reaper.GetMediaItemInfo_Value(sibling, _api_item_length_key)
   _user_wants_propagation_option["length"] = getUserPropagationChoice("length", _global_option_propagate_length_default_key)
@@ -3069,6 +3068,7 @@ function adjustSuperitemLength(sibling, sibling_playrate)
   if _user_wants_propagation_option["length"] then
     _user_wants_propagation_option["playrate_toggle"] = getUserPropagationChoice("playrate_toggle", _global_option_playrate_affects_propagation_default_key)
     _user_wants_propagation_option["absolute_length_propagation"] = getUserPropagationChoice("absolute_length_propagation", _global_option_length_propagation_type_default_key)
+    user_wants_relative_length_propagation = not _user_wants_propagation_option["absolute_length_propagation"]
 
     if _user_wants_propagation_option["absolute_length_propagation"] then
       sibling_adjusted_length = _edited_pool_fresh_glue_params.length
@@ -3077,7 +3077,7 @@ function adjustSuperitemLength(sibling, sibling_playrate)
         sibling_adjusted_length = _edited_pool_fresh_glue_params.length / sibling_playrate
       end
 
-    else
+    elseif user_wants_relative_length_propagation then
       sibling_adjusted_length = sibling_current_length + _reglue_position_change_affect_on_length
 
       if _user_wants_propagation_option["playrate_toggle"] then
