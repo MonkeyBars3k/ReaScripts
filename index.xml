@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="26de638de63ac14d6ad53cbc2ae06f8beacf02af">
+<index version="1" name="MonkeyBars-ReaScripts" commit="8cda74467534ac9d53e6ee12d6906f5c45c7f91a">
   <category name="Superglue">
     <reapack name="MB_Superglue - Cycle option, Maintain siblings' audio source position.lua" type="script" desc="MB_Superglue - Maintain siblings' audio source position">
       <metadata>
@@ -79,6 +79,22 @@
       <version name="1.767" author="MonkeyBars" time="2022-02-20T03:39:13Z">
         <changelog><![CDATA[Change function & script name]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/926df556d7fa0cbb8c9746da74739285b6c9ab99/Superglue/MB_Superglue%20-%20Display%20selected%20Superglue%20item%20info.lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB_Superglue - Display Superglue project data.lua" type="script" desc="MB_Superglue - Display Superglue project data">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.789" author="MonkeyBars" time="2022-03-08T16:07:17Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/c3567793223c233bc03bb1646085afffeec300c4/Superglue/MB_Superglue%20-%20Display%20Superglue%20project%20data.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Edit selected Superitem reversibly.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
@@ -868,6 +884,78 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/26de638de63ac14d6ad53cbc2ae06f8beacf02af/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/26de638de63ac14d6ad53cbc2ae06f8beacf02af/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/26de638de63ac14d6ad53cbc2ae06f8beacf02af/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.789" author="MonkeyBars" time="2022-03-08T16:07:17Z">
+        <changelog><![CDATA[Superitem doesn't retain contained items' glued source outside edges (https://github.com/MonkeyBars3k/ReaScripts/issues/232); Sizing region doesn't expand position unless end point expands too (https://github.com/MonkeyBars3k/ReaScripts/issues/233); Check restored_instances_near_project_start logic (https://github.com/MonkeyBars3k/ReaScripts/issues/235); Add option: Propagate absolute or relative length (https://github.com/MonkeyBars3k/ReaScripts/issues/236)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/c3567793223c233bc03bb1646085afffeec300c4/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/c3567793223c233bc03bb1646085afffeec300c4/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/c3567793223c233bc03bb1646085afffeec300c4/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/c3567793223c233bc03bb1646085afffeec300c4/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/c3567793223c233bc03bb1646085afffeec300c4/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.790" author="MonkeyBars" time="2022-03-09T16:34:38Z">
+        <changelog><![CDATA[Take marker adjustment with propagation off (https://github.com/MonkeyBars3k/ReaScripts/issues/238)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/ac4df97e232bc85a5772efa0e6908202abbdbc09/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ac4df97e232bc85a5772efa0e6908202abbdbc09/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ac4df97e232bc85a5772efa0e6908202abbdbc09/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/ac4df97e232bc85a5772efa0e6908202abbdbc09/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/ac4df97e232bc85a5772efa0e6908202abbdbc09/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.791" author="MonkeyBars" time="2022-03-09T16:35:14Z">
+        <changelog><![CDATA[Remove comments]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/4ea377833f4e293d7cd754fcdb2c9a189bdc2091/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea377833f4e293d7cd754fcdb2c9a189bdc2091/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea377833f4e293d7cd754fcdb2c9a189bdc2091/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea377833f4e293d7cd754fcdb2c9a189bdc2091/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea377833f4e293d7cd754fcdb2c9a189bdc2091/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.792" author="MonkeyBars" time="2022-03-09T16:37:04Z">
+        <changelog><![CDATA[Fix comments]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/af667e2e78bf5a8d25f8a0a01bb8eae50aafb5d4/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/af667e2e78bf5a8d25f8a0a01bb8eae50aafb5d4/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/af667e2e78bf5a8d25f8a0a01bb8eae50aafb5d4/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/af667e2e78bf5a8d25f8a0a01bb8eae50aafb5d4/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/af667e2e78bf5a8d25f8a0a01bb8eae50aafb5d4/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.793" author="MonkeyBars" time="2022-03-11T07:17:19Z">
+        <changelog><![CDATA[Parent render contents placement wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/240); Refactors (https://github.com/MonkeyBars3k/ReaScripts/issues/241)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e0ab8cc063438ad905e1a9798ec216f13b7ee5ba/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e0ab8cc063438ad905e1a9798ec216f13b7ee5ba/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e0ab8cc063438ad905e1a9798ec216f13b7ee5ba/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e0ab8cc063438ad905e1a9798ec216f13b7ee5ba/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e0ab8cc063438ad905e1a9798ec216f13b7ee5ba/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.794" author="MonkeyBars" time="2022-03-12T15:38:32Z">
+        <changelog><![CDATA[Refactor / Correct nomenclature (https://github.com/MonkeyBars3k/ReaScripts/issues/241)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/6afa6199300e6697420b22a1721adb4727e00d52/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/6afa6199300e6697420b22a1721adb4727e00d52/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/6afa6199300e6697420b22a1721adb4727e00d52/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6afa6199300e6697420b22a1721adb4727e00d52/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6afa6199300e6697420b22a1721adb4727e00d52/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.795" author="MonkeyBars" time="2022-03-13T02:16:33Z">
+        <changelog><![CDATA[Parents propagate wrong near project start (https://github.com/MonkeyBars3k/ReaScripts/issues/244)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/450900e63e3e47cfc32ef8b2517ea6f9848b9f8d/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/450900e63e3e47cfc32ef8b2517ea6f9848b9f8d/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/450900e63e3e47cfc32ef8b2517ea6f9848b9f8d/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/450900e63e3e47cfc32ef8b2517ea6f9848b9f8d/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/450900e63e3e47cfc32ef8b2517ea6f9848b9f8d/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.796" author="MonkeyBars" time="2022-03-13T22:41:27Z">
+        <changelog><![CDATA[Parents propagate wrong near project start (https://github.com/MonkeyBars3k/ReaScripts/issues/244) cont.]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/5f9be0b89cb74d967e0cc043e91ce70a1993af27/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5f9be0b89cb74d967e0cc043e91ce70a1993af27/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5f9be0b89cb74d967e0cc043e91ce70a1993af27/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5f9be0b89cb74d967e0cc043e91ce70a1993af27/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5f9be0b89cb74d967e0cc043e91ce70a1993af27/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.797" author="MonkeyBars" time="2022-03-13T23:22:29Z">
+        <changelog><![CDATA[Fix Unglue adjustment logic]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
