@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.795
--- @changelog Parents propagate wrong near project start (https://github.com/MonkeyBars3k/ReaScripts/issues/244)
+-- @version 1.796
+-- @changelog Parents propagate wrong near project start (https://github.com/MonkeyBars3k/ReaScripts/issues/244) cont.
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1910,14 +1910,18 @@ function cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_pa
   new_superitem_length = sizing_params.length
 
   if selected_items_start_before_sizer then
+    -- local superitem_current_source_offset = reaper.GetMediaItemTakeInfo_Value(superitem_active_take, _api_take_src_offset_key)
     selected_items_position_delta_to_sizer = sizing_params.position - selected_items_params.position 
 
     reaper.SetMediaItemPosition(superitem, sizing_params.position, false)
     reaper.SetMediaItemLength(superitem, new_superitem_length, false)
 
-    if not this_is_ancestor_update then
+    -- if this_is_ancestor_update then
+    --   reaper.SetMediaItemTakeInfo_Value(superitem_active_take, _api_take_src_offset_key, superitem_current_source_offset + selected_items_position_delta_to_sizer)
+      
+    -- else
       reaper.SetMediaItemTakeInfo_Value(superitem_active_take, _api_take_src_offset_key, selected_items_position_delta_to_sizer)
-    end
+    -- end
   end
 
   if selected_items_end_after_sizer then
@@ -2124,9 +2128,9 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
 
   cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
 
-  if not _edited_pool_last_glue_params then
+  -- if not _edited_pool_last_glue_params then
     _edited_pool_last_glue_params = storeRetrieveSuperitemParams(restored_items_pool_id, _postglue_action_step)
-  end
+  -- end
 
   retval, all_pool_ids_with_active_sizing_regions = storeRetrieveProjectData(_all_pool_ids_with_active_sizing_regions_key)
   retval, all_pool_ids_with_active_sizing_regions = serpent.load(all_pool_ids_with_active_sizing_regions)
@@ -2602,7 +2606,7 @@ function handleRestoredItem(active_track, stored_item_state, restored_instances_
   handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
   if not this_is_ancestor_update then
-    restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item)
+    restored_item, restored_item_negative_position_delta = adjustRestoredItem(restored_item, action)
   end
 
   restored_instances_near_project_start[restored_instance_pool_id] = defineRestoredInstanceNearProjectStartParams(restored_instances_near_project_start, restored_instance_pool_id, restored_item, restored_item_negative_position_delta)
@@ -2709,11 +2713,11 @@ function deleteActiveTakeFromItems()
 end
 
 
-function adjustRestoredItem(restored_item)
+function adjustRestoredItem(restored_item, action)
   local restored_item_params, adjusted_restored_item_position_is_before_project_start, restored_item_negative_position
 
   restored_item_params = getSetItemParams(restored_item)
-  restored_item_params.position = getRestoredItemPositionDeltaSinceLastGlue(restored_item, restored_item_params)
+  restored_item_params.position = getRestoredItemPositionDeltaSinceLastGlue(restored_item, restored_item_params, action)
   adjusted_restored_item_position_is_before_project_start = restored_item_params.position < 0
 
   if adjusted_restored_item_position_is_before_project_start then
@@ -2728,8 +2732,8 @@ function adjustRestoredItem(restored_item)
 end
 
 
-function getRestoredItemPositionDeltaSinceLastGlue(restored_item, restored_item_params)
-  local this_is_unglue, this_is_edit, this_item_position_delta_to_last_superitem_instance
+function getRestoredItemPositionDeltaSinceLastGlue(restored_item, restored_item_params, action)
+  local this_is_unglue, this_is_edit, this_item_position_delta_to_last_superitem_instance, restored_item_altered_position, restored_item_current_source_offset, restored_item_adjusted_source_offset
 
   this_is_unglue = not _edited_pool_preedit_params or not _edited_pool_preedit_params.position
   this_is_edit = _edited_pool_preedit_params.position and _edited_pool_preedit_params.source_offset
@@ -2739,21 +2743,79 @@ function getRestoredItemPositionDeltaSinceLastGlue(restored_item, restored_item_
 
   elseif this_is_edit then
 
-    if not _edited_pool_last_glue_params then
-      this_item_position_delta_to_last_superitem_instance = 0
+    -- if not _edited_pool_fresh_glue_params then
+    --   _edited_pool_fresh_glue_params = _edited_pool_post_glue_params
+    -- end
+
+    -- if _edited_pool_last_glue_params.position ~= _edited_pool_preedit_params.position then
+      -- log("case 2")
+      -- this_item_position_delta_to_last_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_last_glue_params.position - _edited_pool_last_glue_params.source_offset + _edited_pool_preedit_params.source_offset + _first_restored_item_last_glue_delta_to_parent
+
+    if action == "Edit" then
+      -- log("case 1")
+      -- this_item_position_delta_to_last_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_fresh_glue_params.position - _edited_pool_fresh_glue_params.source_offset + _edited_pool_preedit_params.source_offset - _first_restored_item_last_glue_delta_to_parent
+      this_item_position_delta_to_last_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset + _edited_pool_post_glue_params.source_offset
 
     else
-      this_item_position_delta_to_last_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_last_glue_params.position - _edited_pool_preedit_params.source_offset + _edited_pool_last_glue_params.source_offset
+      -- log("case 2")
+      this_item_position_delta_to_last_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_fresh_glue_params.position - _edited_pool_fresh_glue_params.source_offset + _superitem_instance_offset_delta_since_last_glue - _first_restored_item_last_glue_delta_to_parent
     end
+
+    -- else
+    --   log("case 3")
+    --   this_item_position_delta_to_last_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_last_glue_params.position + _edited_pool_last_glue_params.source_offset - _edited_pool_preedit_params.source_offset 
+    -- end
 
     if _this_depooled_superitem_has_not_been_edited == "true" then
       this_item_position_delta_to_last_superitem_instance = this_item_position_delta_to_last_superitem_instance + _first_restored_item_last_glue_delta_to_parent
     end
   end
 
-  restored_item_params.position = restored_item_params.position + this_item_position_delta_to_last_superitem_instance
 
-  return restored_item_params.position
+  
+  local current_child_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
+  local this_is_edited_child = current_child_pool_id == _edited_pool_preedit_params.instance_pool_id
+
+  if this_is_edited_child then
+    -- this_item_position_delta_to_last_superitem_instance = this_item_position_delta_to_last_superitem_instance + _edited_pool_fresh_glue_params.source_offset
+
+    local take = reaper.GetActiveTake(restored_item)
+
+    restored_item_current_source_offset = reaper.GetMediaItemTakeInfo_Value(take, _api_take_src_offset_key)
+    restored_item_adjusted_source_offset = restored_item_current_source_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
+
+    reaper.SetMediaItemTakeInfo_Value(take, _api_take_src_offset_key, restored_item_adjusted_source_offset)
+  end
+
+
+
+  restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_superitem_instance
+
+
+
+
+--   local current_parent_pool_id = storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix)
+-- log(current_parent_pool_id)
+-- logV("restored_item_params.position",restored_item_params.position)
+-- -- logV("restored_item_params.source_offset",restored_item_params.source_offset)
+-- logV("_edited_pool_preedit_params.position",_edited_pool_preedit_params.position)
+-- logV("_edited_pool_post_glue_params.position",_edited_pool_post_glue_params.position)
+-- logV("_edited_pool_preedit_params.source_offset",_edited_pool_preedit_params.source_offset)
+-- logV("_edited_pool_post_glue_params.source_offset",_edited_pool_post_glue_params.source_offset)
+-- logV("_first_restored_item_last_glue_delta_to_parent",_first_restored_item_last_glue_delta_to_parent)
+-- logV("_superitem_instance_offset_delta_since_last_glue", _superitem_instance_offset_delta_since_last_glue)
+-- logStr(_child_pools_params_by_parent_pool)
+-- logStr(_child_pools_params_by_parent_pool[_edited_pool_preedit_params.pool_id])
+
+-- if _child_pools_params_by_parent_pool[_edited_pool_preedit_params.pool_id] then
+--   logStr(_child_pools_params_by_parent_pool[_edited_pool_preedit_params.pool_id][current_child_pool_id])
+
+--   if _child_pools_params_by_parent_pool[_edited_pool_preedit_params.pool_id][current_child_pool_id] then
+--     logStr(_child_pools_params_by_parent_pool[_edited_pool_preedit_params.pool_id][current_child_pool_id]["position_delta_to_parent"])
+--   end
+-- end
+
+  return restored_item_altered_position
 end
 
 
@@ -2948,20 +3010,20 @@ function setUpSuperitemPositionAdjustment(instance, instance_active_take, instan
   _user_wants_propagation_option["source_position"] = getUserPropagationChoice("source_position", _global_option_maintain_source_position_default_key)
   this_is_edited_pool_update = not _current_pool_fresh_glue_params or not _current_pool_preedit_params
 
-  if this_is_ancestor_update then
-    pool_fresh_glue_params = _current_pool_fresh_glue_params
-    pool_preedit_params = _current_pool_preedit_params
+  -- if this_is_ancestor_update then
+  --   pool_fresh_glue_params = _current_pool_fresh_glue_params
+  --   pool_preedit_params = _current_pool_preedit_params
 
-  elseif this_is_edited_pool_update then
+  -- elseif this_is_edited_pool_update then
     pool_fresh_glue_params = _edited_pool_fresh_glue_params
     pool_preedit_params = _edited_pool_preedit_params
-  end
+  -- end
 
-  if _user_wants_propagation_option["position"] and not this_is_ancestor_update then
+  if not this_is_ancestor_update and _user_wants_propagation_option["position"] then
     instance_would_get_adjusted_before_project_start = adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_payrate, pool_fresh_glue_params, pool_preedit_params)
   end
 
-  if _user_wants_propagation_option["source_position"] and not instance_would_get_adjusted_before_project_start then
+  if --[[not this_is_ancestor_update and--]] _user_wants_propagation_option["source_position"] and not instance_would_get_adjusted_before_project_start then
     adjustSuperitemSourceOffset(instance, instance_active_take, instance_current_src_offset, this_is_ancestor_update, this_instance_is_child)
   end
 end
@@ -3082,10 +3144,10 @@ function handleSuperitemNearProjectStart(instance, instance_current_position, in
   if _user_wants_propagation_option["source_position"] then
 
     if instance_is_exactly_at_project_start then
-      instance_src_offset_adjustment_delta = pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
+      instance_src_offset_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue
 
     else
-      instance_src_offset_adjustment_delta = pool_fresh_glue_params.source_offset - pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue - (instance_current_position * instance_payrate)
+      instance_src_offset_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue - (instance_current_position * instance_payrate)
     end
 
   else
@@ -3103,30 +3165,44 @@ end
 function adjustSuperitemSourceOffset(instance, instance_active_take, instance_current_src_offset, this_is_ancestor_update, this_instance_is_child)
   local instance_adjusted_src_offset, ancestor_position, ancestor_pool_id, active_child_position_delta_to_parent
 
+-- local pool = storeRetrieveItemData(instance, _instance_pool_id_key_suffix)
+-- log(pool)
+
   if _user_wants_propagation_option["position"] then
-    instance_adjusted_src_offset = instance_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
 
     if this_is_ancestor_update then
-      ancestor_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
-      ancestor_pool_id = storeRetrieveItemData(instance, _instance_pool_id_key_suffix)
+--       ancestor_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
+--       ancestor_pool_id = storeRetrieveItemData(instance, _instance_pool_id_key_suffix)
 
-      if _child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id] then
+--       if _child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id] then
+-- logV('_child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id]["position_delta_to_parent"]',_child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id]["position_delta_to_parent"])
 
-        if _superitem_instance_offset_delta_since_last_glue > 0 then
-          active_child_position_delta_to_parent = _edited_pool_fresh_glue_params.position - _edited_pool_preedit_params.position - _superitem_instance_offset_delta_since_last_glue
+--         if _superitem_instance_offset_delta_since_last_glue > 0 then
+--           log("ancestor case 1")
+--           -- active_child_position_delta_to_parent = _edited_pool_fresh_glue_params.position - _edited_pool_preedit_params.position - _superitem_instance_offset_delta_since_last_glue
+--           -- active_child_position_delta_to_parent = _child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id]["position_delta_to_parent"]
 
-        elseif _superitem_instance_offset_delta_since_last_glue == 0 then
-          active_child_position_delta_to_parent = 0
+--         elseif _superitem_instance_offset_delta_since_last_glue == 0 then
+--           log("ancestor case 2")
+--           active_child_position_delta_to_parent = 0
 
-        elseif _superitem_instance_offset_delta_since_last_glue < 0 then
-         active_child_position_delta_to_parent = _child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id]["position_delta_to_parent"]
-        end
+--         elseif _superitem_instance_offset_delta_since_last_glue < 0 then
+--           log("ancestor case 3")
+--           active_child_position_delta_to_parent = _child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id]["position_delta_to_parent"]
+--         end
+-- -- 1.331
+--         -- active_child_position_delta_to_parent = _edited_pool_fresh_glue_params.position - _edited_pool_preedit_params.position - _edited_pool_preedit_params.source_offset - _superitem_instance_offset_delta_since_last_glue-- + _child_pools_params_by_parent_pool[ancestor_pool_id][_edited_pool_fresh_glue_params.pool_id]["position_delta_to_parent"]
 
-      else
-        active_child_position_delta_to_parent = 0
-      end
+--       else
+        -- active_child_position_delta_to_parent = 0
+--       end
 
-      instance_adjusted_src_offset = instance_current_src_offset - active_child_position_delta_to_parent
+      -- instance_adjusted_src_offset = instance_current_src_offset - active_child_position_delta_to_parent
+
+      instance_adjusted_src_offset = instance_current_src_offset + _current_pool_fresh_glue_params.source_offset
+
+    else
+      instance_adjusted_src_offset = instance_current_src_offset + _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
     end
 
   else
@@ -3140,6 +3216,15 @@ function adjustSuperitemSourceOffset(instance, instance_active_take, instance_cu
   reaper.SetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key, instance_adjusted_src_offset)
 
   _active_superitem_source_position_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset
+
+
+
+-- logV("instance_current_src_offset",instance_current_src_offset)
+-- logV("_edited_pool_fresh_glue_params.position",_edited_pool_fresh_glue_params.position)
+-- logV("_edited_pool_fresh_glue_params.source_offset",_edited_pool_fresh_glue_params.source_offset)
+-- logV("_edited_pool_preedit_params.position",_edited_pool_preedit_params.position)
+-- logV("_edited_pool_preedit_params.source_offset",_edited_pool_preedit_params.source_offset)
+-- logV("_superitem_instance_offset_delta_since_last_glue",_superitem_instance_offset_delta_since_last_glue)
 end
 
 
@@ -3220,7 +3305,7 @@ end
 
 
 function reglueAncestor(sizing_region_guid)
-  local this_is_ancestor_update, selected_items, parent_instance
+  local this_is_ancestor_update, selected_items, parent_instance, parent_active_track
 
   deselectAllItems()
   selectDeselectItems(_current_pool_fresh_glue_params.restored_items, true)
@@ -3228,11 +3313,13 @@ function reglueAncestor(sizing_region_guid)
   this_is_ancestor_update = true
   selected_items = getSelectedItems(#_current_pool_fresh_glue_params.restored_items)
   parent_instance = handleGlue(selected_items, _current_pool_fresh_glue_params.track, _current_pool_fresh_glue_params.pool_id, sizing_region_guid, nil, this_is_ancestor_update)
+  parent_active_track = _current_pool_fresh_glue_params.track
+  _current_pool_fresh_glue_params = getSetItemParams(parent_instance)
   _current_pool_fresh_glue_params.updated_src = getSetWipeItemAudioSrc(parent_instance)
 
   deselectAllItems()
   handleSuperitemsChangedByReglue(this_is_ancestor_update)
-  reaper.DeleteTrack(_current_pool_fresh_glue_params.track)
+  reaper.DeleteTrack(parent_active_track)
 end
   
 
