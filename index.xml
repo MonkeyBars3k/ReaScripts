@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="8cda74467534ac9d53e6ee12d6906f5c45c7f91a">
+<index version="1" name="MonkeyBars-ReaScripts" commit="7327738f1aa0955d814b3b01312ec0466b7fe655">
   <category name="Superglue">
     <reapack name="MB_Superglue - Cycle option, Maintain siblings' audio source position.lua" type="script" desc="MB_Superglue - Maintain siblings' audio source position">
       <metadata>
@@ -956,6 +956,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/85a09739fb6699835d8c6078e551887dc0f84aa5/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.798" author="MonkeyBars" time="2022-03-14T06:51:30Z">
+        <changelog><![CDATA[Replace sizing region deletion defer() with Reglue check and reinstantiation (https://github.com/MonkeyBars3k/ReaScripts/issues/230); Nomenclature updates (https://github.com/MonkeyBars3k/ReaScripts/issues/247)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/7327738f1aa0955d814b3b01312ec0466b7fe655/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7327738f1aa0955d814b3b01312ec0466b7fe655/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7327738f1aa0955d814b3b01312ec0466b7fe655/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7327738f1aa0955d814b3b01312ec0466b7fe655/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7327738f1aa0955d814b3b01312ec0466b7fe655/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
