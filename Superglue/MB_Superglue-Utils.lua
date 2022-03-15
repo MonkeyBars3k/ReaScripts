@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.806
--- @changelog ReaPack refresh
+-- @version 1.807
+-- @changelog License ReaPack fix
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
