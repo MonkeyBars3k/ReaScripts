@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="2fc6c28f1558ae1f238f7884544a028d62c34ac3">
+<index version="1" name="MonkeyBars-ReaScripts" commit="b14477e6d4c1364cd7a8eb0ed452084ff99dbc0e">
   <category name="Superglue">
     <reapack name="MB_Superglue - Cycle option, Maintain siblings' audio source position.lua" type="script" desc="MB_Superglue - Maintain siblings' audio source position">
       <metadata>
@@ -996,6 +996,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/2fc6c28f1558ae1f238f7884544a028d62c34ac3/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/2fc6c28f1558ae1f238f7884544a028d62c34ac3/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/2fc6c28f1558ae1f238f7884544a028d62c34ac3/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.805" author="MonkeyBars" time="2022-03-15T19:36:55Z">
+        <changelog><![CDATA[Add license]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/b14477e6d4c1364cd7a8eb0ed452084ff99dbc0e/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b14477e6d4c1364cd7a8eb0ed452084ff99dbc0e/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b14477e6d4c1364cd7a8eb0ed452084ff99dbc0e/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/b14477e6d4c1364cd7a8eb0ed452084ff99dbc0e/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/b14477e6d4c1364cd7a8eb0ed452084ff99dbc0e/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
