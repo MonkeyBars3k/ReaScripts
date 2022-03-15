@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.804
--- @changelog Take stretch markers not propagating source position correctly (https://github.com/MonkeyBars3k/ReaScripts/issues/251)
+-- @version 1.805
+-- @changelog Add license
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -9,6 +9,12 @@
 --   sg-bg-superitem.png
 -- @link Forum https://forum.cockos.com/showthread.php?t=136273
 -- @about Code for Superglue scripts
+
+
+-- Copyright (C) 2022
+-- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+-- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+-- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
 
@@ -2306,7 +2312,6 @@ end
 function adjustTakeEnvelopes(instance_active_take, position_adjustment_delta)
   local take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_position, adjusted_envelope_point_position
   
-  position_adjustment_delta = position_adjustment_delta 
   take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
 
   if take_envelopes_count > 0 then
