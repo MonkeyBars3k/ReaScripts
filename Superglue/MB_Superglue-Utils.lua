@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.803
--- @changelog Fix explode message
+-- @version 1.804
+-- @changelog Take stretch markers not propagating source position correctly (https://github.com/MonkeyBars3k/ReaScripts/issues/251)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -17,7 +17,7 @@
 -- Superglue uses the great GUI library Reaper Toolkit (https://reapertoolkit.dev/) 
 -- Superglue uses serpent, a serialization library for LUA, for table-string and string-table conversion. https://github.com/pkulchenko/serpent
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
--- Data is also stored in media items' P_EXT.
+-- Data is also stored in media items' & takes' P_EXT.
 -- General utility functions at bottom
 
 -- for dev only
@@ -2299,24 +2299,28 @@ function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project
 
   adjustTakeEnvelopes(instance_active_take, envelope_point_position_adjustment_delta)
   adjustTakeMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
-  adjustTakeStretchMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
+  handleTakeStretchMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
 end
 
 
 function adjustTakeEnvelopes(instance_active_take, position_adjustment_delta)
   local take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_position, adjusted_envelope_point_position
+  
   position_adjustment_delta = position_adjustment_delta 
   take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
 
-  for i = 0, take_envelopes_count-1 do
-    this_take_envelope = reaper.GetTakeEnvelope(instance_active_take, i)
-    envelope_points_count = reaper.CountEnvelopePoints(this_take_envelope)
+  if take_envelopes_count > 0 then
 
-    for j = 0, envelope_points_count-1 do
-      retval, this_envelope_point_position = reaper.GetEnvelopePoint(this_take_envelope, j)
-      adjusted_envelope_point_position = this_envelope_point_position + position_adjustment_delta
+    for i = 0, take_envelopes_count-1 do
+      this_take_envelope = reaper.GetTakeEnvelope(instance_active_take, i)
+      envelope_points_count = reaper.CountEnvelopePoints(this_take_envelope)
 
-      reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_position, nil, nil, nil, nil, true)
+      for j = 0, envelope_points_count-1 do
+        retval, this_envelope_point_position = reaper.GetEnvelopePoint(this_take_envelope, j)
+        adjusted_envelope_point_position = this_envelope_point_position + position_adjustment_delta
+
+        reaper.SetEnvelopePoint(this_take_envelope, j, adjusted_envelope_point_position, nil, nil, nil, nil, true)
+      end
     end
   end
 end
@@ -2326,34 +2330,58 @@ function adjustTakeMarkers(instance_active_take, position_adjustment_delta, fres
   local take_markers_count, all_take_markers, i, this_marker_position, this_marker_name, retval, adjusted_marker_position
 
   take_markers_count = reaper.GetNumTakeMarkers(instance_active_take)
-  all_take_markers = {}
 
-  for i = 0, take_markers_count-1 do
-    this_marker_position, this_marker_name = reaper.GetTakeMarker(instance_active_take, i)
+  if take_markers_count > 0 then
+    all_take_markers = {}
 
-    table.insert(all_take_markers, {
-      ["position"] = this_marker_position,
-      ["name"] = this_marker_name
-    })
-  end
+    for i = 0, take_markers_count-1 do
+      this_marker_position, this_marker_name = reaper.GetTakeMarker(instance_active_take, i)
 
-  repeat
-    retval = reaper.DeleteTakeMarker(instance_active_take, 0)
-  
-  until retval == false
+      table.insert(all_take_markers, {
+        ["position"] = this_marker_position,
+        ["name"] = this_marker_name
+      })
+    end
 
-  for i = 1, #all_take_markers do
-    adjusted_marker_position = all_take_markers[i]["position"] + position_adjustment_delta + fresh_glue_source_offset
+    repeat
+      retval = reaper.DeleteTakeMarker(instance_active_take, 0)
+    
+    until retval == false
 
-    reaper.SetTakeMarker(instance_active_take, _api_new_take_marker_idx, all_take_markers[i]["name"], adjusted_marker_position)
+    for i = 1, #all_take_markers do
+      adjusted_marker_position = all_take_markers[i]["position"] + position_adjustment_delta + fresh_glue_source_offset
+
+      reaper.SetTakeMarker(instance_active_take, _api_new_take_marker_idx, all_take_markers[i]["name"], adjusted_marker_position)
+    end
   end
 end
 
 
-function adjustTakeStretchMarkers(instance_active_take, position_adjustment_delta, fresh_glue_source_offset)
-  local stretch_markers_count, all_stretch_markers, i, this_marker_position, this_marker_source_position, deleted_stretch_markers_count, adjusted_marker_position, adjusted_marker_source_position
+function handleTakeStretchMarkers(instance_active_take, position_adjustment_delta, fresh_glue_source_offset)
+  local stretch_markers_count, marker_position_adjustment, marker_source_position_adjustment
 
   stretch_markers_count = reaper.GetTakeNumStretchMarkers(instance_active_take)
+
+  if stretch_markers_count > 0 then
+    _user_wants_propagation_option["source_position"] = getUserPropagationChoice("source_position", _global_option_maintain_source_position_default_key)
+
+    if _user_wants_propagation_option["source_position"] then
+      marker_position_adjustment = position_adjustment_delta
+      marker_source_position_adjustment = position_adjustment_delta + fresh_glue_source_offset
+
+    else
+      marker_position_adjustment = 0
+      marker_source_position_adjustment = 0
+    end
+
+    adjustTakeStretchMarkers(instance_active_take, stretch_markers_count, marker_position_adjustment, marker_source_position_adjustment)
+  end
+end
+
+
+function adjustTakeStretchMarkers(instance_active_take, stretch_markers_count, marker_position_adjustment, marker_source_position_adjustment)
+  local all_stretch_markers, i, this_marker_position, this_marker_source_position, adjusted_marker_position, adjusted_marker_source_position
+
   all_stretch_markers = {}
 
   for i = 0, stretch_markers_count-1 do
@@ -2365,14 +2393,11 @@ function adjustTakeStretchMarkers(instance_active_take, position_adjustment_delt
     })
   end
 
-  repeat
-    deleted_stretch_markers_count = reaper.DeleteTakeStretchMarkers(instance_active_take, 0)
-  
-  until deleted_stretch_markers_count == 0
+  reaper.DeleteTakeStretchMarkers(instance_active_take, 0, stretch_markers_count)
 
   for i = 1, #all_stretch_markers do
-    adjusted_marker_position = all_stretch_markers[i]["position"] + position_adjustment_delta + fresh_glue_source_offset
-    adjusted_marker_source_position = all_stretch_markers[i]["source_position"] + position_adjustment_delta + fresh_glue_source_offset
+    adjusted_marker_position = all_stretch_markers[i]["position"] + marker_position_adjustment
+    adjusted_marker_source_position = all_stretch_markers[i]["source_position"] + marker_source_position_adjustment
 
     reaper.SetTakeStretchMarker(instance_active_take, _api_new_take_marker_idx, adjusted_marker_position, adjusted_marker_source_position)
   end
