@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="5d0f3c681f181440bc334d2702ee288a2f5ad41e">
+<index version="1" name="MonkeyBars-ReaScripts" commit="41a2348185b7794657cd79bd7bd8c1eccd912866">
   <category name="Superglue">
     <reapack name="MB_Superglue - Cycle option, Maintain siblings' audio source position.lua" type="script" desc="MB_Superglue - Maintain siblings' audio source position">
       <metadata>
@@ -981,6 +981,14 @@
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5d0f3c681f181440bc334d2702ee288a2f5ad41e/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5d0f3c681f181440bc334d2702ee288a2f5ad41e/Superglue/sg-bg-superitem.png</source>
       </version>
+      <version name="1.803" author="MonkeyBars" time="2022-03-15T16:11:05Z">
+        <changelog><![CDATA[Fix explode message]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/41a2348185b7794657cd79bd7bd8c1eccd912866/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/41a2348185b7794657cd79bd7bd8c1eccd912866/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/41a2348185b7794657cd79bd7bd8c1eccd912866/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/41a2348185b7794657cd79bd7bd8c1eccd912866/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/41a2348185b7794657cd79bd7bd8c1eccd912866/Superglue/sg-bg-superitem.png</source>
+      </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
       <version name="1.0" author="various" time="2022-01-17T14:43:44Z">
@@ -1086,7 +1094,10 @@ the ReaScript API does not allow setting this mode directly
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Superitem}: The resulting "container item" after Supergluing \u8211- really just a Reaper item with some data stored in it and which is connected to the Pool's data stored in the project\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab {\b Unglue}: Restore a Superitem into its Contained Items irreversibly/destructively, deleting any connection to their pool and any of the former Superitem's properties\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 History\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 matthewjumpsoffbuildings created the powerful, excellent "Glue Groups" scripts: https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 Thank you to matthewjumpsoffbuildings for creating his {\field{\*\fldinst{HYPERLINK "https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/"}}{\fldrslt{\ul
+Glue Groups script
+}}}
+ in 2015, which formed the core logic for Superglue.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window), bugfixes, and additional features.\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Planned improvements\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 See {\field{\*\fldinst{HYPERLINK "https://github.com/MonkeyBars3k/ReaScripts/issues?q=is%3Aissue+is%3Aopen+label%3Aenhancement"}}{\fldrslt{\ul
