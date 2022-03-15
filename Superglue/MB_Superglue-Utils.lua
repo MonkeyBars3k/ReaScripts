@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.802
--- @changelog Remove deprecated sizing defer code
+-- @version 1.803
+-- @changelog Fix explode message
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -3356,7 +3356,7 @@ end
 function handleMultitakeSuperitem(superitem_takes_count)
   local user_wants_to_explode_superitem_takes, user_response_explode_in_place
 
-  user_wants_to_explode_superitem_takes = reaper.ShowMessageBox("Do you want to explode your Superitem takes in place before Editing?", "The Superitem selected has " .. superitem_takes_count .. " takes in it. " .. _script_brand_name .. " does not support multiple takes on Superitems.", _msg_type_ok_cancel)
+  user_wants_to_explode_superitem_takes = reaper.ShowMessageBox("Do you want to explode your Superitem takes before Editing?", "The Superitem selected has " .. superitem_takes_count .. " takes in it. " .. _script_brand_name .. " does not support multiple takes on Superitems.", _msg_type_ok_cancel)
 
   if user_wants_to_explode_superitem_takes == _msg_response_ok then
     user_response_explode_in_place = reaper.ShowMessageBox("Choose Yes to explode in order or No to explode in place.", "Do you want to explode in order?", _msg_type_yes_no)
