@@ -54,7 +54,7 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
 - Currently only **MIDI on virtual instrument tracks** is supported.
 - To create **MIDI Superitems**, the script uses "Apply track FX as new take" on each item to get an audio take. When you Edit, the audio take is removed and just the original MIDI take is made active.
 #### Editing Superitems
-- When you Edit a Superitem, a **special white region** is automatically created so you can alter the Superitem's eventual edge positions after Reglue. Superglue displays a warning message should you delete this "sizing region". (This message can be disabled in the options, in which case when you delete the sizing region, the items will revert to their presuperglued state as if you had Unglued.) **Be careful undoing** sizing region deletion, as the defer loop (constantly checking for sizing region deletion by the user) often gets confused.
+- When you Edit a Superitem, a **special white region** is automatically created so you can alter the Superitem's eventual edge positions after Reglue. Try not to remove this Sizing Region since its bounds match the edges of the Edited Superitem. If it does get deleted, when you attempt to Reglue Superglue will prompt you to create a new one at the edges of the Restored Items.
 - Be careful Editing a parent Superitem **near project start**. If a child Superitem would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its sibling pooled Superitems.
 - Remember that **restored items can extend beyond the size of your Superitem** on Edit. Stay aware of content in tracks (such as items, track envelopes, etc.) nearby.
 - It's not recommended to **Edit Superitems with adjusted take playrate** because the Contained Items are at their playrate at last Superglue, so they won't match up to the audio in the Superitem with adjusted take playrate. Best either to do your playrate work on the Contained Items in the first place, or Edit a Sibling at 1.0 playrate.
@@ -79,6 +79,7 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
 - **Reglue**: Run a Superglue Glue script on items restored from a Superitem (i.e. Edit mode)
 - **Restored items**: Contained items which reappear after running an Edit or Unglue script on a Superitem
 - **Sibling**: Pooled copy of a Superitem – Edit any Sibling, and all its Sibling and Ancestor Superitems get updated as well.
+- **Sizing Region**: Special white region created to alert user to the Edited Superitem's bounds and make it easy to resize on Reglue 
 - **Smart Action**: Superglue script that tries to guess the user's intention from the item selection – sometimes you'll be prompted for an action choice or warned that none can be determined automagically.
 - **Superitem**: The resulting "container item" after Supergluing – really just a Reaper item with some data stored in it and which is connected to the Pool's data stored in the project
 - **Unglue**: Restore a Superitem into its Contained Items irreversibly/destructively, deleting any connection to their pool and any of the former Superitem's properties
