@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.800
--- @changelog Maintain position bug (https://github.com/MonkeyBars3k/ReaScripts/issues/251); Regluing with size smaller than 1 item results in wrong offset (https://github.com/MonkeyBars3k/ReaScripts/issues/252)
+-- @version 1.801
+-- @changelog Replace usage of item selection set & time selection slot (https://github.com/MonkeyBars3k/ReaScripts/issues/162)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -21,23 +21,20 @@
 -- General utility functions at bottom
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _save_time_selection_slot_5_action_id, _restore_time_selection_slot_5_action_id, _crop_selected_items_to_time_selection_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_edges_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _reinstate_sizing_region_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _sizing_region_1st_display_num, _sizing_region_defer_timing, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_edges_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
 _restored_item_bg_img_path = _script_path .. "sg-bg-restored.png"
 _peak_data_filename_extension = ".reapeaks"
 _scroll_action_id = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
-_save_time_selection_slot_5_action_id = reaper.NamedCommandLookup("_SWS_SAVETIME5")
-_restore_time_selection_slot_5_action_id = reaper.NamedCommandLookup("_SWS_RESTTIME5")
-_crop_selected_items_to_time_selection_action_id = reaper.NamedCommandLookup("_SWS_AWTRIMCROP")
 _script_brand_name = "MB_Superglue"
 _glue_undo_block_string = "MB_Superglue"
 _edit_undo_block_string = "MB_Superglue-Edit"
@@ -105,6 +102,8 @@ _msg_response_yes = 6
 _msg_response_no = 7
 _msg_change_selected_items = "Change the items selected and try again."
 _data_storage_track = reaper.GetMasterTrack(_api_current_project)
+_users_time_selection_before_action = {}
+_users_item_selection = nil
 _active_glue_pool_id = nil
 _position_start_of_project = 0
 _src_offset_default_value = 0
@@ -770,33 +769,34 @@ function prepareAction(action)
   reaper.PreventUIRefresh(1)
 
   if action == "glue" then
-    setResetItemSelectionSet(true)
+    setResetUsersItemSelection(true)
   end
 end
 
 
-function setResetItemSelectionSet(set_reset)
-  local set, reset
+function setResetUsersItemSelection(set_reset)
+  local set, reset, selected_items_count, i, this_selected_item
 
   set = set_reset
   reset = not set_reset
 
   if set then
-    saveSelectedItemSelectionSetSlot10()
+    _users_item_selection = {}
+    selected_items_count = reaper.CountSelectedMediaItems(_api_current_project)
+
+    for i = 0, selected_items_count-1 do
+      this_selected_item = reaper.GetSelectedMediaItem(_api_current_project, i)
+
+      table.insert(_users_item_selection, this_selected_item)
+    end
 
   elseif reset then
-    resetItemSelectionFromSetSlot10()
+    deselectAllItems()
+
+    for i = 1, #_users_item_selection do
+      reaper.SetMediaItemSelected(_users_item_selection[i], true)
+    end
   end
-end
-
-
-function saveSelectedItemSelectionSetSlot10()
-  reaper.Main_OnCommand(41238, _api_command_flag)
-end
-
-
-function resetItemSelectionFromSetSlot10()
-  reaper.Main_OnCommand(41248, _api_command_flag)
 end
 
 
@@ -936,7 +936,7 @@ function superitemSelectionIsInvalid(selected_item_count, action)
 
   if siblings_are_selected then
     reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " can only " .. action .. " one pool instance at a time.", _msg_type_ok)
-    setResetItemSelectionSet(false)
+    setResetUsersItemSelection(false)
 
     return true
   end
@@ -1021,7 +1021,7 @@ function recursiveSuperitemIsBeingGlued(superitems, restored_items)
       
       if this_restored_item_is_from_same_pool_as_selected_superitem then
         reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " can't glue a Superitem to an instance from the same pool being Edited – that could destroy the universe!", _msg_type_ok)
-        setResetItemSelectionSet(false)
+        setResetUsersItemSelection(false)
 
         return true
       end
@@ -1528,11 +1528,12 @@ function setResetGlueTimeSelection(sizing_params, set_or_reset)
   reset = set_or_reset == "reset"
 
   if set then
-    reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, _api_command_flag)
+    _users_time_selection_before_action.position, _users_time_selection_before_action.end_point = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
+
     reaper.GetSet_LoopTimeRange(true, false, sizing_params.position, sizing_params.end_point, false)
 
   elseif reset then
-    reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, _api_command_flag)
+    reaper.GetSet_LoopTimeRange(true, false, _users_time_selection_before_action.position, _users_time_selection_before_action.end_point, false)
   end
 end
 
@@ -2395,7 +2396,7 @@ function editAncestors(pool_id, superitem, descendant_nesting_depth_of_active_pa
     retval, parent_pool_ids = serpent.load(parent_pool_ids)
 
     if #parent_pool_ids > 0 then
-      reaper.Main_OnCommand(_save_time_selection_slot_5_action_id, _api_command_flag)
+      _users_time_selection_before_action.position, _users_time_selection_before_action.end_point = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
 
       for i = 1, #parent_pool_ids do
         this_parent_pool_id = parent_pool_ids[i]
@@ -2408,7 +2409,7 @@ function editAncestors(pool_id, superitem, descendant_nesting_depth_of_active_pa
         end
       end
 
-      reaper.Main_OnCommand(_restore_time_selection_slot_5_action_id, _api_command_flag)
+      reaper.GetSet_LoopTimeRange(true, false, _users_time_selection_before_action.position, _users_time_selection_before_action.end_point, false)
     end
   end
 end
@@ -3605,7 +3606,7 @@ function initSmartAction(edit_or_unglue)
 
   if triggerAction(selected_item_count, edit_or_unglue) == false then 
     reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " Smart Action can't determine which script to run.", _msg_type_ok)
-    setResetItemSelectionSet(false)
+    setResetUsersItemSelection(false)
 
     return
   end
@@ -3657,7 +3658,7 @@ function triggerAction(selected_item_count, edit_or_unglue)
     glue_abort_dialog = reaper.ShowMessageBox("Are you sure you want to Superglue them?", "You have selected both Superitem(s) and restored item(s) from an edited Superitem.", _msg_type_ok_cancel)
 
     if glue_abort_dialog == 2 then
-      setResetItemSelectionSet(false)
+      setResetUsersItemSelection(false)
 
       return
     
