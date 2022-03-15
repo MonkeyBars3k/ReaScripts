@@ -1,9 +1,10 @@
 -- @description MB_Superglue License
 -- @author GNU
+-- @noindex
 -- @version 3
--- @changelog 
--- @provides [nomain]
+-- @changelog initial upload
 -- @link https://spdx.org/licenses/GPL-3.0-or-later.html
+-- @about GNU v3 software license
 
 
 
