@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.805
--- @changelog Add license
+-- @version 1.806
+-- @changelog ReaPack refresh
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -11,7 +11,7 @@
 -- @about Code for Superglue scripts
 
 
--- Copyright (C) 2022
+-- Copyright (C) MonkeyBars 2022
 -- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 -- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -19,12 +19,13 @@
 
 
 -- ==== SUPERGLUE UTILS SCRIPT ARCHITECTURE NOTES ====
--- Superglue requires Reaper SWS plug-in extension (https://standingwaterstudios.com/) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml)
+-- Superglue requires Reaper SWS plug-in extension (https://standingwaterstudios.com/) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
 -- Superglue uses the great GUI library Reaper Toolkit (https://reapertoolkit.dev/) 
--- Superglue uses serpent, a serialization library for LUA, for table-string and string-table conversion. https://github.com/pkulchenko/serpent
+-- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. https://github.com/pkulchenko/serpent
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 -- Data is also stored in media items' & takes' P_EXT.
 -- General utility functions at bottom
+
 
 -- for dev only
 -- require("sg-dev-functions")
