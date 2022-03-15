@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="a34d5a1bb0852f0b7400a8b5a8ec401c860369f0">
+<index version="1" name="MonkeyBars-ReaScripts" commit="36550ba075e9defdca29921c0d25447c18193732">
   <category name="Superglue">
     <reapack name="MB_Superglue - Cycle option, Maintain siblings' audio source position.lua" type="script" desc="MB_Superglue - Maintain siblings' audio source position">
       <metadata>
@@ -980,6 +980,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/a34d5a1bb0852f0b7400a8b5a8ec401c860369f0/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/a34d5a1bb0852f0b7400a8b5a8ec401c860369f0/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/a34d5a1bb0852f0b7400a8b5a8ec401c860369f0/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.801" author="MonkeyBars" time="2022-03-15T06:12:57Z">
+        <changelog><![CDATA[Replace usage of item selection set & time selection slot (https://github.com/MonkeyBars3k/ReaScripts/issues/162)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/36550ba075e9defdca29921c0d25447c18193732/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/36550ba075e9defdca29921c0d25447c18193732/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/36550ba075e9defdca29921c0d25447c18193732/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/36550ba075e9defdca29921c0d25447c18193732/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/36550ba075e9defdca29921c0d25447c18193732/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
