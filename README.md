@@ -86,7 +86,7 @@ To change the contents of your Superitem, the **Edit** script "opens" the create
  
 ### History
 
-matthewjumpsoffbuildings created the powerful, excellent "Glue Groups" scripts: https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/
+Thank you to matthewjumpsoffbuildings for creating his [Glue Groups script](https://bitbucket.org/matthewjumpsoffbuildings/reaper-scripts/src/master/) in 2015, which formed the core logic for Superglue.
 
 MonkeyBars continues the effort with some different nomenclature (in the interest of onboarding new users and making it easy to find in the Actions Window), bugfixes, and additional features.
 
