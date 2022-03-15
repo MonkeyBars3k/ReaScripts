@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.799
--- @changelog DePool siblings throws error (https://github.com/MonkeyBars3k/ReaScripts/issues/248); Reglue to time selection sizing is off (https://github.com/MonkeyBars3k/ReaScripts/issues/249); Reglue position is way off (early) (https://github.com/MonkeyBars3k/ReaScripts/issues/250)
+-- @version 1.800
+-- @changelog Maintain position bug (https://github.com/MonkeyBars3k/ReaScripts/issues/251); Regluing with size smaller than 1 item results in wrong offset (https://github.com/MonkeyBars3k/ReaScripts/issues/252)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -21,7 +21,7 @@
 -- General utility functions at bottom
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -1849,7 +1849,7 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, select
   freshly_depooled_superitem_key_label = _pool_key_prefix .. pool_id .. _freshly_depooled_superitem_flag
 
   if this_is_reglue then
-    cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_params, selected_items_params, this_is_ancestor_update)
+    reaper.BR_SetItemEdges(superitem, sizing_params.position, sizing_params.end_point)
 
   else
     setSuperitemColor()
@@ -1886,28 +1886,6 @@ function refreshActiveTakeFlag(item, active_take, pool_id)
       reaper.GetSetMediaItemTakeInfo_String(this_take, superitem_superglue_active_take_key, "false", true)
     end
   end
-end
-
-
-function cropSuperitemToSizingParams(superitem, superitem_active_take, sizing_params, selected_items_params, this_is_ancestor_update)
-  local selected_items_start_before_sizer, selected_items_end_after_sizer, selected_items_position_delta_to_sizer, new_superitem_length
-
-  selected_items_start_before_sizer = selected_items_params.position < sizing_params.position
-  selected_items_end_after_sizer = selected_items_params.end_point > sizing_params.end_point
-  new_superitem_length = sizing_params.length
-
-  if selected_items_start_before_sizer then
-    selected_items_position_delta_to_sizer = sizing_params.position - selected_items_params.position 
-
-    reaper.SetMediaItemPosition(superitem, sizing_params.position, false)
-    reaper.SetMediaItemLength(superitem, new_superitem_length, false)
-    reaper.SetMediaItemTakeInfo_Value(superitem_active_take, _api_take_src_offset_key, selected_items_position_delta_to_sizer)
-  end
-
-  if selected_items_end_after_sizer then
-    reaper.SetMediaItemLength(superitem, new_superitem_length, false)
-  end
-
 end
 
 
