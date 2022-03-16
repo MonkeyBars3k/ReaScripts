@@ -1,4 +1,4 @@
--- @description MB_Superglue License
+-- @description MonkeyBars Reascripts License
 -- @author GNU
 -- @noindex
 -- @version 3

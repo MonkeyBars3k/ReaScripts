@@ -1,4 +1,4 @@
--- @description general dev functions, used for Superglue
+-- @description general dev functions for MonkeyBars scripts
 -- @author various
 -- @version 1.0
 -- @changelog initial upload
