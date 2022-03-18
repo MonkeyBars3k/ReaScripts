@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.807
--- @changelog License ReaPack fix
+-- @version 1.808
+-- @changelog Pure MIDI glue is allowed (https://github.com/MonkeyBars3k/ReaScripts/issues/261)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -1045,11 +1045,12 @@ function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track
     midi_item_is_selected = midiItemIsSelected(this_item)
 
     if midi_item_is_selected then
+
       break
     end
   end
-
-  if midi_item_is_selected == "true" and track_has_no_virtual_instrument then
+  
+  if midi_item_is_selected and track_has_no_virtual_instrument then
     reaper.ShowMessageBox("Add a virtual instrument to render audio into the superitem or try a different item selection.", _script_brand_name .. " can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
 
     return true
