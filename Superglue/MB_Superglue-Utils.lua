@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.809
--- @changelog Cancel multiple DePool message executes DePool and OK glues (https://github.com/MonkeyBars3k/ReaScripts/issues/262)
+-- @version 1.810
+-- @changelog Edit & Unglue broken (https://github.com/MonkeyBars3k/ReaScripts/issues/263)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -3295,7 +3295,7 @@ function initEditOrUnglue(action)
   selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superitem"})
   superitems = selected_item_groups["superitem"]["selected_items"]
 
-  if isNotSingleSuperitem(#superitems, action) == false then return end
+  if not isNotSingleSuperitem(#superitems, action) then return end
 
   this_pool_id = storeRetrieveItemData(superitems[1], _instance_pool_id_key_suffix)
   other_open_instance = otherInstanceIsOpen(this_pool_id)
@@ -3326,7 +3326,7 @@ function isNotSingleSuperitem(superitems_count, action)
   if superitems_count == 0 then
     reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " can only " .. action .. " previously Superglued Superitems." , _msg_type_ok)
 
-    return true
+    return false
   
   elseif superitems_count > 1 then
     multiitem_result = reaper.ShowMessageBox("Would you like to " .. action .. " the first selected superitem from the top track only?", _script_brand_name .. " can only " .. action .. " one Superitem per action call.", _msg_type_ok_cancel)
@@ -3336,8 +3336,8 @@ function isNotSingleSuperitem(superitems_count, action)
       return true
     end
   
-  else
-    return false
+  elseif superitems_count == 1 then
+    return true
   end
 end
 
