@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="d6b26da8351caa6324981c32c33a2e07f42010b3">
+<index version="1" name="MonkeyBars-ReaScripts" commit="845735a6802cf2e0419c6dfeb7242d4099801772">
   <category name="Superglue">
     <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem glued by Superglue. Use MB_Superglue Glue to save changes and propagate to Sibling items in same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
       <metadata>
@@ -113,7 +113,7 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/14c556238761f11466ca4be8a8337ba4ddaf8268/Superglue/MB_Superglue%20-%20Options%20-%20Glue%20-%20Time%20selection%20(not%20sizing%20region)%20determines%20Superitem%20edges%20(On:Off).lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Enable:Ask:Disable).lua" type="script" desc="MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Enable/Ask/Disable)">
+    <reapack name="MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Absolute:Ask:Relative).lua" type="script" desc="MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Absolute/Ask/Relative)">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -124,9 +124,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.810" author="MonkeyBars" time="2022-03-18T14:06:46Z">
+      <version name="1.810" author="MonkeyBars" time="2022-03-18T14:10:53Z">
         <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d6b26da8351caa6324981c32c33a2e07f42010b3/Superglue/MB_Superglue%20-%20Options%20-%20Reglue%20-%20Absolute%20or%20relative%20length%20change%20on%20Siblings%20if%20length%20propagation%20enabled%20(can%20still%20be%20altered%20by%20playrate)%20(Enable:Ask:Disable).lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/845735a6802cf2e0419c6dfeb7242d4099801772/Superglue/MB_Superglue%20-%20Options%20-%20Reglue%20-%20Absolute%20or%20relative%20length%20change%20on%20Siblings%20if%20length%20propagation%20enabled%20(can%20still%20be%20altered%20by%20playrate)%20(Absolute:Ask:Relative).lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Options - Reglue - Audio source position of Siblings is maintained (Enable:Ask:Disable).lua" type="script" desc="MB_Superglue - Maintain siblings' audio source position">
