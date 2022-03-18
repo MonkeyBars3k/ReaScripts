@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="7bfab4a4cbe648c435437f189b716374a805597c">
+<index version="1" name="MonkeyBars-ReaScripts" commit="e229eda635afd23f1686d753f35af040c41796b1">
   <category name="Superglue">
-    <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem glued by Superglue. Use MB_Superglue Glue to save changes &amp; propagate to Sibling items in same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
+    <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue. Use MB_Superglue Glue to save changes &amp; propagate to Sibling items in same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -12,9 +12,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.765" author="MonkeyBars" time="2022-03-18T18:55:14Z">
+      <version name="1.765" author="MonkeyBars" time="2022-03-18T22:13:18Z">
         <changelog><![CDATA[Change function name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/9b6d69907225230a59492223154a4bfb50212efa/Superglue/MB_Superglue%20-%20Edit%20-%20Reveal%20contained%20item(s)%20from%20selected%20Superitem%20glued%20by%20Superglue.%20Use%20MB_Superglue%20Glue%20to%20save%20changes%20&amp;%20propagate%20to%20Sibling%20items%20in%20same%20Pool.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/MB_Superglue%20-%20Edit%20-%20Reveal%20contained%20item(s)%20from%20selected%20Superitem%20previously%20glued%20by%20Superglue.%20Use%20MB_Superglue%20Glue%20to%20save%20changes%20&amp;%20propagate%20to%20Sibling%20items%20in%20same%20Pool.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Glue - Nondestructively glue selected item(s) into Superitem. Use 'Edit' later to reveal contained items &amp; make changes.lua" type="script" desc="MB_Superglue - Glue selected item(s) reversibly into pooled container item, ignoring time selection">
@@ -257,7 +257,7 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/14c556238761f11466ca4be8a8337ba4ddaf8268/Superglue/MB_Superglue%20-%20Smart%20Action%20-%20Glue%20or%20Unglue%20selected%20item(s)%20by%20context.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Unglue - Reveal contained item(s) from selected Superitem &amp; detach from Pool. Use this instead of Edit if you don't want your changes to propagate on reglue.lua" type="script" desc="MB_Superglue - Unglue selected Superitem back to contained items irreversibly">
+    <reapack name="MB_Superglue - Unglue - Reveal contained item(s) from selected Superitem &amp; detach from Pool. Use this instead of 'Edit' if you don't want your changes to propagate on reglue.lua" type="script" desc="MB_Superglue - Unglue selected Superitem back to contained items irreversibly">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -268,9 +268,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.765" author="MonkeyBars" time="2022-03-18T18:55:14Z">
+      <version name="1.765" author="MonkeyBars" time="2022-03-18T22:13:18Z">
         <changelog><![CDATA[Change function name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/9b6d69907225230a59492223154a4bfb50212efa/Superglue/MB_Superglue%20-%20Unglue%20-%20Reveal%20contained%20item(s)%20from%20selected%20Superitem%20&amp;%20detach%20from%20Pool.%20Use%20this%20instead%20of%20Edit%20if%20you%20don't%20want%20your%20changes%20to%20propagate%20on%20reglue.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/MB_Superglue%20-%20Unglue%20-%20Reveal%20contained%20item(s)%20from%20selected%20Superitem%20&amp;%20detach%20from%20Pool.%20Use%20this%20instead%20of%20'Edit'%20if%20you%20don't%20want%20your%20changes%20to%20propagate%20on%20reglue.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Utility - Display selected Superglue item info.lua" type="script" desc="MB_Superglue - Display selected Superglue item info">
@@ -1044,6 +1044,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7bfab4a4cbe648c435437f189b716374a805597c/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7bfab4a4cbe648c435437f189b716374a805597c/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7bfab4a4cbe648c435437f189b716374a805597c/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.813" author="MonkeyBars" time="2022-03-18T22:13:18Z">
+        <changelog><![CDATA[comment dev include out]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
