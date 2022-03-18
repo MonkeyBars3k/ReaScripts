@@ -1,4 +1,4 @@
--- @description MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Enable/Ask/Disable)
+-- @description MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Absolute/Ask/Relative)
 -- @author MonkeyBars
 -- @version 1.810
 -- @changelog Initial upload
