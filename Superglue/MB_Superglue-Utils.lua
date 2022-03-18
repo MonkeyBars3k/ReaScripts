@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.808
--- @changelog Pure MIDI glue is allowed (https://github.com/MonkeyBars3k/ReaScripts/issues/261)
+-- @version 1.809
+-- @changelog Cancel multiple DePool message executes DePool and OK glues (https://github.com/MonkeyBars3k/ReaScripts/issues/262)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -3295,7 +3295,7 @@ function initEditOrUnglue(action)
   selected_item_groups = getSelectedSuperglueItemTypes(selected_item_count, {"superitem"})
   superitems = selected_item_groups["superitem"]["selected_items"]
 
-  if isNotSingleSuperitem(#superitems, action) == true then return end
+  if isNotSingleSuperitem(#superitems, action) == false then return end
 
   this_pool_id = storeRetrieveItemData(superitems[1], _instance_pool_id_key_suffix)
   other_open_instance = otherInstanceIsOpen(this_pool_id)
@@ -3321,7 +3321,7 @@ end
 
 
 function isNotSingleSuperitem(superitems_count, action)
-  local multiitem_result, user_wants_to_edit_1st_superitem
+  local multiitem_result, user_wants_to_affect_1st_superitem
 
   if superitems_count == 0 then
     reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " can only " .. action .. " previously Superglued Superitems." , _msg_type_ok)
@@ -3330,9 +3330,9 @@ function isNotSingleSuperitem(superitems_count, action)
   
   elseif superitems_count > 1 then
     multiitem_result = reaper.ShowMessageBox("Would you like to " .. action .. " the first selected superitem from the top track only?", _script_brand_name .. " can only " .. action .. " one Superitem per action call.", _msg_type_ok_cancel)
-    user_wants_to_edit_1st_superitem = multiitem_result == _msg_response_ok
+    user_wants_to_affect_1st_superitem = multiitem_result == _msg_response_ok
 
-    if user_wants_to_edit_1st_superitem then
+    if user_wants_to_affect_1st_superitem then
       return true
     end
   
