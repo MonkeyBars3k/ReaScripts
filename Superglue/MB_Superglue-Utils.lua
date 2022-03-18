@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.812
--- @changelog Multiple reglue warning unglues (https://github.com/MonkeyBars3k/ReaScripts/issues/265)
+-- @version 1.813
+-- @changelog comment dev include out
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -28,7 +28,7 @@
 
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
