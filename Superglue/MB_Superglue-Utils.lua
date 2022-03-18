@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.811
--- @changelog Glue: No items selected throws error (https://github.com/MonkeyBars3k/ReaScripts/issues/264)
+-- @version 1.812
+-- @changelog Multiple reglue warning unglues (https://github.com/MonkeyBars3k/ReaScripts/issues/265)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -28,7 +28,7 @@
 
 
 -- for dev only
--- require("sg-dev-functions")
+require("sg-dev-functions")
  
 
 local serpent = require("serpent")
@@ -601,14 +601,14 @@ function initSuperglue()
   selected_items, first_selected_item = getSelectedItems(selected_item_count)
   first_selected_item_track = reaper.GetMediaItemTrack(first_selected_item)
 
-  if restored_items_pool_id then
-    handleRemovedItems(restored_items_pool_id, selected_items)
-  end
-
-  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or 
-    superitemSelectionIsInvalid(selected_item_count, "Glue") == true or 
+  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or
+    superitemSelectionIsInvalid(selected_item_count, "Glue") == true or
     pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track) == true then
       return
+  end
+
+  if restored_items_pool_id then
+    handleRemovedItems(restored_items_pool_id, selected_items)
   end
 
   superitem = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track)
