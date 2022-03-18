@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.810
--- @changelog Edit & Unglue broken (https://github.com/MonkeyBars3k/ReaScripts/issues/263)
+-- @version 1.811
+-- @changelog Glue: No items selected throws error (https://github.com/MonkeyBars3k/ReaScripts/issues/264)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -594,7 +594,7 @@ function initSuperglue()
 
   selected_item_count = initAction("glue")
 
-  if selected_item_count == false then return end
+  if not selected_item_count then return end
 
   restored_items_pool_id = getFirstPoolIdFromSelectedItems(selected_item_count)
   _active_glue_pool_id = restored_items_pool_id
@@ -1049,7 +1049,7 @@ function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track
       break
     end
   end
-  
+
   if midi_item_is_selected and track_has_no_virtual_instrument then
     reaper.ShowMessageBox("Add a virtual instrument to render audio into the superitem or try a different item selection.", _script_brand_name .. " can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
 
