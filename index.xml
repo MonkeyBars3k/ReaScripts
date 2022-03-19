@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="e229eda635afd23f1686d753f35af040c41796b1">
+<index version="1" name="MonkeyBars-ReaScripts" commit="c4aaa5a73ac83dec2add13260af98d53171d2f50">
   <category name="Superglue">
     <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue. Use MB_Superglue Glue to save changes &amp; propagate to Sibling items in same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
       <metadata>
@@ -273,7 +273,7 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/MB_Superglue%20-%20Unglue%20-%20Reveal%20contained%20item(s)%20from%20selected%20Superitem%20&amp;%20detach%20from%20Pool.%20Use%20this%20instead%20of%20'Edit'%20if%20you%20don't%20want%20your%20changes%20to%20propagate%20on%20reglue.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Utility - Display selected Superglue item info.lua" type="script" desc="MB_Superglue - Display selected Superglue item info">
+    <reapack name="MB_Superglue - Utility - Display selected Superglue item info - Pool no., No. of contained items, Parent Pool, etc.lua" type="script" desc="MB_Superglue - Display selected Superglue item info">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -284,12 +284,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.767" author="MonkeyBars" time="2022-03-18T05:20:37Z">
+      <version name="1.767" author="MonkeyBars" time="2022-03-19T03:40:55Z">
         <changelog><![CDATA[Change function & script name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/14c556238761f11466ca4be8a8337ba4ddaf8268/Superglue/MB_Superglue%20-%20Utility%20-%20Display%20selected%20Superglue%20item%20info.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c4aaa5a73ac83dec2add13260af98d53171d2f50/Superglue/MB_Superglue%20-%20Utility%20-%20Display%20selected%20Superglue%20item%20info%20-%20Pool%20no.,%20No.%20of%20contained%20items,%20Parent%20Pool,%20etc.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Utility - Display Superglue project data.lua" type="script" desc="MB_Superglue - Display Superglue project data">
+    <reapack name="MB_Superglue - Utility - Dump Superglue project data to log.lua" type="script" desc="MB_Superglue - Display Superglue project data">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -300,12 +300,12 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.789" author="MonkeyBars" time="2022-03-18T05:20:37Z">
+      <version name="1.789" author="MonkeyBars" time="2022-03-19T03:40:55Z">
         <changelog><![CDATA[Initial upload]]></changelog>
-        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/14c556238761f11466ca4be8a8337ba4ddaf8268/Superglue/MB_Superglue%20-%20Utility%20-%20Display%20Superglue%20project%20data.lua</source>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/c4aaa5a73ac83dec2add13260af98d53171d2f50/Superglue/MB_Superglue%20-%20Utility%20-%20Dump%20Superglue%20project%20data%20to%20log.lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Utility - Set all Superitems in project to custom color.lua" type="script">
+    <reapack name="MB_Superglue - Utility - Set all Superitems in project to one custom color.lua" type="script">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -316,9 +316,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.763" author="MonkeyBars" time="2022-03-18T05:20:37Z">
+      <version name="1.763" author="MonkeyBars" time="2022-03-19T03:40:55Z">
         <changelog><![CDATA[Change script + function name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/14c556238761f11466ca4be8a8337ba4ddaf8268/Superglue/MB_Superglue%20-%20Utility%20-%20Set%20all%20Superitems%20in%20project%20to%20custom%20color.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c4aaa5a73ac83dec2add13260af98d53171d2f50/Superglue/MB_Superglue%20-%20Utility%20-%20Set%20all%20Superitems%20in%20project%20to%20one%20custom%20color.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue-Utils.lua" type="script" desc="MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality">
