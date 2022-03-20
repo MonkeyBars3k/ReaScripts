@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.814
--- @changelog Take envelopes & markers' position wrong on edited Superitem on negative position Reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/267); Restored items position wrong after DePool (https://github.com/MonkeyBars3k/ReaScripts/issues/268)
+-- @version 1.815
+-- @changelog 
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -20,8 +20,8 @@
 
 -- ==== SUPERGLUE UTILS SCRIPT ARCHITECTURE NOTES ====
 -- Superglue requires Reaper SWS plug-in extension (https://standingwaterstudios.com/) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
--- Superglue uses the great GUI library Reaper Toolkit (https://reapertoolkit.dev/) 
--- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. https://github.com/pkulchenko/serpent
+-- Superglue uses the great GUI library Reaper Toolkit. (https://reapertoolkit.dev/)
+-- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. (https://github.com/pkulchenko/serpent)
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 -- Data is also stored in media items' & takes' P_EXT.
 -- General utility functions at bottom
@@ -35,7 +35,7 @@ local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _sizing_region_1st_display_num, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_edges_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
+local _script_path, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _sizing_region_1st_display_num, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_edges_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _superitem_bg_img_path = _script_path .. "sg-bg-superitem.png"
@@ -49,7 +49,8 @@ _unglue_undo_block_string = "MB_Superglue-Unglue"
 _depool_undo_block_string = "MB_Superglue-DePool"
 _smart_action_undo_block_string = "MB_Superglue-Smart-Action"
 _color_undo_block_string = "MB_Superglue-Color"
-_sizing_region_label = "SG: DO NOT DELETE – Use to set Superitem edges – Pool #"
+_sizing_region_label_prefix = "SG: Pool #"
+_sizing_region_label_suffix = " – DO NOT DELETE – Use to set Superitem edges"
 _sizing_region_color = reaper.ColorToNative(255, 255, 255)|0x1000000
 _api_current_project = 0
 _api_command_flag = 0
@@ -248,7 +249,7 @@ _all_global_options_params = {
 }
 
 
-function viewSuperglueProjectData()
+function logSuperglueProjectData()
   local master_track, retval, master_track_chunk
 
   master_track = reaper.GetMasterTrack(_api_current_project)
@@ -534,7 +535,6 @@ function prepareItemInfo(selected_superitem_instance_pool_id, selected_item_pare
   retval, stored_item_state_chunks = serpent.load(stored_item_state_chunks)
   selected_superitem_descendant_pool_ids_list = stringifyArray(selected_superitem_descendant_pool_ids)
   selected_superitem_contained_items_count = getTableSize(stored_item_state_chunks)
-
   selected_item_params = {
     {
       "Pool ID: ",
@@ -545,11 +545,11 @@ function prepareItemInfo(selected_superitem_instance_pool_id, selected_item_pare
       selected_item_parent_pool_id
     },
     {
-      "Descendant Pool IDs: ",
+      "Descendant (recursively contained instances) Pool IDs: ",
       selected_superitem_descendant_pool_ids_list
     },
     {
-      "Number of items contained: ",
+      "No. of directly contained items: ",
       selected_superitem_contained_items_count
     }
   }
@@ -1438,7 +1438,7 @@ function addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region
   params = params_or_delete
   params.end_point = params.position + params.length
   pool_id = sizing_region_guid_or_pool_id
-  sizing_region_name = _sizing_region_label .. pool_id
+  sizing_region_name = _sizing_region_label_prefix .. pool_id .. _sizing_region_label_suffix
   sizing_region_label_num = reaper.AddProjectMarker2(_api_current_project, true, params.position, params.end_point, sizing_region_name, _sizing_region_1st_display_num, _sizing_region_color)
   retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num = reaper.EnumProjectMarkers3(_api_current_project, region_idx)
 
