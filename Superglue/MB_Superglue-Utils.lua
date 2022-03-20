@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.817
--- @changelog Options: wording updates, change default
+-- @version 1.818
+-- @changelog rtk improvements
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -319,9 +319,9 @@ function openOptionsWindow()
   local all_option_controls, options_window, options_viewport, options_window_content, options_window_title, option_form_buttons, option_form_submit, option_form_cancel
 
   all_option_controls = {}
-  options_window = rtk.Window{maxh = 0.85}
-  options_viewport = rtk.Viewport{halign = "center"}
-  options_window_content = rtk.VBox{w = 0.85, padding = "27 0 7"}
+  options_window = rtk.Window{maxh = 0.85, title = _script_brand_name .. " Global Options"}
+  options_viewport = rtk.Viewport{halign = "center", padding = "0 38"}
+  options_window_content = rtk.VBox{padding = "27 0 7"}
   options_window_title = rtk.Heading{_script_brand_name .. " Global Options", w = 1, halign = "center", bmargin = 25}
   option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
   option_form_submit = rtk.Button{"Submit", disabled = true}
@@ -411,7 +411,7 @@ function getOptionDropdown(option, option_form_submit)
 
   option_saved_value = reaper.GetExtState(_global_options_section, option.ext_state_key)
   option_dropdown_box = rtk.HBox{spacing = 10}
-  dropdown_label = rtk.Text{option.user_readable_text, margin = "15 0 5", wrap = "wrap_normal"}
+  dropdown_label = rtk.Text{option.user_readable_text, margin = "15 0 5", wrap = "normal"}
   dropdown_control = rtk.OptionMenu{margin = "15 0 5"}
   dropdown_menu = {}
 
@@ -561,18 +561,18 @@ end
 function populateItemInfoWindow(selected_item, selected_item_params)
   local item_info_window, item_info_viewport, item_info_content, item_info_title, item_info, item_info_text, item_info_content_height
 
-  item_info_window = rtk.Window{maxh = 0.85}
-  item_info_viewport = rtk.Viewport{halign = "center"}
-  item_info_content = rtk.VBox{w = 0.85, padding = "27 0 7"}
+  item_info_window = rtk.Window{maxh = 0.85, title = _script_brand_name .. " Item Info"}
+  item_info_viewport = rtk.Viewport{halign = "center", padding = "0 38"}
+  item_info_content = rtk.VBox{padding = "27 0 7"}
   item_info_title = rtk.Heading{_script_brand_name .. " Item Info", w = 1, bmargin = 35, halign = "center"}
-  item_info_name = rtk.Text{getSetItemName(selected_item), w = 1, halign = "center", textalign = "center", bmargin = 20, fontscale = 1.2, wrap = "wrap_normal", color = "#599D8E"}
+  item_info_name = rtk.Text{getSetItemName(selected_item), w = 1, halign = "center", textalign = "center", bmargin = 20, fontscale = 1.2, wrap = "normal", color = "#599D8E"}
   item_info = ""
 
   for i = 1, #selected_item_params do
     item_info = item_info .. selected_item_params[i][1] .. selected_item_params[i][2] .. "\n"
   end
   
-  item_info_text = rtk.Text{item_info, w = 1, halign = "center", textalign = "center", wrap = "wrap_normal", spacing = 13}
+  item_info_text = rtk.Text{item_info, w = 1, halign = "center", textalign = "center", wrap = "normal", spacing = 13}
 
   item_info_content:add(item_info_title)
   item_info_content:add(item_info_name)
