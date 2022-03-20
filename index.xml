@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="a31d614bace07dc2a6a1d158055b48dbf742db1d">
+<index version="1" name="MonkeyBars-ReaScripts" commit="e9067e408ce9f4e3fe66e280b9e6a6bc6d1f1933">
   <category name="Superglue">
     <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue. Use MB_Superglue Glue to save changes &amp; propagate to Sibling items in same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
       <metadata>
@@ -1064,6 +1064,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/3af373a27551223ef1749f95ba64924d350b5150/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3af373a27551223ef1749f95ba64924d350b5150/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3af373a27551223ef1749f95ba64924d350b5150/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.816" author="MonkeyBars" time="2022-03-20T14:10:40Z">
+        <changelog><![CDATA[ReaPack refresh]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/e9067e408ce9f4e3fe66e280b9e6a6bc6d1f1933/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e9067e408ce9f4e3fe66e280b9e6a6bc6d1f1933/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/e9067e408ce9f4e3fe66e280b9e6a6bc6d1f1933/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e9067e408ce9f4e3fe66e280b9e6a6bc6d1f1933/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e9067e408ce9f4e3fe66e280b9e6a6bc6d1f1933/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
