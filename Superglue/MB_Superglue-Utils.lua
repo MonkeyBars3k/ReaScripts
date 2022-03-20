@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.818
--- @changelog rtk improvements
+-- @version 1.819
+-- @changelog Refactors (https://github.com/MonkeyBars3k/ReaScripts/issues/266)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -949,17 +949,9 @@ end
 
 
 function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
-  local item_types, item_types_data, i, this_item_type, this_item, superitem_pool_id, restored_item_pool_id, j, this_requested_item_type
+  local item_types_data, i, this_item, superitem_pool_id, restored_item_pool_id, j, this_requested_item_type
 
-  item_types = {"superitem", "restored", "nonsuperitem", "child_instance", "parent_instance"}
-  item_types_data = {}
-
-  for i = 1, #item_types do
-    this_item_type = item_types[i]
-    item_types_data[this_item_type] = {
-      ["selected_items"] = {}
-    }
-  end
+  item_types_data = getItemTypes()
 
   for i = 0, selected_item_count-1 do
     this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
@@ -978,6 +970,23 @@ function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
         table.insert(item_types_data[this_requested_item_type]["selected_items"], this_item)
       end
     end
+  end
+
+  return item_types_data
+end
+
+
+function getItemTypes()
+  local item_types, item_types_data, i, this_item_type
+
+  item_types = {"superitem", "restored", "nonsuperitem", "child_instance", "parent_instance"}
+  item_types_data = {}
+
+  for i = 1, #item_types do
+    this_item_type = item_types[i]
+    item_types_data[this_item_type] = {
+      ["selected_items"] = {}
+    }
   end
 
   return item_types_data
@@ -2275,14 +2284,33 @@ end
 function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project_start, fresh_glue_source_offset, this_is_edited_superitem)
   local instance_position, instance_active_take, instance_current_src_offset, instance_playrate, envelope_point_position_adjustment_delta, take_marker_position_adjustment_delta
 
-  if not fresh_glue_source_offset then
-    fresh_glue_source_offset = 0
-  end
+  instance_position, instance_active_take, instance_current_src_offset, instance_playrate, fresh_glue_source_offset = getParamsForTakeMarkersAndEnvelopes(instance, instance_active_take, fresh_glue_source_offset)
+  envelope_point_position_adjustment_delta, take_marker_position_adjustment_delta = getDeltasForTakeMarkersAndEnvelopes(adjustment_near_project_start, instance_position, instance_current_src_offset, instance_playrate, this_is_edited_superitem)
+
+  adjustTakeEnvelopes(instance_active_take, envelope_point_position_adjustment_delta)
+  adjustTakeMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
+  handleTakeStretchMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
+end
+
+
+function getParamsForTakeMarkersAndEnvelopes(instance, instance_active_take, fresh_glue_source_offset)
+  local instance_position, instance_active_take, instance_current_src_offset, instance_playrate
 
   instance_position = reaper.GetMediaItemInfo_Value(instance, _api_item_position_key)
   instance_active_take = reaper.GetActiveTake(instance)
   instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key)
   instance_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_playrate_key)
+
+  if not fresh_glue_source_offset then
+    fresh_glue_source_offset = 0
+  end
+
+  return instance_position, instance_active_take, instance_current_src_offset, instance_playrate, fresh_glue_source_offset
+end
+
+
+function getDeltasForTakeMarkersAndEnvelopes(adjustment_near_project_start, instance_position, instance_current_src_offset, instance_playrate, this_is_edited_superitem)
+  local envelope_point_position_adjustment_delta, take_marker_position_adjustment_delta
 
   if this_is_edited_superitem or _user_wants_propagation_option["position"] then
     envelope_point_position_adjustment_delta = -_superitem_instance_offset_delta_since_last_glue
@@ -2305,9 +2333,7 @@ function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project
     end
   end
 
-  adjustTakeEnvelopes(instance_active_take, envelope_point_position_adjustment_delta)
-  adjustTakeMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
-  handleTakeStretchMarkers(instance_active_take, take_marker_position_adjustment_delta, fresh_glue_source_offset)
+  return envelope_point_position_adjustment_delta, take_marker_position_adjustment_delta
 end
 
 
@@ -3386,12 +3412,12 @@ end
 
 
 function handleMultitakeSuperitem(superitem_takes_count)
-  local user_wants_to_explode_superitem_takes, user_response_explode_in_place
+  local user_wants_to_explode_superitem_takes, user_response_explode_in_order
 
   user_wants_to_explode_superitem_takes = reaper.ShowMessageBox("Do you want to explode your Superitem takes before Editing?", "The Superitem selected has " .. superitem_takes_count .. " takes in it. " .. _script_brand_name .. " does not support multiple takes on Superitems.", _msg_type_ok_cancel)
 
   if user_wants_to_explode_superitem_takes == _msg_response_ok then
-    user_response_explode_in_place = reaper.ShowMessageBox("Choose Yes to explode in order or No to explode in place.", "Do you want to explode in order?", _msg_type_yes_no)
+    user_response_explode_in_order = reaper.ShowMessageBox("Choose Yes to explode in order or No to explode in place.", "Do you want to explode in order?", _msg_type_yes_no)
 
     superitem, superitem_active_take = checkSuperitemTakesAreValid()
 
@@ -3399,7 +3425,7 @@ function handleMultitakeSuperitem(superitem_takes_count)
       return "cancel"
     end
 
-    explodeSuperitem(superitem, superitem_active_take, user_response_explode_in_place)
+    explodeSuperitem(superitem, superitem_active_take, user_response_explode_in_order)
 
   elseif user_wants_to_explode_superitem_takes == _msg_response_cancel then
     return "cancel"
@@ -3423,12 +3449,27 @@ function checkSuperitemTakesAreValid()
 end
 
 
-function explodeSuperitem(superitem, superitem_active_take, explode_option)
-  local user_wants_to_explode_in_order, superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, superitem_superglue_active_take_key, i, this_superitem_take, retval, this_superitem_take_active_flag, this_duplicated_item_new_active_take, offline_takes_msg_shown
+function explodeSuperitem(superitem, superitem_active_take, user_response_explode_in_order)
+  local user_wants_to_explode_in_order, superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, i, offline_takes_msg_shown
 
-  if explode_option == _msg_response_yes then
+  superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values = getSuperitemExplodeParams(superitem)
+
+  if user_response_explode_in_order == _msg_response_yes then
     user_wants_to_explode_in_order = true
   end
+
+  for i = 0, superitem_takes_count-2 do
+    duplicated_item_target_take_num, offline_takes_msg_shown = explodeSuperitemTake(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
+  end
+
+  deselectAllItems()
+  reaper.SetMediaItemSelected(superitem, true)
+  cropSelectedItemsToActiveTakes()
+end
+
+
+function getSuperitemExplodeParams(superitem)
+  local superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, superitem_superglue_active_take_key, this_superitem_take, retval, this_superitem_take_active_flag
 
   superitem_takes_count = reaper.GetMediaItemNumTakes(superitem)
   superitem_params = getSetItemParams(superitem)
@@ -3450,13 +3491,7 @@ function explodeSuperitem(superitem, superitem_active_take, explode_option)
     end
   end
 
-  for i = 0, superitem_takes_count-2 do
-    duplicated_item_target_take_num, offline_takes_msg_shown = explodeSuperitemTake(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
-  end
-
-  deselectAllItems()
-  reaper.SetMediaItemSelected(superitem, true)
-  cropSelectedItemsToActiveTakes()
+  return superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values
 end
 
 
