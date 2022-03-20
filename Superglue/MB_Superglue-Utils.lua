@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.813
--- @changelog comment dev include out
+-- @version 1.814
+-- @changelog Take envelopes & markers' position wrong on edited Superitem on negative position Reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/267); Restored items position wrong after DePool (https://github.com/MonkeyBars3k/ReaScripts/issues/268)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2082,7 +2082,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   _edited_pool_preedit_params = storeRetrieveSuperitemParams(_edited_pool_fresh_glue_params.pool_id, _preedit_action_step)
 
   setRegluePositionDeltas(superitem_params)
-  adjustPostGlueTakeMarkersAndEnvelopes(superitem)
+  adjustPostGlueTakeMarkersAndEnvelopes(superitem, nil, nil, true)
   editAncestors(superitem_params.pool_id, superitem)
   deselectAllItems()
   propagateChangesToSuperitems(superitem_params, sizing_region_guid)
@@ -2272,7 +2272,7 @@ function setRegluePositionDeltas()
 end
 
 
-function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project_start, fresh_glue_source_offset)
+function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project_start, fresh_glue_source_offset, this_is_edited_superitem)
   local instance_position, instance_active_take, instance_current_src_offset, instance_playrate, envelope_point_position_adjustment_delta, take_marker_position_adjustment_delta
 
   if not fresh_glue_source_offset then
@@ -2284,7 +2284,7 @@ function adjustPostGlueTakeMarkersAndEnvelopes(instance, adjustment_near_project
   instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_take_src_offset_key)
   instance_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _api_playrate_key)
 
-  if _user_wants_propagation_option["position"] then
+  if this_is_edited_superitem or _user_wants_propagation_option["position"] then
     envelope_point_position_adjustment_delta = -_superitem_instance_offset_delta_since_last_glue
     take_marker_position_adjustment_delta = -_superitem_instance_offset_delta_since_last_glue
 
@@ -2783,20 +2783,20 @@ end
 
 
 function getRestoredItemPositionDeltaSinceLastGlue(restored_item, restored_item_params, action)
-  local this_item_position_delta_to_last_superitem_instance, restored_item_altered_position
+  local this_item_position_delta_to_last_glue_superitem_instance, restored_item_altered_position
 
-  if action == "Unglue" or action == "DePool" then
-    this_item_position_delta_to_last_superitem_instance = _unglued_pool_preunglue_params.position - _edited_pool_post_glue_params.position - _unglued_pool_preunglue_params.source_offset
+  if action == "Edit" or action == "Unglue" or action == "DePool" then
+    this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _edited_pool_post_glue_params.position - _unglued_pool_preunglue_params.source_offset
 
   else
-    this_item_position_delta_to_last_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset + _edited_pool_post_glue_params.source_offset
+    this_item_position_delta_to_last_glue_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset + _edited_pool_post_glue_params.source_offset
 
     if _this_depooled_superitem_has_not_been_edited == "true" then
-      this_item_position_delta_to_last_superitem_instance = this_item_position_delta_to_last_superitem_instance + _first_restored_item_last_glue_delta_to_parent
+      this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + _first_restored_item_last_glue_delta_to_parent
     end
   end
 
-  restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_superitem_instance
+  restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_glue_superitem_instance
 
   return restored_item_altered_position
 end
@@ -3868,15 +3868,12 @@ end
 
 function numberizeAndRoundElements(tables, elems)
   local i, this_table, j
-
   for i = 1, #tables do
     this_table = tables[i]
-
     for j = 1, #elems do
       this_table[elems[j]] = round(tonumber(this_table[elems[j]]),_api_time_value_decimal_resolution)
     end
   end
-
   return table.unpack(tables)
 end
 
