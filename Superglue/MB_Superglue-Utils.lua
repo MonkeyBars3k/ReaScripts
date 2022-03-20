@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.816
--- @changelog ReaPack refresh
+-- @version 1.817
+-- @changelog Options: wording updates, change default
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -155,42 +155,42 @@ _all_global_options_params = {
     ["name"] = "time_selection_sets_superitem_edges",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_time_selection_sets_edges_key,
-    ["user_readable_text"] = "Time selection determines Superitem edge locations",
+    ["user_readable_text"] = "Glue: Time selection determines Superitem edge locations",
     ["default_value"] = "false"
   },
   {
     ["name"] = "auto_increase_channel_count_with_take_fx",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_auto_increase_channel_count_key,
-    ["user_readable_text"] = "Auto-increase channel count with take FX on Reglue",
+    ["user_readable_text"] = "Glue: Auto-increase channel count with take FX",
+    ["default_value"] = "false"
+  },
+  {
+    ["name"] = "depool_all_siblings_on_reglue",
+    ["type"] = "checkbox",
+    ["ext_state_key"] = _global_option_toggle_depool_all_siblings_on_reglue_key,
+    ["user_readable_text"] = "Reglue: Remove all sibling instances from pool (disable & undo pooling)",
     ["default_value"] = "false"
   },
   {
     ["name"] = "item_images",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_item_images_key,
-    ["user_readable_text"] = "Insert item background images on Superglue and Edit (overwriting item notes)",
+    ["user_readable_text"] = "Display: Insert item background images on Superglue and Edit, overwriting item notes",
     ["default_value"] = "true"
   },
   {
     ["name"] = "new_superglue_random_color",
     ["type"] = "checkbox",
     ["ext_state_key"] = _global_option_toggle_new_superglue_random_color_key,
-    ["user_readable_text"] = "Set newly glued Superitem to random color",
+    ["user_readable_text"] = "Display: Set newly glued Superitems to random color",
     ["default_value"] = "true"
-  },
-  {
-    ["name"] = "depool_all_siblings_on_reglue",
-    ["type"] = "checkbox",
-    ["ext_state_key"] = _global_option_toggle_depool_all_siblings_on_reglue_key,
-    ["user_readable_text"] = "Remove all sibling instances from pool on Reglue (disable & undo pooling)",
-    ["default_value"] = "false"
   },
   {
     ["name"] = "maintain_source_position_default",
     ["type"] = "dropdown",
     ["ext_state_key"] = _global_option_maintain_source_position_default_key,
-    ["user_readable_text"] = "Maintain Siblings' audio source timeline location on Reglue by default",
+    ["user_readable_text"] = "Reglue: Audio source timeline location on Siblings is maintained",
     ["values"] = {
       {"always", "Maintain source location"},
       {"ask", "Ask"},
@@ -202,7 +202,7 @@ _all_global_options_params = {
     ["name"] = "propagate_position_change_default",
     ["type"] = "dropdown",
     ["ext_state_key"] = _global_option_propagate_position_default_key,
-    ["user_readable_text"] = "Propagate left edge position change to siblings on Reglue by default",
+    ["user_readable_text"] = "Reglue: Left edge position change of edited Superitem propagates to Siblings",
     ["values"] = {
       {"always", "Always propagate position"},
       {"ask", "Ask"},
@@ -214,7 +214,7 @@ _all_global_options_params = {
     ["name"] = "propagate_length_change_default",
     ["type"] = "dropdown",
     ["ext_state_key"] = _global_option_propagate_length_default_key,
-    ["user_readable_text"] = "Propagate Superitem length change to siblings on Reglue by default",
+    ["user_readable_text"] = "Reglue: Length change of edited Superitem propagates to Siblings",
     ["values"] = {
       {"always", "Always propagate length"},
       {"ask", "Ask"},
@@ -226,19 +226,19 @@ _all_global_options_params = {
     ["name"] = "length_propagation_type_default",
     ["type"] = "dropdown",
     ["ext_state_key"] = _global_option_length_propagation_type_default_key,
-    ["user_readable_text"] = "Length propagation absolute or relative (can still be altered by playrate option)",
+    ["user_readable_text"] = "Reglue: Absolute or relative length propagation on Siblings (can still be altered by playrate option)",
     ["values"] = {
       {"always", "Absolute length propagation"},
       {"ask", "Ask"},
       {"no", "Relative length propagation"}
     },
-    ["default_value"] = "always"
+    ["default_value"] = "no"
   },
   {
     ["name"] = "playrate_affects_propagation_by_default",
     ["type"] = "dropdown",
     ["ext_state_key"] = _global_option_playrate_affects_propagation_default_key,
-    ["user_readable_text"] = "Playrate affects Superitem sibling length & position propagation by default",
+    ["user_readable_text"] = "Reglue: Sibling playrate affects Sibling length & position propagation by default",
     ["values"] = {
       {"always", "Playrate always affects propagation"},
       {"ask", "Ask"},
