@@ -1190,7 +1190,7 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension} and {\b js_ReaScript_API Plugin Extension}\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Warnings\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs24 Audio sources\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be {\i very} careful if you want to {\b Clean current project directory} after Supergluing \u8211- you could lose contained items' audio, since at that point those "items" aren't included in the project proper \u8211- they are only represented in the project data (state chunks).\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Be {\i very} careful if you want to {\b Clean current project directory} after Supergluing \u8211- you could lose contained items' audio, since at that point those "items" aren't included in the project proper \u8211- they are only represented in the project data (state chunks). If you want to clean your project, you ought to Edit an Instance from every Pool, clean, then Reglue them all.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Stay aware of the state of your Superitems whenever {\b editing audio externally}. If you're destructively editing a contained item's audio source, or for example editing a subproject which is present as a contained item in a Superitem, such items' direct parent must be in Edit mode ("open") during your external audio source edits, or their ancestors (parent, grandparent, etc. Superitems) won't be updated.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs24 MIDI\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Currently only {\b MIDI on virtual instrument tracks} is supported.\par}
