@@ -52,7 +52,7 @@ The **Glue/Edit & Glue/Unglue Smart Action** scripts intelligently determine whi
 
 ### Warnings
 #### Audio sources
-- Be _very_ careful if you want to **Clean current project directory** after Supergluing – you could lose contained items' audio, since at that point those "items" aren't included in the project proper – they are only represented in the project data (state chunks).
+- Be _very_ careful if you want to **Clean current project directory** after Supergluing – you could lose contained items' audio, since at that point those "items" aren't included in the project proper – they are only represented in the project data (state chunks). If you want to clean your project, you ought to Edit an Instance from every Pool, clean, then Reglue them all.
 - Stay aware of the state of your Superitems whenever **editing audio externally**. If you're destructively editing a contained item's audio source, or for example editing a subproject which is present as a contained item in a Superitem, such items' direct parent must be in Edit mode ("open") during your external audio source edits, or their ancestors (parent, grandparent, etc. Superitems) won't be updated.
 #### MIDI
 - Currently only **MIDI on virtual instrument tracks** is supported.
