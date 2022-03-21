@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="4a83a714d551d06e6753594d4b4be3ca56998d18">
+<index version="1" name="MonkeyBars-ReaScripts" commit="7e1dbffb49eb5ab3676402f4f9e4321af96d6818">
   <category name="Superglue">
     <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue. Use MB_Superglue Glue to save changes &amp; propagate to Sibling items in same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
       <metadata>
@@ -159,6 +159,22 @@
       <version name="1.776" author="MonkeyBars" time="2022-03-18T18:55:14Z">
         <changelog><![CDATA[Initial upload]]></changelog>
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/9b6d69907225230a59492223154a4bfb50212efa/Superglue/MB_Superglue%20-%20Options%20-%20Reglue%20-%20Length%20change%20of%20Edited%20Superitem%20propagates%20to%20Siblings%20(Enable-Ask-Disable).lua</source>
+      </version>
+    </reapack>
+    <reapack name="MB_Superglue - Options - Reglue - Looped source of Superitem determines Sizing Region bounds (On-Off).lua" type="script" desc="MB_Superglue - Option - Reglue - Looped source of Superitem determines Sizing Region bounds">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fork of matthewjumpsoffbuildings's Glue Groups scripts\par}
+}
+]]></description>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
+      </metadata>
+      <version name="1.820" author="MonkeyBars" time="2022-03-21T16:15:54Z">
+        <changelog><![CDATA[Inital upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/MB_Superglue%20-%20Options%20-%20Reglue%20-%20Looped%20source%20of%20Superitem%20determines%20Sizing%20Region%20bounds%20(On-Off).lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Options - Reglue - Playrate of Siblings affects their length &amp; position propagation values (Enable-Ask-Disable).lua" type="script" desc="MB_Superglue - Cycle option, Take playrate affects Superitem sibling propagation">
@@ -1096,6 +1112,14 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/4a83a714d551d06e6753594d4b4be3ca56998d18/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/4a83a714d551d06e6753594d4b4be3ca56998d18/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/4a83a714d551d06e6753594d4b4be3ca56998d18/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.820" author="MonkeyBars" time="2022-03-21T16:15:54Z">
+        <changelog><![CDATA[Add option: Limit Sizing Region bounds to Superitem looped source (https://github.com/MonkeyBars3k/ReaScripts/issues/270)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
