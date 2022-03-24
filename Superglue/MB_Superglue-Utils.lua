@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.821
--- @changelog Prepend brand + Pool ID string to Superitem glued source files (https://github.com/MonkeyBars3k/ReaScripts/issues/271)
+-- @version 1.822
+-- @changelog Remove sizing region warning & replace time seleciton if TS bounds option enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/275)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -28,14 +28,14 @@
 
 
 -- for dev only
-require("sg-dev-functions")
+-- require("sg-dev-functions")
  
 
 local serpent = require("serpent")
 local rtk = require('rtk')
 
 
-local _script_path, _os_path_separator, _os_path_splitter_pattern, _custom_path_separator, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _sizing_region_1st_display_num, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_edges_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_loop_source_sets_sizing_region_bounds_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
+local _script_path, _os_path_separator, _os_path_splitter_pattern, _custom_path_separator, _superitem_bg_img_path, _restored_item_bg_img_path, _peak_data_filename_extension, _scroll_action_id, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _sizing_region_1st_display_num, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_bounds_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_loop_source_sets_sizing_region_bounds_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _os_path_separator = package.config:sub(1,1)
@@ -142,7 +142,7 @@ _user_wants_to_depool_all_siblings = nil
 _this_depooled_superitem_has_not_been_edited = nil
 _noninstance_label = "noninstance-"
 _global_options_section = "MB_SUPERGLUE-OPTIONS"
-_global_option_toggle_time_selection_sets_edges_key = "time_selection_sets_superitem_edges_enabled"
+_global_option_toggle_time_selection_sets_bounds_key = "time_selection_sets_superitem_bounds_enabled"
 _global_option_toggle_auto_increase_channel_count_key = "auto_increase_channel_count_enabled"
 _global_option_toggle_item_images_key = "item_images_enabled"
 _global_option_toggle_new_superglue_random_color_key = "new_superglue_random_color_enabled"
@@ -156,10 +156,10 @@ _global_option_length_propagation_type_default_key = "length_propagation_type_de
 _global_option_playrate_affects_propagation_default_key = "playrate_affects_propagation_by_default"
 _all_global_options_params = {
   {
-    ["name"] = "time_selection_sets_superitem_edges",
+    ["name"] = "time_selection_sets_superitem_bounds",
     ["type"] = "checkbox",
-    ["ext_state_key"] = _global_option_toggle_time_selection_sets_edges_key,
-    ["user_readable_text"] = "Glue: Time selection determines Superitem edge locations",
+    ["ext_state_key"] = _global_option_toggle_time_selection_sets_bounds_key,
+    ["user_readable_text"] = "Glue: Time selection determines Superitem bounds",
     ["default_value"] = "false"
   },
   {
@@ -1340,7 +1340,7 @@ end
 function setUpReglue(this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
   local obey_time_selection, user_selected_instance_is_being_reglued, pool_parent_length_key_label, retval
 
-  obey_time_selection = reaper.GetExtState(_global_options_section, _global_option_toggle_time_selection_sets_edges_key)
+  obey_time_selection = reaper.GetExtState(_global_options_section, _global_option_toggle_time_selection_sets_bounds_key)
   user_selected_instance_is_being_reglued = not this_is_ancestor_update
   pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   retval, _pool_parent_last_glue_length = storeRetrieveProjectData(pool_parent_length_key_label)
@@ -1361,7 +1361,7 @@ function setUpUserSelectedInstanceReglue(sizing_region_guid, first_selected_item
   sizing_params = getSetSizingRegion(sizing_region_guid)
   is_active_superitem_reglue = sizing_params
   time_selection_start, time_selection_end = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
-  time_selection_exists = time_selection_end > 0
+  time_selection_exists = time_selection_end > _position_start_of_project
   time_selection_was_set_by_code = false
 
   if is_active_superitem_reglue then
@@ -2190,46 +2190,102 @@ end
 
 
 function handleNoSizingRegionExists(selected_items, pool_id)
-  local sizing_region_deleted_msg_title, time_selection_start, time_selection_end, no_time_selection_exists, user_response_reinstate_sizing_region, sizing_region_guid
+  local global_option_time_selection_sets_bounds_enabled, time_selection_start, time_selection_end, no_time_selection_exists, user_response_create_time_selection
 
-  sizing_region_deleted_msg_title = "The sizing region for this Edited Superitem was removed somehow!"
+  global_option_time_selection_sets_bounds_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_time_selection_sets_bounds_key)
   time_selection_start, time_selection_end = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
-  no_time_selection_exists = time_selection_end == 0
+  no_time_selection_exists = time_selection_end == _position_start_of_project
+
+  if global_option_time_selection_sets_bounds_enabled == "false" then
+
+    return handleNoSizer_TimeSelectionBoundsOptionDisabled(no_time_selection_exists, selected_items, pool_id, time_selection_start, time_selection_end)
+
+  elseif global_option_time_selection_sets_bounds_enabled == "true" then
+
+    return handleNoSizer_TimeSelectionBoundsOptionEnabled(no_time_selection_exists, selected_items, pool_id, time_selection_start, time_selection_end)
+  end
+end
+
+
+function handleNoSizer_TimeSelectionBoundsOptionDisabled(no_time_selection_exists, selected_items, pool_id, time_selection_start, time_selection_end)
+  local msg_title_sizing_region_deleted, user_response_reinstate_sizing_region, sizing_region_guid
+
+  msg_title_sizing_region_deleted = "The sizing region for this Edited Superitem was removed somehow!"
 
   if no_time_selection_exists then
-    reaper.ShowMessageBox("Superglue will now create a new sizing region at the edges of the restored items.", sizing_region_deleted_msg_title, _msg_type_ok)
+    reaper.ShowMessageBox("Superglue will now create a new sizing region at the bounds of the restored items.", msg_title_sizing_region_deleted, _msg_type_ok)
     createSizingRegionFromRestoredItems(selected_items, pool_id)
 
     return false
+
+  else
+    user_response_reinstate_sizing_region = reaper.ShowMessageBox("Select Yes to reglue to time selection, or No to create a new sizing region at the bounds of the restored items.", msg_title_sizing_region_deleted, _msg_type_yes_no)
+
+    if user_response_reinstate_sizing_region == _msg_response_yes then
+      sizing_region_guid = createSizingRegionFromTimeSelection(pool_id, time_selection_start, time_selection_end)
+
+      return sizing_region_guid
+
+    elseif user_response_reinstate_sizing_region == _msg_response_no then
+      createSizingRegionFromRestoredItems(selected_items, pool_id)
+
+      return false
+    end
   end
+end
 
-  user_response_reinstate_sizing_region = reaper.ShowMessageBox("Select Yes to reglue to time selection, or No to create a new sizing region at the edges of the restored items.", sizing_region_deleted_msg_title, _msg_type_yes_no)
 
-  if user_response_reinstate_sizing_region == _msg_response_yes then
+function handleNoSizer_TimeSelectionBoundsOptionEnabled(no_time_selection_exists, selected_items, pool_id, time_selection_start, time_selection_end)
+  local user_response_create_time_selection, sizing_region_guid
+
+  if no_time_selection_exists then
+    user_response_create_time_selection = reaper.ShowMessageBox("Select Yes to set time selection to the bounds of the restored items, or No to abort Reglue.", "There's no time selection to set Superitem bounds to.", _msg_type_yes_no)
+
+    if user_response_create_time_selection == _msg_response_yes then
+      createTimeSelectionFromRestoredItems(selected_items)
+      createSizingRegionFromRestoredItems(selected_items, pool_id)
+
+      return false
+
+    else
+
+      return false
+    end
+
+  else
     sizing_region_guid = createSizingRegionFromTimeSelection(pool_id, time_selection_start, time_selection_end)
 
     return sizing_region_guid
-
-  elseif user_response_reinstate_sizing_region == _msg_response_no then
-    createSizingRegionFromRestoredItems(selected_items, pool_id)
-
-    return false
   end
 end
 
 
 function createSizingRegionFromRestoredItems(selected_items, pool_id)
+  local sizing_region_params = getBoundsFromItems(selected_items)
+
+  getSetSizingRegion(pool_id, sizing_region_params)
+end
+
+
+function getBoundsFromItems(items)
   local last_selected_item_position, last_selected_item_length, sizing_region_params
 
-  last_selected_item_position = reaper.GetMediaItemInfo_Value(selected_items[#selected_items], _api_item_position_key, "", false)
-  last_selected_item_length = reaper.GetMediaItemInfo_Value(selected_items[#selected_items], _api_item_length_key, "", false)
+  last_selected_item_position = reaper.GetMediaItemInfo_Value(items[#items], _api_item_position_key, "", false)
+  last_selected_item_length = reaper.GetMediaItemInfo_Value(items[#items], _api_item_length_key, "", false)
   sizing_region_params = {
-    ["position"] = reaper.GetMediaItemInfo_Value(selected_items[1], _api_item_position_key, "", false),
+    ["position"] = reaper.GetMediaItemInfo_Value(items[1], _api_item_position_key, "", false),
     ["end_point"] = last_selected_item_position + last_selected_item_length
   }
   sizing_region_params.length = sizing_region_params.end_point - sizing_region_params.position
 
-  getSetSizingRegion(pool_id, sizing_region_params)
+  return sizing_region_params
+end
+
+
+function createTimeSelectionFromRestoredItems(selected_items)
+  local sizing_region_params = getBoundsFromItems(selected_items)
+
+  reaper.GetSet_LoopTimeRange(true, false, sizing_region_params.position, sizing_region_params.end_point, false)
 end
 
 
@@ -3680,6 +3736,7 @@ function createSizingRegionFromSuperitem(superitem, pool_id)
 
   if looped_source_sets_sizing_region_enabled == "true" then
     superitem_active_take = reaper.GetActiveTake(superitem)
+
     superitem_active_take_source = reaper.GetMediaItemTake_Source(superitem_active_take)
     superitem_params.length = reaper.GetMediaSourceLength(superitem_active_take_source)
     superitem_params.end_point = superitem_params.length - superitem_params.position
