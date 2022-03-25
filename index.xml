@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="f03023b6e340760b2d62bf9bb2a359fc356acb6e">
+<index version="1" name="MonkeyBars-ReaScripts" commit="fb7026451c8a5fa10d58eee6bf8461ba4d83e590">
   <category name="Superglue">
     <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
       <metadata>
@@ -1144,6 +1144,22 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.824" author="MonkeyBars" time="2022-03-25T17:24:10Z">
+        <changelog><![CDATA[Create function storeRetrievePoolData() (https://github.com/MonkeyBars3k/ReaScripts/issues/280)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/3ebf630f58537fa790ed4fb55f12562831700cbb/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/3ebf630f58537fa790ed4fb55f12562831700cbb/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/3ebf630f58537fa790ed4fb55f12562831700cbb/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3ebf630f58537fa790ed4fb55f12562831700cbb/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3ebf630f58537fa790ed4fb55f12562831700cbb/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.825" author="MonkeyBars" time="2022-03-25T18:16:43Z">
+        <changelog><![CDATA[DePool Edit restores items at wrong position (cont.) (https://github.com/MonkeyBars3k/ReaScripts/issues/279)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/fb7026451c8a5fa10d58eee6bf8461ba4d83e590/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/fb7026451c8a5fa10d58eee6bf8461ba4d83e590/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/fb7026451c8a5fa10d58eee6bf8461ba4d83e590/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fb7026451c8a5fa10d58eee6bf8461ba4d83e590/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/fb7026451c8a5fa10d58eee6bf8461ba4d83e590/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
