@@ -1,7 +1,4 @@
--- @description general dev functions, used for Superglue
--- @author various
--- @version 1.0
--- @changelog initial upload
+-- @noindex
 
 function updateSelectedItems()
   local i

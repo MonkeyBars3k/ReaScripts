@@ -1,10 +1,4 @@
--- @description MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Absolute/Ask/Relative)
--- @author MonkeyBars
--- @version 1.810
--- @changelog Initial upload
--- @provides [main] .
--- @link Forum https://forum.cockos.com/showthread.php?t=136273
--- @about Fork of matthewjumpsoffbuildings's Glue Groups scripts
+-- @noindex
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"

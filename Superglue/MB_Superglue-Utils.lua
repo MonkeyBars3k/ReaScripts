@@ -1,21 +1,4 @@
--- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
--- @author MonkeyBars
--- @version 1.825
--- @changelog DePool Edit restores items at wrong position (cont.) (https://github.com/MonkeyBars3k/ReaScripts/issues/279)
--- @provides [nomain] .
---   serpent.lua
---   rtk.lua
---   sg-bg-restored.png
---   sg-bg-superitem.png
--- @link Forum https://forum.cockos.com/showthread.php?t=136273
--- @about Code for Superglue scripts
-
-
--- Copyright (C) MonkeyBars 2022
--- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
--- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
--- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
-
+--@noindex
 
 
 -- ==== SUPERGLUE UTILS SCRIPT ARCHITECTURE NOTES ====
