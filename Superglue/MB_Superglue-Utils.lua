@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.823
--- @changelog Fixes for last commits; DePool Edit restores items at wrong position (https://github.com/MonkeyBars3k/ReaScripts/issues/279); Remove obsolete internal time selection code (https://github.com/MonkeyBars3k/ReaScripts/issues/281); Reglue offset is intermittently wrong with position change (https://github.com/MonkeyBars3k/ReaScripts/issues/282)
+-- @version 1.824
+-- @changelog Create function storeRetrievePoolData() (https://github.com/MonkeyBars3k/ReaScripts/issues/280)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -541,12 +541,11 @@ end
 
 
 function prepareItemInfo(selected_superitem_instance_pool_id, selected_item_parent_pool_id)
-  local selected_superitem_descendant_pool_ids_key, retval, selected_superitem_descendant_pool_ids, stored_item_state_chunks, selected_superitem_descendant_pool_ids_list, selected_superitem_contained_items_count, selected_item_params
+  local selected_superitem_descendant_pool_ids, retval, stored_item_state_chunks, selected_superitem_descendant_pool_ids_list, selected_superitem_contained_items_count, selected_item_params
 
-  selected_superitem_descendant_pool_ids_key = _pool_key_prefix .. selected_superitem_instance_pool_id .. _descendant_pool_ids_key_suffix
-  retval, selected_superitem_descendant_pool_ids = storeRetrieveProjectData(selected_superitem_descendant_pool_ids_key)
+  selected_superitem_descendant_pool_ids = storeRetrievePoolData(selected_superitem_instance_pool_id, _descendant_pool_ids_key_suffix)
   retval, selected_superitem_descendant_pool_ids = serpent.load(selected_superitem_descendant_pool_ids)
-  retval, stored_item_state_chunks = storeRetrieveProjectData(_pool_key_prefix .. selected_superitem_instance_pool_id .. _pool_contained_item_states_key_suffix)
+  stored_item_state_chunks = storeRetrievePoolData(selected_superitem_instance_pool_id, _pool_contained_item_states_key_suffix)
   retval, stored_item_state_chunks = serpent.load(stored_item_state_chunks)
   selected_superitem_descendant_pool_ids_list = stringifyArray(selected_superitem_descendant_pool_ids)
   selected_superitem_contained_items_count = getTableSize(stored_item_state_chunks)
@@ -570,6 +569,45 @@ function prepareItemInfo(selected_superitem_instance_pool_id, selected_item_pare
   }
 
   return selected_item_params
+end
+
+
+function storeRetrievePoolData(pool_id, key_suffix, new_value)
+  local is_store, is_retrieve, key, retval, stored_value
+
+  is_store = new_value
+  is_retrieve = not new_value
+  key = _pool_key_prefix .. pool_id .. key_suffix
+
+  if is_store then
+    storeRetrieveProjectData(key, new_value)
+
+  elseif is_retrieve then
+    retval, stored_value = storeRetrieveProjectData(key)
+  end
+
+  return stored_value
+end
+
+
+function storeRetrieveProjectData(key, val)
+  local retrieve, store, store_or_retrieve_state_data, data_param_key, retval, state_data_val
+
+  retrieve = not val
+  store = val
+
+  if retrieve then
+    val = ""
+    store_or_retrieve_state_data = false
+
+  elseif store then
+    store_or_retrieve_state_data = true
+  end
+
+  data_param_key = _api_data_key .. _global_script_prefix .. key
+  retval, state_data_val = reaper.GetSetMediaTrackInfo_String(_data_storage_track, data_param_key, val, store_or_retrieve_state_data)
+
+  return retval, state_data_val
 end
 
 
@@ -875,9 +913,10 @@ end
 
 
 function handleRemovedItems(restored_items_pool_id, selected_items)
-  local retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, this_stored_item_guid, this_item_last_glue_state, this_stored_item_is_unmatched, i, this_selected_item, this_selected_item_guid, this_unmatched_item
+  local pool_contained_item_states_key_label, retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, this_stored_item_guid, this_item_last_glue_state, this_stored_item_is_unmatched, i, this_selected_item, this_selected_item_guid, this_unmatched_item
 
-  retval, last_glue_stored_item_states_string = storeRetrieveProjectData(_pool_key_prefix .. restored_items_pool_id .. _pool_contained_item_states_key_suffix)
+  pool_contained_item_states_key_label = _pool_key_prefix .. restored_items_pool_id .. _pool_contained_item_states_key_suffix
+  retval, last_glue_stored_item_states_string = storeRetrieveProjectData(pool_contained_item_states_key_label)
     
   if retval then
     retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
@@ -1170,7 +1209,7 @@ end
 
 
 function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_region_guid, depool_superitem_params, this_is_ancestor_update)
-  local this_is_depool, first_selected_item, first_selected_item_name, sizing_params, this_is_reglue, --[[selected_item_states, --]]selected_items_pool_params, superitem
+  local this_is_depool, first_selected_item, first_selected_item_name, sizing_params, this_is_reglue, selected_items_pool_params, superitem
 
   this_is_depool = depool_superitem_params ~= nil
   first_selected_item = getFirstSelectedItem()
@@ -1179,7 +1218,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   deselectAllItems()
 
   pool_id, sizing_params, this_is_reglue = setUpGlue(depool_superitem_params, this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
-  --[[selected_item_states, --]]selected_items_pool_params--[[, selected_items_params--]] = handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_ancestor_update, this_is_depool)
+  selected_items_pool_params = handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_ancestor_update, this_is_depool)
   superitem = glueSelectedItemsIntoSuperitem()
   
   handlePostGlue(selected_items, pool_id, first_selected_item_name, superitem, selected_items_pool_params, sizing_params, this_is_reglue, this_is_ancestor_update)
@@ -1225,7 +1264,7 @@ end
 
 
 function setUpGlue(depool_superitem_params, this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
-  local this_is_new_glue, this_is_depool, this_is_reglue, sizing_params, global_option_toggle_depool_all_siblings_on_reglue, pool_contained_item_states_key, retval
+  local this_is_new_glue, this_is_depool, this_is_reglue, sizing_params, global_option_toggle_depool_all_siblings_on_reglue
 
   this_is_new_glue = not pool_id
   this_is_depool = depool_superitem_params
@@ -1247,8 +1286,7 @@ function setUpGlue(depool_superitem_params, this_is_ancestor_update, first_selec
     global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_global_options_section, _global_option_toggle_depool_all_siblings_on_reglue_key)
 
     if global_option_toggle_depool_all_siblings_on_reglue == "true" then
-      pool_contained_item_states_key = _pool_key_prefix .. pool_id .. _pool_contained_item_states_key_suffix
-      retval, _preglue_restored_item_states = storeRetrieveProjectData(pool_contained_item_states_key)
+      _preglue_restored_item_states = storeRetrievePoolData(pool_id, _pool_contained_item_states_key_suffix)
     end
   end
 
@@ -1265,27 +1303,6 @@ function handlePoolId()
   storeRetrieveProjectData(_last_pool_id_key_suffix, new_pool_id)
 
   return new_pool_id
-end
-
-
-function storeRetrieveProjectData(key, val)
-  local retrieve, store, store_or_retrieve_state_data, data_param_key, retval, state_data_val
-
-  retrieve = not val
-  store = val
-
-  if retrieve then
-    val = ""
-    store_or_retrieve_state_data = false
-
-  elseif store then
-    store_or_retrieve_state_data = true
-  end
-
-  data_param_key = _api_data_key .. _global_script_prefix .. key
-  retval, state_data_val = reaper.GetSetMediaTrackInfo_String(_data_storage_track, data_param_key, val, store_or_retrieve_state_data)
-
-  return retval, state_data_val
 end
 
 
@@ -1322,12 +1339,11 @@ end
 
 
 function setUpReglue(this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
-  local obey_time_selection, user_selected_instance_is_being_reglued, pool_parent_length_key_label, retval
+  local obey_time_selection, user_selected_instance_is_being_reglued
 
   obey_time_selection = reaper.GetExtState(_global_options_section, _global_option_toggle_time_selection_sets_bounds_key)
   user_selected_instance_is_being_reglued = not this_is_ancestor_update
-  pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
-  retval, _pool_parent_last_glue_length = storeRetrieveProjectData(pool_parent_length_key_label)
+  _pool_parent_last_glue_length = storeRetrievePoolData(pool_id, _pool_parent_length_key_suffix)
   _pool_parent_last_glue_length = tonumber(_pool_parent_last_glue_length)
 
   if user_selected_instance_is_being_reglued then
@@ -1502,10 +1518,9 @@ end
 
 
 function setUpParentUpdate(first_selected_item_track, pool_id, obey_time_selection)
-  local pool_parent_position_key_label, pool_parent_length_key_label, retval, pool_parent_last_glue_position, pool_parent_last_glue_end_point, sizing_params
+  local pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_end_point, sizing_params
 
-  pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
-  retval, pool_parent_last_glue_position = storeRetrieveProjectData(pool_parent_position_key_label)
+  pool_parent_last_glue_position = storeRetrievePoolData(pool_id, _pool_parent_position_key_suffix)
   pool_parent_last_glue_position = tonumber(pool_parent_last_glue_position)
   pool_parent_last_glue_end_point = pool_parent_last_glue_position + _pool_parent_last_glue_length
   sizing_params = {
@@ -1519,18 +1534,16 @@ end
 
 
 function setUpDePool(pool_id, depool_superitem_params, first_selected_item_track)
-  local pool_contained_item_states_key, retval, last_glue_stored_item_states_key, sizing_params
+  local sizing_params
 
-  pool_contained_item_states_key = _pool_key_prefix .. pool_id .. _pool_contained_item_states_key_suffix
-  retval, _last_glue_stored_item_states = storeRetrieveProjectData(pool_contained_item_states_key)
-  last_glue_stored_item_states_key = _pool_key_prefix .. pool_id .. _pool_last_glue_contained_item_states_key_suffix
+  _last_glue_stored_item_states = storeRetrievePoolData(pool_id, _pool_contained_item_states_key_suffix)
   sizing_params = {
     ["position"] = depool_superitem_params.position,
     ["end_point"] = depool_superitem_params.end_point
   }
   sizing_params.length = sizing_params.end_point - sizing_params.position
 
-  storeRetrieveProjectData(last_glue_stored_item_states_key, _last_glue_stored_item_states)
+  storeRetrievePoolData(pool_id, _pool_last_glue_contained_item_states_key_suffix, _last_glue_stored_item_states)
   instantiateDummySizingItem(sizing_params, first_selected_item_track)
 
   return sizing_params
@@ -1547,15 +1560,14 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, this_is_regl
   storeItemStates(pool_id, selected_item_states)
   selectDeselectItems(selected_items, true)
 
-  return --[[selected_item_states, --]]selected_items_pool_params
+  return selected_items_pool_params
 end
 
 
 function setPreglueItemsData(preglue_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
-  local this_is_new_glue, first_item_offset_to_superitem_position_key_label, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position
+  local this_is_new_glue, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position
 
   this_is_new_glue = not this_is_reglue
-  first_item_offset_to_superitem_position_key_label = _pool_key_prefix .. pool_id .. _first_item_offset_to_superitem_position_key_suffix
 
   for i = 1, #preglue_items do
     this_item = preglue_items[i]
@@ -1576,7 +1588,7 @@ function setPreglueItemsData(preglue_items, pool_id, sizing_params, this_is_regl
     offset_position = first_item_position - sizing_params.position   
   end
 
-  storeRetrieveProjectData(first_item_offset_to_superitem_position_key_label, offset_position)
+  storeRetrievePoolData(pool_id, _first_item_offset_to_superitem_position_key_suffix, offset_position)
 end
 
 
@@ -1677,12 +1689,9 @@ end
 
 
 function storeItemStates(pool_id, item_states_table)
-  local pool_item_states_key_label
-
-  pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_contained_item_states_key_suffix
   item_states_table = serpent.dump(item_states_table)
   
-  storeRetrieveProjectData(pool_item_states_key_label, item_states_table)
+  storeRetrievePoolData(pool_id, _pool_contained_item_states_key_suffix, item_states_table)
 end
 
 
@@ -1799,14 +1808,11 @@ end
 
 
 function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, sizing_params, this_is_reglue, this_is_ancestor_update)
-  local this_is_fresh_glue, superitem_active_take, pool_parent_position_key_label, pool_parent_length_key_label, superitem_params, freshly_depooled_superitem_key_label
+  local this_is_fresh_glue, superitem_active_take, superitem_params
 
   this_is_fresh_glue = not this_is_reglue
   superitem_active_take = reaper.GetActiveTake(superitem)
-  pool_parent_position_key_label = _pool_key_prefix .. pool_id .. _pool_parent_position_key_suffix
-  pool_parent_length_key_label = _pool_key_prefix .. pool_id .. _pool_parent_length_key_suffix
   superitem_params = getSetItemParams(superitem)
-  freshly_depooled_superitem_key_label = _pool_key_prefix .. pool_id .. _freshly_depooled_superitem_flag
 
   if this_is_fresh_glue then
     renameSuperitemSource(superitem, pool_id)
@@ -1824,9 +1830,9 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, sizing
   addRemoveItemImage(superitem, "superitem")
   storeRetrieveSuperitemParams(pool_id, _postglue_action_step, superitem)
   storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, pool_id)
-  storeRetrieveProjectData(pool_parent_position_key_label, superitem_params.position)
-  storeRetrieveProjectData(pool_parent_length_key_label, superitem_params.length)
-  storeRetrieveProjectData(freshly_depooled_superitem_key_label, "false")
+  storeRetrievePoolData(pool_id, _pool_parent_position_key_suffix, superitem_params.position)
+  storeRetrievePoolData(pool_id, _pool_parent_length_key_suffix, superitem_params.length)
+  storeRetrievePoolData(pool_id, _freshly_depooled_superitem_flag, "false")
   refreshActiveTakeFlag(superitem, superitem_active_take, pool_id)
 end
 
@@ -1956,7 +1962,7 @@ end
 
 
 function handleDescendantPoolReferences(pool_id, contained_items_pool_params)
-  local this_pool_descendants, i, this_contained_item_instance_pool_id, this_contained_item_params, this_selected_item_is_superitem, this_child_pool_descendant_pool_ids_key, retval, this_child_pool_descendant_pool_ids, j, descendant_pool_ids_key, this_pool_descendants_string
+  local this_pool_descendants, i, this_contained_item_instance_pool_id, this_contained_item_params, this_selected_item_is_superitem, this_child_pool_descendant_pool_ids, j, this_pool_descendants_string
 
   this_pool_descendants = {}
 
@@ -1964,8 +1970,7 @@ function handleDescendantPoolReferences(pool_id, contained_items_pool_params)
     this_selected_item_is_superitem = not string.find(this_contained_item_instance_pool_id, _noninstance_label)
 
     if this_selected_item_is_superitem then
-      this_child_pool_descendant_pool_ids_key = _pool_key_prefix .. this_contained_item_instance_pool_id .. _descendant_pool_ids_key_suffix
-      retval, this_child_pool_descendant_pool_ids = storeRetrieveProjectData(this_child_pool_descendant_pool_ids_key)
+      this_child_pool_descendant_pool_ids = storeRetrievePoolData(this_contained_item_instance_pool_id, _descendant_pool_ids_key_suffix)
 
       table.insert(this_pool_descendants, this_contained_item_instance_pool_id)
 
@@ -1976,10 +1981,9 @@ function handleDescendantPoolReferences(pool_id, contained_items_pool_params)
   end
 
   this_pool_descendants = deduplicateTable(this_pool_descendants)
-  descendant_pool_ids_key = _pool_key_prefix .. pool_id .. _descendant_pool_ids_key_suffix
   this_pool_descendants_string = serpent.dump(this_pool_descendants)
 
-  storeRetrieveProjectData(descendant_pool_ids_key, this_pool_descendants_string)
+  storeRetrievePoolData(pool_id, _descendant_pool_ids_key_suffix, this_pool_descendants_string)
 end
 
 
@@ -2531,7 +2535,7 @@ end
 
 
 function checkParentPoolIsAncestorInProject(this_parent_pool_id)
-  local all_pool_ids_in_project, this_pool, this_pool_descendant_pool_ids_key, retval, this_pool_descendant_pool_ids, j
+  local all_pool_ids_in_project, this_pool, this_pool_descendant_pool_ids, retval, j
 
   all_pool_ids_in_project = getAllPoolIdsInProject()
 
@@ -2542,8 +2546,7 @@ function checkParentPoolIsAncestorInProject(this_parent_pool_id)
       return true
     end
 
-    this_pool_descendant_pool_ids_key = _pool_key_prefix .. this_pool .. _descendant_pool_ids_key_suffix
-    retval, this_pool_descendant_pool_ids = storeRetrieveProjectData(this_pool_descendant_pool_ids_key)
+    this_pool_descendant_pool_ids = storeRetrievePoolData(this_pool, _descendant_pool_ids_key_suffix)
     retval, this_pool_descendant_pool_ids = serpent.load(this_pool_descendant_pool_ids)
 
     for j = 1, #this_pool_descendant_pool_ids do
@@ -2581,9 +2584,7 @@ end
 
 
 function deletePoolDescendantsData(pool_id)
-  local this_parent_pool_descendant_pool_ids_key = _pool_key_prefix .. pool_id .. _descendant_pool_ids_key_suffix
-
-  storeRetrieveProjectData(this_parent_pool_descendant_pool_ids_key, "")
+  storeRetrievePoolData(pool_id, _descendant_pool_ids_key_suffix, "")
 end
 
 
@@ -2635,7 +2636,7 @@ end
 
 
 function getStoredItemStatesTable(pool_id, action)
-  local this_is_unglue, this_is_depool, retval, stored_item_states_table, pool_item_states_key_label, stored_item_states
+  local this_is_unglue, this_is_depool, retval, stored_item_states_table, stored_item_states
 
   this_is_unglue = action == "Unglue"
   this_is_depool = action == "DePool"
@@ -2644,8 +2645,7 @@ function getStoredItemStatesTable(pool_id, action)
     retval, stored_item_states_table = serpent.load(_preglue_restored_item_states)
 
   else
-    pool_item_states_key_label = _pool_key_prefix .. pool_id .. _pool_contained_item_states_key_suffix
-    retval, stored_item_states = storeRetrieveProjectData(pool_item_states_key_label)
+    stored_item_states = storeRetrievePoolData(pool_id, _pool_contained_item_states_key_suffix)
     stored_item_states_table = retrieveStoredItemStates(stored_item_states)
   end
 
@@ -2664,12 +2664,8 @@ end
 
 
 function defineStoredItemsParams(pool_id)
-  local first_item_offset_to_superitem_position_key_label, freshly_depooled_superitem_key_label, retval
-
-  first_item_offset_to_superitem_position_key_label = _pool_key_prefix .. pool_id .. _first_item_offset_to_superitem_position_key_suffix
-  freshly_depooled_superitem_key_label = _pool_key_prefix .. pool_id .. _freshly_depooled_superitem_flag
-  retval, _first_restored_item_last_glue_delta_to_parent = storeRetrieveProjectData(first_item_offset_to_superitem_position_key_label)
-  retval, _this_depooled_superitem_has_not_been_edited = storeRetrieveProjectData(freshly_depooled_superitem_key_label)
+  _first_restored_item_last_glue_delta_to_parent = storeRetrievePoolData(pool_id, _first_item_offset_to_superitem_position_key_suffix)
+  _this_depooled_superitem_has_not_been_edited = storeRetrievePoolData(pool_id, _freshly_depooled_superitem_flag)
 
   if not _edited_pool_post_glue_params then
     _edited_pool_post_glue_params = storeRetrieveSuperitemParams(pool_id, _postglue_action_step)
@@ -2829,9 +2825,9 @@ function getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, res
   superitem_active_take = reaper.GetActiveTake(superitem)
   superitem_source = reaper.GetMediaItemTake_Source(superitem_active_take)
   superitem_source_length = reaper.GetMediaSourceLength(superitem_source)
-  superitem_loop_starts_in_later_half = _edited_pool_preedit_params.source_offset > (superitem_source_length / 2)
 
   if action == "Edit" or action == "Unglue" then
+    superitem_loop_starts_in_later_half = _edited_pool_preedit_params.source_offset > (superitem_source_length / 2)
 
     if _this_depooled_superitem_has_not_been_edited == "true" then
       this_item_position_delta_to_last_glue_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset + _first_restored_item_last_glue_delta_to_parent
@@ -3632,7 +3628,7 @@ end
 
 
 function processEditOrUnglue(superitem, pool_id, action)
-  local superitem_preedit_params, active_track, superitem_preglue_state_key_suffix, superitem_state, restored_items, sizing_region_guid
+  local superitem_preedit_params, active_track, superitem_state, restored_items, sizing_region_guid
 
   superitem_preedit_params = getSetItemParams(superitem)
 
@@ -3641,10 +3637,9 @@ function processEditOrUnglue(superitem, pool_id, action)
   active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superitem_preedit_params.track_guid)
 
   if action == "Edit" then
-    superitem_preglue_state_key_suffix = _pool_key_prefix .. pool_id .. _superitem_preglue_state_suffix
     superitem_state = getSetItemStateChunk(superitem)
 
-    storeRetrieveProjectData(superitem_preglue_state_key_suffix, superitem_state)
+    storeRetrievePoolData(pool_id, _superitem_preglue_state_suffix, superitem_state)
   end
 
   restored_items, looped_source_sets_sizing_region_enabled, superitem_loop_is_enabled = restoreStoredItems(pool_id, active_track, superitem, nil, action)
@@ -3802,12 +3797,11 @@ end
 
 
 function processDePool(target_item, target_item_params, this_is_user_initiated_depool)
-  local this_is_sibling_depool, target_item_instance_pool_id, first_item_offset_to_superitem_position_key_label, retval
+  local this_is_sibling_depool, target_item_instance_pool_id
 
   this_is_sibling_depool = not this_is_user_initiated_depool
   target_item_instance_pool_id = storeRetrieveItemData(target_item, _instance_pool_id_key_suffix)
-  first_item_offset_to_superitem_position_key_label = _pool_key_prefix .. target_item_instance_pool_id .. _first_item_offset_to_superitem_position_key_suffix
-  retval, _first_restored_item_last_glue_delta_to_parent = storeRetrieveProjectData(first_item_offset_to_superitem_position_key_label)
+  _first_restored_item_last_glue_delta_to_parent = storeRetrievePoolData(target_item_instance_pool_id, _first_item_offset_to_superitem_position_key_suffix)
 
   if this_is_user_initiated_depool then
     return processUserInitiatedDePool(target_item, target_item_params)
@@ -3848,18 +3842,15 @@ end
 
 
 function handleDePoolPostGlue(superitem, target_item_state, target_item_params)
-  local superitem_active_take, active_take_name, updated_src, new_pool_id, first_item_offset_to_superitem_position_key_label, freshly_depooled_superitem_key_label, superitem_superglue_active_take_key
+  local superitem_active_take, active_take_name, updated_src, new_pool_id
 
   superitem_active_take = reaper.GetActiveTake(superitem)
   active_take_name = getSetItemName(superitem)
   updated_src = getSetWipeItemAudioSrc(superitem)
   new_pool_id = storeRetrieveItemData(superitem, _instance_pool_id_key_suffix)
-  first_item_offset_to_superitem_position_key_label = _pool_key_prefix .. new_pool_id .. _first_item_offset_to_superitem_position_key_suffix
-  freshly_depooled_superitem_key_label = _pool_key_prefix .. new_pool_id .. _freshly_depooled_superitem_flag
-  superitem_superglue_active_take_key = _api_data_key .. _global_script_prefix .. _pool_key_prefix .. new_pool_id .. _superglue_active_take_key_suffix
 
-  storeRetrieveProjectData(first_item_offset_to_superitem_position_key_label, _first_restored_item_last_glue_delta_to_parent)
-  storeRetrieveProjectData(freshly_depooled_superitem_key_label, "true")
+  storeRetrievePoolData(new_pool_id, _first_item_offset_to_superitem_position_key_suffix, _first_restored_item_last_glue_delta_to_parent)
+  storeRetrievePoolData(new_pool_id, _freshly_depooled_superitem_flag, "true")
   getSetItemStateChunk(superitem, target_item_state)
   getSetItemName(superitem, active_take_name)
   storeRetrieveItemData(superitem, _instance_pool_id_key_suffix, new_pool_id)
