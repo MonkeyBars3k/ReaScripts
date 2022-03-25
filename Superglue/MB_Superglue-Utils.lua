@@ -1,7 +1,7 @@
 -- @description MB_Superglue-Utils: Codebase for MB_Superglue scripts' functionality
 -- @author MonkeyBars
--- @version 1.824
--- @changelog Create function storeRetrievePoolData() (https://github.com/MonkeyBars3k/ReaScripts/issues/280)
+-- @version 1.825
+-- @changelog DePool Edit restores items at wrong position (cont.) (https://github.com/MonkeyBars3k/ReaScripts/issues/279)
 -- @provides [nomain] .
 --   serpent.lua
 --   rtk.lua
@@ -2830,7 +2830,7 @@ function getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, res
     superitem_loop_starts_in_later_half = _edited_pool_preedit_params.source_offset > (superitem_source_length / 2)
 
     if _this_depooled_superitem_has_not_been_edited == "true" then
-      this_item_position_delta_to_last_glue_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset + _first_restored_item_last_glue_delta_to_parent
+      this_item_position_delta_to_last_glue_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset
     
     else
       this_item_position_delta_to_last_glue_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset + _edited_pool_post_glue_params.source_offset
