@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="7e1dbffb49eb5ab3676402f4f9e4321af96d6818">
+<index version="1" name="MonkeyBars-ReaScripts" commit="f03023b6e340760b2d62bf9bb2a359fc356acb6e">
   <category name="Superglue">
-    <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue. Use MB_Superglue Glue to save changes &amp; propagate to Sibling items in same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
+    <reapack name="MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua" type="script" desc="MB_Superglue - Edit selected Superitem reversibly">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -12,9 +12,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.765" author="MonkeyBars" time="2022-03-18T22:13:18Z">
+      <version name="1.765" author="MonkeyBars" time="2022-03-24T04:27:20Z">
         <changelog><![CDATA[Change function name]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/e229eda635afd23f1686d753f35af040c41796b1/Superglue/MB_Superglue%20-%20Edit%20-%20Reveal%20contained%20item(s)%20from%20selected%20Superitem%20previously%20glued%20by%20Superglue.%20Use%20MB_Superglue%20Glue%20to%20save%20changes%20&amp;%20propagate%20to%20Sibling%20items%20in%20same%20Pool.lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/6356a1876572ac340db5c5bdcbf25581102f5722/Superglue/MB_Superglue%20-%20Edit%20-%20Reveal%20contained%20item(s)%20from%20selected%20Superitem%20previously%20glued%20by%20Superglue,%20retaining%20ability%20to%20Glue%20back%20to%20same%20Pool.lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Glue - Nondestructively glue selected item(s) into Superitem. Use 'Edit' later to reveal contained items &amp; make changes.lua" type="script" desc="MB_Superglue - Glue selected item(s) reversibly into pooled container item, ignoring time selection">
@@ -97,7 +97,7 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/9b6d69907225230a59492223154a4bfb50212efa/Superglue/MB_Superglue%20-%20Options%20-%20Glue%20-%20Auto-increase%20channel%20count%20with%20take%20FX%20(On-Off).lua</source>
       </version>
     </reapack>
-    <reapack name="MB_Superglue - Options - Glue - Time selection (not sizing region) determines Superitem edges (On-Off).lua" type="script" desc="MB_Superglue - Time selection determines Superitem edges">
+    <reapack name="MB_Superglue - Options - Glue - Time selection (not sizing region) determines Superitem bounds (On-Off).lua" type="script" desc="MB_Superglue - Time selection determines Superitem edges">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -108,9 +108,9 @@
 ]]></description>
         <link rel="website" href="https://forum.cockos.com/showthread.php?t=136273">Forum</link>
       </metadata>
-      <version name="1.787" author="MonkeyBars" time="2022-03-18T18:55:14Z">
+      <version name="1.787" author="MonkeyBars" time="2022-03-24T04:27:20Z">
         <changelog><![CDATA[Name change for functionality change]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/9b6d69907225230a59492223154a4bfb50212efa/Superglue/MB_Superglue%20-%20Options%20-%20Glue%20-%20Time%20selection%20(not%20sizing%20region)%20determines%20Superitem%20edges%20(On-Off).lua</source>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/6356a1876572ac340db5c5bdcbf25581102f5722/Superglue/MB_Superglue%20-%20Options%20-%20Glue%20-%20Time%20selection%20(not%20sizing%20region)%20determines%20Superitem%20bounds%20(On-Off).lua</source>
       </version>
     </reapack>
     <reapack name="MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Absolute-Ask-Relative).lua" type="script" desc="MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Absolute/Ask/Relative)">
@@ -1120,6 +1120,30 @@
         <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/rtk.lua</source>
         <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/sg-bg-restored.png</source>
         <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/7e1dbffb49eb5ab3676402f4f9e4321af96d6818/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.821" author="MonkeyBars" time="2022-03-22T15:14:29Z">
+        <changelog><![CDATA[Prepend brand + Pool ID string to Superitem glued source files (https://github.com/MonkeyBars3k/ReaScripts/issues/271)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/01ee133f9067a25066a6daa65abcc9aefed8bc6d/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/01ee133f9067a25066a6daa65abcc9aefed8bc6d/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/01ee133f9067a25066a6daa65abcc9aefed8bc6d/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/01ee133f9067a25066a6daa65abcc9aefed8bc6d/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/01ee133f9067a25066a6daa65abcc9aefed8bc6d/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.822" author="MonkeyBars" time="2022-03-24T04:27:20Z">
+        <changelog><![CDATA[Remove sizing region warning & replace time seleciton if TS bounds option enabled (https://github.com/MonkeyBars3k/ReaScripts/issues/275)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/6356a1876572ac340db5c5bdcbf25581102f5722/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/6356a1876572ac340db5c5bdcbf25581102f5722/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/6356a1876572ac340db5c5bdcbf25581102f5722/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6356a1876572ac340db5c5bdcbf25581102f5722/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6356a1876572ac340db5c5bdcbf25581102f5722/Superglue/sg-bg-superitem.png</source>
+      </version>
+      <version name="1.823" author="MonkeyBars" time="2022-03-25T06:55:27Z">
+        <changelog><![CDATA[Fixes for last commits; DePool Edit restores items at wrong position (https://github.com/MonkeyBars3k/ReaScripts/issues/279); Remove obsolete internal time selection code (https://github.com/MonkeyBars3k/ReaScripts/issues/281); Reglue offset is intermittently wrong with position change (https://github.com/MonkeyBars3k/ReaScripts/issues/282)]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/MB_Superglue-Utils.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/serpent.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/rtk.lua</source>
+        <source file="sg-bg-restored.png">https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/sg-bg-restored.png</source>
+        <source file="sg-bg-superitem.png">https://github.com/MonkeyBars3k/ReaScripts/raw/f03023b6e340760b2d62bf9bb2a359fc356acb6e/Superglue/sg-bg-superitem.png</source>
       </version>
     </reapack>
     <reapack name="sg-dev-functions.lua" type="script" desc="general dev functions, used for Superglue">
