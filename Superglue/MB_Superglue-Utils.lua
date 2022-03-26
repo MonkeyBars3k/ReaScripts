@@ -2692,22 +2692,27 @@ end
 
 
 function handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
-  local this_restored_item_is_instance, img_type
+  local this_restored_item_is_instance
 
   this_restored_item_is_instance = restored_instance_pool_id and restored_instance_pool_id ~= ""
 
-  if this_restored_item_is_instance then
-    img_type = "restored_instance"
-
-  else
-    img_type = "restored"
-  end
-
   if action == "Unglue" then
-    addRemoveItemImage(restored_item, false)
+
+    if this_restored_item_is_instance then
+      addRemoveItemImage(restored_item, "superitem")
+
+    else
+      addRemoveItemImage(restored_item, false)
+    end
 
   else
-    addRemoveItemImage(restored_item, img_type)
+
+    if this_restored_item_is_instance then
+      addRemoveItemImage(restored_item, "restored_instance")
+
+    else
+      addRemoveItemImage(restored_item, "restored")
+    end
   end
 end
 
