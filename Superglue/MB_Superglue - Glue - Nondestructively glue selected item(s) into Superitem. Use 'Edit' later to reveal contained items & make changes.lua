@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 1.827
--- @changelog Default img for restored instance backwards diagonal stripes (https://github.com/MonkeyBars3k/ReaScripts/issues/243)
+-- @version 1.828
+-- @changelog Unglue error
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua

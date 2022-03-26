@@ -2820,13 +2820,13 @@ function getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, res
   superitem_source_length = reaper.GetMediaSourceLength(superitem_source)
 
   if action == "Edit" or action == "Unglue" then
-    superitem_loop_starts_in_later_half = _edited_pool_preedit_params.source_offset > (superitem_source_length / 2)
+    superitem_loop_starts_in_later_half = _unglued_pool_preunglue_params.source_offset > (superitem_source_length / 2)
 
     if _this_depooled_superitem_has_not_been_edited == "true" then
-      this_item_position_delta_to_last_glue_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset
+      this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _edited_pool_post_glue_params.position - _unglued_pool_preunglue_params.source_offset
     
     else
-      this_item_position_delta_to_last_glue_superitem_instance = _edited_pool_preedit_params.position - _edited_pool_post_glue_params.position - _edited_pool_preedit_params.source_offset + _edited_pool_post_glue_params.source_offset
+      this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _edited_pool_post_glue_params.position - _unglued_pool_preunglue_params.source_offset + _edited_pool_post_glue_params.source_offset
     end
 
     if looped_source_sets_sizing_region_enabled == "true" and superitem_loop_is_enabled and superitem_loop_starts_in_later_half then
