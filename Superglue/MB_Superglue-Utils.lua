@@ -641,6 +641,7 @@ function initSuperglue()
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or
     superitemSelectionIsInvalid(selected_item_count, "Glue") == true or
     pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track) == true then
+
       return
   end
 
@@ -717,6 +718,7 @@ function renderPathIsValid()
     return false
 
   else
+
     return true
   end
 end
@@ -731,9 +733,11 @@ function itemsAreSelected(selected_item_count)
   local no_items_are_selected = selected_item_count < 1
 
   if not selected_item_count or no_items_are_selected then 
+
     return false
 
   else
+
     return true
   end
 end
@@ -770,9 +774,11 @@ function checkItemsOffscreen(item_count, action)
         items_offscreen_response = reaper.ShowMessageBox("Select OK to continue with the items selected or Cancel to abort.", offscreen_msg_text, _msg_type_ok_cancel)
 
         if items_offscreen_response == _msg_response_ok then
+
           return false
 
         else
+
           return true
         end
 
@@ -851,6 +857,7 @@ function getFirstPoolIdFromSelectedItems(selected_item_count)
     this_item_has_stored_pool_id = this_item_pool_id and this_item_pool_id ~= ""
 
     if this_item_has_stored_pool_id then
+
       return this_item_pool_id
     end
   end
@@ -942,6 +949,7 @@ function itemsOnMultipleTracksAreSelected(selected_item_count)
 
   if items_on_multiple_tracks_are_selected == true then 
       reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " only works on items on a single track.", _msg_type_ok)
+
       return true
   end
 end
@@ -958,6 +966,7 @@ function detectSelectedItemsOnMultipleTracks(selected_item_count)
     item_is_on_different_track_than_previous = this_item_track and prev_item_track and this_item_track ~= prev_item_track
   
     if item_is_on_different_track_than_previous == true then
+
       return item_is_on_different_track_than_previous
     end
     
@@ -3724,12 +3733,15 @@ function getSmartAction(selected_item_count)
   single_child_instance_is_selected = child_instances_count == 1
 
   if single_parent_instance_is_selected and no_nonsuperitems_are_selected and no_child_instances_are_selected then
+
     return "edit_or_unglue"
   
   elseif parent_instances_are_selected and single_child_instance_is_selected then
+
     return "glue/abort"
   
   elseif (multiple_parent_instances_are_selected and no_nonsuperitems_are_selected and no_child_instances_are_selected) or (nonsuperitems_are_selected and no_child_instances_are_selected) or (no_parent_instances_are_selected and single_child_instance_is_selected) then
+
     return "glue"
   end
 end
@@ -3759,6 +3771,7 @@ function triggerAction(selected_item_count, edit_or_unglue)
     end
 
   else
+
     return false
   end
 end
@@ -3802,9 +3815,11 @@ function processDePool(target_item, target_item_params, this_is_user_initiated_d
   _first_restored_item_last_glue_delta_to_parent = storeRetrievePoolData(target_item_instance_pool_id, _first_item_offset_to_superitem_position_key_suffix)
 
   if this_is_user_initiated_depool then
+
     return processUserInitiatedDePool(target_item, target_item_params)
 
   elseif this_is_sibling_depool then
+    
     return processSiblingDePool(target_item, target_item_params)
   end
 end
