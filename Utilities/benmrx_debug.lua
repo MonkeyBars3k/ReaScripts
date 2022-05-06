@@ -1,7 +1,4 @@
--- @description Debug for ReaScript
--- @author BenMRX
--- @version 1.0
--- @changelog initial upload
+-- @noindex
 
 -- https://forum.cockos.com/showthread.php?t=254149
 --

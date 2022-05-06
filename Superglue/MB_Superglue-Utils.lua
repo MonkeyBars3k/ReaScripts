@@ -333,7 +333,7 @@ function openOptionsWindow()
   option_form_buttons:add(option_form_cancel)
   options_window_content:add(options_window_title)
 
-  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content,option_form_submit)
+  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content, option_form_submit)
   option_form_submit.onclick = function()
     submitOptionChanges(all_option_controls, options_window)
   end

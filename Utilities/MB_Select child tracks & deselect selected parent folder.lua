@@ -1,10 +1,13 @@
--- @description Select child tracks & deselect selected parent folder
--- @author MonkeyBars
--- @version 1.0
--- @changelog Initial commit
--- @provides .
+-- @noindex
+
+
+-- to do:
+-- add checks for more track nesting
+-- check for no tracks selected
 
 local i, this_selected_track, j, this_track, this_parent_track
+
+reaper.Undo_BeginBlock()
 
 for i = 0, reaper.CountSelectedTracks(0)-1 do
   this_selected_track = reaper.GetSelectedTrack(0, i)
@@ -20,3 +23,5 @@ for i = 0, reaper.CountSelectedTracks(0)-1 do
   
   reaper.SetTrackSelected(this_selected_track, false)
 end
+
+reaper.Undo_EndBlock("MB_Select child tracks & deselect selected parent folder", -1)
