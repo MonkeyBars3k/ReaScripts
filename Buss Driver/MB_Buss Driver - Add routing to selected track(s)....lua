@@ -13,6 +13,9 @@
 -- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+-- to do:
+-- removal
+-- add most send settings
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
@@ -64,40 +67,26 @@ end
 
 
 function getUnselectedTracks(routing_option_form_submit)
-  local all_tracks_count, i, this_track, routing_option_target_tracks_box
+  local all_tracks_count, routing_option_target_tracks_box, i, this_track
 
   all_tracks_count = reaper.CountTracks(0)
+  routing_option_target_tracks_box = rtk.FlowBox{w = 1, ref = "routing_option_target_tracks_box"}
 
   for i = 0, all_tracks_count-1 do
     this_track = reaper.GetTrack(0, i)
-
-    routing_option_target_tracks_box = populateTargetTracksList(routing_option_form_submit, this_track, routing_option_target_tracks_box)
+    routing_option_target_tracks_box = populateTargetTrack(routing_option_form_submit, this_track, routing_option_target_tracks_box)
   end
 
   return routing_option_target_tracks_box
 end
 
 
-function populateTargetTracksList(routing_option_form_submit, this_track, routing_option_target_tracks_box)
-  local selected_tracks, routing_option_target_tracks_box, this_track_is_selected, i, this_selected_track, this_track_num, retval, this_track_name, this_track_checkbox
+function populateTargetTrack(routing_option_form_submit, this_track, routing_option_target_tracks_box)
+  local this_track_is_selected, this_track_num, retval, this_track_name, this_track_checkbox
 
-  selected_tracks = getSelectedTracks()
-  routing_option_target_tracks_box = rtk.FlowBox{w = 1, ref = "routing_option_target_tracks_box"}
-  this_track_is_selected = false
+  this_track_is_selected = reaper.GetMediaTrackInfo_Value(this_track, "I_SELECTED")
 
--- REFACTOR THIS!!
--- THIS LOOP IS UNNCESSARY. JUST GET "I_SELECTED" TRACK INFO VALUE
-  for i = 0, #selected_tracks-1 do
-    this_selected_track = reaper.GetSelectedTrack(0, i)
-
-    if this_track == this_selected_track then
-      this_track_is_selected = true
-
-      break
-    end
-  end
-
-  if this_track_is_selected == false then
+  if this_track_is_selected == 0 then
     this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
     retval, this_track_name = reaper.GetSetMediaTrackInfo_String(this_track, "P_NAME", "", 0)
     this_track_checkbox = rtk.CheckBox{this_track_num .. " " .. this_track_name, margin = "2 0", fontsize = 14, ref = "target_track_" .. this_track_num}
@@ -109,6 +98,98 @@ function populateTargetTracksList(routing_option_form_submit, this_track, routin
   end
 
   return routing_option_target_tracks_box
+end
+
+
+function activateSubmitButton(submit_button)
+  submit_button:attr("disabled", false)
+end
+
+
+function defineRoutingOptionsMethods(routing_options_objs)
+  routing_options_objs.type_dropdown.onchange = function(self)
+    updateRoutingTypeText(self, routing_options_objs.target_tracks_subheading)
+  end
+  
+  routing_options_objs.form_cancel.onclick = function() 
+    routing_options_objs.window:close()
+  end
+
+  routing_options_objs.form_submit.onclick = function()
+    submitRoutingOptionChanges(routing_options_objs.form_fields, routing_options_objs.window)
+  end
+
+  return routing_options_objs
+end
+
+
+function updateRoutingTypeText(dropdown, subheading)
+  local default_routing_msg, routing_type_text
+
+  default_routing_msg = "Which track(s) do you want to "
+
+  if dropdown.selected_id == "send" then
+    routing_type_text = "send to?"
+
+  elseif dropdown.selected_id == "receive" then
+    routing_type_text = "receive from?"
+  end
+
+  subheading:attr("text", default_routing_msg .. routing_type_text)
+end
+
+
+function submitRoutingOptionChanges(routing_options_form_fields, routing_options_window)
+  local routing_option_target_tracks_box, routing_option_target_tracks_choice
+
+  routing_option_target_tracks_box = routing_options_form_fields.refs.routing_option_target_tracks_box
+  routing_option_target_tracks_choices = getTargetTracksChoices(routing_option_target_tracks_box)
+  
+  createRouting(routing_options_form_fields, routing_option_target_tracks_choices)
+  reaper.Undo_BeginBlock()
+  routing_options_window:close()
+  reaper.Undo_EndBlock("MB_Buss Driver", -1)
+end
+
+
+function getTargetTracksChoices(routing_option_target_tracks_box)
+  local routing_option_target_tracks_choices, i, this_track_checkbox, this_track_idx
+
+  routing_option_target_tracks_choices = {}
+
+  for i = 1, #routing_option_target_tracks_box.children do
+    this_track_checkbox = routing_option_target_tracks_box:get_child(i)
+
+    if this_track_checkbox.value then
+      this_track_idx = string.match(this_track_checkbox.ref, "%d+$")
+      table.insert(routing_option_target_tracks_choices, this_track_idx)
+    end
+  end
+
+  return routing_option_target_tracks_choices
+end
+
+
+function createRouting(routing_options_form_fields, routing_option_target_tracks_choices)
+  local selected_tracks, routing_option_type_choices, i, this_selected_track, j, this_target_track
+
+  selected_tracks = getSelectedTracks()
+  routing_option_type_choice = routing_options_form_fields.refs.routing_option_type.selected_id
+
+  for i = 0, #selected_tracks-1 do
+    this_selected_track = reaper.GetSelectedTrack(0, i)
+
+    for j = 1, #routing_option_target_tracks_choices do
+      this_target_track = reaper.GetTrack(0, routing_option_target_tracks_choices[j]-1)
+
+      if routing_option_type_choice == "send" then
+        reaper.CreateTrackSend(this_selected_track, this_target_track)
+
+      elseif routing_option_type_choice == "receive" then
+        reaper.CreateTrackSend(this_target_track, this_selected_track)
+      end
+    end
+  end
 end
 
 
@@ -124,77 +205,6 @@ function getSelectedTracks()
   end
 
   return selected_tracks
-end
-
-
-function activateSubmitButton(submit_button)
-  submit_button:attr("disabled", false)
-end
-
-
-function defineRoutingOptionsMethods(routing_options_objs)
-  routing_options_objs.type_dropdown.onchange = function(self)
-    local default_routing_msg, routing_type_text
-
-    default_routing_msg = "Which track(s) do you want to "
-
-    if self.selected_id == "send" then
-      routing_type_text = "send to?"
-
-    elseif self.selected_id == "receive" then
-      routing_type_text = "receive from?"
-    end
-
-    routing_options_objs.target_tracks_subheading:attr("text", default_routing_msg .. routing_type_text)
-  end
- 
-  routing_options_objs.form_cancel.onclick = function() 
-    routing_options_objs.window:close()
-  end
-
-  routing_options_objs.form_submit.onclick = function()
-    submitRoutingOptionChanges(routing_options_objs.form_fields, routing_options_objs.window)
-  end
-
-  return routing_options_objs
-end
-
-
-function submitRoutingOptionChanges(routing_options_form_fields, routing_options_window)
-  local routing_option_type_choice, routing_option_target_tracks_box, routing_option_target_tracks_choice, selected_tracks, i, this_track_checkbox, this_track_idx, this_selected_track, j, this_target_track
-
-  routing_option_type_choice = routing_options_form_fields.refs.routing_option_type.selected_id
-  routing_option_target_tracks_box = routing_options_form_fields.refs.routing_option_target_tracks_box
-  routing_option_target_tracks_choice = {}
-  selected_tracks = getSelectedTracks()
-
-  for i = 1, #routing_option_target_tracks_box.children do
-    this_track_checkbox = routing_option_target_tracks_box:get_child(i)
-
-    if this_track_checkbox.value then
-      this_track_idx = string.match(this_track_checkbox.ref, "%d+$")
-      table.insert(routing_option_target_tracks_choice, this_track_idx)
-    end
-  end
-
-  for i = 0, #selected_tracks-1 do
-    this_selected_track = reaper.GetSelectedTrack(0, i)
-
-    for j = 1, #routing_option_target_tracks_choice do
-      this_target_track = reaper.GetTrack(0, routing_option_target_tracks_choice[j]-1)
-
-      if routing_option_type_choice == "send" then
-        reaper.CreateTrackSend(this_selected_track, this_target_track)
-
-      elseif routing_option_type_choice == "receive" then
-        reaper.CreateTrackSend(this_target_track, this_selected_track)
-      end
-    end
-  end
-
-  reaper.Undo_BeginBlock()
-  routing_options_window:close()
-  reaper.Undo_EndBlock("MB_Buss Driver", -1)
 end
 
 
