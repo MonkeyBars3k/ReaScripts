@@ -1,4 +1,4 @@
--- @description MB_Buss Driver - Add routing to selected track(s)...
+-- @description MB_Buss Driver - Add or remove routing to selected track(s)
 -- @author MonkeyBars
 -- @version 1.0
 -- @changelog Initial upload
@@ -6,7 +6,7 @@
 --   [nomain] rtk.lua
 --   gnu_license_v3.txt
 -- @link 
--- @about Allows setting multiple sends or receives to multiple tracks in one go
+-- @about Add/remove and set multiple sends or receives to multiple tracks in one go
 
 -- Copyright (C) MonkeyBars 2022
 -- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your routing_option) any later version.
@@ -15,12 +15,14 @@
 
 -- to do:
 -- removal
--- add most send settings
+-- add all send settings via dummy send popup
+-- save last settings in extstate (checkbox to enable)
+-- reset settings button
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
--- require("mb-dev-functions")
+require("mb-dev-functions")
 
 
 local rtk = require('rtk')
@@ -54,7 +56,7 @@ function getRoutingOptionsObjects()
   routing_options_objs.content = rtk.VBox{halign = "center", padding = "27 0 7"}
   routing_options_objs.title =  rtk.Heading{"Buss Driver", w = 1, halign = "center", bmargin = 25}
   routing_options_objs.type_subheading = rtk.Text{"What kind of routing do you want to add to the selected track(s)?"}
-  routing_options_objs.type_dropdown = rtk.OptionMenu{menu = {{"send(s)", id = "send"}, {"receive(s)", id = "receive"}}, fontsize = 16, ref = "routing_option_type"}
+  routing_options_objs.type_dropdown = rtk.OptionMenu{menu = {{"send(s)", id = "send"}, {"receive(s)", id = "receive"}}, fontsize = 15, ref = "routing_option_type"}
   routing_options_objs.target_tracks_subheading = rtk.Text{"Which track(s) do you want to send to?", tmargin = 20}
   routing_options_objs.form_fields = rtk.VBox{margin = 10, spacing = 10}
   routing_options_objs.form_buttons = rtk.HBox{margin = 10, spacing = 10}
@@ -82,14 +84,21 @@ end
 
 
 function populateTargetTrack(routing_option_form_submit, this_track, routing_option_target_tracks_box)
-  local this_track_is_selected, this_track_num, retval, this_track_name, this_track_checkbox
+  local this_track_is_selected, this_track_num, retval, this_track_name, this_track_color, this_track_checkbox
 
   this_track_is_selected = reaper.GetMediaTrackInfo_Value(this_track, "I_SELECTED")
 
   if this_track_is_selected == 0 then
     this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
     retval, this_track_name = reaper.GetSetMediaTrackInfo_String(this_track, "P_NAME", "", 0)
-    this_track_checkbox = rtk.CheckBox{this_track_num .. " " .. this_track_name, margin = "2 0", fontsize = 14, ref = "target_track_" .. this_track_num}
+    this_track_color = reaper.GetTrackColor(this_track)
+    this_track_checkbox = rtk.CheckBox{this_track_num .. " " .. this_track_name, margin = "2 0", fontsize = 14, margin = "2 5 2 2", padding = "1 1 1 2", spacing = 5, valign = "center", ref = "target_track_" .. this_track_num, wrap = true}
+
+    if this_track_color ~= 0 then
+      this_track_color = rtk.color.convert_native(this_track_color)
+      this_track_checkbox:attr("bg", this_track_color)
+    end
+
     this_track_checkbox.onchange = function()
       activateSubmitButton(routing_option_form_submit)
     end
@@ -226,10 +235,10 @@ function populateRoutingOptionsWindow(routing_options_objs)
 end
 
 
-function initAddRouting()
+function initBussDriver()
   if selected_tracks_count > 0 then
     launchDialog()
   end
 end
 
-initAddRouting()
+initBussDriver()
