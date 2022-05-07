@@ -1,4 +1,11 @@
--- @noindex
+-- @description MB_Utilities: Various utility scripts for Reaper
+-- @author MonkeyBars
+-- @version 1.1
+-- @changelog Add undo blocks; organize metapackage
+-- @provides [main] .
+--   [main] MB_Deselect child tracks & select their parent folder.lua
+--   gnu_license_v3.txt
+-- @link 
 
 
 -- to do:
