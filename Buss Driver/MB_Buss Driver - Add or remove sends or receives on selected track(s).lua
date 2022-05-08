@@ -14,8 +14,6 @@
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 -- to do:
--- removal
--- target tracks icons
 -- add all send settings via dummy send popup
 -- save last settings in extstate (checkbox to enable)
 -- reset settings button
@@ -87,11 +85,14 @@ end
 
 
 function populateTargetTrackField(routing_option_form_submit, this_track, routing_option_target_tracks_box)
-  local this_track_is_selected, this_track_num, retval, this_track_name, this_track_color, this_track_checkbox
+  local this_track_is_selected, this_track_line, retval, this_track_icon_path, this_track_icon, this_track_num, retval, this_track_name, this_track_color, this_track_checkbox
 
   this_track_is_selected = reaper.IsTrackSelected(this_track)
 
   if this_track_is_selected == false then
+    this_track_line = rtk.HBox{}
+    retval, this_track_icon_path = reaper.GetSetMediaTrackInfo_String(this_track, "P_ICON", "", false)
+    this_track_icon = rtk.ImageBox{rtk.Image():load(this_track_icon_path), w = 18}
     this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
     retval, this_track_name = reaper.GetSetMediaTrackInfo_String(this_track, "P_NAME", "", 0)
     this_track_color = reaper.GetTrackColor(this_track)
@@ -106,7 +107,9 @@ function populateTargetTrackField(routing_option_form_submit, this_track, routin
       activateSubmitButton(routing_option_form_submit)
     end
 
-    routing_option_target_tracks_box:add(this_track_checkbox)
+    this_track_line:add(this_track_icon)
+    this_track_line:add(this_track_checkbox)
+    routing_option_target_tracks_box:add(this_track_line)
   end
 
   return routing_option_target_tracks_box
