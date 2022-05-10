@@ -1,3 +1,5 @@
+-- @noindex
+
 -- 
 -- WARNING: DEV BUILD!  Use for testing only!
 -- 

@@ -19,10 +19,6 @@
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
 -- TO DO:
--- add all send settings via dummy send popup
-  -- add/remove dummy target track
-  -- hide dummy tracks
--- change top wording to single sentence, adjust dynamic text accordingly
 -- check for track number change before submit & pop up Yes/No if changed
 -- save last settings in extstate (checkbox to enable)
   -- reset settings button
@@ -120,7 +116,6 @@ function launchBussDriverDialog()
 
 
 
-
 end
 
 
@@ -130,10 +125,12 @@ function getRoutingOptionsObjects()
     ["viewport"] = rtk.Viewport{halign = "center", padding = "0 25"},
     ["content"] = rtk.VBox{halign = "center", padding = "27 0 7"},
     ["title"] = rtk.Heading{"Buss Driver", w = 1, halign = "center", bmargin = 25},
-    ["addremove_subheading"] = rtk.Text{"Do you want to add to or remove routing from the selected tracks?", fontscale = 0.9},
-    ["addremove_dropdown"] = rtk.OptionMenu{menu = {{"add +", id = "add"}, {"remove -", id = "remove"}}, h = 20, tmargin = -5, padding = "1 0 0 5", spacing = 5, fontscale = 0.8, ref = "routing_option_addremove"},
-    ["type_subheading"] = rtk.Text{"What kind of routing do you want to add to the selected tracks?", tmargin = 8, fontscale = 0.9},
+    ["action_sentence_wrapper"] = rtk.Container{w = 1, halign = "center"},
+    ["action_sentence"] = rtk.HBox{margin = "9 0 12"},
+    ["action_text_start"] = rtk.Text{"I want to "},
+    ["addremove_dropdown"] = rtk.OptionMenu{menu = {{"add +", id = "add"}, {"remove -", id = "remove"}}, h = 20, margin = "-5 4 0 0", padding = "1 0 0 5", spacing = 5, fontscale = 0.8, ref = "routing_option_addremove"},
     ["type_dropdown"] = rtk.OptionMenu{menu = {{"sends", id = "send"}, {"receives", id = "receive"}}, h = 20, tmargin = -5, padding = "1 0 0 5", spacing = 5, fontscale = 0.8, ref = "routing_option_type"},
+    ["action_text_end"] = rtk.Text{" to the selected tracks."},
     ["configure_wrapper"] = rtk.Container{w = 1, halign = "center", margin = "10 0 15"},
     ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created"},
     ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want to add sends to?", w = 1, tmargin = 5, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
@@ -209,7 +206,7 @@ function defineRoutingOptionsMethods(routing_options_objs)
   end
 
   routing_options_objs.addremove_dropdown.onchange = function(self)
-    updateRoutingForm(routing_options_objs, "action")
+    updateRoutingForm(routing_options_objs, "is_action_change")
 
     if self.selected_id == "remove" then
       deleteDummyTracks()
@@ -237,7 +234,7 @@ end
 
 
 function deleteDummyTracks()
-  local retval, dummy_track_type, dummy_track_guid, dummy_track, dummy_track_exists
+  local retval, dummy_track, dummy_track_exists
 
   if not _dummy_tracks_GUIDs or _dummy_tracks_GUIDs == "" then
     _dummy_tracks_GUIDs = storeRetrieveProjectData("dummy_tracks_GUIDs")
@@ -268,39 +265,61 @@ function deleteDummyTracks()
 end
 
 
-function updateRoutingForm(routing_options_objs, action)
-  local routing_type_subheading_text_intro, routing_action, routing_type_subheading_text_end, new_routing_type_subheading_text, target_tracks_subheading_text_intro, target_tracks_subheading_routing_action_text, routing_type, target_tracks_subheading_routing_type_text, target_tracks_subheading_text_end, new_target_tracks_subheading_text
+function updateRoutingForm(routing_options_objs, is_action_change)
+  local routing_action, routing_type, target_tracks_subheading_text_intro, target_tracks_subheading_routing_action_text, action_preposition, action_text_end, target_tracks_subheading_routing_type_text, new_target_tracks_subheading_text
 
-  routing_type_subheading_text_intro = "What kind of routing do you want to "
   routing_action = routing_options_objs.addremove_dropdown.selected_id
-  routing_type_subheading_text_end = " on the selected tracks?"
-  new_routing_type_subheading_text = routing_type_subheading_text_intro .. routing_action .. routing_type_subheading_text_end
+  routing_type = routing_options_objs.type_dropdown.selected_id
   target_tracks_subheading_text_intro = "Which track(s) do you want to "
   target_tracks_subheading_routing_action_text = routing_action .. " "
-  routing_type = routing_options_objs.type_dropdown.selected_id
-  target_tracks_subheading_routing_type_text = " " .. routing_type .. "s "
 
-  if routing_type == "send" then
-    target_tracks_subheading_text_end = "to?"
+  if routing_action == "add" then
+    action_preposition = "to"
 
-  elseif routing_type == "receive" then
-    target_tracks_subheading_text_end = "from?"
+  elseif routing_action == "remove" then
+    action_preposition = "from"
   end
 
-  new_target_tracks_subheading_text = target_tracks_subheading_text_intro .. routing_action .. target_tracks_subheading_routing_type_text .. target_tracks_subheading_text_end
-
-  routing_options_objs.type_subheading:attr("text", new_routing_type_subheading_text)
-  routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
+  action_text_end = " " .. action_preposition .. " the selected tracks."
+  target_tracks_subheading_routing_type_text = " " .. routing_type .. "s "
+  new_target_tracks_subheading_text = target_tracks_subheading_text_intro .. routing_action .. target_tracks_subheading_routing_type_text .. action_preposition .. "?"
   routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
 
-  updateButtons(routing_action, routing_options_objs.configure_btn, routing_options_objs.form_submit, action)
+  routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
+  routing_options_objs.action_text_end:attr("text", action_text_end)
+  updateButtons(routing_action, routing_options_objs.configure_btn, routing_options_objs.form_submit, is_action_change)
+
+
+  -- local routing_type_subheading_text_intro, routing_action, routing_type_subheading_text_end, new_routing_type_subheading_text, target_tracks_subheading_text_intro, target_tracks_subheading_routing_action_text, routing_type, target_tracks_subheading_routing_type_text, target_tracks_subheading_text_end, new_target_tracks_subheading_text
+  -- routing_type_subheading_text_intro = "What kind of routing do you want to "
+  -- routing_action = routing_options_objs.addremove_dropdown.selected_id
+  -- routing_type_subheading_text_end = " on the selected tracks?"
+  -- new_routing_type_subheading_text = routing_type_subheading_text_intro .. routing_action .. routing_type_subheading_text_end
+  -- target_tracks_subheading_text_intro = "Which track(s) do you want to "
+  -- target_tracks_subheading_routing_action_text = routing_action .. " "
+  -- routing_type = routing_options_objs.type_dropdown.selected_id
+  -- target_tracks_subheading_routing_type_text = " " .. routing_type .. "s "
+
+  -- if routing_type == "send" then
+  --   target_tracks_subheading_text_end = "to?"
+
+  -- elseif routing_type == "receive" then
+  --   target_tracks_subheading_text_end = "from?"
+  -- end
+
+  -- new_target_tracks_subheading_text = target_tracks_subheading_text_intro .. routing_action .. target_tracks_subheading_routing_type_text .. target_tracks_subheading_text_end
+
+  -- routing_options_objs.type_subheading:attr("text", new_routing_type_subheading_text)
+  -- routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
+  -- routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
+
 end
 
 
-function updateButtons(routing_action, configure_btn, submit_btn, action)
+function updateButtons(routing_action, configure_btn, submit_btn, is_action_change)
   local configure_btn_height, routing_options_submit_btn_text
 
-  if action == "action" then
+  if is_action_change == "is_action_change" then
 
     if routing_action == "add" then
       configure_btn_height = nil
@@ -318,26 +337,27 @@ end
 
 
 function getDummyTracks()
-  local dummy_routing_track, dummy_target_track, dummy_tracks_exist, dummy_tracks, all_tracks_count, this_dummy_track, dummy_track_type, dummy_track, retval, dummy_routing_track_GUID, dummy_target_track_GUID
+  local dummy_tracks, dummy_tracks_exist, all_tracks_count, this_dummy_track, retval, this_dummy_track_GUID
+
+    dummy_tracks = {
+      ["routing"] = 0,
+      ["target"] = 0
+    }
 
   if _dummy_tracks_GUIDs and type(_dummy_tracks_GUIDs) == "table" then
-    dummy_routing_track, dummy_target_track = getDummyTracksFromGUID()
+    dummy_tracks = getDummyTracksFromGUID(dummy_tracks)
 
   else
     _dummy_tracks_GUIDs = storeRetrieveProjectData("dummy_tracks_GUIDs")
 
     if _dummy_tracks_GUIDs and _dummy_tracks_GUIDs ~= "" and type(_dummy_tracks_GUIDs) == "string" then
       retval, _dummy_tracks_GUIDs = serpent.load(_dummy_tracks_GUIDs)
-      dummy_routing_track, dummy_target_track = getDummyTracksFromGUID()
-      dummy_tracks_exist = reaper.ValidatePtr(dummy_routing_track, "MediaTrack*") and reaper.ValidatePtr(dummy_target_track, "MediaTrack*")
+      dummy_tracks = getDummyTracksFromGUID(dummy_tracks)
+      dummy_tracks_exist = reaper.ValidatePtr(dummy_tracks.routing, "MediaTrack*") and reaper.ValidatePtr(dummy_tracks.target, "MediaTrack*")
     end
 
     if not _dummy_tracks_GUIDs or _dummy_tracks_GUIDs == "" or not dummy_tracks_exist then
       _dummy_tracks_GUIDs = {}
-      dummy_tracks = {
-        ["routing"] = 0,
-        ["target"] = 0
-      }
       all_tracks_count = reaper.CountTracks(0)
 
       for dummy_track_type, dummy_track in pairs(dummy_tracks) do
@@ -345,34 +365,30 @@ function getDummyTracks()
 
         dummy_tracks[dummy_track_type] = reaper.GetTrack(0, all_tracks_count)
         this_dummy_track = dummy_tracks[dummy_track_type]
-        retval, dummy_routing_track_GUID = reaper.GetSetMediaTrackInfo_String(this_dummy_track, "GUID", "", false)
-        _dummy_tracks_GUIDs[dummy_track_type] = dummy_routing_track_GUID
+        retval, this_dummy_track_GUID = reaper.GetSetMediaTrackInfo_String(this_dummy_track, "GUID", "", false)
+        _dummy_tracks_GUIDs[dummy_track_type] = this_dummy_track_GUID
 
         reaper.SetMediaTrackInfo_Value(this_dummy_track, "B_SHOWINMIXER", 0)
         reaper.SetMediaTrackInfo_Value(this_dummy_track, "B_SHOWINTCP", 0)
       end
 
-      dummy_routing_track = dummy_tracks.routing
-      dummy_target_track = dummy_tracks.target
       _dummy_tracks_GUIDs = serpent.dump(_dummy_tracks_GUIDs)
 
-      reaper.GetSetMediaTrackInfo_String(dummy_routing_track, "P_NAME", "Enter Buss Driver Routing Settings", true)
-      reaper.GetSetMediaTrackInfo_String(dummy_target_track, "P_NAME", "MB_Buss Driver target track", true)
+      reaper.GetSetMediaTrackInfo_String(dummy_tracks.routing, "P_NAME", "Enter Buss Driver Routing Settings", true)
+      reaper.GetSetMediaTrackInfo_String(dummy_tracks.target, "P_NAME", "MB_Buss Driver target track", true)
       storeRetrieveProjectData("dummy_tracks_GUIDs", _dummy_tracks_GUIDs)
     end
   end
 
-  return dummy_routing_track, dummy_target_track
+  return dummy_tracks
 end
 
 
-function getDummyTracksFromGUID()
-  local dummy_routing_track, dummy_target_track
+function getDummyTracksFromGUID(dummy_tracks)
+  dummy_tracks.routing = reaper.BR_GetMediaTrackByGUID(0, _dummy_tracks_GUIDs.routing)
+  dummy_tracks.track = reaper.BR_GetMediaTrackByGUID(0, _dummy_tracks_GUIDs.target)
 
-  dummy_routing_track = reaper.BR_GetMediaTrackByGUID(0, _dummy_tracks_GUIDs.routing)
-  dummy_target_track = reaper.BR_GetMediaTrackByGUID(0, _dummy_tracks_GUIDs.target)
-
-  return dummy_routing_track, dummy_target_track
+  return dummy_tracks
 end
 
 
@@ -398,27 +414,27 @@ end
 
 
 function launchRoutingSettings(routing_type)
-  local set_1st_selected_track_last_touched, view_routing_for_last_touched_track, dummy_routing_track, dummy_target_track, api_routing_type_val, dummy_routing_track_routing_count, dest_track, src_track
+  local set_1st_selected_track_last_touched, view_routing_for_last_touched_track, dummy_tracks, api_routing_type_val, dummy_target_track_routing_count, dest_track, src_track
 
   set_1st_selected_track_last_touched = 40914
   view_routing_for_last_touched_track = 40293
-  dummy_routing_track, dummy_target_track = getDummyTracks()
-  dummy_routing_track_routing_count = reaper.GetTrackNumSends(dummy_target_track, _api_routing_types[routing_type])
+  dummy_tracks = getDummyTracks()
+  dummy_target_track_routing_count = reaper.GetTrackNumSends(dummy_tracks.target, _api_routing_types[routing_type])
 
   if routing_type == "send" then
-    dest_track = dummy_routing_track
-    src_track = dummy_target_track
+    dest_track = dummy_tracks.routing
+    src_track = dummy_tracks.target
 
   elseif routing_type == "receive" then
-    dest_track = dummy_target_track
-    src_track = dummy_routing_track
+    dest_track = dummy_tracks.target
+    src_track = dummy_tracks.routing
   end
 
-  if dummy_routing_track_routing_count == 0 then
+  if dummy_target_track_routing_count == 0 then
     reaper.CreateTrackSend(dest_track, src_track)
   end
   
-  reaper.SetOnlyTrackSelected(dummy_routing_track)
+  reaper.SetOnlyTrackSelected(dummy_tracks.routing)
   reaper.Main_OnCommand(set_1st_selected_track_last_touched, 0)
   reaper.Main_OnCommand(view_routing_for_last_touched_track, 0)
   preventUndoPoint()
@@ -487,23 +503,23 @@ end
 
 
 function addRouting(routing_option_type_choice, selected_track, target_track)
-  local dummy_routing_track, dummy_routing_track_exists
+  local dummy_tracks, dummy_routing_track_exists
 
-  dummy_routing_track = getDummyTracks()
-  dummy_routing_track_exists = reaper.ValidatePtr(dummy_routing_track, "MediaTrack*")
+  dummy_tracks = getDummyTracks()
+  dummy_routing_track_exists = reaper.ValidatePtr(dummy_tracks.routing, "MediaTrack*")
 
   if routing_option_type_choice == "send" then
     reaper.CreateTrackSend(selected_track, target_track)
     
     if dummy_routing_track_exists then
-      copyRoutingSettings(dummy_routing_track, selected_track, routing_option_type_choice)
+      copyRoutingSettings(dummy_tracks.routing, selected_track, routing_option_type_choice)
     end
 
   elseif routing_option_type_choice == "receive" then
     reaper.CreateTrackSend(target_track, selected_track)
     
     if dummy_routing_track_exists then
-      copyRoutingSettings(dummy_routing_track, target_track, routing_option_type_choice)
+      copyRoutingSettings(dummy_tracks.routing, target_track, routing_option_type_choice)
     end
   end
 end
@@ -566,18 +582,20 @@ end
 function populateRoutingOptionsWindow(routing_options_objs)
   routing_options_objs.addremove_dropdown:attr("selected", 1)
   routing_options_objs.type_dropdown:attr("selected", 1)
-  routing_options_objs.content:add(routing_options_objs.title)
-  routing_options_objs.form_fields:add(routing_options_objs.addremove_subheading)
-  routing_options_objs.form_fields:add(routing_options_objs.addremove_dropdown)
-  routing_options_objs.form_fields:add(routing_options_objs.type_subheading)
-  routing_options_objs.form_fields:add(routing_options_objs.type_dropdown)
+  routing_options_objs.action_sentence:add(routing_options_objs.action_text_start)
+  routing_options_objs.action_sentence:add(routing_options_objs.addremove_dropdown)
+  routing_options_objs.action_sentence:add(routing_options_objs.type_dropdown)
+  routing_options_objs.action_sentence:add(routing_options_objs.action_text_end)
+  routing_options_objs.action_sentence_wrapper:add(routing_options_objs.action_sentence)
+  routing_options_objs.form_fields:add(routing_options_objs.action_sentence_wrapper)
   routing_options_objs.configure_wrapper:add(routing_options_objs.configure_btn)
   routing_options_objs.form_fields:add(routing_options_objs.configure_wrapper)
   routing_options_objs.form_fields:add(routing_options_objs.target_tracks_subheading)
   routing_options_objs.form_fields:add(routing_options_objs.target_tracks_box)
-  routing_options_objs.content:add(routing_options_objs.form_fields)
   routing_options_objs.form_buttons:add(routing_options_objs.form_submit)
   routing_options_objs.form_buttons:add(routing_options_objs.form_cancel)
+  routing_options_objs.content:add(routing_options_objs.title)
+  routing_options_objs.content:add(routing_options_objs.form_fields)
   routing_options_objs.content:add(routing_options_objs.form_buttons)
   routing_options_objs.viewport:attr("child", routing_options_objs.content)
   routing_options_objs.window:add(routing_options_objs.viewport)
@@ -599,15 +617,15 @@ initBussDriver()
 
 
 function wipeDummyRoutingTrackRouting()
-  local dummy_routing_track, dummy_routing_track_routing_count
+  local dummy_tracks, dummy_routing_track_routing_count
 
-  dummy_routing_track = getDummyTracks()
+  dummy_tracks = getDummyTracks()
 
   for i = -1, 0 do
-    dummy_routing_track_routing_count = reaper.GetTrackNumSends(dummy_routing_track, i)
+    dummy_routing_track_routing_count = reaper.GetTrackNumSends(dummy_tracks.routing, i)
 
     for j = 0, dummy_routing_track_routing_count-1 do
-      reaper.RemoveTrackSend(dummy_routing_track, i, j)
+      reaper.RemoveTrackSend(dummy_tracks.routing, i, j)
     end
   end
 end
