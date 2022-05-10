@@ -1,9 +1,11 @@
--- @noindex
-
+-- 
+-- WARNING: DEV BUILD!  Use for testing only!
+-- 
 -- This is generated code. See https://reapertoolkit.dev/ for more info.
--- version: 1.2.0
--- build: Wed Mar 23 00:22:10 UTC 2022
-__RTK_VERSION='1.2.0'
+-- 
+-- version: 1.2.0-15-gfde225e-dev
+-- build: Mon May  9 00:34:29 UTC 2022
+__RTK_VERSION='1.2.0-15-gfde225e-dev'
 rtk=(function()
 __mod_rtk_core=(function()
 __mod_rtk_log=(function()
@@ -105,7 +107,7 @@ return log
 end)()
 
 local log=__mod_rtk_log
-local rtk={touchscroll=false,smoothscroll=true,touch_activate_delay=0.1,long_press_delay=0.5,double_click_delay=0.5,tooltip_delay=0.5,light_luma_threshold=0.6,debug=false,has_js_reascript_api=(reaper.JS_Window_GetFocus~=nil),has_sws_extension=(reaper.BR_Win32_GetMonitorRectFromRect~=nil),script_path=nil,reaper_hwnd=nil,fps=30,focused_hwnd=nil,focused=nil,theme=nil,_dest_stack={},_image_paths={},_animations={},_animations_len=0,_easing_functions={},_frame_count=0,_frame_time=nil,_modal=nil,_touch_activate_event=nil,_last_traceback=nil,_last_error=nil,_quit=false,_refs=setmetatable({}, {__mode='v'}),_run_soon=nil,_reactive_attr={},}rtk.scale=setmetatable({user=nil,_user=1.0,system=nil,reaper=1.0,framebuffer=nil,value=1.0,_discover=function()local inifile=reaper.get_ini_file()local ini,err=rtk.file.read(inifile)if not err then
+local rtk={touchscroll=false,smoothscroll=true,touch_activate_delay=0.1,long_press_delay=0.5,double_click_delay=0.5,tooltip_delay=0.5,light_luma_threshold=0.6,debug=false,window=nil,has_js_reascript_api=(reaper.JS_Window_GetFocus~=nil),has_sws_extension=(reaper.BR_Win32_GetMonitorRectFromRect~=nil),script_path=nil,reaper_hwnd=nil,fps=30,focused_hwnd=nil,focused=nil,theme=nil,_dest_stack={},_image_paths={},_animations={},_animations_len=0,_easing_functions={},_frame_count=0,_frame_time=nil,_modal=nil,_touch_activate_event=nil,_last_traceback=nil,_last_error=nil,_quit=false,_refs=setmetatable({}, {__mode='v'}),_run_soon=nil,_reactive_attr={},}rtk.scale=setmetatable({user=nil,_user=1.0,system=nil,reaper=1.0,framebuffer=nil,value=1.0,_discover=function()local inifile=reaper.get_ini_file()local ini,err=rtk.file.read(inifile)if not err then
 rtk.scale.reaper = ini:match('uiscale=([^\n]*)') or 1.0
 end
 local ok, dpi=reaper.ThemeLayout_GetLayout("mcp", -3)if not ok then
@@ -141,7 +143,7 @@ end
 rtk.mouse.cursors={UNDEFINED=0,POINTER=_load_cursor(32512),BEAM=_load_cursor(32513),LOADING=_load_cursor(32514),CROSSHAIR=_load_cursor(32515),UP_ARROW=_load_cursor(32516),SIZE_NW_SE=_load_cursor(rtk.os.linux and 32643 or 32642),SIZE_SW_NE=_load_cursor(rtk.os.linux and 32642 or 32643),SIZE_EW=_load_cursor(32644),SIZE_NS=_load_cursor(32645),MOVE=_load_cursor(32646),INVALID=_load_cursor(32648),HAND=_load_cursor(32649),POINTER_LOADING=_load_cursor(32650),POINTER_HELP=_load_cursor(32651),REAPER_FADEIN_CURVE=_load_cursor(105),REAPER_FADEOUT_CURVE=_load_cursor(184),REAPER_CROSSFADE=_load_cursor(463),REAPER_DRAGDROP_COPY=_load_cursor(182),REAPER_DRAGDROP_RIGHT=_load_cursor(1011),REAPER_POINTER_ROUTING=_load_cursor(186),REAPER_POINTER_MOVE=_load_cursor(187),REAPER_POINTER_MARQUEE_SELECT=_load_cursor(488),REAPER_POINTER_DELETE=_load_cursor(464),REAPER_POINTER_LEFTRIGHT=_load_cursor(465),REAPER_POINTER_ARMED_ACTION=_load_cursor(434),REAPER_MARKER_HORIZ=_load_cursor(188),REAPER_MARKER_VERT=_load_cursor(189),REAPER_ADD_TAKE_MARKER=_load_cursor(190),REAPER_TREBLE_CLEF=_load_cursor(191),REAPER_BORDER_LEFT=_load_cursor(417),REAPER_BORDER_RIGHT=_load_cursor(418),REAPER_BORDER_TOP=_load_cursor(419),REAPER_BORDER_BOTTOM=_load_cursor(421),REAPER_BORDER_LEFTRIGHT=_load_cursor(450),REAPER_VERTICAL_LEFTRIGHT=_load_cursor(462),REAPER_GRID_RIGHT=_load_cursor(460),REAPER_GRID_LEFT=_load_cursor(461),REAPER_HAND_SCROLL=_load_cursor(429),REAPER_FIST_LEFT=_load_cursor(430),REAPER_FIST_RIGHT=_load_cursor(431),REAPER_FIST_BOTH=_load_cursor(453),REAPER_PENCIL=_load_cursor(185),REAPER_PENCIL_DRAW=_load_cursor(433),REAPER_ERASER=_load_cursor(472),REAPER_BRUSH=_load_cursor(473),REAPER_ARP=_load_cursor(502),REAPER_CHORD=_load_cursor(503),REAPER_TOUCHSEL=_load_cursor(515),REAPER_SWEEP=_load_cursor(517),REAPER_FADEIN_CURVE_ALT=_load_cursor(525),REAPER_FADEOUT_CURVE_ALT=_load_cursor(526),REAPER_XFADE_WIDTH=_load_cursor(528),REAPER_XFADE_CURVE=_load_cursor(529),REAPER_EXTMIX_SECTION_RESIZE=_load_cursor(530),REAPER_EXTMIX_MULTI_RESIZE=_load_cursor(531),REAPER_EXTMIX_MULTISECTION_RESIZE=_load_cursor(532),REAPER_EXTMIX_RESIZE=_load_cursor(533),REAPER_EXTMIX_ALLSECTION_RESIZE=_load_cursor(534),REAPER_EXTMIX_ALL_RESIZE=_load_cursor(535),REAPER_ZOOM=_load_cursor(1009),REAPER_INSERT_ROW=_load_cursor(1010),REAPER_RAZOR=_load_cursor(599),REAPER_RAZOR_MOVE=_load_cursor(600),REAPER_RAZOR_ADD=_load_cursor(601),REAPER_RAZOR_ENVELOPE_VERTICAL=_load_cursor(202),REAPER_RAZOR_ENVELOPE_RIGHT_TILT=_load_cursor(203),REAPER_RAZOR_ENVELOPE_LEFT_TILT=_load_cursor(204),}local FONT_FLAG_BOLD=string.byte('b')local FONT_FLAG_ITALICS=string.byte('i') << 8
 local FONT_FLAG_UNDERLINE=string.byte('u') << 16
 rtk.font={BOLD=FONT_FLAG_BOLD,ITALICS=FONT_FLAG_ITALICS,UNDERLINE=FONT_FLAG_UNDERLINE,multiplier=1.0
-}rtk.keycodes={UP=30064,DOWN=1685026670,LEFT=1818584692,RIGHT=1919379572,RETURN=13,ENTER=13,SPACE=32,BACKSPACE=8,ESCAPE=27,TAB=9,HOME=1752132965,END=6647396,INSERT=6909555,DELETE=6579564,F1=26161,F2=26162,F3=26163,F4=26164,F5=26165,F6=26166,F7=26167,F8=26168,F9=26169,F10=6697264,F11=6697265,F12=6697266,}rtk.themes={dark={name='dark',dark=true,light=false,bg='#252525',default_font={'Calibri', 18},tooltip_font={'Segoe UI (TrueType)', 16},tooltip_bg='#ffffff',tooltip_text='#000000',accent='#47abff',accent_subtle='#306088',text='#ffffff',text_faded='#bbbbbb',button='#555555',heading=nil,button_label='#ffffff',button_font=nil,button_gradient_mul=1,button_tag_alpha=0.32,button_normal_gradient=-0.37,button_normal_border_mul=0.7,button_hover_gradient=0.17,button_hover_brightness=0.9,button_hover_mul=1,button_hover_border_mul=1.1,button_clicked_gradient=0.47,button_clicked_brightness=0.9,button_clicked_mul=0.85,button_clicked_border_mul=1,text_font=nil,heading_font={'Calibri', 26},entry_font=nil,entry_bg='#5f5f5f7f',entry_placeholder='#ffffff7f',entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_selection_bg='#0066bb',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111166',popup_border='#385074',slider_font=nil,slider='#2196f3',slider_track='#5a5a5a',slider_tick_label=nil,},light={name='light',light=true,dark=false,accent='#47abff',accent_subtle='#a1d3fc',bg='#dddddd',default_font={'Calibri', 18},tooltip_font={'Segoe UI (TrueType)', 16},tooltip_bg='#ffffff',tooltip_text='#000000',button='#dedede',button_label='#000000',button_gradient_mul=1,button_tag_alpha=0.15,button_normal_gradient=-0.28,button_normal_border_mul=0.85,button_hover_gradient=0.12,button_hover_brightness=1,button_hover_mul=1,button_hover_border_mul=0.9,button_clicked_gradient=0.3,button_clicked_brightness=1.0,button_clicked_mul=0.9,button_clicked_border_mul=0.7,text='#000000',text_faded='#555555',heading_font={'Calibri', 26},entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_bg='#00000020',entry_placeholder='#0000007f',entry_selection_bg='#9fcef4',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111122',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',}}local function _postprocess_theme()local iconstyle=rtk.color.get_icon_style(rtk.theme.bg)rtk.theme.iconstyle=iconstyle
+}rtk.keycodes={UP=30064,DOWN=1685026670,LEFT=1818584692,RIGHT=1919379572,RETURN=13,ENTER=13,SPACE=32,BACKSPACE=8,ESCAPE=27,TAB=9,HOME=1752132965,END=6647396,INSERT=6909555,DELETE=6579564,F1=26161,F2=26162,F3=26163,F4=26164,F5=26165,F6=26166,F7=26167,F8=26168,F9=26169,F10=6697264,F11=6697265,F12=6697266,}rtk.themes={dark={name='dark',dark=true,light=false,bg='#252525',default_font={'Calibri', 18},accent='#47abff',accent_subtle='#306088',tooltip_bg='#ffffff',tooltip_text='#000000',tooltip_font={'Segoe UI (TrueType)', 16},text='#ffffff',text_faded='#bbbbbb',text_font=nil,button='#555555',heading=nil,heading_font={'Calibri', 26},button_label='#ffffff',button_font=nil,button_gradient_mul=1,button_tag_alpha=0.32,button_normal_gradient=-0.37,button_normal_border_mul=0.7,button_hover_gradient=0.17,button_hover_brightness=0.9,button_hover_mul=1,button_hover_border_mul=1.1,button_clicked_gradient=0.47,button_clicked_brightness=0.9,button_clicked_mul=0.85,button_clicked_border_mul=1,entry_font=nil,entry_bg='#5f5f5f7f',entry_placeholder='#ffffff7f',entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_selection_bg='#0066bb',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111166',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',slider_font=nil,slider_tick_label=nil,},light={name='light',light=true,dark=false,accent='#47abff',accent_subtle='#a1d3fc',bg='#dddddd',default_font={'Calibri', 18},tooltip_font={'Segoe UI (TrueType)', 16},tooltip_bg='#ffffff',tooltip_text='#000000',button='#dedede',button_label='#000000',button_gradient_mul=1,button_tag_alpha=0.15,button_normal_gradient=-0.28,button_normal_border_mul=0.85,button_hover_gradient=0.12,button_hover_brightness=1,button_hover_mul=1,button_hover_border_mul=0.9,button_clicked_gradient=0.3,button_clicked_brightness=1.0,button_clicked_mul=0.9,button_clicked_border_mul=0.7,text='#000000',text_faded='#555555',heading_font={'Calibri', 26},entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_bg='#00000020',entry_placeholder='#0000007f',entry_selection_bg='#9fcef4',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111122',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',}}local function _postprocess_theme()local iconstyle=rtk.color.get_icon_style(rtk.theme.bg)rtk.theme.iconstyle=iconstyle
 for k,v in pairs(rtk.theme)do
 if type(v) == 'string' and v:byte(1) == 35 then
 local x={rtk.color.rgba(v)}rtk.theme[k]={rtk.color.rgba(v)}end
@@ -1870,7 +1872,7 @@ else
 error('invalid value')end
 end
 end
-rtk.Widget.register{x=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},y=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},w=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,animate=function(self,anim)local val=anim.resolve(anim.easingfunc(anim.pct))return(anim.dst>1.0 and val>0 and val<=1.0)and 1.01 or val,val==anim.dst
+rtk.Widget.register{x=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},y=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},w=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,animate=function(self,anim)local val=anim.resolve(anim.easingfunc(anim.pct))return((anim.dst>1.0 or anim.dst==0)and val>0 and val<=1.0)and 1.01 or val,val==anim.dst
 end
 },h=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,animate=rtk.Reference('w'),},z=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},minw = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},minh = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},maxw = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},maxh = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},halign=rtk.Attribute{default=rtk.Widget.LEFT,calculate={left=rtk.Widget.LEFT,center=rtk.Widget.CENTER,right=rtk.Widget.RIGHT},},valign=rtk.Attribute{default=rtk.Widget.TOP,calculate={top=rtk.Widget.TOP,center=rtk.Widget.CENTER,bottom=rtk.Widget.BOTTOM},},scalability=rtk.Attribute{default=rtk.Widget.FULL,reflow=rtk.Widget.REFLOW_FULL,calculate={box=rtk.Widget.BOX,full=rtk.Widget.FULL},},position=rtk.Attribute{default=rtk.Widget.RELATIVE,reflow=rtk.Widget.REFLOW_FULL,calculate={relative=rtk.Widget.RELATIVE,absolute=rtk.Widget.ABSOLUTE,fixed=rtk.Widget.FIXED,['fixed-flow']=rtk.Widget.FIXED_FLOW
 },},box=nil,offx=nil,offy=nil,clientx=nil,clienty=nil,padding=rtk.Attribute{replaces={'tpadding', 'rpadding', 'bpadding', 'lpadding'},get=function(self,attr,target)return {target.tpadding,target.rpadding,target.bpadding,target.lpadding}end,reflow=rtk.Widget.REFLOW_FULL,calculate=function(self,attr,value,target)local t,r,b,l=rtk.Widget.static._calc_padding_or_margin(value)target.tpadding,target.rpadding,target.bpadding,target.lpadding=t,r,b,l
@@ -2222,6 +2224,23 @@ calc.tborder and calc.tborder[2] or 0,calc.rborder and calc.rborder[2] or 0,calc
 end
 function rtk.Widget:_get_padding_and_border()local tp,rp,bp,lp=self:_get_padding()local tb,rb,bb,lb=self:_get_border_sizes()return tp+tb,rp+rb,bp+bb,lp+lb
 end
+function rtk.Widget:_adjscale(val)if not val then
+return
+elseif self.calc.scalability&rtk.Widget.FULL~=rtk.Widget.FULL then
+return val
+else
+return val*rtk.scale.value
+end
+end
+local function _clamp_size(sz,min,max,scalability)if scalability&rtk.Widget.FULL==rtk.Widget.FULL then
+local scale=rtk.scale.value
+return rtk.clamp(sz,min and(min*scale),max and(max*scale))else
+return rtk.clamp(sz,min,max)end
+end
+function rtk.Widget:_clampw(w)local calc=self.calc
+return _clamp_size(w,calc.minw,calc.maxw,calc.scalability)end
+function rtk.Widget:_clamph(h)local calc=self.calc
+return _clamp_size(h,calc.minh,calc.maxh,calc.scalability)end
 function rtk.Widget:_get_box_pos(boxx,boxy)if self.calc.scalability&rtk.Widget.FULL==rtk.Widget.FULL then
 local scale=rtk.scale.value
 return scale*self.x+boxx,scale*self.y+boxy
@@ -2229,8 +2248,7 @@ else
 return self.x+boxx,self.y+boxy
 end
 end
-local function _get_content_dimension(size,bounds,padding,fill,clamp,flags,scale)scale=flags&rtk.Widget.FULL==rtk.Widget.FULL and(rtk.scale.value*(scale or 1))or scale or 1
-if size then
+local function _get_content_dimension(size,bounds,padding,fill,clamp,scale)if size then
 if bounds and size<-1 then
 return bounds+(size*scale)-padding
 elseif bounds and size<=1.0 then
@@ -2244,14 +2262,14 @@ return bounds-padding
 end
 end
 function rtk.Widget:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,scale)local calc=self.calc
-local tp,rp,bp,lp=self:_get_padding_and_border()local w=_get_content_dimension(self.w,boxw,lp+rp,fillw,clampw,calc.scalability,scale)local h=_get_content_dimension(self.h,boxh,tp+bp,fillh,clamph,calc.scalability,scale)if w and(calc.minw or calc.maxw)then
-w=rtk.clamp(w,calc.minw,calc.maxw)end
+scale=self:_adjscale(scale or 1)local tp,rp,bp,lp=self:_get_padding_and_border()local w=_get_content_dimension(self.w,boxw,lp+rp,fillw,clampw,scale)local h=_get_content_dimension(self.h,boxh,tp+bp,fillh,clamph,scale)if w and(calc.minw or calc.maxw)then
+w=self:_clampw(w)end
 if h and(calc.minh or calc.maxh)then
-h=rtk.clamp(h,calc.minh,calc.maxh)end
+h=self:_clamph(h)end
 return w,h,tp,rp,bp,lp
 end
 function rtk.Widget:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph)calc.w=w or(fillw and(boxw-lp-rp)or 0)calc.h=h or(fillh and(boxh-tp-bp)or 0)return fillw,fillh
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph)calc.w=w or self:_clampw(fillw and(boxw-lp-rp)or 0)calc.h=h or self:_clamph(fillh and(boxh-tp-bp)or 0)return fillw,fillh
 end
 function rtk.Widget:_realize_geometry()self.realized=true
 end
@@ -2718,7 +2736,9 @@ newval=math.max(self._vscrolla.current-self._vscrolla.delta,self._vscrolla.targe
 self._vscrolla.current=newval
 self:queue_draw()end
 self:setcolor(self._scrollbar_color)gfx.a=self._vscrolla.current*alpha
+if self._vscrollh>0 then
 gfx.rect(scrx,scry,calc.scrollbar_size*rtk.scale.value,self._vscrollh+1,1)end
+end
 end
 function rtk.Viewport:_handle_event(clparentx,clparenty,event,clipped,listen)local calc=self.calc
 local pre=self._pre
@@ -3155,8 +3175,8 @@ local widget,attrs=table.unpack(widgetattrs)local wcalc=widget.calc
 attrs._cellbox=nil
 self._child_index_by_id[widget.id]=n
 if widget.visible==true then
-local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)local wx,wy,ww,wh=widget:reflow(0,0,rtk.clamprel(inner_maxw-widget.x-clp-crp,attrs.minw or wcalc.minw,attrs.maxw or wcalc.maxw),rtk.clamprel(inner_maxh-widget.y-ctp-cbp,attrs.minh or wcalc.minh,attrs.maxh or wcalc.maxh),attrs.fillw,attrs.fillh,clampw or attrs.maxw~=nil,clamph or attrs.maxh~=nil,uiscale,viewport,window
-)ww=math.max(ww,attrs.minw or wcalc.minw or 0)wh=math.max(wh,attrs.minh or wcalc.minh or 0)attrs._halign=attrs.halign or calc.halign
+local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)local minw=self:_adjscale(attrs.minw or wcalc.minw)local maxw=self:_adjscale(attrs.maxw or wcalc.maxw)local minh=self:_adjscale(attrs.minh or wcalc.minh)local maxh=self:_adjscale(attrs.maxh or wcalc.maxh)local wx,wy,ww,wh=widget:reflow(0,0,rtk.clamprel(inner_maxw-widget.x-clp-crp,minw,maxw),rtk.clamprel(inner_maxh-widget.y-ctp-cbp,minh,maxh),attrs.fillw,attrs.fillh,clampw or attrs.maxw~=nil,clamph or attrs.maxh~=nil,uiscale,viewport,window
+)ww=math.max(ww,minw or 0)wh=math.max(wh,minh or 0)attrs._halign=attrs.halign or calc.halign
 attrs._valign=attrs.valign or calc.valign
 if not attrs._halign or attrs._halign==rtk.Widget.LEFT then
 wx=lp+clp
@@ -4000,7 +4020,7 @@ expand_units=expand_units+(attrs.expand or 1)spacing=0
 elseif widget.visible==true then
 attrs._halign=attrs.halign or calc.halign
 attrs._valign=attrs.valign or calc.valign
-local implicit_expand
+attrs._minw=self:_adjscale(attrs.minw or wcalc.minw)attrs._maxw=self:_adjscale(attrs.maxw or wcalc.maxw)attrs._minh=self:_adjscale(attrs.minh or wcalc.minh)attrs._maxh=self:_adjscale(attrs.maxh or wcalc.maxh)local implicit_expand
 if orientation==rtk.Box.HORIZONTAL then
 implicit_expand=attrs.fillw
 else
@@ -4013,21 +4033,21 @@ if attrs._calculated_expand==0 then
 local ww,wh=0,0
 local wexpw,wexph
 local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)if orientation==rtk.Box.HORIZONTAL then
-local child_maxw=rtk.clamprel(remaining_size-clp-crp-spacing,attrs.minw or wcalc.minw,attrs.maxw or wcalc.maxw
-)local child_maxh=rtk.clamprel(h-ctp-cbp,attrs.minh or wcalc.minh,attrs.maxh or wcalc.maxh
+local child_maxw=rtk.clamprel(remaining_size-clp-crp-spacing,attrs._minw,attrs._maxw
+)local child_maxh=rtk.clamprel(h-ctp-cbp,attrs._minh,attrs._maxh
 )_,_,ww,wh,wexpw,wexph=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh and attrs.stretch~=rtk.Box.STRETCH_TO_SIBLINGS,clampw,clamph,uiscale,viewport,window
 )expw=wexpw or expw
 exph=wexph or exph
-ww=math.max(ww,attrs.minw or widget.minw or 0)wh=math.max(wh,attrs.minh or widget.minh or 0)if wexpw and clampw and ww>=child_maxw and n<#self.children then
+ww=math.max(ww,attrs._minw or 0)wh=math.max(wh,attrs._minh or 0)if wexpw and clampw and ww>=child_maxw and n<#self.children then
 attrs._calculated_expand=1
 end
 else
-local child_maxw=rtk.clamprel(w-clp-crp,attrs.minw or wcalc.minw,attrs.maxw or wcalc.maxw
-)local child_maxh=rtk.clamprel(remaining_size-ctp-cbp-spacing,attrs.minh or wcalc.minh,attrs.maxh or wcalc.maxh
+local child_maxw=rtk.clamprel(w-clp-crp,attrs._minw,attrs._maxw
+)local child_maxh=rtk.clamprel(remaining_size-ctp-cbp-spacing,attrs._minh,attrs._maxh
 )_,_,ww,wh,wexpw,wexph=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw and attrs.stretch~=rtk.Box.STRETCH_TO_SIBLINGS,attrs.fillh,clampw,clamph,uiscale,viewport,window
 )expw=wexpw or expw
 exph=wexph or exph
-wh=math.max(wh,attrs.minh or widget.minh or 0)ww=math.max(ww,attrs.minw or widget.minw or 0)if wexph and clamph and wh>=child_maxh and n<#self.children then
+ww=math.max(ww,attrs._minw or 0)wh=math.max(wh,attrs._minh or 0)if wexph and clamph and wh>=child_maxh and n<#self.children then
 attrs._calculated_expand=1
 end
 end
@@ -4078,8 +4098,8 @@ attrs.stretch~=rtk.Box.STRETCH_FULL))local offx=lp+clp
 local offy=offset+tp+ctp+spacing
 local expand=attrs._calculated_expand
 if expand and expand>0 then
-local child_maxw=rtk.clamprel(w-clp-crp,attrs.minw or wcalc.minw,attrs.maxw or wcalc.maxw
-)local child_maxh=rtk.clamprel((expand_unit_size*expand)-ctp-cbp-spacing,attrs.minh or wcalc.minh,attrs.maxh or wcalc.maxh
+local child_maxw=rtk.clamprel(w-clp-crp,attrs._minw,attrs._maxw
+)local child_maxh=rtk.clamprel((expand_unit_size*expand)-ctp-cbp-spacing,attrs._minh,attrs._maxh
 )wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window
 )if attrs.stretch==rtk.Box.STRETCH_FULL then
 ww=maxw
@@ -4090,7 +4110,7 @@ second_pass[#second_pass+1]={widget,attrs,offx,offy,ww,child_maxh,ctp,crp,cbp,cl
 self:_align_child(widget,attrs,offx,offy,ww,child_maxh,crp,cbp)self:_set_cell_box(attrs,lp,tp+offset+spacing,ww+clp+crp,child_maxh+ctp+cbp)end
 wh=math.max(child_maxh,wh)else
 ww=attrs.stretch==rtk.Box.STRETCH_FULL and maxw or wcalc.w
-wh=math.max(wcalc.h,attrs.minh or wcalc.minh or 0)if need_second_pass then
+wh=math.max(wcalc.h,attrs._minh or 0)if need_second_pass then
 second_pass[#second_pass+1]={widget,attrs,offx,offy,ww,wh,ctp,crp,cbp,clp,offset,spacing
 }else
 self:_align_child(widget,attrs,offx,offy,ww,wh,crp,cbp)self:_set_cell_box(attrs,lp,tp+offset+spacing,ww+clp+crp,wh+ctp+cbp)end
@@ -4106,7 +4126,7 @@ end
 if #second_pass>0 then
 for n,widgetinfo in ipairs(second_pass)do
 local widget,attrs,offx,offy,ww,child_maxh,ctp,crp,cbp,clp,offset,spacing=table.unpack(widgetinfo)if attrs.stretch==rtk.Box.STRETCH_TO_SIBLINGS then
-wx,wy,ww,wh=widget:reflow(0,0,maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window
+widget:reflow(0,0,maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window
 )end
 self:_align_child(widget,attrs,offx,offy,maxw,child_maxh,crp,cbp)self:_set_cell_box(attrs,lp,tp+offset+spacing,maxw+clp+crp,child_maxh+ctp+cbp)widget:_realize_geometry()end
 end
@@ -4153,8 +4173,8 @@ attrs.stretch~=rtk.Box.STRETCH_FULL))local offx=offset+lp+clp+spacing
 local offy=tp+ctp
 local expand=attrs._calculated_expand
 if expand and expand>0 then
-local child_maxw=rtk.clamprel((expand_unit_size*expand)-clp-crp-spacing,attrs.minw or wcalc.minw,attrs.maxw or wcalc.maxw
-)local child_maxh=rtk.clamprel(h-ctp-cbp,attrs.minh or wcalc.minh,attrs.maxh or wcalc.maxh
+local child_maxw=rtk.clamprel((expand_unit_size*expand)-clp-crp-spacing,attrs._minw,attrs._maxh
+)local child_maxh=rtk.clamprel(h-ctp-cbp,attrs._minh,attrs._maxh
 )wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window
 )if attrs.stretch==rtk.Box.STRETCH_FULL then
 wh=maxh
@@ -4164,7 +4184,7 @@ second_pass[#second_pass+1]={widget,attrs,offx,offy,child_maxw,wh,ctp,crp,cbp,cl
 }else
 self:_align_child(widget,attrs,offx,offy,child_maxw,wh,crp,cbp)self:_set_cell_box(attrs,lp+offset+spacing,tp,child_maxw+clp+crp,wh+ctp+cbp)end
 ww=math.max(child_maxw,ww)else
-ww=math.max(wcalc.w,attrs.minw or wcalc.minw or 0)wh=attrs.stretch==rtk.Box.STRETCH_FULL and maxh or wcalc.h
+ww=math.max(wcalc.w,attrs._minw or 0)wh=attrs.stretch==rtk.Box.STRETCH_FULL and maxh or wcalc.h
 if need_second_pass then
 second_pass[#second_pass+1]={widget,attrs,offx,offy,ww,wh,ctp,crp,cbp,clp,offset,spacing
 }else
@@ -4181,7 +4201,7 @@ end
 if #second_pass>0 then
 for n,widgetinfo in ipairs(second_pass)do
 local widget,attrs,offx,offy,child_maxw,wh,ctp,crp,cbp,clp,offset,spacing=table.unpack(widgetinfo)if attrs.stretch==rtk.Box.STRETCH_TO_SIBLINGS then
-wx,wy,ww,wh=widget:reflow(0,0,child_maxw,maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window
+widget:reflow(0,0,child_maxw,maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window
 )end
 self:_align_child(widget,attrs,offx,offy,child_maxw,maxh,crp,cbp)self:_set_cell_box(attrs,lp+offset+spacing,tp,child_maxw+clp+crp,maxh+ctp+cbp)widget:_realize_geometry()end
 end
@@ -4224,8 +4244,7 @@ if wcalc.visible==true and wcalc.position&rtk.Widget.POSITION_INFLOW~=0 then
 local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)local wx,wy,ww,wh=widget:reflow(0,0,inner_maxw,inner_maxh,nil,nil,clampw,clamph,uiscale,viewport,window
 )ww=ww+clp+crp
 wh=wh+ctp+cbp
-local minw=(attrs.minw or wcalc.minw or 0)+clp+crp
-child_maxw=math.min(math.max(child_maxw,ww,minw),inner_maxw)child_totalh=child_totalh+wh
+local minw=self:_adjscale((attrs.minw or wcalc.minw or 0)+clp+crp)child_maxw=math.min(math.max(child_maxw,ww,minw),inner_maxw)child_totalh=child_totalh+wh
 child_geometry[#child_geometry+1]={x=wx,y=wy,w=ww,h=wh}end
 end
 child_totalh=child_totalh+(#self.children-1)*vspacing
@@ -4282,9 +4301,7 @@ end
 end
 self:_determine_zorders()inner.w=inner.w+col.w
 calc.x,calc.y=x,y
-calc.w=(w or inner.w)+lp+rp
-calc.h=(h or inner.h)+tp+bp
-end
+calc.w=self:_clampw((w or inner.w)+lp+rp)calc.h=self:_clamph((h or inner.h)+tp+bp)end
 end)()
 
 __mod_rtk_spacer=(function()
@@ -4403,7 +4420,7 @@ else
 calc.w=0
 calc.h=0
 end
-calc.w=math.round(rtk.clamp(calc.w+hpadding,calc.minw,calc.maxw))calc.h=math.round(rtk.clamp(calc.h+vpadding,calc.minh,calc.maxh))end
+calc.w=math.round(self:_clampw(calc.w+hpadding))calc.h=math.round(self:_clamph(calc.h+vpadding))end
 function rtk.Button:_realize_geometry()if self.circular then
 return
 end
@@ -4417,9 +4434,7 @@ local iscale=scale/(icon and icon.density or 1.0)local spacing=calc.spacing*scal
 local tagx,tagw=0,0
 local lx=lp
 local ix=lx
-local lw,lh
-if label then
-lw,lh=self._font:measure(label)end
+local lw,lh=self.lw,self.lh
 if icon and label then
 local iconwidth=icon.w*iscale
 if calc.iconpos==rtk.Widget.LEFT then
@@ -4665,9 +4680,7 @@ if calc.textwidth and not self.w then
 local charwidth, _=gfx.measurestr('W')maxw,maxh=charwidth*calc.textwidth,self._font.texth
 else
 maxw, maxh=gfx.measurestr(calc.placeholder or "Dummy string!")end
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph)calc.w=(w or maxw)+lp+rp
-calc.h=(h or maxh)+tp+bp
-self._ctp,self._crp,self._cbp,self._clp=tp,rp,bp,lp
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph)calc.w=self:_clampw((w or maxw)+lp+rp)calc.h=self:_clamph((h or maxh)+tp+bp)self._ctp,self._crp,self._cbp,self._clp=tp,rp,bp,lp
 if not self._backingstore then
 self._backingstore=rtk.Image()end
 self._backingstore:resize(calc.w,calc.h,false)self._dirty_text=true
@@ -5045,7 +5058,7 @@ local seg=self._segments
 if not seg or seg.boxw~=lmaxw or not seg.isvalid()then
 self._segments,self.lw,self.lh=self._font:layout(calc.text,lmaxw,lmaxh,calc.wrap~=rtk.Text.WRAP_NONE,self.textalign and calc.textalign or calc.halign,true,calc.spacing,calc.wrap==rtk.Text.WRAP_BREAK_WORD
 )end
-calc.w=(w and w+hpadding)or(fillw and boxw)or math.min(clampw and boxw or math.inf,self.lw+hpadding)calc.h=(h and h+vpadding)or(fillh and boxh)or math.min(clamph and boxh or math.inf,self.lh+vpadding)calc.w=math.round(rtk.clamp(calc.w,calc.minw,calc.maxw))calc.h=math.round(rtk.clamp(calc.h,calc.minh,calc.maxh))end
+calc.w=(w and w+hpadding)or(fillw and boxw)or math.min(clampw and boxw or math.inf,self.lw+hpadding)calc.h=(h and h+vpadding)or(fillh and boxh)or math.min(clamph and boxh or math.inf,self.lh+vpadding)calc.w=math.round(self:_clampw(calc.w))calc.h=math.round(self:_clamph(calc.h))end
 function rtk.Text:_realize_geometry()local calc=self.calc
 local tp,rp,bp,lp=self:_get_padding_and_border()local lx,ly
 if calc.halign==rtk.Widget.LEFT then
@@ -5104,7 +5117,7 @@ end
 local scale=(self.scale or 1)*rtk.scale.value/image.density
 local native_aspect=image.w/image.h
 local aspect=calc.aspect or native_aspect
-dstw=w or(fillw and(boxw-hpadding))dsth=h or(fillh and(boxh-vpadding))local constrain=self.scale==nil and not w and not h
+dstw=(w and w-hpadding)or(fillw and(boxw-hpadding))dsth=(h and h-vpadding)or(fillh and(boxh-vpadding))local constrain=self.scale==nil and not w and not h
 if dstw and not dsth then
 dsth=math.min(clamph and boxw or math.inf,dstw)/aspect
 elseif not dstw and dsth then
@@ -5128,7 +5141,7 @@ calc.scale=self.iscale
 else
 self.iscale=1.0
 end
-self.iw=math.round(math.max(0,dstw))self.ih=math.round(math.max(0,dsth))calc.w=(fillw and boxw)or math.min(clampw and boxw or math.inf,self.iw+hpadding)calc.h=(fillh and boxh)or math.min(clamph and boxh or math.inf,self.ih+vpadding)calc.w=math.round(rtk.clamp(calc.w,self.minw,self.maxw))calc.h=math.round(rtk.clamp(calc.h,self.minh,self.maxh))end
+self.iw=math.round(math.max(0,dstw))self.ih=math.round(math.max(0,dsth))calc.w=(fillw and boxw)or math.min(clampw and boxw or math.inf,self.iw+hpadding)calc.h=(fillh and boxh)or math.min(clamph and boxh or math.inf,self.ih+vpadding)calc.w=math.round(self:_clampw(calc.w))calc.h=math.round(self:_clamph(calc.h))end
 function rtk.ImageBox:_realize_geometry()local calc=self.calc
 local tp,rp,bp,lp=self:_get_padding_and_border()local ix,iy
 if calc.halign==rtk.Widget.LEFT then
@@ -5146,11 +5159,13 @@ iy=math.max(0,calc.h-self.ih-bp)end
 self._pre={ix=ix,iy=iy}end
 function rtk.ImageBox:_draw(offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)rtk.Widget._draw(self,offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)local calc=self.calc
 local x,y=calc.x+offx,calc.y+offy
-if not self.image or y+calc.h<0 or y>cliph or calc.ghost then
+if y+calc.h<0 or y>cliph or calc.ghost then
 return
 end
 local pre=self._pre
-self:_handle_drawpre(offx,offy,alpha,event)self:_draw_bg(offx,offy,alpha,event)calc.image:blit{dx=x+pre.ix,dy=y+pre.iy,dw=self.iw,dh=self.ih,alpha=calc.alpha*alpha,clipw=calc.w,cliph=calc.h,}self:_draw_borders(offx,offy,alpha)self:_handle_draw(offx,offy,alpha,event)end
+self:_handle_drawpre(offx,offy,alpha,event)self:_draw_bg(offx,offy,alpha,event)if calc.image then
+calc.image:blit{dx=x+pre.ix,dy=y+pre.iy,dw=self.iw,dh=self.ih,alpha=calc.alpha*alpha,clipw=calc.w,cliph=calc.h,}end
+self:_draw_borders(offx,offy,alpha)self:_handle_draw(offx,offy,alpha,event)end
 end)()
 
 __mod_rtk_optionmenu=(function()
