@@ -6,7 +6,6 @@
 --   [nomain] rtk.lua
 --   [nomain] serpent.lua
 --   gnu_license_v3.txt
--- @link 
 -- @about Add & set – or remove – multiple sends or receives to/from multiple tracks in one go
 
 -- Copyright (C) MonkeyBars 2022
@@ -39,15 +38,19 @@ local rtk = require('rtk')
 local serpent = require("serpent")
 
 
-local selected_tracks_count, _selected_tracks, _data_storage_track, _all_routing_settings, _dummy_tracks_GUIDs
+local selected_tracks_count, _selected_tracks, _data_storage_track, _api_routing_types, _all_routing_settings, _dummy_tracks_GUIDs
 
 _selected_tracks_count = reaper.CountSelectedTracks(0)
 _data_storage_track = reaper.GetMasterTrack(0)
+_api_routing_types = {
+  ["receive"] = -1,
+  ["send"] = 0
+}
 _all_routing_settings = {"B_MUTE", "B_PHASE", "B_MONO", "D_VOL", "D_PAN", "D_PANLAW", "I_SENDMODE", "I_AUTOMODE", "I_SRCCHAN", "I_DSTCHAN", "I_MIDIFLAGS"}
 
 
 function getSelectedTracks()
-  local selected_tracks, i, this_selected_track
+  local selected_tracks, this_selected_track
 
   selected_tracks = {}
 
@@ -146,7 +149,7 @@ end
 
 
 function getUnselectedTracks(routing_option_form_submit)
-  local all_tracks_count, routing_option_target_tracks_box, i, this_track
+  local all_tracks_count, routing_option_target_tracks_box, this_track
 
   all_tracks_count = reaper.CountTracks(0)
   routing_option_target_tracks_box = rtk.FlowBox{w = 0.85, ref = "routing_option_target_tracks_box"}
@@ -315,7 +318,7 @@ end
 
 
 function getDummyTracks()
-  local dummy_routing_track, all_tracks_count, dummy_routing_track_GUID, dummy_target_track, dummy_target_track_GUID, retval
+  local dummy_routing_track, dummy_target_track, dummy_tracks_exist, dummy_tracks, all_tracks_count, this_dummy_track, dummy_track_type, dummy_track, retval, dummy_routing_track_GUID, dummy_target_track_GUID
 
   if _dummy_tracks_GUIDs and type(_dummy_tracks_GUIDs) == "table" then
     dummy_routing_track, dummy_target_track = getDummyTracksFromGUID()
@@ -323,31 +326,39 @@ function getDummyTracks()
   else
     _dummy_tracks_GUIDs = storeRetrieveProjectData("dummy_tracks_GUIDs")
 
-    if not _dummy_tracks_GUIDs or _dummy_tracks_GUIDs == "" then
+    if _dummy_tracks_GUIDs and _dummy_tracks_GUIDs ~= "" and type(_dummy_tracks_GUIDs) == "string" then
+      retval, _dummy_tracks_GUIDs = serpent.load(_dummy_tracks_GUIDs)
+      dummy_routing_track, dummy_target_track = getDummyTracksFromGUID()
+      dummy_tracks_exist = reaper.ValidatePtr(dummy_routing_track, "MediaTrack*") and reaper.ValidatePtr(dummy_target_track, "MediaTrack*")
+    end
+
+    if not _dummy_tracks_GUIDs or _dummy_tracks_GUIDs == "" or not dummy_tracks_exist then
       _dummy_tracks_GUIDs = {}
+      dummy_tracks = {
+        ["routing"] = 0,
+        ["target"] = 0
+      }
       all_tracks_count = reaper.CountTracks(0)
 
-      reaper.InsertTrackAtIndex(all_tracks_count, false)
+      for dummy_track_type, dummy_track in pairs(dummy_tracks) do
+        reaper.InsertTrackAtIndex(all_tracks_count, false)
 
-      dummy_routing_track = reaper.GetTrack(0, all_tracks_count)
-      retval, dummy_routing_track_GUID = reaper.GetSetMediaTrackInfo_String(dummy_routing_track, "GUID", "", false)
-      _dummy_tracks_GUIDs.routing = dummy_routing_track_GUID
-      all_tracks_count = reaper.CountTracks(0)
+        dummy_tracks[dummy_track_type] = reaper.GetTrack(0, all_tracks_count)
+        this_dummy_track = dummy_tracks[dummy_track_type]
+        retval, dummy_routing_track_GUID = reaper.GetSetMediaTrackInfo_String(this_dummy_track, "GUID", "", false)
+        _dummy_tracks_GUIDs[dummy_track_type] = dummy_routing_track_GUID
 
-      reaper.InsertTrackAtIndex(all_tracks_count, false)
+        reaper.SetMediaTrackInfo_Value(this_dummy_track, "B_SHOWINMIXER", 0)
+        reaper.SetMediaTrackInfo_Value(this_dummy_track, "B_SHOWINTCP", 0)
+      end
 
-      dummy_target_track = reaper.GetTrack(0, all_tracks_count)
-      retval, dummy_target_track_GUID = reaper.GetSetMediaTrackInfo_String(dummy_target_track, "GUID", "", false)
-      _dummy_tracks_GUIDs.target = dummy_target_track_GUID
+      dummy_routing_track = dummy_tracks.routing
+      dummy_target_track = dummy_tracks.target
       _dummy_tracks_GUIDs = serpent.dump(_dummy_tracks_GUIDs)
 
       reaper.GetSetMediaTrackInfo_String(dummy_routing_track, "P_NAME", "Enter Buss Driver Routing Settings", true)
       reaper.GetSetMediaTrackInfo_String(dummy_target_track, "P_NAME", "MB_Buss Driver target track", true)
       storeRetrieveProjectData("dummy_tracks_GUIDs", _dummy_tracks_GUIDs)
-
-    else
-      retval, _dummy_tracks_GUIDs = serpent.load(_dummy_tracks_GUIDs)
-      dummy_routing_track, dummy_target_track = getDummyTracksFromGUID()
     end
   end
 
@@ -387,27 +398,24 @@ end
 
 
 function launchRoutingSettings(routing_type)
-  local set_1st_selected_track_last_touched, view_routing_for_last_touched_track, dummy_routing_track, dummy_target_track, api_routing_type, dummy_routing_track_routing_count
+  local set_1st_selected_track_last_touched, view_routing_for_last_touched_track, dummy_routing_track, dummy_target_track, api_routing_type_val, dummy_routing_track_routing_count, dest_track, src_track
 
   set_1st_selected_track_last_touched = 40914
   view_routing_for_last_touched_track = 40293
   dummy_routing_track, dummy_target_track = getDummyTracks()
+  dummy_routing_track_routing_count = reaper.GetTrackNumSends(dummy_target_track, _api_routing_types[routing_type])
 
   if routing_type == "send" then
-    api_routing_type = 0
-    dummy_routing_track_routing_count = reaper.GetTrackNumSends(dummy_routing_track, api_routing_type)
-
-    if dummy_routing_track_routing_count == 0 then
-      reaper.CreateTrackSend(dummy_routing_track, dummy_target_track)
-    end
+    dest_track = dummy_routing_track
+    src_track = dummy_target_track
 
   elseif routing_type == "receive" then
-    api_routing_type = -1
-    dummy_routing_track_routing_count = reaper.GetTrackNumSends(dummy_routing_track, api_routing_type)
+    dest_track = dummy_target_track
+    src_track = dummy_routing_track
+  end
 
-    if dummy_routing_track_routing_count == 0 then
-      reaper.CreateTrackSend(dummy_target_track, dummy_routing_track)
-    end
+  if dummy_routing_track_routing_count == 0 then
+    reaper.CreateTrackSend(dest_track, src_track)
   end
   
   reaper.SetOnlyTrackSelected(dummy_routing_track)
@@ -436,7 +444,7 @@ end
 
 
 function getTargetTracksChoices(routing_option_target_tracks_box)
-  local routing_option_target_tracks_choices, i, this_track_row, this_track_checkbox, this_track_idx
+  local routing_option_target_tracks_choices, this_track_row, this_track_checkbox, this_track_idx
 
   routing_option_target_tracks_choices = {}
 
@@ -456,7 +464,7 @@ end
 
 
 function addRemoveRouting(routing_options_form_fields, routing_option_target_tracks_choices)
-  local routing_option_action_choice, routing_option_type_choice, i, this_selected_track, j, this_target_track
+  local routing_option_action_choice, routing_option_type_choice, this_selected_track, j, this_target_track
 
   routing_option_action_choice = routing_options_form_fields.refs.routing_option_addremove.selected_id
   routing_option_type_choice = routing_options_form_fields.refs.routing_option_type.selected_id
@@ -502,7 +510,7 @@ end
 
 
 function copyRoutingSettings(src_track, dest_track, routing_option_type_choice)
-  local dest_track_routing_count, i, src_track_routing_value
+  local dest_track_routing_count, src_track_routing_value
 
   dest_track_routing_count = reaper.GetTrackNumSends(dest_track, 0)
 
@@ -522,7 +530,7 @@ end
 
 
 function removeRouting(routing_option_type_choice, selected_track, target_track)
-  local i, this_track_dest, this_track_src
+  local this_track_dest, this_track_src
 
   if routing_option_type_choice == "send" then
 
@@ -548,7 +556,6 @@ end
 
 
 function reselectTracks()
-  local i
 
   for i = 1, #_selected_tracks do
     reaper.SetTrackSelected(_selected_tracks[i], true)
@@ -592,7 +599,7 @@ initBussDriver()
 
 
 function wipeDummyRoutingTrackRouting()
-  local dummy_routing_track, dummy_routing_track_routing_count, i, j
+  local dummy_routing_track, dummy_routing_track_routing_count
 
   dummy_routing_track = getDummyTracks()
 
