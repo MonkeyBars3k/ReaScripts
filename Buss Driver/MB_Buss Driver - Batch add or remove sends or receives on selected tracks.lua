@@ -63,7 +63,7 @@ end
 _selected_tracks = getSelectedTracks(_selected_tracks_count)
 
 
-function launchDialog()
+function launchBussDriverDialog()
   local routing_options_objs, routing_options_window_content_height
 
   routing_options_objs = getRoutingOptionsObjects()
@@ -350,7 +350,7 @@ function getDummyTracks()
       dummy_routing_track, dummy_target_track = getDummyTracksFromGUID()
     end
   end
-  
+
   return dummy_routing_track, dummy_target_track
 end
 
@@ -389,8 +389,6 @@ end
 function launchRoutingSettings(routing_type)
   local set_1st_selected_track_last_touched, view_routing_for_last_touched_track, dummy_routing_track, dummy_target_track, api_routing_type, dummy_routing_track_routing_count
 
-  reaper.Undo_BeginBlock()
-
   set_1st_selected_track_last_touched = 40914
   view_routing_for_last_touched_track = 40293
   dummy_routing_track, dummy_target_track = getDummyTracks()
@@ -415,7 +413,12 @@ function launchRoutingSettings(routing_type)
   reaper.SetOnlyTrackSelected(dummy_routing_track)
   reaper.Main_OnCommand(set_1st_selected_track_last_touched, 0)
   reaper.Main_OnCommand(view_routing_for_last_touched_track, 0)
-  reaper.Undo_EndBlock("MB_Buss Driver", -1)
+  preventUndoPoint()
+end
+
+
+function preventUndoPoint()
+  reaper.defer(function() end)
 end
 
 
@@ -427,7 +430,6 @@ function submitRoutingOptionChanges(routing_options_form_fields, routing_options
   
   reaper.Undo_BeginBlock()
   addRemoveRouting(routing_options_form_fields, routing_option_target_tracks_choices)
-  deleteDummyTracks()
   routing_options_window:close()
   reaper.Undo_EndBlock("MB_Buss Driver", -1)
 end
@@ -579,13 +581,11 @@ end
 
 function initBussDriver()
   if _selected_tracks_count > 0 then
-    launchDialog()
+    launchBussDriverDialog()
   end
 end
 
 initBussDriver()
-
-
 
 
 
