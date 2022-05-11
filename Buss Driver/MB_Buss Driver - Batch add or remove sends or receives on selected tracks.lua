@@ -50,6 +50,15 @@ _api_msg_answer_yes = 6
 
 
 
+
+function preventUndoPoint()
+  reaper.defer(function() end)
+end
+
+-- preventUndoPoint()
+
+
+
 function getSelectedTracks()
   local selected_tracks, this_selected_track
 
@@ -124,29 +133,29 @@ function launchBussDriverDialog()
   routing_options_objs = populateRoutingOptionsWindow(routing_options_objs)
   routing_options_objs = defineRoutingOptionsMethods(routing_options_objs)
 
-  routing_options_objs.window:open{align="center", constrain = true}
+  routing_options_objs.window:open{align="center"}
 end
 
 
 function getRoutingOptionsObjects()
   local routing_options_objs = {
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", maxh = 1250},
-    ["viewport"] = rtk.Viewport{halign = "center", padding = "0 25"},
-    ["content"] = rtk.VBox{halign = "center", padding = "27 0 7"},
-    ["title"] = rtk.Heading{"Buss Driver", w = 1, halign = "center", bmargin = 25},
+    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 900, maxh = rtk.Attribute.NIL},
+    ["viewport"] = rtk.Viewport{halign = "center", padding = 0},
+    ["title"] = rtk.Heading{"Buss Driver", halign = "left", fontscale = "0.6", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
+    ["content"] = rtk.VBox{halign = "center", padding = "10 0 7"},
     ["action_sentence_wrapper"] = rtk.Container{w = 1, halign = "center"},
     ["action_sentence"] = rtk.HBox{margin = "9 0 12"},
     ["action_text_start"] = rtk.Text{"I want to "},
     ["addremove_dropdown"] = rtk.OptionMenu{menu = {{"add +", id = "add"}, {"remove -", id = "remove"}}, h = 20, margin = "-2 4 0 0", padding = "0 0 3 5", spacing = 5, ref = "routing_option_addremove"},
     ["type_dropdown"] = rtk.OptionMenu{menu = {{"sends", id = "send"}, {"receives", id = "receive"}}, h = 20, tmargin = -2, padding = "0 0 3 5", spacing = 5, ref = "routing_option_type"},
     ["action_text_end"] = rtk.Text{" to the selected tracks."},
-    ["configure_wrapper"] = rtk.Container{w = 1, halign = "center", margin = "10 0 15"},
-    ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created. Warning: this creates tracks that will reappear on undo. They are safe to delete if this window is closed."},
     ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want to add sends to?", w = 1, tmargin = 5, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
-    ["form_fields"] = rtk.VBox{padding = 10, spacing = 10},
+    ["form_fields"] = rtk.VBox{padding = "10 10 5", spacing = 10},
     ["form_buttons"] = rtk.HBox{margin = 10, spacing = 10},
     ["form_submit"] = rtk.Button{"Add", disabled = true},
-    ["form_cancel"] = rtk.Button{"Cancel"}
+    ["form_cancel"] = rtk.Button{"Cancel"},
+    ["configure_wrapper"] = rtk.Container{w = 1, halign = "right"},
+    ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created. Warning: this creates tracks that will reappear on undo. They are safe to delete if this window is closed.", rmargin = 7, padding = "4 5 6", fontscale = 0.67}
   }
   routing_options_objs.target_tracks_box = getUnselectedTracks(routing_options_objs.form_submit)
 
@@ -157,7 +166,7 @@ end
 function getUnselectedTracks(routing_option_form_submit)
   local routing_option_target_tracks_box, this_track
 
-  routing_option_target_tracks_box = rtk.FlowBox{w = 0.85, ref = "routing_option_target_tracks_box"}
+  routing_option_target_tracks_box = rtk.FlowBox{w = 1, ref = "routing_option_target_tracks_box"}
 
   for i = 0, _all_tracks_count_on_launch-1 do
     this_track = reaper.GetTrack(0, i)
@@ -327,7 +336,7 @@ function updateButtons(routing_action, configure_btn, submit_btn, is_action_chan
 end
 
 
-function getDummyTracks()
+function getDummyTracks(check_only)
   local dummy_tracks, dummy_tracks_exist, fresh_all_tracks_count_on_launch, this_dummy_track, retval, this_dummy_track_GUID, dummy_tracks_GUIDs_str
 
   dummy_tracks = {
@@ -347,7 +356,7 @@ function getDummyTracks()
       dummy_tracks_exist = reaper.ValidatePtr(dummy_tracks.routing, "MediaTrack*") and reaper.ValidatePtr(dummy_tracks.target, "MediaTrack*")
     end
 
-    if not _dummy_tracks_GUIDs or _dummy_tracks_GUIDs == "" or not dummy_tracks_exist then
+    if (not _dummy_tracks_GUIDs or _dummy_tracks_GUIDs == "" or not dummy_tracks_exist) and check_only ~= "check_only" then
       _dummy_tracks_GUIDs = {}
       fresh_all_tracks_count_on_launch = reaper.CountTracks(0)
 
@@ -388,6 +397,9 @@ function launchRoutingSettings(routing_type)
 
   set_1st_selected_track_last_touched = 40914
   view_routing_for_last_touched_track = 40293
+
+  -- reaper.Undo_BeginBlock()
+ -- preventUndoPoint()
   dummy_tracks = getDummyTracks()
   dummy_target_track_routing_count = reaper.GetTrackNumSends(dummy_tracks.target, _api_routing_types[routing_type])
 
@@ -407,12 +419,9 @@ function launchRoutingSettings(routing_type)
   reaper.SetOnlyTrackSelected(dummy_tracks.routing)
   reaper.Main_OnCommand(set_1st_selected_track_last_touched, 0)
   reaper.Main_OnCommand(view_routing_for_last_touched_track, 0)
+  -- reaper.Undo_EndBlock("MB_Buss Driver", 1)
   preventUndoPoint()
-end
-
-
-function preventUndoPoint()
-  reaper.defer(function() end)
+  -- reaper.Undo_EndBlock("MB_Buss-Driver create dummy tracks", 1)
 end
 
 
@@ -440,10 +449,12 @@ function submitRoutingOptionChanges(routing_options_form_fields, routing_options
     routing_option_target_tracks_box = routing_options_form_fields.refs.routing_option_target_tracks_box
     routing_option_target_tracks_choices = getTargetTracksChoices(routing_option_target_tracks_box)
     
-    reaper.Undo_BeginBlock()
+    -- reaper.Undo_BeginBlock()
     addRemoveRouting(routing_options_form_fields, routing_option_target_tracks_choices)
     routing_options_window:close()
-    reaper.Undo_EndBlock("MB_Buss Driver", -1)
+     -- preventUndoPoint()
+    -- reaper.Undo_EndBlock("MB_Buss Driver", 1)
+     preventUndoPoint()
   end
 end
 
@@ -451,7 +462,7 @@ end
 function checkDummyTracksExist()
   local dummy_tracks, dummy_tracks_exist
 
-  dummy_tracks = getDummyTracks()
+  dummy_tracks = getDummyTracks("check_only")
   dummy_tracks_exist = reaper.ValidatePtr(dummy_tracks.routing, "MediaTrack*") and reaper.ValidatePtr(dummy_tracks.target, "MediaTrack*")
 
   return dummy_tracks_exist
@@ -588,15 +599,15 @@ function populateRoutingOptionsWindow(routing_options_objs)
   routing_options_objs.action_sentence_wrapper:add(routing_options_objs.action_sentence)
   routing_options_objs.form_fields:add(routing_options_objs.action_sentence_wrapper)
   routing_options_objs.configure_wrapper:add(routing_options_objs.configure_btn)
-  routing_options_objs.form_fields:add(routing_options_objs.configure_wrapper)
   routing_options_objs.form_fields:add(routing_options_objs.target_tracks_subheading)
   routing_options_objs.form_fields:add(routing_options_objs.target_tracks_box)
   routing_options_objs.form_buttons:add(routing_options_objs.form_submit)
   routing_options_objs.form_buttons:add(routing_options_objs.form_cancel)
-  routing_options_objs.content:add(routing_options_objs.title)
   routing_options_objs.content:add(routing_options_objs.form_fields)
   routing_options_objs.content:add(routing_options_objs.form_buttons)
+  routing_options_objs.content:add(routing_options_objs.configure_wrapper)
   routing_options_objs.viewport:attr("child", routing_options_objs.content)
+  routing_options_objs.window:add(routing_options_objs.title)
   routing_options_objs.window:add(routing_options_objs.viewport)
 
   return routing_options_objs
@@ -610,7 +621,6 @@ function initBussDriver()
 end
 
 initBussDriver()
-
 
 
 
