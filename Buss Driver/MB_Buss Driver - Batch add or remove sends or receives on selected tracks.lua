@@ -1,6 +1,6 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.1
+-- @version 1.0.2
 -- @changelog Initial upload
 -- @provides [main] .
 --   [nomain] rtk.lua
@@ -19,10 +19,7 @@
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
 -- TO DO:
--- defer to handle undo points?
--- design window
-  -- move configure button to bottom right above submit row
--- change drdpdowns to exclusive checkboxes
+-- deprecate dummy tracks+send & make routing settings form manually
 -- save last settings in extstate (checkbox to enable)
   -- reset settings button
 -- add hardware routing type
@@ -30,7 +27,7 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
--- require("mb-dev-functions")
+require("mb-dev-functions")
 
 
 local rtk = require('rtk')
@@ -139,23 +136,27 @@ end
 
 function getRoutingOptionsObjects()
   local routing_options_objs = {
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 900, maxh = rtk.Attribute.NIL},
-    ["viewport"] = rtk.Viewport{halign = "center", padding = 0},
+    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 1000, maxh = rtk.Attribute.NIL},
+    ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["title"] = rtk.Heading{"Buss Driver", halign = "left", fontscale = "0.6", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
-    ["content"] = rtk.VBox{halign = "center", padding = "10 0 7"},
+    ["configure_wrapper"] = rtk.Container{w = 1, halign = "right", margin = "5 3 0 0"},
+    ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created", padding = "4 5 6", fontscale = 0.67},
+    ["content"] = rtk.VBox{halign = "center", padding = "10 0 0"},
     ["action_sentence_wrapper"] = rtk.Container{w = 1, halign = "center"},
-    ["action_sentence"] = rtk.HBox{margin = "9 0 12"},
+    ["action_sentence"] = rtk.HBox{valign = "center", tmargin = 9},
     ["action_text_start"] = rtk.Text{"I want to "},
-    ["addremove_dropdown"] = rtk.OptionMenu{menu = {{"add +", id = "add"}, {"remove -", id = "remove"}}, h = 20, margin = "-2 4 0 0", padding = "0 0 3 5", spacing = 5, ref = "routing_option_addremove"},
-    ["type_dropdown"] = rtk.OptionMenu{menu = {{"sends", id = "send"}, {"receives", id = "receive"}}, h = 20, tmargin = -2, padding = "0 0 3 5", spacing = 5, ref = "routing_option_type"},
+    ["addremove_wrapper"] = rtk.VBox{margin = "0 5"},
+    ["add_checkbox"] = rtk.CheckBox{"add +", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "add_checkbox"},
+    ["remove_checkbox"] = rtk.CheckBox{"remove -", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "remove_checkbox"},
+    ["type_wrapper"] = rtk.VBox{rmargin = 5},
+    ["send_checkbox"] = rtk.CheckBox{"sends", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "send_checkbox"},
+    ["receive_checkbox"] = rtk.CheckBox{"receives", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "receive_checkbox"},
     ["action_text_end"] = rtk.Text{" to the selected tracks."},
-    ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want to add sends to?", w = 1, tmargin = 5, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
+    ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want to add sends to?", w = 1, tmargin = 14, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
     ["form_fields"] = rtk.VBox{padding = "10 10 5", spacing = 10},
     ["form_buttons"] = rtk.HBox{margin = 10, spacing = 10},
     ["form_submit"] = rtk.Button{"Add", disabled = true},
-    ["form_cancel"] = rtk.Button{"Cancel"},
-    ["configure_wrapper"] = rtk.Container{w = 1, halign = "right"},
-    ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created. Warning: this creates tracks that will reappear on undo. They are safe to delete if this window is closed.", rmargin = 7, padding = "4 5 6", fontscale = 0.67}
+    ["form_cancel"] = rtk.Button{"Cancel"}
   }
   routing_options_objs.target_tracks_box = getUnselectedTracks(routing_options_objs.form_submit)
 
@@ -189,7 +190,7 @@ function populateTargetTrackField(routing_option_form_submit, this_track, routin
     this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
     retval, this_track_name = reaper.GetSetMediaTrackInfo_String(this_track, "P_NAME", "", 0)
     this_track_color = reaper.GetTrackColor(this_track)
-    this_track_checkbox = rtk.CheckBox{this_track_num .. ". " .. this_track_name, fontscale = 0.75, margin = "0 5 1 2", padding = "1 2 1 2", spacing = 5, valign = "center", ref = "target_track_" .. this_track_num}
+    this_track_checkbox = rtk.CheckBox{this_track_num .. ". " .. this_track_name, h = 17, fontscale = 0.75, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "target_track_" .. this_track_num}
 
     if this_track_color ~= 0 then
       this_track_color = rtk.color.convert_native(this_track_color)
@@ -218,22 +219,12 @@ end
 function defineRoutingOptionsMethods(routing_options_objs)
 
   routing_options_objs.window.onclose = function()
-    deleteDummyTracks()
+    -- deleteDummyTracks()
     reselectTracks()
     storeRetrieveAllTracksCount("")
   end
 
-  routing_options_objs.addremove_dropdown.onchange = function(self)
-    updateRoutingForm(routing_options_objs, "is_action_change")
-
-    if self.selected_id == "remove" then
-      deleteDummyTracks()
-    end
-  end
-
-  routing_options_objs.type_dropdown.onchange = function()
-    updateRoutingForm(routing_options_objs)
-  end
+  setUpRadioCheckboxMethods(routing_options_objs)
 
   routing_options_objs.configure_btn.onclick = function()
     launchRoutingSettings(routing_options_objs.type_dropdown.selected_id)
@@ -248,6 +239,31 @@ function defineRoutingOptionsMethods(routing_options_objs)
   end
 
   return routing_options_objs
+end
+
+
+function setUpRadioCheckboxMethods(routing_options_objs)
+  local checkbox_sets = {
+    {"add_checkbox", "remove_checkbox"},
+    {"send_checkbox", "receive_checkbox"}
+  }
+
+  for i = 1, #checkbox_sets do
+    populateRadioCheckboxMethods(checkbox_sets[i][1], checkbox_sets[i][2], routing_options_objs)
+    populateRadioCheckboxMethods(checkbox_sets[i][2], checkbox_sets[i][1], routing_options_objs)
+  end
+end
+
+
+function populateRadioCheckboxMethods(checkbox1, checkbox2, routing_options_objs)
+  routing_options_objs[checkbox1].onclick = function()
+
+    routing_options_objs[checkbox1].onchange = function()
+      routing_options_objs[checkbox2]:toggle()
+      updateRoutingForm(routing_options_objs, "is_action_change")
+      routing_options_objs[checkbox1].onchange = nil
+    end
+  end
 end
 
 
@@ -286,8 +302,20 @@ end
 function updateRoutingForm(routing_options_objs, is_action_change)
   local routing_action, routing_type, target_tracks_subheading_text_intro, target_tracks_subheading_routing_action_text, type_preposition, action_preposition, action_text_end, target_tracks_subheading_routing_type_text, new_target_tracks_subheading_text
 
-  routing_action = routing_options_objs.addremove_dropdown.selected_id
-  routing_type = routing_options_objs.type_dropdown.selected_id
+  if routing_options_objs.add_checkbox.value then
+    routing_action = "add"
+
+  elseif routing_options_objs.remove_checkbox.value then
+    routing_action = "remove"
+  end
+
+  if routing_options_objs.send_checkbox.value then
+    routing_type = "send"
+
+  elseif routing_options_objs.receive_checkbox.value then
+    routing_type = "receive"
+  end
+
   target_tracks_subheading_text_intro = "Which tracks do you want to "
   target_tracks_subheading_routing_action_text = routing_action .. " "
 
@@ -395,13 +423,12 @@ end
 function launchRoutingSettings(routing_type)
   local set_1st_selected_track_last_touched, view_routing_for_last_touched_track, dummy_tracks, api_routing_type_val, dummy_target_track_routing_count, dest_track, src_track
 
-  set_1st_selected_track_last_touched = 40914
+  -- set_1st_selected_track_last_touched = 40914
   view_routing_for_last_touched_track = 40293
 
   -- reaper.Undo_BeginBlock()
  -- preventUndoPoint()
   dummy_tracks = getDummyTracks()
-  dummy_target_track_routing_count = reaper.GetTrackNumSends(dummy_tracks.target, _api_routing_types[routing_type])
 
   if routing_type == "send" then
     dest_track = dummy_tracks.routing
@@ -412,16 +439,32 @@ function launchRoutingSettings(routing_type)
     src_track = dummy_tracks.routing
   end
 
+  dummy_target_track_routing_count = reaper.GetTrackNumSends(dest_track, _api_routing_types[routing_type])
+
   if dummy_target_track_routing_count == 0 then
     reaper.CreateTrackSend(dest_track, src_track)
   end
+
+  -- local tr_select_state = reaper.CSurf_OnSelectedChange(dest_track, 1)
   
+  -- reaper.Undo_BeginBlock()
   reaper.SetOnlyTrackSelected(dummy_tracks.routing)
-  reaper.Main_OnCommand(set_1st_selected_track_last_touched, 0)
-  reaper.Main_OnCommand(view_routing_for_last_touched_track, 0)
-  -- reaper.Undo_EndBlock("MB_Buss Driver", 1)
-  preventUndoPoint()
+  -- reaper.Main_OnCommand(set_1st_selected_track_last_touched, 0)
+  -- preventUndoPoint()
   -- reaper.Undo_EndBlock("MB_Buss-Driver create dummy tracks", 1)
+  
+  -- if tr_select_state then
+    -- reaper.CSurf_FlushUndo(true)
+  -- end
+  -- preventUndoPoint()
+  -- reaper.Undo_BeginBlock()
+  reaper.Main_OnCommand(view_routing_for_last_touched_track, 0)
+  -- reaper.Undo_OnStateChangeEx("descchange", whichStates, trackparm)
+  -- reaper.Undo_EndBlock("MB_Buss Driver", 1)
+  -- reaper.Undo_EndBlock("MB_Buss-Driver create dummy tracks", 1)
+  -- preventUndoPoint()
+  -- reaper.Undo_BeginBlock()
+  -- preventUndoPoint()
 end
 
 
@@ -448,13 +491,14 @@ function submitRoutingOptionChanges(routing_options_form_fields, routing_options
   if submit_routing_approved then
     routing_option_target_tracks_box = routing_options_form_fields.refs.routing_option_target_tracks_box
     routing_option_target_tracks_choices = getTargetTracksChoices(routing_option_target_tracks_box)
-    
-    -- reaper.Undo_BeginBlock()
     addRemoveRouting(routing_options_form_fields, routing_option_target_tracks_choices)
+    
+    reaper.Undo_BeginBlock()
     routing_options_window:close()
      -- preventUndoPoint()
-    -- reaper.Undo_EndBlock("MB_Buss Driver", 1)
-     preventUndoPoint()
+     -- reaper.Undo_BeginBlock()
+    reaper.Undo_EndBlock("MB_Buss Driver", 1)
+     -- preventUndoPoint()
   end
 end
 
@@ -590,23 +634,27 @@ end
 
 
 function populateRoutingOptionsWindow(routing_options_objs)
-  routing_options_objs.addremove_dropdown:attr("selected", 1)
-  routing_options_objs.type_dropdown:attr("selected", 1)
+  routing_options_objs.add_checkbox:attr("value", "checked")
+  routing_options_objs.send_checkbox:attr("value", "checked")
+  routing_options_objs.addremove_wrapper:add(routing_options_objs.add_checkbox)
+  routing_options_objs.addremove_wrapper:add(routing_options_objs.remove_checkbox)
+  routing_options_objs.type_wrapper:add(routing_options_objs.send_checkbox)
+  routing_options_objs.type_wrapper:add(routing_options_objs.receive_checkbox)
   routing_options_objs.action_sentence:add(routing_options_objs.action_text_start)
-  routing_options_objs.action_sentence:add(routing_options_objs.addremove_dropdown)
-  routing_options_objs.action_sentence:add(routing_options_objs.type_dropdown)
+  routing_options_objs.action_sentence:add(routing_options_objs.addremove_wrapper)
+  routing_options_objs.action_sentence:add(routing_options_objs.type_wrapper)
   routing_options_objs.action_sentence:add(routing_options_objs.action_text_end)
   routing_options_objs.action_sentence_wrapper:add(routing_options_objs.action_sentence)
   routing_options_objs.form_fields:add(routing_options_objs.action_sentence_wrapper)
-  routing_options_objs.configure_wrapper:add(routing_options_objs.configure_btn)
   routing_options_objs.form_fields:add(routing_options_objs.target_tracks_subheading)
   routing_options_objs.form_fields:add(routing_options_objs.target_tracks_box)
   routing_options_objs.form_buttons:add(routing_options_objs.form_submit)
   routing_options_objs.form_buttons:add(routing_options_objs.form_cancel)
   routing_options_objs.content:add(routing_options_objs.form_fields)
   routing_options_objs.content:add(routing_options_objs.form_buttons)
-  routing_options_objs.content:add(routing_options_objs.configure_wrapper)
   routing_options_objs.viewport:attr("child", routing_options_objs.content)
+  routing_options_objs.configure_wrapper:add(routing_options_objs.configure_btn)
+  routing_options_objs.window:add(routing_options_objs.configure_wrapper)
   routing_options_objs.window:add(routing_options_objs.title)
   routing_options_objs.window:add(routing_options_objs.viewport)
 

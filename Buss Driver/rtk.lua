@@ -5,9 +5,9 @@
 -- 
 -- This is generated code. See https://reapertoolkit.dev/ for more info.
 -- 
--- version: 1.2.0-25-ga1dc7f7-dev
--- build: Wed May 11 01:51:46 UTC 2022
-__RTK_VERSION='1.2.0-25-ga1dc7f7-dev'
+-- version: 1.2.0-28-g774964b-dev
+-- build: Wed May 11 22:52:42 UTC 2022
+__RTK_VERSION='1.2.0-28-g774964b-dev'
 rtk=(function()
 __mod_rtk_core=(function()
 __mod_rtk_log=(function()
@@ -2662,9 +2662,7 @@ child:_realize_geometry()innerw=math.ceil(rtk.clamp(ww+wx,fillw and greedyw and 
 innerw,innerh=inner_maxw,inner_maxh
 hmargin,vmargin=0,0
 end
-calc.w=(w or(innerw+scrollw+hmargin))+hpadding
-calc.h=(h or(innerh+scrollh+vmargin))+vpadding
-if not self._backingstore then
+calc.w=self:_clampw((w or(innerw+scrollw+hmargin))+hpadding,clampw and boxw)calc.h=self:_clamph((h or(innerh+scrollh+vmargin))+vpadding,clamph and boxh)if not self._backingstore then
 self._backingstore=rtk.Image(innerw,innerh)else
 self._backingstore:resize(innerw,innerh,false)end
 self._vscrollh=0
@@ -3210,9 +3208,7 @@ end
 end
 self:_determine_zorders()calc.x=x
 calc.y=y
-calc.w=(w or innerw)+lp+rp
-calc.h=(h or innerh)+tp+bp
-end
+calc.w=self:_clampw((w or innerw)+lp+rp,clampw and boxw)calc.h=self:_clamph((h or innerh)+tp+bp,clamph and boxh)end
 function rtk.Container:_draw(offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)local calc=self.calc
 rtk.Widget._draw(self,offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)local x,y=calc.x+offx,calc.y+offy
 if y+calc.h<0 or y>cliph or calc.ghost then
@@ -3346,12 +3342,18 @@ function rtk.Window:_run()self:_update()if self.running then
 rtk.defer(self._run,self)end
 self._run_queued=self.running
 end
-function rtk.Window:_get_display_resolution(working)local x=math.floor(self.x)local y=math.floor(self.y)local w=math.floor(x+(self.w or 1))local h=math.floor(y+(self.h or 1))local l,t,r,b=reaper.my_getViewport(0,0,0,0,x,y,w,h,working and 1 or 0)return l,t,r-l,math.abs(b-t)end
+function rtk.Window:_get_display_resolution(working,frame)local x=math.floor(self.x)local y=math.floor(self.y)local w=math.floor(x+(self.w or 1))local h=math.floor(y+(self.h or 1))local l,t,r,b=reaper.my_getViewport(0,0,0,0,x,y,w,h,working and 1 or 0)local sw=r-l
+local sh=math.abs(b-t)if frame then
+local borderless=self.calc.borderness
+sw=sw-(borderless and 0 or self._os_window_frame_width)sh=sh-(borderless and 0 or self._os_window_frame_height)end
+return l,t,sw,sh
+end
 function rtk.Window:_get_geometry_from_attrs(overrides)local scale=rtk.scale.framebuffer or 1
 local x=self.x
 local y=self.y
-local w=self.calc.w/scale
-local h=self.calc.h/scale
+local calc=self.calc
+local w=calc.w/scale
+local h=calc.h/scale
 if overrides then
 local sx,sy,sw,sh=self:_get_display_resolution(true)if sw and sh then
 if overrides.halign==rtk.Widget.LEFT then
@@ -3432,8 +3434,8 @@ local r,lastx,lasty,x2,y2=reaper.JS_Window_GetClientRect(self.hwnd)local moved=r
 if moved or resized~=0 or borderless_toggled then
 local sw,sh=w,h
 if not calc.borderless then
-sw=w+self._os_window_frame_width/rtk.scale.framebuffer
-sh=h+self._os_window_frame_height/rtk.scale.framebuffer
+sw=w+self._os_window_frame_width
+sh=h+self._os_window_frame_height
 end
 sw=math.ceil(sw)sh=math.ceil(sh)reaper.JS_Window_SetPosition(self.hwnd,x,y,sw,sh)end
 if resized~=0 then
@@ -3451,14 +3453,16 @@ end
 function rtk.Window:open(options)if self.running or rtk._quit then
 return
 end
+local calc=self.calc
 rtk.window=self
 if options then
 options.halign=options.halign or options.align
 options.valign=options.valign or options.align
 end
+if not calc.borderless and self._os_window_frame_width==0 then
+self:_discover_os_window_frame_size(rtk.reaper_hwnd)end
 if not self.w or not self.h then
 self:reflow(rtk.Widget.REFLOW_FULL)end
-local calc=self.calc
 self.running=true
 gfx.ext_retina=1
 self:_handle_attr('bg', calc.bg or rtk.theme.bg)options=self:_calc_cell_attrs(self,options)local x,y,w,h=self:_get_geometry_from_attrs(options)self:sync('x', x, 0)self:sync('y', y, 0)self:sync('w', w)self:sync('h', h)local dockstate=self:_get_dockstate_from_attrs()gfx.init(calc.title,calc.w/rtk.scale.framebuffer,calc.h/rtk.scale.framebuffer,dockstate,x,y)gfx.update()if gfx.ext_retina==2 and rtk.os.mac and rtk.scale.framebuffer~=2 then
@@ -3541,7 +3545,7 @@ end
 resize.onmousedown=move.onmousedown
 resize.ondragstart=move.ondragstart
 resize.ondragmousemove=function(this,event)local _,ww,wh=reaper.JS_Window_GetClientSize(self.hwnd)local mx,my=reaper.GetMousePosition()local dx=mx-this._drag_start_mx
-local dy=(my-this._drag_start_my)*(rtk.os.mac and-1 or 1)local w=math.max(self.calc.minw,this._drag_start_ww+dx)local h=math.max(self.calc.minh,this._drag_start_wh+dy)reaper.JS_Window_Resize(self.hwnd,w,h)self:_clear_gdi(calc.w,calc.h)if rtk.os.mac then
+local dy=(my-this._drag_start_my)*(rtk.os.mac and-1 or 1)local w=math.max(self.minw or 0,this._drag_start_ww+dx)local h=math.max(self.minh or 0,this._drag_start_wh+dy)reaper.JS_Window_Resize(self.hwnd,w,h)self:_clear_gdi(calc.w,calc.h)if rtk.os.mac then
 reaper.JS_Window_Move(self.hwnd,this._drag_start_wx,this._drag_start_wy-h)end
 end
 self:add(move)self:add(resize, {valign='bottom', halign='right'})self._move_grip=move
@@ -3557,10 +3561,13 @@ end
 end
 end
 end
-function rtk.Window:_discover_os_window_frame_size(hwnd)local _,w,h=reaper.JS_Window_GetClientSize(hwnd)local _,l,t,r,b=reaper.JS_Window_GetRect(hwnd)self._os_window_frame_width=(r-l)-w
+function rtk.Window:_discover_os_window_frame_size(hwnd)if not reaper.JS_Window_GetClientSize then
+return
+end
+local _,w,h=reaper.JS_Window_GetClientSize(hwnd)local _,l,t,r,b=reaper.JS_Window_GetRect(hwnd)self._os_window_frame_width=(r-l)-w
 self._os_window_frame_height=math.abs(b-t)-h
-self._os_window_frame_width=self._os_window_frame_width*rtk.scale.framebuffer
-self._os_window_frame_height=self._os_window_frame_height*rtk.scale.framebuffer
+self._os_window_frame_width=self._os_window_frame_width
+self._os_window_frame_height=self._os_window_frame_height
 end
 function rtk.Window:_get_hwnd()if not rtk.has_js_reascript_api then
 return
@@ -3611,6 +3618,8 @@ return self.w and(calc.w-lp-rp)or nil,self.h and(calc.h-tp-bp)or nil,tp,rp,bp,lp
 end
 function rtk.Window:queue_mouse_refresh()self._mouse_refresh_queued=true
 end
+function rtk.Window:_clampw(w,box)return self.calc.w and w or rtk.Container._clampw(self,w,box)end
+function rtk.Window:_clamph(h,box)return self.calc.h and h or rtk.Container._clamph(self,h,box)end
 function rtk.Window:_reflow(boxx,boxy,boxw,boxh,fillw,filly,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)rtk.Container._reflow(self,boxx,boxy,boxw,boxh,fillw,filly,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)self.calc.x=0
 self.calc.y=0
 end
@@ -3630,8 +3639,8 @@ else
 local saved_size
 local boxw,boxh=calc.w,calc.h
 if not self.w or not self.h then
-saved_size={self.w,self.h}local _,_,sw,sh=self:_get_display_resolution(true)boxw=not self.w and(calc.maxw or sw*rtk.scale.framebuffer)or calc.w
-boxh=not self.h and(calc.maxh or sh*rtk.scale.framebuffer)or calc.h
+saved_size={self.w,self.h}local _,_,sw,sh=self:_get_display_resolution(true,not calc.borderless)boxw=not self.w and(calc.maxw or sw*rtk.scale.framebuffer)or calc.w or calc.minw
+boxh=not self.h and(calc.maxh or sh*rtk.scale.framebuffer)or calc.h or calc.minh
 end
 local _,_,w,h=rtk.Container.reflow(self,0,0,boxw,boxh,nil,nil,true,true,rtk.scale.value,nil,self,self.w~=nil,self.h~=nil
 )self:_realize_geometry()full=true
@@ -3956,8 +3965,7 @@ function rtk.Window:clear()self._backingstore:clear(self.calc.bg or rtk.theme.bg
 function rtk.Window:get_normalized_y()if not rtk.os.mac then
 return self.y
 else
-local _,_,_,sh=self:_get_display_resolution()local offset=gfx.h+self._os_window_frame_height
-return sh-self.y-offset/rtk.scale.framebuffer
+local _,_,_,sh=self:_get_display_resolution()return sh-self.y-gfx.h/rtk.scale.framebuffer-self._os_window_frame_height
 end
 end
 function rtk.Window:_set_touch_scrolling(viewport,state)local ts=self._touch_scrolling
@@ -4008,9 +4016,7 @@ elseif self.orientation==rtk.Box.VERTICAL then
 exph=(expand_unit_size>0)or exph
 end
 innerw,innerh=self:_reflow_step2(inner_maxw,inner_maxh,innerw,innerh,clampw,clamph,expand_unit_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp
-)fillw=fillw or(self.w and tonumber(self.w)<1.0)fillh=fillh or(self.h and tonumber(self.h)<1.0)innerw=w or math.max(innerw,fillw and greedyw and inner_maxw or 0)innerh=h or math.max(innerh,fillh and greedyh and inner_maxh or 0)calc.w=innerw+lp+rp
-calc.h=innerh+tp+bp
-return expw,exph
+)fillw=fillw or(self.w and tonumber(self.w)<1.0)fillh=fillh or(self.h and tonumber(self.h)<1.0)innerw=w or math.max(innerw,fillw and greedyw and inner_maxw or 0)innerh=h or math.max(innerh,fillh and greedyh and inner_maxh or 0)calc.w=self:_clampw(innerw+lp+rp,clampw and boxw)calc.h=self:_clamph(innerh+tp+bp,clamph and boxh)return expw,exph
 end
 function rtk.Box:_reflow_step1(w,h,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
 local orientation=calc.orientation
@@ -4319,7 +4325,7 @@ end
 end
 self:_determine_zorders()inner.w=inner.w+col.w
 calc.x,calc.y=x,y
-calc.w=self:_clampw((w or inner.w)+lp+rp)calc.h=self:_clamph((h or inner.h)+tp+bp)end
+calc.w=self:_clampw((w or inner.w)+lp+rp,clampw and boxw)calc.h=self:_clamph((h or inner.h)+tp+bp,clamph and boxh)end
 end)()
 
 __mod_rtk_spacer=(function()
