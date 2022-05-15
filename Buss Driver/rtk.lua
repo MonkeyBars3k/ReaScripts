@@ -5,9 +5,9 @@
 -- 
 -- This is generated code. See https://reapertoolkit.dev/ for more info.
 -- 
--- version: 1.2.0-28-g774964b-dev
--- build: Wed May 11 22:52:42 UTC 2022
-__RTK_VERSION='1.2.0-28-g774964b-dev'
+-- version: 1.2.0-31-g1076cdf-dev
+-- build: Sun May 15 00:44:23 UTC 2022
+__RTK_VERSION='1.2.0-31-g1076cdf-dev'
 rtk=(function()
 __mod_rtk_core=(function()
 __mod_rtk_log=(function()
@@ -148,18 +148,20 @@ rtk.font={BOLD=FONT_FLAG_BOLD,ITALICS=FONT_FLAG_ITALICS,UNDERLINE=FONT_FLAG_UNDE
 }rtk.keycodes={UP=30064,DOWN=1685026670,LEFT=1818584692,RIGHT=1919379572,RETURN=13,ENTER=13,SPACE=32,BACKSPACE=8,ESCAPE=27,TAB=9,HOME=1752132965,END=6647396,INSERT=6909555,DELETE=6579564,F1=26161,F2=26162,F3=26163,F4=26164,F5=26165,F6=26166,F7=26167,F8=26168,F9=26169,F10=6697264,F11=6697265,F12=6697266,}rtk.themes={dark={name='dark',dark=true,light=false,bg='#252525',default_font={'Calibri', 18},accent='#47abff',accent_subtle='#306088',tooltip_bg='#ffffff',tooltip_text='#000000',tooltip_font={'Segoe UI (TrueType)', 16},text='#ffffff',text_faded='#bbbbbb',text_font=nil,button='#555555',heading=nil,heading_font={'Calibri', 26},button_label='#ffffff',button_font=nil,button_gradient_mul=1,button_tag_alpha=0.32,button_normal_gradient=-0.37,button_normal_border_mul=0.7,button_hover_gradient=0.17,button_hover_brightness=0.9,button_hover_mul=1,button_hover_border_mul=1.1,button_clicked_gradient=0.47,button_clicked_brightness=0.9,button_clicked_mul=0.85,button_clicked_border_mul=1,entry_font=nil,entry_bg='#5f5f5f7f',entry_placeholder='#ffffff7f',entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_selection_bg='#0066bb',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111166',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',slider_font=nil,slider_tick_label=nil,},light={name='light',light=true,dark=false,accent='#47abff',accent_subtle='#a1d3fc',bg='#dddddd',default_font={'Calibri', 18},tooltip_font={'Segoe UI (TrueType)', 16},tooltip_bg='#ffffff',tooltip_text='#000000',button='#dedede',button_label='#000000',button_gradient_mul=1,button_tag_alpha=0.15,button_normal_gradient=-0.28,button_normal_border_mul=0.85,button_hover_gradient=0.12,button_hover_brightness=1,button_hover_mul=1,button_hover_border_mul=0.9,button_clicked_gradient=0.3,button_clicked_brightness=1.0,button_clicked_mul=0.9,button_clicked_border_mul=0.7,text='#000000',text_faded='#555555',heading_font={'Calibri', 26},entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_bg='#00000020',entry_placeholder='#0000007f',entry_selection_bg='#9fcef4',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111122',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',}}local function _postprocess_theme()local iconstyle=rtk.color.get_icon_style(rtk.theme.bg)rtk.theme.iconstyle=iconstyle
 for k,v in pairs(rtk.theme)do
 if type(v) == 'string' and v:byte(1) == 35 then
-local x={rtk.color.rgba(v)}rtk.theme[k]={rtk.color.rgba(v)}end
+rtk.theme[k]={rtk.color.rgba(v)}end
 end
 end
-function rtk.add_image_search_path(path,iconstyle)if not path:match('^%a:') and not path:match('^[\\/]') then
+function rtk.add_image_search_path(path,iconstyle)path=path:gsub('[/\\]$', '') .. '/'if not path:match('^%a:') and not path:match('^[\\/]') then
 path=rtk.script_path..path
 end
 if iconstyle then
-assert(iconstyle == 'dark' or iconstyle == 'light', 'iconstyle must be either light or dark')local paths=rtk._image_paths[iconstyle] or {}paths[#paths+1]=path
-rtk._image_paths[iconstyle]=paths
-else
-rtk._image_paths[#rtk._image_paths+1]=path
+assert(iconstyle == 'dark' or iconstyle == 'light', 'iconstyle must be either light or dark')else
+iconstyle='nostyle'end
+local paths=rtk._image_paths[iconstyle]
+if not paths then
+paths={}rtk._image_paths[iconstyle]=paths
 end
+paths[#paths+1]=path
 end
 function rtk.set_theme(name,overrides)name=name or rtk.theme.name
 assert(rtk.themes[name], 'rtk: theme "' .. name .. '" does not exist in rtk.themes')rtk.theme={}table.merge(rtk.theme,rtk.themes[name])if overrides then
@@ -1239,48 +1241,56 @@ rtk.Image.static.SUBTRACTIVE_BLEND=128
 rtk.Image.static.NO_SOURCE_ALPHA=2
 rtk.Image.static.NO_FILTERING=4
 rtk.Image.static.FAST_BLIT=2|4
-rtk.Image.static.ids=rtk.IndexManager(0,1023)local function _search_image_paths_list(fname,paths)if not paths or #paths==0 then
+rtk.Image.static.ids=rtk.IndexManager(0,1023)local function _search_image_paths_list(id,fname,paths)if not paths or #paths==0 then
 return
 end
-local path=string.format('%s/%s', paths[1], fname)if rtk.file.exists(path)then
+local path=paths[1]..fname
+local r=gfx.loadimg(id,path)if r~=-1 then
 return path
 end
 if #paths>1 then
 for i=2,#paths do
-path=string.format('%s/%s', paths[i], fname)if rtk.file.exists(path)then
+path=paths[i]..fname
+r=gfx.loadimg(id,path)if r~=-1 then
 return path
 end
 end
 end
 end
-function rtk.Image.static._search_image_paths(fname,style)if not style then
-local path=_search_image_paths_list(fname,rtk._image_paths)if path then
-return path,true
+function rtk.Image.static._search_image_paths_nostyle(id,fname)local path=_search_image_paths_list(id,fname,rtk._image_paths.nostyle)return path or _search_image_paths_list(id,fname,rtk._image_paths.fallback)end
+function rtk.Image.static._search_image_paths_style(id,fname,style)local path=_search_image_paths_list(id,fname,rtk._image_paths[style])if path then
+return path,style
 end
+end
+function rtk.Image.static._search_image_paths(id,fname,style)local path,gotstyle
+if not style then
+path,gotstyle=rtk.Image._search_image_paths_nostyle(id,fname)if not path then
 style=rtk.theme.iconstyle
+path,gotstyle=rtk.Image._search_image_paths_style(id,fname,style)end
+else
+path,gotstyle=rtk.Image._search_image_paths_style(id,fname,style)if not path then
+path,gotstyle=rtk.Image._search_image_paths_nostyle(id,fname)end
 end
-local path=_search_image_paths_list(fname,rtk._image_paths[style])if path then
-return path,true
-end
-local otherstyle=style=='light' and 'dark' or 'light'local path=_search_image_paths_list(fname,rtk._image_paths[otherstyle])if path then
-return path,false
-end
+if not path then
+local other=(style=='light') and 'dark' or 'light'path,gotstyle=rtk.Image._search_image_paths_style(id,fname,other)end
+return path,gotstyle
 end
 function rtk.Image.static.icon(name,style)style=style or rtk.theme.iconstyle
-local img
 local pack=rtk.Image._icons[name]
 if pack then
-img=pack:get(name,style)if img then
+local img=pack:get(name,style)if img then
 return img
 end
 end
-local path, matched=rtk.Image._search_image_paths(name .. '.png', style)if path then
-img=rtk.Image():load(path)if not matched then
+if not name:find('%.[%w_]+$') then
+name=name .. '.png'end
+local img,gotstyle=rtk.Image():_load(name,style)if img then
+if gotstyle and gotstyle~=style then
 img:recolor(style=='light' and '#ffffff' or '#000000')end
 img.style=style
 end
 if not img then
-log.error('rtk: rtk.Image.icon("%s"): icon not found in any icon path', name)end
+log.error('rtk: rtk.Image.icon("%s"): icon could not be loaded from any image path', name)end
 return img
 end
 rtk.Image.static.make_icon=rtk.Image.static.icon
@@ -1304,25 +1314,22 @@ self:resize(w,h,false)end
 self.density=density or 1.0
 return self
 end
-function rtk.Image:load(path,density)local found=path
-if not rtk.file.exists(path)then
-found=rtk.script_path..path
-if not rtk.file.exists(found)then
-found=rtk.Image._search_image_paths(path)end
+function rtk.Image:load(path,density)local ok,gotstyle=self:_load(path,nil,density)if ok then
+return self
+else
+log.warning('rtk: rtk.Image:load("%s"): no such file found in any search paths', path)end
 end
-self._path=found
-local id=self.id
+function rtk.Image:_load(fname,style,density)local id=self.id
 if not id or self._ref then
 id=rtk.Image.static.ids:next()end
-local res=gfx.loadimg(id,found)if res~=-1 then
+local path,gotstyle=rtk.Image._search_image_paths(id,fname,style)if path then
 self.id=id
-self.path=found
-self.w,self.h=gfx.getimgdim(self.id)self.density=density or 1.0
-return self
+self.path=path
+self.w,self.h=gfx.getimgdim(id)self.density=density or 1.0
+return self,gotstyle
 else
 rtk.Image.static.ids:release(id)self.w,self.h=nil,nil
 self.id=nil
-log.warning('rtk: rtk.Image:load("%s"): no such file found in any search paths', path)return nil
 end
 end
 function rtk.Image:pushdest()assert(self.id, 'create() or load() must be called first')rtk.pushdest(self.id)end
@@ -1595,7 +1602,7 @@ densities=self:_get_densities(name,style)end
 if not densities and style then
 local otherstyle=style=='light' and 'dark' or 'light'recolor=true
 _,densities=self:_get_densities(name,otherstyle)if not densities then
-_,densities=self:_get_densities(name,nil)recolor=true
+_,densities=self:_get_densities(name,nil)recolor=false
 end
 end
 if not densities then
@@ -2980,8 +2987,7 @@ self:close()end
 end
 function rtk.Popup:open(attrs)local calc=self.calc
 local anchor=calc.anchor
-self.closed=false
-if not attrs and not anchor then
+self:sync('opened', true)if not attrs and not anchor then
 attrs = {valign='center', halign='center'}end
 if calc.visible and not self:get_animation('alpha') then
 return self
@@ -2998,11 +3004,10 @@ self:cancel_animation('alpha')self:attr('alpha', 1)elseif anchor and not anchor.
 return
 end
 rtk.add_modal(self,anchor)self:show()self:focus()self:scrollto(0,0)end
-function rtk.Popup:close()if not self.calc.visible or self.closed then
+function rtk.Popup:close()if not self.calc.visible or not self.calc.opened then
 return
 end
-self.closed=true
-self:animate{attr='alpha', dst=0, duration=0.15}:done(function()self:hide()self:attr('alpha', 1)self.window:remove(self)end)rtk.reset_modal()end
+self:sync('opened', false)self:animate{attr='alpha', dst=0, duration=0.15}:done(function()self:hide()self:attr('alpha', 1)self.window:remove(self)end)rtk.reset_modal()end
 end)()
 
 __mod_rtk_container=(function()
@@ -5707,7 +5712,7 @@ function rtk.Slider:onchange()end
 end)()
 
 rtk.log=__mod_rtk_log
-local function init()rtk.script_path=({reaper.get_action_context()})[2]:match('^.+[\\//]')rtk.reaper_hwnd=reaper.GetMainHwnd()local ver=reaper.GetAppVersion():lower()if ver:find('x64') or ver:find('arm64') or ver:find('_64') or ver:find('aarch64') then
+local function init()rtk.script_path=({reaper.get_action_context()})[2]:match('^.+[\\//]')rtk._image_paths.fallback={rtk.script_path}rtk.reaper_hwnd=reaper.GetMainHwnd()local ver=reaper.GetAppVersion():lower()if ver:find('x64') or ver:find('arm64') or ver:find('_64') or ver:find('aarch64') then
 rtk.os.bits=64
 end
 local parts=ver:gsub('/.*', ''):split('.')rtk._reaper_version_major=tonumber(parts[1])local minor=parts[2] or ''local sepidx=minor:find('%D')if sepidx then
