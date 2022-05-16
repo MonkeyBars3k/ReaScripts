@@ -1,5 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="36aa68571392e503298522cc75b4917b9efe0d89">
+<index version="1" name="MonkeyBars-ReaScripts" commit="6334e0a9425771bcbcc27f05c2907abd599eeecf">
+  <category name="Buss Driver">
+    <reapack name="MB_Buss Driver - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Remove or set & add multiple sends or receives to/from multiple tracks in one go\par}
+}
+]]></description>
+      </metadata>
+      <version name="1.0" author="MonkeyBars" time="2022-05-10T23:10:44Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/rtk.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/serpent.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/gnu_license_v3.txt</source>
+      </version>
+      <version name="1.0.1" author="MonkeyBars" time="2022-05-11T04:30:28Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/rtk.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/serpent.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/gnu_license_v3.txt</source>
+      </version>
+      <version name="1.0.2" author="MonkeyBars" time="2022-05-12T05:34:19Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/rtk.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/serpent.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/gnu_license_v3.txt</source>
+      </version>
+      <version name="1.0.3" author="MonkeyBars" time="2022-05-15T04:32:51Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/rtk.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/serpent.lua</source>
+        <source file="gen_midi_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_midi_off.png</source>
+        <source file="gen_midi_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_midi_on.png</source>
+        <source file="gen_mono_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_mono_off.png</source>
+        <source file="gen_mono_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_mono_on.png</source>
+        <source file="gen_phase_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_phase_off.png</source>
+        <source file="gen_phase_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_phase_on.png</source>
+        <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/table_mute_off.png</source>
+        <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/table_mute_on.png</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gnu_license_v3.txt</source>
+      </version>
+    </reapack>
+  </category>
   <category name="Superglue">
     <reapack name="MB_Superglue - Glue - Nondestructively glue selected item(s) into Superitem. Use 'Edit' later to reveal contained items &amp; make changes.lua" type="script" desc="MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper">
       <metadata>
@@ -114,22 +163,12 @@
     </reapack>
   </category>
   <category name="Utilities">
-    <reapack name="benmrx_debug.lua" type="script" desc="Debug for ReaScript">
-      <version name="1.0" author="BenMRX" time="2022-01-17T14:43:44Z">
-        <changelog><![CDATA[initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/1b1059ba7d8646034a1c28d3bba4472b82d091b3/Utilities/benmrx_debug.lua</source>
-      </version>
-    </reapack>
-    <reapack name="MB_Deselect child tracks &amp; select their parent folder.lua" type="script" desc="Deselect child tracks &amp; select their parent folder">
-      <version name="1.0" author="MonkeyBars" time="2021-11-06T19:07:43Z">
-        <changelog><![CDATA[Initial commit]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/4921bf61e5c968e7f14a86a7ae7d2495519950c8/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
-      </version>
-    </reapack>
-    <reapack name="MB_Select child tracks &amp; deselect selected parent folder.lua" type="script" desc="Select child tracks &amp; deselect selected parent folder">
-      <version name="1.0" author="MonkeyBars" time="2021-11-06T19:09:37Z">
-        <changelog><![CDATA[Initial commit]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/549041a9f1b36dc64248f236c2f3b3c18bcb0379/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
+    <reapack name="MB_Select child tracks &amp; deselect selected parent folder.lua" type="script" desc="MB_Utilities: Various utility scripts for Reaper">
+      <version name="1.1" author="MonkeyBars" time="2022-05-10T20:20:58Z">
+        <changelog><![CDATA[Add undo blocks; organize metapackage]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea3800fe72392d9804695ea2d37cc375aeb0414/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
+        <source main="main" file="MB_Deselect child tracks &amp; select their parent folder.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea3800fe72392d9804695ea2d37cc375aeb0414/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea3800fe72392d9804695ea2d37cc375aeb0414/Utilities/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
