@@ -3,7 +3,7 @@
 
 -- ==== SUPERGLUE UTILS SCRIPT ARCHITECTURE NOTES ====
 -- Superglue requires Reaper SWS plug-in extension (https://standingwaterstudios.com/) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
--- Superglue uses the great GUI library Reaper Toolkit. (https://reapertoolkit.dev/)
+-- Superglue uses the great GUI library Reaper Toolkit (rtk). (https://reapertoolkit.dev/)
 -- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. (https://github.com/pkulchenko/serpent)
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 -- Data is also stored in media items' & takes' P_EXT.
@@ -14,8 +14,8 @@
 -- require("sg-dev-functions")
  
 
-local serpent = require("serpent")
 local rtk = require('rtk')
+local serpent = require("serpent")
 
 
 local _script_path, _os_path_separator, _os_path_splitter_pattern, _custom_path_separator, _superitem_bg_img_path, _restored_item_bg_img_path, _restored_instance_bg_img_path, _peak_data_filename_extension, _command_id_glue_ignoring_time_selection, _command_id_glue_ignoring_time_selection_increase_channel_count, _command_id_scroll_to_selected_item, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_loop_src_key, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _loop_enabled_value, _sizing_region_1st_display_num, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_bounds_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_loop_source_sets_sizing_region_bounds_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
@@ -333,7 +333,7 @@ function openOptionsWindow()
   option_form_buttons:add(option_form_cancel)
   options_window_content:add(options_window_title)
 
-  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content,option_form_submit)
+  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content, option_form_submit)
   option_form_submit.onclick = function()
     submitOptionChanges(all_option_controls, options_window)
   end
