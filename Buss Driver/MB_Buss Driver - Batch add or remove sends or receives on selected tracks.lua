@@ -362,16 +362,16 @@ function defineAudioChannelOptions()
   audio_channel_submenu_mono_options = {}
   audio_channel_submenu_stereo_options = {}
 
-  for i = 1, 16 do
-    audio_channel_submenu_mono_options[i] = {
+  for i = 0, 15 do
+    audio_channel_submenu_mono_options[i+1] = {
       ["label"] = tostring(i),
       ["id"] = 1024 + i
     }
   end
 
-  for i = 1, 15 do
-    audio_channel_submenu_stereo_options[i] = {
-      ["label"] = tostring(i) .. "/" .. tostring(i+1),
+  for i = 0, 14 do
+    audio_channel_submenu_stereo_options[i+1] = {
+      ["label"] = tostring(i+1) .. "/" .. tostring(i+2),
       ["id"] = i
     }
   end
@@ -589,8 +589,8 @@ function populateRoutingSettingsFormValues()
     ["volume"] = 1,
     ["pan"] = 0,
     ["midi_velpan"] = 0,
-    ["audio_src_channel"] = 1,
-    ["audio_rcv_channel"] = 1,
+    ["audio_src_channel"] = 0,
+    ["audio_rcv_channel"] = 0,
     ["midi_src"] = "0/0",
     ["midi_rcv"] = "0/0"
   }
@@ -705,22 +705,22 @@ function addRouting(routing_option_type_choice, selected_track, target_track)
   if routing_option_type_choice == "send" then
     reaper.CreateTrackSend(selected_track, target_track)
     
-    if _routing_settings_objs.all_values then
-      applyRoutingSettings(selected_track, routing_option_type_choice)
+    if _routing_settings_objs and _routing_settings_objs.all_values then
+      applyRoutingSettings(selected_track, routing_option_type_choice, target_track)
     end
 
   elseif routing_option_type_choice == "receive" then
     reaper.CreateTrackSend(target_track, selected_track)
     
-    if _routing_settings_objs.all_values then
-      applyRoutingSettings(target_track, routing_option_type_choice)
+    if _routing_settings_objs and _routing_settings_objs.all_values then
+      applyRoutingSettings(target_track, routing_option_type_choice, selected_track)
     end
   end
 end
 
 
-function applyRoutingSettings(dest_track, routing_option_type_choice)
-  local routing_settings_api_objs_conversion, routing_settings_api_obj_names, dest_track_routing_count, api_routing_type, pan_law_idx, this_api_routing_setting, this_user_routing_setting_value
+function applyRoutingSettings(dest_track, routing_option_type_choice, src_track)
+  local routing_settings_api_objs_conversion, routing_settings_api_obj_names, dest_track_routing_count, api_routing_type, is_pan_law, is_midi_channel, is_midi_bus, is_audio_channel, this_api_routing_setting, this_user_routing_setting_value, is_src_channel, is_dest_channel, is_stereo_channel, is_mono_channel, target_track, current_track_channel_count, required_track_channel_count
 
   routing_settings_api_objs_conversion = {}
 
@@ -739,26 +739,54 @@ function applyRoutingSettings(dest_track, routing_option_type_choice)
   end
 
   for i = 1, 14 do
-    pan_law_idx = 6
+    is_pan_law = i == 6
+    is_midi_channel = i == 10 or i == 11
+    is_midi_bus = i == 12 or i == 13
+    is_audio_channel = i == 8 or i == 9
 
-    if i == pan_law_idx then
+    if is_pan_law then
       goto skip_to_next
     end
 
     this_api_routing_setting = _api_all_routing_settings[i]
     this_obj_routing_name = routing_settings_api_objs_conversion[this_api_routing_setting]
 
-    if i == 10 or i == 11 then
+    if is_midi_channel then
       this_user_routing_setting_value = string.gsub(_routing_settings_objs.all_values[this_obj_routing_name], "[%d+]/", "")
     
-    elseif i == 12 or i == 13 then
+    elseif is_midi_bus then
       this_user_routing_setting_value = string.gsub(_routing_settings_objs.all_values[this_obj_routing_name], "/[%d+]", "")
 
     else
       this_user_routing_setting_value = _routing_settings_objs.all_values[this_obj_routing_name]
-    end
 
-    -- CHECK FOR AUDIO CHANNEL EXISTENCE AND ADD IF NOT PRESENT ON TRACKS
+      if is_audio_channel then
+        is_src_channel = i == 8
+        is_dest_channel = i == 9
+        is_stereo_channel = (this_user_routing_setting_value > 2 and this_user_routing_setting_value < 17)
+        is_mono_channel = (this_user_routing_setting_value > 1026 and this_user_routing_setting_value < 1041)
+
+        if is_src_channel then
+          target_track = dest_track
+
+        elseif is_dest_channel then
+          target_track = src_track
+        end
+
+        current_track_channel_count = reaper.GetMediaTrackInfo_Value(target_track, "I_NCHAN")
+
+        if is_stereo_channel then
+          required_track_channel_count = this_user_routing_setting_value
+
+        elseif is_mono_channel then
+          required_track_channel_count = this_user_routing_setting_value - 1024
+        end
+
+        if required_track_channel_count > current_track_channel_count then
+          reaper.SetMediaTrackInfo_Value(target_track, "I_NCHAN", required_track_channel_count)
+        end
+      end
+    end
 
     reaper.BR_GetSetTrackSendInfo(dest_track, api_routing_type, dest_track_routing_count-1, this_api_routing_setting, 1, this_user_routing_setting_value)
 
