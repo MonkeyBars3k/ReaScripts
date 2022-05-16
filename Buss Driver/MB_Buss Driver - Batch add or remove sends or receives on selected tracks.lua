@@ -136,14 +136,6 @@ function launchBussDriverDialog()
   routing_options_objs = defineRoutingOptionsMethods(routing_options_objs)
 
   routing_options_objs.window:open{align="center"}
-
-
-
-launchRoutingSettings(routing_options_objs)
-
-
-
-
 end
 
 
@@ -349,7 +341,23 @@ end
 
 
 function launchRoutingSettings(routing_options_objs)
-  local audio_channel_submenu_mono_options, audio_channel_submenu_stereo_options, midi_channel_submenu_bus_options, midi_channel_submenu_bus_option_val, audio_channel_options, midi_channel_options, this_form_field_class, this_form_field_value
+  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_options, this_form_field_class, this_form_field_value
+
+  audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
+  midi_channel_options = defineMIDIChannelOptions()
+  
+  defineRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+  gatherRoutingSettingsFormFields()
+  setRoutingSettingsPopupEventHandlers()
+  setRoutingSettingsFormEventHandlers()
+  populateRoutingSettingsFormValues()
+  populateRoutingSettingsObjs()
+  _routing_settings_objs.popup:open()
+end
+
+
+function defineAudioChannelOptions()
+  local audio_channel_submenu_mono_options, audio_channel_submenu_stereo_options, audio_channel_src_options, audio_channel_rcv_options
 
   audio_channel_submenu_mono_options = {}
   audio_channel_submenu_stereo_options = {}
@@ -368,11 +376,23 @@ function launchRoutingSettings(routing_options_objs)
     }
   end
 
-  audio_channel_options = {
+  audio_channel_src_options = {
     {"None", id = -1},
     {"Mono source", submenu = audio_channel_submenu_mono_options},
     {"Stereo source", submenu = audio_channel_submenu_stereo_options}
   }
+
+  audio_channel_rcv_options = {
+    {"Mono receiving channels", submenu = audio_channel_submenu_mono_options},
+    {"Stereo receiving channels", submenu = audio_channel_submenu_stereo_options}
+  }
+
+  return audio_channel_src_options, audio_channel_rcv_options
+end
+
+
+function defineMIDIChannelOptions()
+  local midi_channel_submenu_bus_options, midi_channel_submenu_bus_option_val, midi_channel_options
 
   -- none -1 / stereo idx / mono 1024+idx / hwout 512+idx
   midi_channel_options = {
@@ -416,6 +436,11 @@ function launchRoutingSettings(routing_options_objs)
     }
   end
 
+  return midi_channel_options
+end
+
+
+function defineRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
   _routing_settings_objs = {
     ["popup"] = rtk.Popup{w = routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0--[[,    autoclose = false--]]},
     ["content"] = rtk.VBox(),
@@ -428,9 +453,9 @@ function launchRoutingSettings(routing_options_objs)
     ["phase"] = rtk.Button{icon = "gen_phase_off", w = 10, h = 10, tooltip = "Reverse phase", margin = "4 0 0 5", padding = 0, circular = true, data_class = "routing_setting_field"},
     ["mono_stereo"] = rtk.Button{icon = "gen_mono_off", w = 23, h = 20, tooltip = "Mono/Stereo", lmargin = 5, padding = 0, surface = false, data_class = "routing_setting_field"},
     ["send_mode"] = rtk.OptionMenu{menu = {
-      {"Post-Fader (Post-Pan)", id = 1},
-      {"Pre-Fader (Post-FX)", id = 4},
-      {"Pre-FX", id = 2}
+      {"Post-Fader (Post-Pan)", id = 0},
+      {"Pre-Fader (Post-FX)", id = 1},
+      {"Pre-FX", id = 3}
     }, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
     ["middlerow"] = rtk.HBox{tmargin = 8},
     ["volume"] = rtk.Slider{"0.0", tooltip = "Volume", min = 0, max = 4, tmargin = 8, color = "orange", data_class = "routing_setting_field"},
@@ -439,13 +464,18 @@ function launchRoutingSettings(routing_options_objs)
     ["midi_velpan"] = rtk.Button{icon = "gen_midi_off", valign = "center", surface = false, tooltip = "Toggle Midi Volume/Pan", data_class = "routing_setting_field"},
     ["bottomrow"] = rtk.HBox{tmargin = 8, spacing = 3, valign = "center"},
     ["audio_txt"] = rtk.Text{"Audio:", bmargin = "2", fontscale = 0.63},
-    ["audio_src_channel"] = rtk.OptionMenu{menu = audio_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
-    ["audio_rcv_channel"] = rtk.OptionMenu{menu = audio_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
+    ["audio_src_channel"] = rtk.OptionMenu{menu = audio_channel_src_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
+    ["audio_rcv_channel"] = rtk.OptionMenu{menu = audio_channel_rcv_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
     ["midi_txt"] = rtk.Text{"MIDI:", margin = "0 0 2 10", fontscale = 0.63},
     ["midi_src"] = rtk.OptionMenu{menu = midi_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
     ["midi_rcv"] = rtk.OptionMenu{menu = midi_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
     ["form_fields"] = {}
   }
+end
+
+
+function gatherRoutingSettingsFormFields()
+  _routing_settings_objs.form_fields = {}
 
   for routing_setting_obj_name, routing_setting_obj_value in pairs(_routing_settings_objs) do
     
@@ -453,27 +483,18 @@ function launchRoutingSettings(routing_options_objs)
       _routing_settings_objs.form_fields[routing_setting_obj_name] = routing_setting_obj_value
     end
   end
+end
 
-  _routing_settings_objs.popup.onblur = function()
+
+function setRoutingSettingsPopupEventHandlers()
+
+  _routing_settings_objs.popup.onclose = function()
 
     if not _routing_settings_objs.all_values then
       _routing_settings_objs.all_values = {}
     end
 
-    for routing_setting_name, routing_setting_value in pairs(_routing_settings_objs.form_fields) do
-      this_form_field_class = routing_setting_value.class.name 
-
-      if this_form_field_class == "rtk.Button" or this_form_field_class == "rtk.Slider" then
-        this_form_field_value = routing_setting_value.value
-
-      elseif this_form_field_class == "rtk.OptionMenu" then
-        this_form_field_value = routing_setting_value.selected_id
-      end
-
-      _routing_settings_objs.all_values[routing_setting_name] = this_form_field_value
-    end
-
-    -- logTable(_routing_settings_objs.all_values)
+    getSetRoutingSettingsValues("get")
   end
   
   _routing_settings_objs.popup.onkeypress = function(self, event)
@@ -483,6 +504,40 @@ function launchRoutingSettings(routing_options_objs)
       _routing_settings_objs.popup:close()
     end
   end
+end
+
+
+function getSetRoutingSettingsValues(get_set, new_routing_settings_values)
+  local this_form_field_class, this_form_field_value
+
+  for routing_setting_name, routing_setting_value in pairs(_routing_settings_objs.form_fields) do
+    this_form_field_class = routing_setting_value.class.name
+
+    if get_set == "get" then
+
+      if this_form_field_class == "rtk.Button" or this_form_field_class == "rtk.Slider" then
+        this_form_field_value = _routing_settings_objs[routing_setting_name].value
+
+      elseif this_form_field_class == "rtk.OptionMenu" then
+        this_form_field_value = _routing_settings_objs[routing_setting_name].selected_id
+      end
+
+      _routing_settings_objs.all_values[routing_setting_name] = this_form_field_value
+
+    elseif get_set == "set" then
+
+      if this_form_field_class == "rtk.Button" or this_form_field_class == "rtk.Slider" then
+        _routing_settings_objs[routing_setting_name]:attr("value", new_routing_settings_values[routing_setting_name])
+
+      elseif this_form_field_class == "rtk.OptionMenu" then
+        _routing_settings_objs[routing_setting_name]:attr("selected", new_routing_settings_values[routing_setting_name])
+      end
+    end
+  end
+end
+
+
+function setRoutingSettingsFormEventHandlers()
 
   _routing_settings_objs.mute.onclick = function(self)
     toggleBtnState(self, "table_mute")
@@ -507,18 +562,51 @@ function launchRoutingSettings(routing_options_objs)
   _routing_settings_objs.midi_velpan.onclick = function(self)
     toggleBtnState(self, "gen_midi")
   end
+end
 
-  _routing_settings_objs.mute:attr("value", 0)
-  _routing_settings_objs.phase:attr("value", 0)
-  _routing_settings_objs.mono_stereo:attr("value", 0)
-  _routing_settings_objs.midi_velpan:attr("value", 0)
-  _routing_settings_objs.send_mode:select(1)
-  _routing_settings_objs.volume:attr("value", 1)
-  _routing_settings_objs.pan:attr("value", 0)
-  _routing_settings_objs.audio_src_channel:select(1)
-  _routing_settings_objs.audio_rcv_channel:select(1)
-  _routing_settings_objs.midi_src:select("0/0")
-  _routing_settings_objs.midi_rcv:select("0/0")
+
+function toggleBtnState(btn, img_filename_base)
+
+  if btn.value == 0 then
+    btn:attr("value", 1)
+    btn:attr("icon", img_filename_base .. "_on")
+
+  elseif btn.value == 1 then
+    btn:attr("value", 0)
+    btn:attr("icon", img_filename_base .. "_off")
+  end
+end
+
+
+function populateRoutingSettingsFormValues()
+  local default_routing_settings_values, new_routing_settings_values
+
+  default_routing_settings_values = {
+    ["mute"] = 0,
+    ["phase"] = 0,
+    ["mono_stereo"] = 0,
+    ["send_mode"] = 0,
+    ["volume"] = 1,
+    ["pan"] = 0,
+    ["midi_velpan"] = 0,
+    ["audio_src_channel"] = 1,
+    ["audio_rcv_channel"] = 1,
+    ["midi_src"] = "0/0",
+    ["midi_rcv"] = "0/0"
+  }
+
+  if _routing_settings_objs.all_values then
+    new_routing_settings_values = _routing_settings_objs.all_values
+
+  else
+    new_routing_settings_values = default_routing_settings_values
+  end
+
+  getSetRoutingSettingsValues("set", new_routing_settings_values)
+end
+
+
+function populateRoutingSettingsObjs()
   _routing_settings_objs.content:add(_routing_settings_objs.title)
   _routing_settings_objs.toprow:add(_routing_settings_objs.volume_val)
   _routing_settings_objs.toprow:add(_routing_settings_objs.pan_val)
@@ -543,27 +631,6 @@ function launchRoutingSettings(routing_options_objs)
   _routing_settings_objs.form:add(_routing_settings_objs.bottomrow)
   _routing_settings_objs.content:add(_routing_settings_objs.form)
   _routing_settings_objs.popup:attr("child", _routing_settings_objs.content)
-  _routing_settings_objs.popup:open()
-
-
-
--- local track = reaper.GetTrack(0, 14)
--- local send_val = reaper.BR_GetSetTrackSendInfo(track, _api_routing_types.send, 0, _api_all_routing_settings[8], 0, 0)
--- log(send_val)
-
-end
-
-
-function toggleBtnState(btn, img_filename_base)
-
-  if btn.value == 0 then
-    btn:attr("value", 1)
-    btn:attr("icon", img_filename_base .. "_on")
-
-  elseif btn.value == 1 then
-    btn:attr("value", 0)
-    btn:attr("icon", img_filename_base .. "_off")
-  end
 end
 
 
@@ -653,24 +720,15 @@ end
 
 
 function applyRoutingSettings(dest_track, routing_option_type_choice)
-  local routing_settings_api_objs_conversion, dest_track_routing_count, this_api_routing_setting, this_user_routing_setting_value
+  local routing_settings_api_objs_conversion, routing_settings_api_obj_names, dest_track_routing_count, api_routing_type, pan_law_idx, this_api_routing_setting, this_user_routing_setting_value
 
-  routing_settings_api_objs_conversion = {
-    [_api_all_routing_settings[1]] = "mute",
-    [_api_all_routing_settings[2]] = "phase",
-    [_api_all_routing_settings[3]] = "mono_stereo",
-    [_api_all_routing_settings[4]] = "volume",
-    [_api_all_routing_settings[5]] = "pan",
-    [_api_all_routing_settings[6]] = "pan_law",
-    [_api_all_routing_settings[7]] = "send_mode",
-    [_api_all_routing_settings[8]] = "audio_src_channel",
-    [_api_all_routing_settings[9]] = "audio_rcv_channel",
-    [_api_all_routing_settings[10]] = "midi_src",
-    [_api_all_routing_settings[11]] = "midi_rcv",
-    [_api_all_routing_settings[12]] = "midi_src",
-    [_api_all_routing_settings[13]] = "midi_rcv",
-    [_api_all_routing_settings[14]] = "midi_velpan"
-  }
+  routing_settings_api_objs_conversion = {}
+
+  for i = 1, 14 do
+    routing_settings_api_obj_names = {"mute", "phase", "mono_stereo", "volume", "pan", "pan_law", "send_mode", "audio_src_channel", "audio_rcv_channel",  "midi_src",  "midi_rcv",  "midi_src",  "midi_rcv",  "midi_velpan"}
+    routing_settings_api_objs_conversion[_api_all_routing_settings[i]] = routing_settings_api_obj_names[i]
+  end
+
   dest_track_routing_count = reaper.GetTrackNumSends(dest_track, 0)
 
   if routing_option_type_choice == "send" then
@@ -681,9 +739,9 @@ function applyRoutingSettings(dest_track, routing_option_type_choice)
   end
 
   for i = 1, 14 do
+    pan_law_idx = 6
 
-    -- skip PAN_LAW
-    if i == 6 then
+    if i == pan_law_idx then
       goto skip_to_next
     end
 
@@ -700,12 +758,9 @@ function applyRoutingSettings(dest_track, routing_option_type_choice)
       this_user_routing_setting_value = _routing_settings_objs.all_values[this_obj_routing_name]
     end
 
+    -- CHECK FOR AUDIO CHANNEL EXISTENCE AND ADD IF NOT PRESENT ON TRACKS
 
-    log(this_obj_routing_name)
-    log(this_user_routing_setting_value)
-
-    
-      -- reaper.BR_GetSetTrackSendInfo(dest_track, api_routing_type, dest_track_routing_count-1, this_api_routing_setting, 1, this_user_routing_setting_value)
+    reaper.BR_GetSetTrackSendInfo(dest_track, api_routing_type, dest_track_routing_count-1, this_api_routing_setting, 1, this_user_routing_setting_value)
 
     ::skip_to_next::
   end

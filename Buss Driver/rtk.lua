@@ -5,9 +5,9 @@
 -- 
 -- This is generated code. See https://reapertoolkit.dev/ for more info.
 -- 
--- version: 1.2.0-31-g1076cdf-dev
--- build: Sun May 15 00:44:23 UTC 2022
-__RTK_VERSION='1.2.0-31-g1076cdf-dev'
+-- version: 1.2.0-33-g9eea6be-dev
+-- build: Sun May 15 16:20:16 UTC 2022
+__RTK_VERSION='1.2.0-33-g9eea6be-dev'
 rtk=(function()
 __mod_rtk_core=(function()
 __mod_rtk_log=(function()
@@ -2985,7 +2985,10 @@ rtk.Viewport._draw(self,offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,pa
 function rtk.Popup:_release_modal()if self.calc.autoclose then
 self:close()end
 end
-function rtk.Popup:open(attrs)local calc=self.calc
+function rtk.Popup:open(attrs)if self:onopen()==false then
+return
+end
+local calc=self.calc
 local anchor=calc.anchor
 self:sync('opened', true)if not attrs and not anchor then
 attrs = {valign='center', halign='center'}end
@@ -3007,7 +3010,12 @@ rtk.add_modal(self,anchor)self:show()self:focus()self:scrollto(0,0)end
 function rtk.Popup:close()if not self.calc.visible or not self.calc.opened then
 return
 end
+if self:onclose()==false then
+return
+end
 self:sync('opened', false)self:animate{attr='alpha', dst=0, duration=0.15}:done(function()self:hide()self:attr('alpha', 1)self.window:remove(self)end)rtk.reset_modal()end
+function rtk.Popup:onopen()end
+function rtk.Popup:onclose()end
 end)()
 
 __mod_rtk_container=(function()
@@ -3864,7 +3872,7 @@ self._focused_saved=rtk.focused
 rtk.focused:blur(event,nil)end
 self:onblur(event)end
 end
-if not event.handled and rtk.is_modal()and
+if not event.handled and rtk.is_modal()and not event.simulated and
 ((focus_changed and not self.is_focused)or event.type==rtk._touch_activate_event)then
 for _,widget in pairs(rtk._modal)do
 widget:_release_modal(event)end
