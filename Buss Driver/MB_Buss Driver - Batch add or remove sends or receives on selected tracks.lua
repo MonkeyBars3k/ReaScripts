@@ -27,14 +27,16 @@
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
 -- TO DO:
+-- set window to 2/3 of screen width
+-- volume slider curve
 -- save last routing settings in extstate (checkbox to enable)
-  -- reset settings button
+-- reset settings button
 -- add hardware routing type
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
--- require("mb-dev-functions")
+require("mb-dev-functions")
 
 
 local rtk = require('rtk')
