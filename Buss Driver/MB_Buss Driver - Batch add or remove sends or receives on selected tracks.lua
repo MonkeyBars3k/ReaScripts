@@ -1,6 +1,6 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0
+-- @version 1.0.1
 -- @changelog Initial upload
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -571,6 +571,7 @@ end
 
 
 function setRoutingSettingsFormEventHandlers()
+  local new_value
 
   _routing_settings_objs.mute.onclick = function(self)
     toggleBtnState(self, "table_mute")
@@ -585,7 +586,9 @@ function setRoutingSettingsFormEventHandlers()
   end
 
   _routing_settings_objs.volume.onchange = function(self)
-    updateVolumeVal(self.value)
+    new_value = getAPIVolume(self.value)
+
+    _routing_settings_objs.volume_val:attr("text", reaper.mkvolstr("", new_value))
   end
 
   _routing_settings_objs.pan.onchange = function(self)
@@ -644,10 +647,9 @@ local reaperFade = function(ftype,t,s,e,c,inout)
   return ret * 4
 end
 
-function updateVolumeVal(slider_value)
-  local api_value = reaperFade(5, slider_value, 0, 4, 1, true)
+function getAPIVolume(slider_value)
 
-  _routing_settings_objs.volume_val:attr("text", reaper.mkvolstr("", api_value))
+  return reaperFade(5, slider_value, 0, 4, 1, true)
 end
 
 
@@ -873,22 +875,27 @@ end
 
 
 function processRoutingSetting(i, routing_settings_api_objs_conversion, dest_track, src_track, api_routing_type, dest_track_routing_count)
-  local is_midi_channel, is_midi_bus, is_audio_channel, this_api_routing_setting, this_obj_routing_name, this_user_routing_setting_value
+  local is_volume, is_midi_channel, is_midi_bus, is_audio_channel, this_api_routing_setting, this_obj_routing_name, this_obj_routing_value, this_user_routing_setting_value
 
+  is_volume = i == 4
   is_midi_channel = i == 10 or i == 11
   is_midi_bus = i == 12 or i == 13
   is_audio_channel = i == 8 or i == 9
   this_api_routing_setting = _api_all_routing_settings[i]
   this_obj_routing_name = routing_settings_api_objs_conversion[this_api_routing_setting]
+  this_obj_routing_value = _routing_settings_objs.all_values[this_obj_routing_name]
 
-  if is_midi_channel then
-    this_user_routing_setting_value = string.gsub(_routing_settings_objs.all_values[this_obj_routing_name], "/%d+", "")
+  if is_volume then
+    this_user_routing_setting_value = getAPIVolume(this_obj_routing_value)
+
+  elseif is_midi_channel then
+    this_user_routing_setting_value = string.gsub(this_obj_routing_value, "/%d+", "")
   
   elseif is_midi_bus then
-    this_user_routing_setting_value = string.gsub(_routing_settings_objs.all_values[this_obj_routing_name], "%d+/", "")
+    this_user_routing_setting_value = string.gsub(this_obj_routing_value, "%d+/", "")
 
   else
-    this_user_routing_setting_value = _routing_settings_objs.all_values[this_obj_routing_name]
+    this_user_routing_setting_value = this_obj_routing_value
 
     if is_audio_channel then
       createRequiredChannels(i, this_user_routing_setting_value, dest_track, src_track)
