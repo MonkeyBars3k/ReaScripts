@@ -27,8 +27,6 @@
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
 -- TO DO:
--- set window to 2/3 of screen width
--- volume slider curve
 -- save last routing settings in extstate (checkbox to enable)
 -- reset settings button
 -- add hardware routing type
@@ -138,12 +136,22 @@ function launchBussDriverDialog()
   routing_options_objs = defineRoutingOptionsMethods(routing_options_objs)
 
   routing_options_objs.window:open{align="center"}
+
+
+  launchRoutingSettings(routing_options_objs)
+
+
 end
 
 
 function getRoutingOptionsObjects()
-  local routing_options_objs = {
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 1000, maxh = rtk.Attribute.NIL},
+  local screen_left, screen_top, screen_right, screen_bottom, window_width, routing_options_objs
+
+  screen_left, screen_top, screen_right, screen_bottom = reaper.JS_Window_MonitorFromRect(0, 0, 0, 0, false)
+  window_width = screen_right * 0.4
+
+  routing_options_objs = {
+    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", minw = window_width, maxh = rtk.Attribute.NIL},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["title"] = rtk.Heading{"Buss Driver", halign = "left", fontscale = "0.6", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["configure_wrapper"] = rtk.Container{w = 1, halign = "right", margin = "5 3 0 0"},
@@ -577,7 +585,7 @@ function setRoutingSettingsFormEventHandlers()
   end
 
   _routing_settings_objs.volume.onchange = function(self)
-    _routing_settings_objs.volume_val:attr("text", reaper.mkvolstr("", self.value))
+    updateVolumeVal(self.value)
   end
 
   _routing_settings_objs.pan.onchange = function(self)
@@ -602,6 +610,46 @@ function toggleBtnState(btn, img_filename_base)
   end
 end
 
+local reaperFade1 = function(x,c) return c<0 and (1+c)*x*(2-x)-c*(1-(1-x)^8)^.5 or (1-c)*x*(2-x)+c*x^4 end
+local reaperFade2 = function(x,c) return c<0 and (1+c)*x-c*(1-(1-x)^2) or (1-c)*x+c*x^2 end
+local reaperFade3 = function(x,c) return c<0 and (1+c)*x-c*(1-(1-x)^4) or (1-c)*x+c*x^4 end
+local reaperFadeg = function(x,t) return t==.5 and x or ((x*(1-2*t)+t^2)^.5-t)/(1-2*t) end
+local reaperFadeh = function(x,t) local g = reaperFadeg(x,t); return (2*t-1)*g^2+(2-2*t)*g end
+
+local reaperFadeIn = {
+  function(x,c) c=c or 0; return reaperFade3(x,c) end,
+  function(x,c) c=c or 0; return reaperFade1(x,c) end,
+  function(x,c) c=c or 1; return reaperFade2(x,c) end,
+  function(x,c) c=c or -1; return reaperFade3(x,c) end,
+  function(x,c) c=c or 1; return reaperFade3(x,c) end,
+  function(x,c) c=c or 0; local x1 = reaperFadeh(x,.25*(c+2)); return (3-2*x1)*x1^2 end,
+  function(x,c) c=c or 0; local x2 = reaperFadeh(x,(5*c+8)/16); return x2<=.5 and 8*x2^4 or 1-8*(1-x2)^4 end,
+}
+
+local reaperFade = function(ftype,t,s,e,c,inout)
+  --
+  -- Returns 0 to 1
+  --
+  -- ftype is the REAPER fade type 1-7 (Note: not 0-6 here)
+  -- t - time code where fade is calculated
+  -- s - time code of fade start
+  -- e - time code of fade end
+  -- c - REAPER curvature parameter (D_FADEINDIR, D_FADEOUTDIR)
+  -- inout - true for fade in, false for fade out
+  --
+  if e<=s then return 1 end
+  t = t<s and s or t>e and e or t
+  local x = (t-s)/(e-s)
+  local ret = reaperFadeIn[ftype](table.unpack(inout and {x,c} or {1-x,-c}))
+  return ret * 4
+end
+
+function updateVolumeVal(slider_value)
+  local api_value = reaperFade(5, slider_value, 0, 4, 1, true)
+
+  _routing_settings_objs.volume_val:attr("text", reaper.mkvolstr("", api_value))
+end
+
 
 function populateRoutingSettingsFormValues()
   local default_routing_settings_values, new_routing_settings_values
@@ -611,7 +659,7 @@ function populateRoutingSettingsFormValues()
     ["phase"] = 0,
     ["mono_stereo"] = 0,
     ["send_mode"] = 0,
-    ["volume"] = 1,
+    ["volume"] = 2.8285,
     ["pan"] = 0,
     ["midi_velpan"] = 0,
     ["audio_src_channel"] = 0,
