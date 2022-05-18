@@ -27,7 +27,7 @@
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
 -- TO DO:
--- save last routing settings in extstate (checkbox to enable)
+-- save last routing settings in project extstate (checkbox to enable)
 -- reset settings button
 -- add hardware routing type
 
@@ -42,7 +42,7 @@ local serpent = require("serpent")
 
 
 
-local selected_tracks_count, _selected_tracks, _data_storage_track, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _routing_settings_objs, _right_arrow
+local selected_tracks_count, _selected_tracks, _data_storage_track, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow
 
 _selected_tracks_count = reaper.CountSelectedTracks(0)
 _data_storage_track = reaper.GetMasterTrack(0)
@@ -136,11 +136,6 @@ function launchBussDriverDialog()
   routing_options_objs = defineRoutingOptionsMethods(routing_options_objs)
 
   routing_options_objs.window:open{align="center"}
-
-
-  launchRoutingSettings(routing_options_objs)
-
-
 end
 
 
@@ -149,7 +144,6 @@ function getRoutingOptionsObjects()
 
   screen_left, screen_top, screen_right, screen_bottom = reaper.JS_Window_MonitorFromRect(0, 0, 0, 0, false)
   window_width = screen_right * 0.4
-
   routing_options_objs = {
     ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", minw = window_width, maxh = rtk.Attribute.NIL},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
@@ -264,6 +258,14 @@ function defineRoutingOptionsMethods(routing_options_objs)
     routing_options_objs.window:close()
   end
 
+
+
+
+  routing_options_objs.target_tracks_subheading.onclick = function() logTable(_routing_settings_objs) end
+
+
+
+
   return routing_options_objs
 end
 
@@ -375,16 +377,19 @@ end
 
 function launchRoutingSettings(routing_options_objs)
   local audio_channel_src_options, audio_channel_rcv_options, midi_channel_options, this_form_field_class, this_form_field_value
-
-  audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
-  midi_channel_options = defineMIDIChannelOptions()
   
-  defineRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
-  gatherRoutingSettingsFormFields()
-  setRoutingSettingsPopupEventHandlers()
-  setRoutingSettingsFormEventHandlers()
-  populateRoutingSettingsFormValues()
-  populateRoutingSettingsObjs()
+  if not _routing_settings_objs then 
+    audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
+    midi_channel_options = defineMIDIChannelOptions()
+
+    populateRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+    gatherRoutingSettingsFormFields()
+    setRoutingSettingsPopupEventHandlers()
+    setRoutingSettingsFormEventHandlers()
+    populateRoutingSettingsFormValues()
+    populateRoutingSettingsPopup()
+  end
+
   _routing_settings_objs.popup:open()
 end
 
@@ -473,9 +478,9 @@ function defineMIDIChannelOptions()
 end
 
 
-function defineRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+function populateRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
   _routing_settings_objs = {
-    ["popup"] = rtk.Popup{w = routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0--[[,    autoclose = false--]]},
+    ["popup"] = rtk.Popup{w = routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0},
     ["content"] = rtk.VBox(),
     ["title"] = rtk.Heading{"Configure settings for routing to be added", w = 1, halign = "center", padding = 6, bg = "#77777799", fontscale = 0.67},
     ["form"] = rtk.VBox{padding = "20 10 10"},
@@ -501,19 +506,21 @@ function defineRoutingSettingsObjs(routing_options_objs, audio_channel_src_optio
     ["audio_rcv_channel"] = rtk.OptionMenu{menu = audio_channel_rcv_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
     ["midi_txt"] = rtk.Text{"MIDI:", margin = "0 0 2 10", fontscale = 0.63},
     ["midi_src"] = rtk.OptionMenu{menu = midi_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
-    ["midi_rcv"] = rtk.OptionMenu{menu = midi_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
-    ["form_fields"] = {}
+    ["midi_rcv"] = rtk.OptionMenu{menu = midi_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"}
   }
 end
 
 
 function gatherRoutingSettingsFormFields()
-  _routing_settings_objs.form_fields = {}
 
-  for routing_setting_obj_name, routing_setting_obj_value in pairs(_routing_settings_objs) do
-    
-    if routing_setting_obj_value.data_class == "routing_setting_field" then
-      _routing_settings_objs.form_fields[routing_setting_obj_name] = routing_setting_obj_value
+  if not _routing_settings_objs.form_fields then
+    _routing_settings_objs.form_fields = {}
+
+    for routing_setting_obj_name, routing_setting_obj_value in pairs(_routing_settings_objs) do
+      
+      if routing_setting_obj_value.data_class == "routing_setting_field" then
+        _routing_settings_objs.form_fields[routing_setting_obj_name] = routing_setting_obj_value
+      end
     end
   end
 end
@@ -613,13 +620,14 @@ function toggleBtnState(btn, img_filename_base)
   end
 end
 
-local reaperFade1 = function(x,c) return c<0 and (1+c)*x*(2-x)-c*(1-(1-x)^8)^.5 or (1-c)*x*(2-x)+c*x^4 end
-local reaperFade2 = function(x,c) return c<0 and (1+c)*x-c*(1-(1-x)^2) or (1-c)*x+c*x^2 end
-local reaperFade3 = function(x,c) return c<0 and (1+c)*x-c*(1-(1-x)^4) or (1-c)*x+c*x^4 end
-local reaperFadeg = function(x,t) return t==.5 and x or ((x*(1-2*t)+t^2)^.5-t)/(1-2*t) end
-local reaperFadeh = function(x,t) local g = reaperFadeg(x,t); return (2*t-1)*g^2+(2-2*t)*g end
 
-local reaperFadeIn = {
+reaperFade1 = function(x,c) return c<0 and (1+c)*x*(2-x)-c*(1-(1-x)^8)^.5 or (1-c)*x*(2-x)+c*x^4 end
+reaperFade2 = function(x,c) return c<0 and (1+c)*x-c*(1-(1-x)^2) or (1-c)*x+c*x^2 end
+reaperFade3 = function(x,c) return c<0 and (1+c)*x-c*(1-(1-x)^4) or (1-c)*x+c*x^4 end
+reaperFadeg = function(x,t) return t==.5 and x or ((x*(1-2*t)+t^2)^.5-t)/(1-2*t) end
+reaperFadeh = function(x,t) local g = reaperFadeg(x,t); return (2*t-1)*g^2+(2-2*t)*g end
+
+reaperFadeIn = {
   function(x,c) c=c or 0; return reaperFade3(x,c) end,
   function(x,c) c=c or 0; return reaperFade1(x,c) end,
   function(x,c) c=c or 1; return reaperFade2(x,c) end,
@@ -629,7 +637,7 @@ local reaperFadeIn = {
   function(x,c) c=c or 0; local x2 = reaperFadeh(x,(5*c+8)/16); return x2<=.5 and 8*x2^4 or 1-8*(1-x2)^4 end,
 }
 
-local reaperFade = function(ftype,t,s,e,c,inout)
+reaperFade = function(ftype,t,s,e,c,inout)
   --
   -- Returns 0 to 1
   --
@@ -681,7 +689,7 @@ function populateRoutingSettingsFormValues()
 end
 
 
-function populateRoutingSettingsObjs()
+function populateRoutingSettingsPopup()
   _routing_settings_objs.content:add(_routing_settings_objs.title)
   _routing_settings_objs.toprow:add(_routing_settings_objs.volume_val)
   _routing_settings_objs.toprow:add(_routing_settings_objs.pan_val)
@@ -875,27 +883,27 @@ end
 
 
 function processRoutingSetting(i, routing_settings_api_objs_conversion, dest_track, src_track, api_routing_type, dest_track_routing_count)
-  local is_volume, is_midi_channel, is_midi_bus, is_audio_channel, this_api_routing_setting, this_obj_routing_name, this_obj_routing_value, this_user_routing_setting_value
+  local is_volume, is_midi_channel, is_midi_bus, is_audio_channel, this_api_routing_setting, this_routing_obj_name, this_routing_obj_value, this_user_routing_setting_value
 
   is_volume = i == 4
   is_midi_channel = i == 10 or i == 11
   is_midi_bus = i == 12 or i == 13
   is_audio_channel = i == 8 or i == 9
   this_api_routing_setting = _api_all_routing_settings[i]
-  this_obj_routing_name = routing_settings_api_objs_conversion[this_api_routing_setting]
-  this_obj_routing_value = _routing_settings_objs.all_values[this_obj_routing_name]
+  this_routing_obj_name = routing_settings_api_objs_conversion[this_api_routing_setting]
+  this_routing_obj_value = _routing_settings_objs.all_values[this_routing_obj_name]
 
   if is_volume then
-    this_user_routing_setting_value = getAPIVolume(this_obj_routing_value)
+    this_user_routing_setting_value = getAPIVolume(this_routing_obj_value)
 
   elseif is_midi_channel then
-    this_user_routing_setting_value = string.gsub(this_obj_routing_value, "/%d+", "")
+    this_user_routing_setting_value = string.gsub(this_routing_obj_value, "/%d+", "")
   
   elseif is_midi_bus then
-    this_user_routing_setting_value = string.gsub(this_obj_routing_value, "%d+/", "")
+    this_user_routing_setting_value = string.gsub(this_routing_obj_value, "%d+/", "")
 
   else
-    this_user_routing_setting_value = this_obj_routing_value
+    this_user_routing_setting_value = this_routing_obj_value
 
     if is_audio_channel then
       createRequiredChannels(i, this_user_routing_setting_value, dest_track, src_track)
