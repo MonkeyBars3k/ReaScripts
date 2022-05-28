@@ -862,17 +862,17 @@ function populateRoutingSettingsPopup()
 end
 
 
-function submitRoutingOptionChanges(routing_options_form_fields, routing_options_window)
+function submitRoutingOptionChanges()
   getSetTargetTracksChoices()
-  addRemoveRouting(routing_options_form_fields)
+  addRemoveRouting(_routing_options_objs.form_fields)
   reaper.Undo_BeginBlock()
-  routing_options_window:close()
+  _routing_options_objs.window:close()
   reaper.Undo_EndBlock("MB_Buss Driver", 1)
 end
 
 
 function getSetTargetTracksChoices(new_choices)
-  local set, get, this_track_line, this_track_checkbox, this_track_idx, this_track_guid, target_track_lines, this_track_idx, this_track_line_guid
+  local set, get 
 
   if new_choices then
     set = true
@@ -882,43 +882,56 @@ function getSetTargetTracksChoices(new_choices)
   end
 
   if get then
-    _routing_options_objs.target_track_choices = {}
-
-    for i = 1, #_routing_options_objs.target_tracks_box.children do
-      this_track_line = _routing_options_objs.target_tracks_box:get_child(i)
-      this_track_checkbox = this_track_line:get_child(2)
-      
-      if this_track_checkbox.value then
-        this_track_idx = string.match(this_track_checkbox.ref, "%d+$")
-        this_track = reaper.GetTrack(0, this_track_idx-1)
-        this_track_guid = reaper.BR_GetMediaTrackGUID(this_track)
-
-        table.insert(_routing_options_objs.target_track_choices, {
-          ["idx"] = this_track_idx,
-          ["guid"] = this_track_guid
-        })
-      end
-    end
+    getTargetTrackChoices()
 
   elseif set then
+    setTargetTrackChoices(new_choices)
+  end
+end
 
-    for i = 1, #new_choices do
-      target_track_lines = _routing_options_objs.target_tracks_box.children
-      this_track_idx = new_choices[i].idx
-      this_track_guid = new_choices[i].guid
 
-      for j = 1, #target_track_lines do
-        this_track_line = target_track_lines[j][1]
+function getTargetTrackChoices()
+  local this_track_line, this_track_checkbox, this_track_idx, this_track_guid
 
-        if this_track_line then
-          this_track_line_guid = this_track_line.data_guid
+  _routing_options_objs.target_track_choices = {}
 
-          if this_track_line_guid == this_track_guid then
-            this_track_checkbox = this_track_line.children[2][1]
-            this_track_checkbox:attr("value", true)
+  for i = 1, #_routing_options_objs.target_tracks_box.children do
+    this_track_line = _routing_options_objs.target_tracks_box:get_child(i)
+    this_track_checkbox = this_track_line:get_child(2)
+    
+    if this_track_checkbox.value then
+      this_track_idx = string.match(this_track_checkbox.ref, "%d+$")
+      this_track = reaper.GetTrack(0, this_track_idx-1)
+      this_track_guid = reaper.BR_GetMediaTrackGUID(this_track)
 
-            break
-          end
+      table.insert(_routing_options_objs.target_track_choices, {
+        ["idx"] = this_track_idx,
+        ["guid"] = this_track_guid
+      })
+    end
+  end
+end
+
+
+function setTargetTrackChoices(new_choices)
+  local target_track_lines, this_track_idx, this_track_guid, this_track_line_guid, this_track_line, this_track_checkbox
+
+  for i = 1, #new_choices do
+    target_track_lines = _routing_options_objs.target_tracks_box.children
+    this_track_idx = new_choices[i].idx
+    this_track_guid = new_choices[i].guid
+
+    for j = 1, #target_track_lines do
+      this_track_line = target_track_lines[j][1]
+
+      if this_track_line then
+        this_track_line_guid = this_track_line.data_guid
+
+        if this_track_line_guid == this_track_guid then
+          this_track_checkbox = this_track_line.children[2][1]
+          this_track_checkbox:attr("value", true)
+
+          break
         end
       end
     end
@@ -929,19 +942,7 @@ end
 function addRemoveRouting(routing_options_form_fields)
   local routing_option_action_choice, routing_option_type_choice, this_selected_track, j, this_target_track
 
-  if routing_options_form_fields.refs.add_checkbox.value then
-    routing_option_action_choice = "add"
-
-  elseif routing_options_form_fields.refs.remove_checkbox.value then
-    routing_option_action_choice = "remove"
-  end
-
-  if routing_options_form_fields.refs.send_checkbox.value then
-    routing_option_type_choice = "send"
-
-  elseif routing_options_form_fields.refs.receive_checkbox.value then
-    routing_option_type_choice = "receive"
-  end
+  routing_option_action_choice, routing_option_type_choice = getRoutingChoices()
 
   for i = 1, #_selected_tracks do
     this_selected_track = _selected_tracks[i]
@@ -1176,14 +1177,3 @@ function initBussDriver()
 end
 
 initBussDriver()
-
-
-
-
-
-
---- UTILITY FUNCTIONS ---
-
-function round(num, precision)
-   return math.floor(num*(10^precision)+0.5) / 10^precision
-end
