@@ -352,12 +352,29 @@ function propagateSavedUserOptions()
   if current_save_options_setting == "true" then
     _routing_options_objs.save_options:attr("value", true)
 
-    if _routing_options_objs and _routing_options_objs.all_user_options and _routing_options_objs.all_user_options.target_track_choices then
+    if _routing_options_objs and _routing_options_objs.all_user_options then
 
-      if #_routing_options_objs.all_user_options.target_track_choices > 0 then
-        getSetTargetTracksChoices(_routing_options_objs.all_user_options.target_track_choices)
+      if _routing_options_objs.all_user_options.target_track_choices then
+
+        if #_routing_options_objs.all_user_options.target_track_choices > 0 then
+          getSetTargetTracksChoices(_routing_options_objs.all_user_options.target_track_choices)
+        end
+      end
+
+      if _routing_options_objs.all_user_options.routing_settings then
+
+        if not _routing_settings_objs then
+          initRoutingSettings()
+        end
+
+        _routing_settings_objs.all_values = _routing_options_objs.all_user_options.routing_settings
+
+        getSetRoutingSettingsValues("set", _routing_settings_objs.all_values)
+        updateRoutingSettingsBtns()
       end
     end
+
+
 
   elseif current_save_options_setting == "false" then
     _routing_options_objs.save_options:attr("value", false)
@@ -479,21 +496,27 @@ end
 
 
 function launchRoutingSettings()
-  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_options, this_form_field_class, this_form_field_value
   
-  if not _routing_settings_objs then 
-    audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
-    midi_channel_options = defineMIDIChannelOptions()
-
-    populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
-    gatherRoutingSettingsFormFields()
-    setRoutingSettingsPopupEventHandlers()
-    setRoutingSettingsFormEventHandlers()
-    populateRoutingSettingsFormValues()
-    populateRoutingSettingsPopup()
+  if not _routing_settings_objs then
+    initRoutingSettings()
   end
 
   _routing_settings_objs.popup:open()
+end
+
+
+function initRoutingSettings()
+  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_options
+
+  audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
+  midi_channel_options = defineMIDIChannelOptions()
+
+  populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+  gatherRoutingSettingsFormFields()
+  setRoutingSettingsPopupEventHandlers()
+  setRoutingSettingsFormEventHandlers()
+  populateRoutingSettingsFormValues()
+  populateRoutingSettingsPopup()
 end
 
 
@@ -780,13 +803,15 @@ function populateRoutingSettingsFormValues(reset)
   end
 
   if reset == "reset" then
-    resetAllRoutingSettingsBtns()
+    updateRoutingSettingsBtns("reset")
   end
 end
 
 
-function resetAllRoutingSettingsBtns()
-  local all_btn_img_filename_bases = {
+function updateRoutingSettingsBtns(reset)
+  local all_btn_img_filename_bases, this_btn, this_btn_value, new_btn_img_base_state
+
+  all_btn_img_filename_bases = {
     ["mute"] = "table_mute",
     ["phase"] = "gen_phase",
     ["mono_stereo"] = "gen_mono",
@@ -794,7 +819,17 @@ function resetAllRoutingSettingsBtns()
   }
 
   for btn_name, btn_img_base in pairs(all_btn_img_filename_bases) do
-    _routing_settings_objs[btn_name]:attr("icon", btn_img_base .. "_off")
+    this_btn = _routing_settings_objs[btn_name]
+    this_btn_value = this_btn.value
+
+    if reset == "reset" or this_btn_value == 0 then
+      new_btn_img_base_state = "_off"
+
+    elseif this_btn_value == 1 then
+      new_btn_img_base_state = "_on"
+    end
+
+    this_btn:attr("icon", btn_img_base .. new_btn_img_base_state)
   end
 end
 
