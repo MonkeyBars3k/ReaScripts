@@ -261,9 +261,11 @@ function getTrackObjs(this_track)
   retval, this_track_icon_path = reaper.GetSetMediaTrackInfo_String(this_track, "P_ICON", "", false)
   this_track_icon = rtk.ImageBox{rtk.Image():load(this_track_icon_path), w = 18, minw = 18}
   this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
+  this_track_guid = reaper.BR_GetMediaTrackGUID(this_track)
   retval, this_track_name = reaper.GetSetMediaTrackInfo_String(this_track, "P_NAME", "", 0)
   this_track_color = reaper.GetTrackColor(this_track)
   this_track_checkbox = rtk.CheckBox{this_track_num .. ". " .. this_track_name, h = 17, fontscale = 0.75, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "target_track_" .. this_track_num, data_class = "target_track_checkbox"}
+  this_track_line.data_guid = this_track_guid
 
   return this_track_line, this_track_icon_path, this_track_icon, this_track_num, this_track_name, this_track_color, this_track_checkbox
 end
@@ -323,8 +325,6 @@ function storeRetrieveUserOptions(store)
       getSetTargetTracksChoices()
 
       all_user_options.target_track_choices = _routing_options_objs.target_track_choices
-
--- NEED TO SAVE THESE AS TRACK GUIDS INSTEAD OF INDICES
 
       if _routing_settings_objs and _routing_settings_objs.all_values then
         all_user_options.routing_settings = _routing_settings_objs.all_values
@@ -837,7 +837,7 @@ end
 
 
 function getSetTargetTracksChoices(new_choices)
-  local set, get, this_track_row, this_track_checkbox, this_track_idx
+  local set, get, this_track_line, this_track_checkbox, this_track_idx, this_track_guid, target_track_lines, this_track_idx, this_track_line_guid
 
   if new_choices then
     set = true
@@ -850,24 +850,42 @@ function getSetTargetTracksChoices(new_choices)
     _routing_options_objs.target_track_choices = {}
 
     for i = 1, #_routing_options_objs.target_tracks_box.children do
-      this_track_row = _routing_options_objs.target_tracks_box:get_child(i)
-      this_track_checkbox = this_track_row:get_child(2)
-
+      this_track_line = _routing_options_objs.target_tracks_box:get_child(i)
+      this_track_checkbox = this_track_line:get_child(2)
+      
       if this_track_checkbox.value then
         this_track_idx = string.match(this_track_checkbox.ref, "%d+$")
+        this_track = reaper.GetTrack(0, this_track_idx-1)
+        this_track_guid = reaper.BR_GetMediaTrackGUID(this_track)
 
-        table.insert(_routing_options_objs.target_track_choices, this_track_idx)
+        table.insert(_routing_options_objs.target_track_choices, {
+          ["idx"] = this_track_idx,
+          ["guid"] = this_track_guid
+        })
       end
     end
 
   elseif set then
 
-logTable(_routing_options_objs.target_tracks_box.children)
     for i = 1, #new_choices do
---       this_track_row = _routing_options_objs.target_tracks_box:get_child(new_choices[i])
---       this_track_checkbox = this_track_row:get_child(2)
--- -- logTable(this_track_checkbox)
---       this_track_checkbox:attr("value", true)
+      target_track_lines = _routing_options_objs.target_tracks_box.children
+      this_track_idx = new_choices[i].idx
+      this_track_guid = new_choices[i].guid
+
+      for j = 1, #target_track_lines do
+        this_track_line = target_track_lines[j][1]
+
+        if this_track_line then
+          this_track_line_guid = this_track_line.data_guid
+
+          if this_track_line_guid == this_track_guid then
+            this_track_checkbox = this_track_line.children[2][1]
+            this_track_checkbox:attr("value", true)
+
+            break
+          end
+        end
+      end
     end
   end
 end
@@ -894,7 +912,7 @@ function addRemoveRouting(routing_options_form_fields)
     this_selected_track = _selected_tracks[i]
 
     for j = 1, #_routing_options_objs.target_track_choices do
-      this_target_track = reaper.GetTrack(0, _routing_options_objs.target_track_choices[j]-1)
+      this_target_track = reaper.GetTrack(0, _routing_options_objs.target_track_choices[j].idx-1)
 
       if routing_option_action_choice == "add" then
         addRouting(routing_option_type_choice, this_selected_track, this_target_track)
