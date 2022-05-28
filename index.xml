@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="6334e0a9425771bcbcc27f05c2907abd599eeecf">
+<index version="1" name="MonkeyBars-ReaScripts" commit="6c4b35ac5490b6e4fb1d2226439c34d215942dc8">
   <category name="Buss Driver">
-    <reapack name="MB_Buss Driver - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
+    <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -11,41 +11,20 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.0" author="MonkeyBars" time="2022-05-10T23:10:44Z">
-        <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
-        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/rtk.lua</source>
-        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/serpent.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/277c876423a7fdf9c590efd62a646c0c7c5931a0/Buss%20Driver/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.0.1" author="MonkeyBars" time="2022-05-11T04:30:28Z">
-        <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
-        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/rtk.lua</source>
-        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/serpent.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/82c6647fec30ac91e2f38948febfa10e959871a7/Buss%20Driver/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.0.2" author="MonkeyBars" time="2022-05-12T05:34:19Z">
-        <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
-        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/rtk.lua</source>
-        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/serpent.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/65f308b4375939496d7b0c78c2bd8bb40c5dedce/Buss%20Driver/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.0.3" author="MonkeyBars" time="2022-05-15T04:32:51Z">
-        <changelog><![CDATA[Initial upload]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/MB_Buss%20Driver%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
-        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/rtk.lua</source>
-        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/serpent.lua</source>
-        <source file="gen_midi_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_midi_off.png</source>
-        <source file="gen_midi_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_midi_on.png</source>
-        <source file="gen_mono_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_mono_off.png</source>
-        <source file="gen_mono_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_mono_on.png</source>
-        <source file="gen_phase_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_phase_off.png</source>
-        <source file="gen_phase_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gen_phase_on.png</source>
-        <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/table_mute_off.png</source>
-        <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/table_mute_on.png</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/127e65e22df877a56798c82b4d8250cfc5c4c55a/Buss%20Driver/gnu_license_v3.txt</source>
+      <version name="1.0.2" author="MonkeyBars" time="2022-05-28T20:20:40Z">
+        <changelog><![CDATA[New script name]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/MB_Buss%20Driver%20-%20Routing%20Utility%20GUI%20Manager%20Tool%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/rtk.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/serpent.lua</source>
+        <source file="gen_midi_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/gen_midi_off.png</source>
+        <source file="gen_midi_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/gen_midi_on.png</source>
+        <source file="gen_mono_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/gen_mono_off.png</source>
+        <source file="gen_mono_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/gen_mono_on.png</source>
+        <source file="gen_phase_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/gen_phase_off.png</source>
+        <source file="gen_phase_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/gen_phase_on.png</source>
+        <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/table_mute_off.png</source>
+        <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/table_mute_on.png</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/6c4b35ac5490b6e4fb1d2226439c34d215942dc8/Buss%20Driver/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
