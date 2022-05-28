@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.1
--- @changelog Add option to save routing choices/settings between script runs
+-- @version 1.0.2
+-- @changelog New script name
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
