@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
 -- @version 1.0.1
--- @changelog Add option to save routing choices/settings between script runs
+-- @changelog Initial upload
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -27,12 +27,13 @@
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
 -- TO DO:
--- add hardware routing type?
+-- save last routing settings in project extstate (checkbox to enable)
+-- add hardware routing type
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
--- require("mb-dev-functions")
+require("mb-dev-functions")
 
 
 local rtk = require('rtk')
@@ -45,7 +46,7 @@ rtk.set_theme_overrides({
 
 
 
-local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name
+local selected_tracks_count, _selected_tracks, _data_storage_track, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values
 
 _selected_tracks_count = reaper.CountSelectedTracks(0)
 _data_storage_track = reaper.GetMasterTrack(0)
@@ -57,45 +58,18 @@ _api_all_routing_settings = {"B_MUTE", "B_PHASE", "B_MONO", "D_VOL", "D_PAN", "D
 _api_msg_answer_yes = 6
 _right_arrow = "\u{2192}"
 _default_routing_settings_values = {
-  ["mute"] = 0,
-  ["phase"] = 0,
-  ["mono_stereo"] = 0,
-  ["send_mode"] = 0,
-  ["volume"] = 2.8285,
-  ["pan"] = 0,
-  ["midi_velpan"] = 0,
-  ["audio_src_channel"] = 0,
-  ["audio_rcv_channel"] = 0,
-  ["midi_src"] = "0/0",
-  ["midi_rcv"] = "0/0"
-}
-_api_script_ext_name = "MB_Buss-Driver"
-_api_save_options_key_name = "save_options"
-
-
-function toggleSaveOptions(initialize)
-  local retval, current_save_options_setting, save_options_checkbox_value
-
-  if initialize == "initialize" then
-    retval, current_save_options_setting = reaper.GetProjExtState(0, _api_script_ext_name, _api_save_options_key_name)
-
-    if current_save_options_setting == "" or not current_save_options_setting then
-      reaper.SetProjExtState(0, _api_script_ext_name, _api_save_options_key_name, "true")
-    end
-
-  else
-    save_options_checkbox_value = _routing_options_objs.save_options.value
-
-    if save_options_checkbox_value then
-      reaper.SetProjExtState(0, _api_script_ext_name, _api_save_options_key_name, "true")
-
-    else
-      reaper.SetProjExtState(0, _api_script_ext_name, _api_save_options_key_name, "false")
-    end
-  end
-end
-
-toggleSaveOptions("initialize")
+    ["mute"] = 0,
+    ["phase"] = 0,
+    ["mono_stereo"] = 0,
+    ["send_mode"] = 0,
+    ["volume"] = 2.8285,
+    ["pan"] = 0,
+    ["midi_velpan"] = 0,
+    ["audio_src_channel"] = 0,
+    ["audio_rcv_channel"] = 0,
+    ["midi_src"] = "0/0",
+    ["midi_rcv"] = "0/0"
+  }
 
 
 
@@ -167,18 +141,18 @@ _all_tracks_count_on_launch = storeRetrieveAllTracksCount()
 
 
 function launchBussDriverDialog()
-  getRoutingOptionsObjects()
-  populateRoutingOptionsWindow()
-  defineRoutingOptionsMethods()
-  setUpRadioCheckboxMethods()
-  _routing_options_objs.window:open()
-  storeRetrieveUserOptions("retrieve")
-  propagateSavedUserOptions()
+  local routing_options_objs, routing_options_window_content_height
+
+  routing_options_objs = getRoutingOptionsObjects()
+  routing_options_objs = populateRoutingOptionsWindow(routing_options_objs)
+  routing_options_objs = defineRoutingOptionsMethods(routing_options_objs)
+
+  routing_options_objs.window:open()
 end
 
 
 function getRoutingOptionsObjects()
-  _routing_options_objs = {
+  local routing_options_objs = {
     ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["title"] = rtk.Heading{"Buss Driver", halign = "left", fontscale = "0.6", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
@@ -199,32 +173,32 @@ function getRoutingOptionsObjects()
     ["form_fields"] = rtk.VBox{padding = "10 10 5", spacing = 10},
     ["form_bottom"] = rtk.Container{w = 1, margin = 10},
     ["form_buttons"] = rtk.HBox{spacing = 10},
-    ["save_options_wrapper"] = rtk.HBox{tmargin = 5},
-    ["save_options"] = rtk.CheckBox{"Save choices & settings on close", h = 17, padding = "0 2 3 2", spacing = 3, valign = "center", fontscale = 0.67, color = "#bbbbbb", textcolor2 = "#bbbbbb", ref = "save_options_checkbox"},
     ["form_submit"] = rtk.Button{"Add", disabled = true},
     ["form_cancel"] = rtk.Button{"Cancel"},
     ["reset_wrapper"] = rtk.HBox{valign = "center"},
     ["reset_btn"] = rtk.Button{"Reset all options", tooltip = "Return all tracks and settings to initial state", padding = "4 5 6", color = "#8A4C00R", fontscale = 0.67, textcolor = "#D6D6D6"}
   }
-  _routing_options_objs.target_tracks_box = getUnselectedTracks()
+  routing_options_objs.target_tracks_box = getUnselectedTracks(routing_options_objs.form_submit)
+
+  return routing_options_objs
 end
 
 
-function getUnselectedTracks()
+function getUnselectedTracks(routing_option_form_submit)
   local routing_option_target_tracks_box, this_track
 
   routing_option_target_tracks_box = rtk.FlowBox{w = 1, ref = "routing_option_target_tracks_box"}
 
   for i = 0, _all_tracks_count_on_launch-1 do
     this_track = reaper.GetTrack(0, i)
-    routing_option_target_tracks_box = populateTargetTrackField(this_track, routing_option_target_tracks_box)
+    routing_option_target_tracks_box = populateTargetTrackField(routing_option_form_submit, this_track, routing_option_target_tracks_box)
   end
 
   return routing_option_target_tracks_box
 end
 
 
-function populateTargetTrackField(this_track, routing_option_target_tracks_box)
+function populateTargetTrackField(routing_option_form_submit, this_track, routing_option_target_tracks_box)
   local this_track_is_selected, this_track_line, this_track_icon_path, this_track_icon, this_track_num, this_track_name, this_track_color, this_track_checkbox
 
   this_track_is_selected = reaper.IsTrackSelected(this_track)
@@ -237,11 +211,8 @@ function populateTargetTrackField(this_track, routing_option_target_tracks_box)
       this_track_checkbox:attr("bg", this_track_color)
     end
 
-    this_track_checkbox.onchange = function(self)
-
-      if self.value then
-        disableSubmitButton(false)
-      end
+    this_track_checkbox.onchange = function()
+      activateSubmitButton(routing_option_form_submit)
     end
 
     this_track_line:add(this_track_icon)
@@ -260,192 +231,110 @@ function getTrackObjs(this_track)
   retval, this_track_icon_path = reaper.GetSetMediaTrackInfo_String(this_track, "P_ICON", "", false)
   this_track_icon = rtk.ImageBox{rtk.Image():load(this_track_icon_path), w = 18, minw = 18}
   this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
-  this_track_guid = reaper.BR_GetMediaTrackGUID(this_track)
   retval, this_track_name = reaper.GetSetMediaTrackInfo_String(this_track, "P_NAME", "", 0)
   this_track_color = reaper.GetTrackColor(this_track)
   this_track_checkbox = rtk.CheckBox{this_track_num .. ". " .. this_track_name, h = 17, fontscale = 0.75, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "target_track_" .. this_track_num, data_class = "target_track_checkbox"}
-  this_track_line.data_guid = this_track_guid
 
   return this_track_line, this_track_icon_path, this_track_icon, this_track_num, this_track_name, this_track_color, this_track_checkbox
 end
 
 
-function disableSubmitButton(disable)
-  _routing_options_objs.form_submit:attr("disabled", disable)
+function activateSubmitButton(submit_button)
+  submit_button:attr("disabled", false)
 end
 
 
-function defineRoutingOptionsMethods()
+function defineRoutingOptionsMethods(routing_options_objs)
 
-  _routing_options_objs.window.onblur = function(self)
+  routing_options_objs.window.onblur = function(self)
     self:close()
   end
 
-  _routing_options_objs.window.onclose = function()
-    storeRetrieveUserOptions("store")
-    restoreUserSelectedTracks()
+  routing_options_objs.window.onclose = function()
+    reselectTracks()
     storeRetrieveAllTracksCount("")
   end
 
-  _routing_options_objs.configure_btn.onclick = function()
-    launchRoutingSettings()
+  setUpRadioCheckboxMethods(routing_options_objs)
+
+  routing_options_objs.configure_btn.onclick = function()
+    launchRoutingSettings(routing_options_objs)
   end
 
-  _routing_options_objs.save_options.onchange = function()
-    toggleSaveOptions()
-  end
-
-  _routing_options_objs.form_submit.onclick = function()
-    submitRoutingOptionChanges()
+  routing_options_objs.form_submit.onclick = function()
+    submitRoutingOptionChanges(routing_options_objs.form_fields, routing_options_objs.window)
   end
   
-  _routing_options_objs.form_cancel.onclick = function()
-    _routing_options_objs.window:close()
+  routing_options_objs.form_cancel.onclick = function()
+    routing_options_objs.window:close()
   end
 
-  _routing_options_objs.reset_btn.onclick = function()
-    resetTargetTrackChoices()
+  routing_options_objs.reset_btn.onclick = function()
+    resetTargetTrackChoices(routing_options_objs)
     populateRoutingSettingsFormValues("reset")
-    disableSubmitButton(true)
   end
+
+  return routing_options_objs
 end
 
 
-function storeRetrieveUserOptions(store)
-  local retval, current_save_options_setting, all_user_options, retval
-
-  retval, current_save_options_setting = reaper.GetProjExtState(0, _api_script_ext_name, _api_save_options_key_name)
-
-  if current_save_options_setting == "true" then
-
-    if store == "store" then
-      all_user_options = {}
-
-      getSetTargetTracksChoices()
-
-      all_user_options.target_track_choices = _routing_options_objs.target_track_choices
-
-      if _routing_settings_objs and _routing_settings_objs.all_values then
-        all_user_options.routing_settings = _routing_settings_objs.all_values
-      end
-
-      all_user_options = serpent.dump(all_user_options)
-
-      storeRetrieveProjectData("all_user_options", all_user_options)
-
-    elseif store == "retrieve" then
-      all_user_options = storeRetrieveProjectData("all_user_options")
-      retval, all_user_options = serpent.load(all_user_options)
-
-      _routing_options_objs.all_user_options = all_user_options
-    end
-  end
-end
-
-
-function propagateSavedUserOptions()
-  local retval, current_save_options_setting
-
-  retval, current_save_options_setting = reaper.GetProjExtState(0, _api_script_ext_name, _api_save_options_key_name)
-
-  if current_save_options_setting == "true" then
-    _routing_options_objs.save_options:attr("value", true)
-
-    if _routing_options_objs and _routing_options_objs.all_user_options then
-
-      if _routing_options_objs.all_user_options.target_track_choices then
-
-        if #_routing_options_objs.all_user_options.target_track_choices > 0 then
-          getSetTargetTracksChoices(_routing_options_objs.all_user_options.target_track_choices)
-        end
-      end
-
-      if _routing_options_objs.all_user_options.routing_settings then
-
-        if not _routing_settings_objs then
-          initRoutingSettings()
-        end
-
-        _routing_settings_objs.all_values = _routing_options_objs.all_user_options.routing_settings
-
-        getSetRoutingSettingsValues("set", _routing_settings_objs.all_values)
-        updateRoutingSettingsBtns()
-      end
-    end
-
-
-
-  elseif current_save_options_setting == "false" then
-    _routing_options_objs.save_options:attr("value", false)
-  end
-end
-
-
-function restoreUserSelectedTracks()
-
-  for i = 1, #_selected_tracks do
-    reaper.SetTrackSelected(_selected_tracks[i], true)
-  end
-end
-
-
-function setUpRadioCheckboxMethods()
+function setUpRadioCheckboxMethods(routing_options_objs)
   local checkbox_sets = {
     {"add_checkbox", "remove_checkbox"},
     {"send_checkbox", "receive_checkbox"}
   }
 
   for i = 1, #checkbox_sets do
-    populateRadioCheckboxMethods(checkbox_sets[i][1], checkbox_sets[i][2])
-    populateRadioCheckboxMethods(checkbox_sets[i][2], checkbox_sets[i][1])
+    populateRadioCheckboxMethods(checkbox_sets[i][1], checkbox_sets[i][2], routing_options_objs)
+    populateRadioCheckboxMethods(checkbox_sets[i][2], checkbox_sets[i][1], routing_options_objs)
   end
 end
 
 
-function populateRadioCheckboxMethods(checkbox1, checkbox2)
-  _routing_options_objs[checkbox1].onclick = function()
+function populateRadioCheckboxMethods(checkbox1, checkbox2, routing_options_objs)
+  routing_options_objs[checkbox1].onclick = function()
 
-    _routing_options_objs[checkbox1].onchange = function()
-      _routing_options_objs[checkbox2]:toggle()
-      updateRoutingForm("is_action_change")
-      _routing_options_objs[checkbox1].onchange = nil
+    routing_options_objs[checkbox1].onchange = function()
+      routing_options_objs[checkbox2]:toggle()
+      updateRoutingForm(routing_options_objs, "is_action_change")
+      routing_options_objs[checkbox1].onchange = nil
     end
   end
 end
 
 
-function updateRoutingForm(is_action_change)
+function updateRoutingForm(routing_options_objs, is_action_change)
   local routing_action, routing_type, target_tracks_subheading_text_intro, target_tracks_subheading_routing_action_text, type_preposition, action_preposition, action_text_end, target_tracks_subheading_routing_type_text, new_target_tracks_subheading_text
 
-  routing_action, routing_type = getRoutingChoices()
+  routing_action, routing_type = getRoutingChoices(routing_options_objs)
   target_tracks_subheading_text_intro = "Which tracks do you want to "
   target_tracks_subheading_routing_action_text = routing_action .. " "
   type_preposition, action_preposition = getRoutingPrepositions(routing_action, routing_type)
   action_text_end = " " .. action_preposition .. " the selected tracks."
   target_tracks_subheading_routing_type_text = " " .. routing_type .. "s "
   new_target_tracks_subheading_text = target_tracks_subheading_text_intro .. routing_action .. target_tracks_subheading_routing_type_text .. type_preposition .. "?"
-  _routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
+  routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
 
-  _routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
-  _routing_options_objs.action_text_end:attr("text", action_text_end)
-  updateButtons(routing_action, is_action_change)
+  routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
+  routing_options_objs.action_text_end:attr("text", action_text_end)
+  updateButtons(routing_action, routing_options_objs.configure_btn, routing_options_objs.form_submit, is_action_change)
 end
 
 
-function getRoutingChoices()
+function getRoutingChoices(routing_options_objs)
   local routing_action, routing_type
 
-  if _routing_options_objs.add_checkbox.value then
+  if routing_options_objs.add_checkbox.value then
     routing_action = "add"
 
-  elseif _routing_options_objs.remove_checkbox.value then
+  elseif routing_options_objs.remove_checkbox.value then
     routing_action = "remove"
   end
 
-  if _routing_options_objs.send_checkbox.value then
+  if routing_options_objs.send_checkbox.value then
     routing_type = "send"
 
-  elseif _routing_options_objs.receive_checkbox.value then
+  elseif routing_options_objs.receive_checkbox.value then
     routing_type = "receive"
   end
 
@@ -494,28 +383,22 @@ function updateButtons(routing_action, configure_btn, submit_btn, is_action_chan
 end
 
 
-function launchRoutingSettings()
+function launchRoutingSettings(routing_options_objs)
+  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_options, this_form_field_class, this_form_field_value
   
-  if not _routing_settings_objs then
-    initRoutingSettings()
+  if not _routing_settings_objs then 
+    audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
+    midi_channel_options = defineMIDIChannelOptions()
+
+    populateRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+    gatherRoutingSettingsFormFields()
+    setRoutingSettingsPopupEventHandlers()
+    setRoutingSettingsFormEventHandlers()
+    populateRoutingSettingsFormValues()
+    populateRoutingSettingsPopup()
   end
 
   _routing_settings_objs.popup:open()
-end
-
-
-function initRoutingSettings()
-  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_options
-
-  audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
-  midi_channel_options = defineMIDIChannelOptions()
-
-  populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
-  gatherRoutingSettingsFormFields()
-  setRoutingSettingsPopupEventHandlers()
-  setRoutingSettingsFormEventHandlers()
-  populateRoutingSettingsFormValues()
-  populateRoutingSettingsPopup()
 end
 
 
@@ -603,9 +486,9 @@ function defineMIDIChannelOptions()
 end
 
 
-function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+function populateRoutingSettingsObjs(routing_options_objs, audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
   _routing_settings_objs = {
-    ["popup"] = rtk.Popup{w = _routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0},
+    ["popup"] = rtk.Popup{w = routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0},
     ["content"] = rtk.VBox(),
     ["title"] = rtk.Heading{"Configure settings for routing to be added", w = 1, halign = "center", padding = 6, bg = "#77777799", fontscale = 0.67},
     ["form"] = rtk.VBox{padding = "20 10 10"},
@@ -789,47 +672,14 @@ end
 function populateRoutingSettingsFormValues(reset)
   local new_routing_settings_values
 
-  if _routing_settings_objs then
+  if _routing_settings_objs.all_values and reset ~= "reset" then
+    new_routing_settings_values = _routing_settings_objs.all_values
 
-    if _routing_settings_objs.all_values and reset ~= "reset" then
-      new_routing_settings_values = _routing_settings_objs.all_values
-
-    else
-      new_routing_settings_values = _default_routing_settings_values
-    end
-
-    getSetRoutingSettingsValues("set", new_routing_settings_values)
+  else
+    new_routing_settings_values = _default_routing_settings_values
   end
 
-  if reset == "reset" then
-    updateRoutingSettingsBtns("reset")
-  end
-end
-
-
-function updateRoutingSettingsBtns(reset)
-  local all_btn_img_filename_bases, this_btn, this_btn_value, new_btn_img_base_state
-
-  all_btn_img_filename_bases = {
-    ["mute"] = "table_mute",
-    ["phase"] = "gen_phase",
-    ["mono_stereo"] = "gen_mono",
-    ["midi_velpan"] = "gen_midi"
-  }
-
-  for btn_name, btn_img_base in pairs(all_btn_img_filename_bases) do
-    this_btn = _routing_settings_objs[btn_name]
-    this_btn_value = this_btn.value
-
-    if reset == "reset" or this_btn_value == 0 then
-      new_btn_img_base_state = "_off"
-
-    elseif this_btn_value == 1 then
-      new_btn_img_base_state = "_on"
-    end
-
-    this_btn:attr("icon", btn_img_base .. new_btn_img_base_state)
-  end
+  getSetRoutingSettingsValues("set", new_routing_settings_values)
 end
 
 
@@ -861,93 +711,60 @@ function populateRoutingSettingsPopup()
 end
 
 
-function submitRoutingOptionChanges()
-  getSetTargetTracksChoices()
-  addRemoveRouting(_routing_options_objs.form_fields)
+function submitRoutingOptionChanges(routing_options_form_fields, routing_options_window)
+  local routing_option_target_tracks_choices
+
+  routing_option_target_tracks_choices = getTargetTracksChoices(routing_options_form_fields.refs.routing_option_target_tracks_box)
+
+  addRemoveRouting(routing_options_form_fields, routing_option_target_tracks_choices)
   reaper.Undo_BeginBlock()
-  _routing_options_objs.window:close()
+  routing_options_window:close()
   reaper.Undo_EndBlock("MB_Buss Driver", 1)
 end
 
 
-function getSetTargetTracksChoices(new_choices)
-  local set, get 
+function getTargetTracksChoices(routing_option_target_tracks_box)
+  local routing_option_target_tracks_choices, this_track_row, this_track_checkbox, this_track_idx
 
-  if new_choices then
-    set = true
+  routing_option_target_tracks_choices = {}
 
-  else
-    get = true
-  end
+  for i = 1, #routing_option_target_tracks_box.children do
+    this_track_row = routing_option_target_tracks_box:get_child(i)
+    this_track_checkbox = this_track_row:get_child(2)
 
-  if get then
-    getTargetTrackChoices()
-
-  elseif set then
-    setTargetTrackChoices(new_choices)
-  end
-end
-
-
-function getTargetTrackChoices()
-  local this_track_line, this_track_checkbox, this_track_idx, this_track_guid
-
-  _routing_options_objs.target_track_choices = {}
-
-  for i = 1, #_routing_options_objs.target_tracks_box.children do
-    this_track_line = _routing_options_objs.target_tracks_box:get_child(i)
-    this_track_checkbox = this_track_line:get_child(2)
-    
     if this_track_checkbox.value then
       this_track_idx = string.match(this_track_checkbox.ref, "%d+$")
-      this_track = reaper.GetTrack(0, this_track_idx-1)
-      this_track_guid = reaper.BR_GetMediaTrackGUID(this_track)
 
-      table.insert(_routing_options_objs.target_track_choices, {
-        ["idx"] = this_track_idx,
-        ["guid"] = this_track_guid
-      })
+      table.insert(routing_option_target_tracks_choices, this_track_idx)
     end
   end
+
+  return routing_option_target_tracks_choices
 end
 
 
-function setTargetTrackChoices(new_choices)
-  local target_track_lines, this_track_idx, this_track_guid, this_track_line_guid, this_track_line, this_track_checkbox
-
-  for i = 1, #new_choices do
-    target_track_lines = _routing_options_objs.target_tracks_box.children
-    this_track_idx = new_choices[i].idx
-    this_track_guid = new_choices[i].guid
-
-    for j = 1, #target_track_lines do
-      this_track_line = target_track_lines[j][1]
-
-      if this_track_line then
-        this_track_line_guid = this_track_line.data_guid
-
-        if this_track_line_guid == this_track_guid then
-          this_track_checkbox = this_track_line.children[2][1]
-          this_track_checkbox:attr("value", true)
-
-          break
-        end
-      end
-    end
-  end
-end
-
-
-function addRemoveRouting(routing_options_form_fields)
+function addRemoveRouting(routing_options_form_fields, routing_option_target_tracks_choices)
   local routing_option_action_choice, routing_option_type_choice, this_selected_track, j, this_target_track
 
-  routing_option_action_choice, routing_option_type_choice = getRoutingChoices()
+  if routing_options_form_fields.refs.add_checkbox.value then
+    routing_option_action_choice = "add"
+
+  elseif routing_options_form_fields.refs.remove_checkbox.value then
+    routing_option_action_choice = "remove"
+  end
+
+  if routing_options_form_fields.refs.send_checkbox.value then
+    routing_option_type_choice = "send"
+
+  elseif routing_options_form_fields.refs.receive_checkbox.value then
+    routing_option_type_choice = "receive"
+  end
 
   for i = 1, #_selected_tracks do
     this_selected_track = _selected_tracks[i]
 
-    for j = 1, #_routing_options_objs.target_track_choices do
-      this_target_track = reaper.GetTrack(0, _routing_options_objs.target_track_choices[j].idx-1)
+    for j = 1, #routing_option_target_tracks_choices do
+      this_target_track = reaper.GetTrack(0, routing_option_target_tracks_choices[j]-1)
 
       if routing_option_action_choice == "add" then
         addRouting(routing_option_type_choice, this_selected_track, this_target_track)
@@ -1117,21 +934,21 @@ function removeRouting(routing_option_type_choice, selected_track, target_track)
 end
 
 
-function resetTargetTrackChoices()
-  local target_tracks_box, this_target_tracks_box_child_line, this_track_line_child
+function resetTargetTrackChoices(routing_options_objs)
+  local target_tracks_box, this_target_tracks_box_child, this_track_line_child
 
-  target_tracks_box = _routing_options_objs.form_fields.refs.routing_option_target_tracks_box
+  target_tracks_box = routing_options_objs.form_fields.refs.routing_option_target_tracks_box
 
   for i = 1, #target_tracks_box.children do
-    this_target_tracks_box_child_line = target_tracks_box.children[i][1]
+    this_target_tracks_box_child = target_tracks_box.children[i]
 
-    if this_target_tracks_box_child_line.data_class == "target_track_line" then
+    if this_target_tracks_box_child.data_class == "target_track_line" then
 
-      for j = 1, #this_target_tracks_box_child_line.children do
-        this_track_line_child = this_target_tracks_box_child_line.children[j][1]
+      for j = 1, #this_target_tracks_box_child.children do
+        this_track_line_child = this_target_tracks_box_child.children[j]
 
         if this_track_line_child.data_class == "target_track_checkbox" then
-          this_track_line_child:attr("value", "unchecked")
+          log(this_track_line_child.label)
         end
       end
     end
@@ -1139,33 +956,41 @@ function resetTargetTrackChoices()
 end
 
 
-function populateRoutingOptionsWindow()
-  _routing_options_objs.addremove_wrapper:add(_routing_options_objs.add_checkbox)
-  _routing_options_objs.addremove_wrapper:add(_routing_options_objs.remove_checkbox)
-  _routing_options_objs.type_wrapper:add(_routing_options_objs.send_checkbox)
-  _routing_options_objs.type_wrapper:add(_routing_options_objs.receive_checkbox)
-  _routing_options_objs.action_sentence:add(_routing_options_objs.action_text_start)
-  _routing_options_objs.action_sentence:add(_routing_options_objs.addremove_wrapper)
-  _routing_options_objs.action_sentence:add(_routing_options_objs.type_wrapper)
-  _routing_options_objs.action_sentence:add(_routing_options_objs.action_text_end)
-  _routing_options_objs.action_sentence_wrapper:add(_routing_options_objs.action_sentence)
-  _routing_options_objs.form_fields:add(_routing_options_objs.action_sentence_wrapper)
-  _routing_options_objs.form_fields:add(_routing_options_objs.target_tracks_subheading)
-  _routing_options_objs.form_fields:add(_routing_options_objs.target_tracks_box)
-  _routing_options_objs.save_options_wrapper:add(_routing_options_objs.save_options)
-  _routing_options_objs.form_buttons:add(_routing_options_objs.form_submit)
-  _routing_options_objs.form_buttons:add(_routing_options_objs.form_cancel)
-  _routing_options_objs.reset_wrapper:add(_routing_options_objs.reset_btn)
-  _routing_options_objs.form_bottom:add(_routing_options_objs.save_options_wrapper, {halign = "left"})
-  _routing_options_objs.form_bottom:add(_routing_options_objs.form_buttons, {halign = "center"})
-  _routing_options_objs.form_bottom:add(_routing_options_objs.reset_wrapper, {halign = "right"})
-  _routing_options_objs.content:add(_routing_options_objs.form_fields)
-  _routing_options_objs.content:add(_routing_options_objs.form_bottom)
-  _routing_options_objs.viewport:attr("child", _routing_options_objs.content)
-  _routing_options_objs.configure_wrapper:add(_routing_options_objs.configure_btn)
-  _routing_options_objs.window:add(_routing_options_objs.configure_wrapper)
-  _routing_options_objs.window:add(_routing_options_objs.title)
-  _routing_options_objs.window:add(_routing_options_objs.viewport)
+function reselectTracks()
+
+  for i = 1, #_selected_tracks do
+    reaper.SetTrackSelected(_selected_tracks[i], true)
+  end
+end
+
+
+function populateRoutingOptionsWindow(routing_options_objs)
+  routing_options_objs.addremove_wrapper:add(routing_options_objs.add_checkbox)
+  routing_options_objs.addremove_wrapper:add(routing_options_objs.remove_checkbox)
+  routing_options_objs.type_wrapper:add(routing_options_objs.send_checkbox)
+  routing_options_objs.type_wrapper:add(routing_options_objs.receive_checkbox)
+  routing_options_objs.action_sentence:add(routing_options_objs.action_text_start)
+  routing_options_objs.action_sentence:add(routing_options_objs.addremove_wrapper)
+  routing_options_objs.action_sentence:add(routing_options_objs.type_wrapper)
+  routing_options_objs.action_sentence:add(routing_options_objs.action_text_end)
+  routing_options_objs.action_sentence_wrapper:add(routing_options_objs.action_sentence)
+  routing_options_objs.form_fields:add(routing_options_objs.action_sentence_wrapper)
+  routing_options_objs.form_fields:add(routing_options_objs.target_tracks_subheading)
+  routing_options_objs.form_fields:add(routing_options_objs.target_tracks_box)
+  routing_options_objs.form_buttons:add(routing_options_objs.form_submit)
+  routing_options_objs.form_buttons:add(routing_options_objs.form_cancel)
+  routing_options_objs.reset_wrapper:add(routing_options_objs.reset_btn)
+  routing_options_objs.form_bottom:add(routing_options_objs.form_buttons, {halign = "center"})
+  routing_options_objs.form_bottom:add(routing_options_objs.reset_wrapper, {halign = "right"})
+  routing_options_objs.content:add(routing_options_objs.form_fields)
+  routing_options_objs.content:add(routing_options_objs.form_bottom)
+  routing_options_objs.viewport:attr("child", routing_options_objs.content)
+  routing_options_objs.configure_wrapper:add(routing_options_objs.configure_btn)
+  routing_options_objs.window:add(routing_options_objs.configure_wrapper)
+  routing_options_objs.window:add(routing_options_objs.title)
+  routing_options_objs.window:add(routing_options_objs.viewport)
+
+  return routing_options_objs
 end
 
 
@@ -1176,3 +1001,14 @@ function initBussDriver()
 end
 
 initBussDriver()
+
+
+
+
+
+
+--- UTILITY FUNCTIONS ---
+
+function round(num, precision)
+   return math.floor(num*(10^precision)+0.5) / 10^precision
+end

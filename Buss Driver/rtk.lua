@@ -5,9 +5,9 @@
 -- 
 -- This is generated code. See https://reapertoolkit.dev/ for more info.
 -- 
--- version: 1.2.0-33-g9eea6be-dev
--- build: Sun May 15 16:20:16 UTC 2022
-__RTK_VERSION='1.2.0-33-g9eea6be-dev'
+-- version: 1.2.0-40-g2c31150-dev
+-- build: Wed May 18 02:07:08 UTC 2022
+__RTK_VERSION='1.2.0-40-g2c31150-dev'
 rtk=(function()
 __mod_rtk_core=(function()
 __mod_rtk_log=(function()
@@ -437,6 +437,8 @@ return math.min(max,value)else
 return value
 end
 end
+function rtk.isrel(value)return value and value>0 and value<=1.0
+end
 function rtk.point_in_box(x,y,bx,by,bw,bh)return x>=bx and y>=by and x<=bx+bw and y<=by+bh
 end
 function rtk.point_in_circle(x,y,cirx,ciry,radius)local dx=x-cirx
@@ -769,9 +771,9 @@ local target=anim.target or anim.widget
 local attr=anim.attr
 local finished=anim.pct>=1.0
 local elapsed=now-anim._start_time
-local newval,surfaceval
+local newval,exterior
 if anim.stepfunc then
-newval,surfaceval=anim.stepfunc(target,anim)else
+newval,exterior=anim.stepfunc(target,anim)else
 newval=anim.resolve(anim.easingfunc(anim.pct))end
 anim.frames=anim.frames+1
 if not finished and elapsed>anim.duration*1.5 then
@@ -782,15 +784,15 @@ anim.update(finished and anim.doneval or newval,target,attr,anim)end
 if widget then
 if not finished then
 local value=newval
-if surfaceval==nil and anim.calculate then
-value=anim.calculate(widget,attr,newval,widget.calc)surfaceval=value
+if exterior==nil and anim.calculate then
+value=anim.calculate(widget,attr,newval,widget.calc)exterior=value
 end
 widget.calc[attr]=value
-if anim.sync_surface_value then
-widget[attr]=surfaceval
+if anim.sync_exterior_value then
+widget[attr]=exterior or value
 end
 else
-widget:attr(attr,surfaceval or anim.doneval)end
+widget:attr(attr,exterior or anim.doneval)end
 local reflow=anim.reflow or(anim.attrmeta and anim.attrmeta.reflow)or rtk.Widget.REFLOW_PARTIAL
 if reflow and reflow~=rtk.Widget.REFLOW_NONE then
 widget:queue_reflow(reflow)end
@@ -1169,7 +1171,8 @@ rtk.Event.static.MOUSEMOVE=3
 rtk.Event.static.MOUSEWHEEL=4
 rtk.Event.static.KEY=5
 rtk.Event.static.DROPFILE=6
-rtk.Event.static.typenames={[rtk.Event.MOUSEDOWN]='mousedown',[rtk.Event.MOUSEUP]='mouseup',[rtk.Event.MOUSEMOVE]='mousemove',[rtk.Event.MOUSEWHEEL]='mousewheel',[rtk.Event.KEY]='key',[rtk.Event.DROPFILE]='dropfile',}rtk.Event.register{type=nil,handled=nil,button=0,buttons=0,wheel=0,hwheel=0,keycode=nil,char=nil,ctrl=false,shift=false,alt=false,meta=false,modifiers=nil,files=nil,x=nil,y=nil,time=0,simulated=nil,debug=nil,}function rtk.Event:initialize(attrs)self:reset()if attrs then
+rtk.Event.static.WINDOWCLOSE=7
+rtk.Event.static.typenames={[rtk.Event.MOUSEDOWN]='mousedown',[rtk.Event.MOUSEUP]='mouseup',[rtk.Event.MOUSEMOVE]='mousemove',[rtk.Event.MOUSEWHEEL]='mousewheel',[rtk.Event.KEY]='key',[rtk.Event.DROPFILE]='dropfile',[rtk.Event.WINDOWCLOSE]='windowclose',}rtk.Event.register{type=nil,handled=nil,button=0,buttons=0,wheel=0,hwheel=0,keycode=nil,char=nil,ctrl=false,shift=false,alt=false,meta=false,modifiers=nil,files=nil,x=nil,y=nil,time=0,simulated=nil,debug=nil,}function rtk.Event:initialize(attrs)self:reset()if attrs then
 table.merge(self,attrs)end
 end
 function rtk.Event:__tostring()local custom
@@ -1883,11 +1886,11 @@ else
 error('invalid value')end
 end
 end
-rtk.Widget.register{x=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},y=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},w=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,animate=function(self,anim,scale)local calcval=anim.resolve(anim.easingfunc(anim.pct))local surfaceval=(anim.pct<1 and calcval or anim.doneval)/(scale or rtk.scale.value)if anim.dst==0 or anim.dst>1 then
-surfaceval = (type(surfaceval) == 'number' and surfaceval > 0 and surfaceval <= 1.0) and 1.01 or surfaceval
+rtk.Widget.register{x=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,},y=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,},w=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,animate=function(self,anim,scale)local calculated=anim.resolve(anim.easingfunc(anim.pct))local exterior=(anim.pct<1 and calculated or anim.doneval)/(scale or rtk.scale.value)if anim.dst==0 or anim.dst>1 then
+exterior = (type(exterior) == 'number' and exterior > 0 and exterior <= 1.0) and 1.01 or exterior
 end
-return calcval,surfaceval
-end,},h=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,animate=rtk.Reference('w'),},z=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},minw = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},minh = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},maxw = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},maxh = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL},halign=rtk.Attribute{default=rtk.Widget.LEFT,calculate={left=rtk.Widget.LEFT,center=rtk.Widget.CENTER,right=rtk.Widget.RIGHT},},valign=rtk.Attribute{default=rtk.Widget.TOP,calculate={top=rtk.Widget.TOP,center=rtk.Widget.CENTER,bottom=rtk.Widget.BOTTOM},},scalability=rtk.Attribute{default=rtk.Widget.FULL,reflow=rtk.Widget.REFLOW_FULL,calculate={box=rtk.Widget.BOX,full=rtk.Widget.FULL},},position=rtk.Attribute{default=rtk.Widget.RELATIVE,reflow=rtk.Widget.REFLOW_FULL,calculate={relative=rtk.Widget.RELATIVE,absolute=rtk.Widget.ABSOLUTE,fixed=rtk.Widget.FIXED,['fixed-flow']=rtk.Widget.FIXED_FLOW
+return calculated,exterior
+end,},h=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,animate=rtk.Reference('w'),},z=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL},minw = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL, reflow_uses_exterior_value=true},minh = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL, reflow_uses_exterior_value=true},maxw = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL, reflow_uses_exterior_value=true},maxh = rtk.Attribute{type='number', reflow=rtk.Widget.REFLOW_FULL, reflow_uses_exterior_value=true},halign=rtk.Attribute{default=rtk.Widget.LEFT,calculate={left=rtk.Widget.LEFT,center=rtk.Widget.CENTER,right=rtk.Widget.RIGHT},},valign=rtk.Attribute{default=rtk.Widget.TOP,calculate={top=rtk.Widget.TOP,center=rtk.Widget.CENTER,bottom=rtk.Widget.BOTTOM},},scalability=rtk.Attribute{default=rtk.Widget.FULL,reflow=rtk.Widget.REFLOW_FULL,calculate={box=rtk.Widget.BOX,full=rtk.Widget.FULL},},position=rtk.Attribute{default=rtk.Widget.RELATIVE,reflow=rtk.Widget.REFLOW_FULL,calculate={relative=rtk.Widget.RELATIVE,absolute=rtk.Widget.ABSOLUTE,fixed=rtk.Widget.FIXED,['fixed-flow']=rtk.Widget.FIXED_FLOW
 },},box=nil,offx=nil,offy=nil,clientx=nil,clienty=nil,padding=rtk.Attribute{replaces={'tpadding', 'rpadding', 'bpadding', 'lpadding'},get=function(self,attr,target)return {target.tpadding,target.rpadding,target.bpadding,target.lpadding}end,reflow=rtk.Widget.REFLOW_FULL,calculate=function(self,attr,value,target)local t,r,b,l=rtk.Widget.static._calc_padding_or_margin(value)target.tpadding,target.rpadding,target.bpadding,target.lpadding=t,r,b,l
 return {t,r,b,l}end
 },tpadding=rtk.Attribute{priority=true,reflow=rtk.Widget.REFLOW_FULL},rpadding=rtk.Reference('tpadding'),bpadding=rtk.Reference('tpadding'),lpadding=rtk.Reference('tpadding'),margin=rtk.Attribute{default=0,replaces={'tmargin', 'rmargin', 'bmargin', 'lmargin'},get=function(self,attr,target)return {target.tmargin,target.rmargin,target.bmargin,target.lmargin}end,reflow=rtk.Widget.REFLOW_FULL,calculate=function(self,attr,value,target)local t,r,b,l=rtk.Widget.static._calc_padding_or_margin(value)target.tmargin,target.rmargin,target.bmargin,target.lmargin=t,r,b,l
@@ -2158,6 +2161,7 @@ kwargs.widget=self
 kwargs.attrmeta=meta
 kwargs.stepfunc=(meta.animate and meta.animate~=rtk.Attribute.NIL)and meta.animate
 kwargs.calculate=meta.calculate
+kwargs.sync_exterior_value=meta.reflow_uses_exterior_value
 if kwargs.dst==rtk.Attribute.DEFAULT then
 if meta.default==rtk.Attribute.FUNCTION then
 kwargs.dst=meta.default_func(self,attr)else
@@ -2167,7 +2171,6 @@ end
 local calcsrc,calcdst
 local doneval=kwargs.dst or rtk.Attribute.DEFAULT
 if attr == 'w' or attr == 'h' then
-kwargs.sync_surface_value=true
 if not kwargs.src or(kwargs.src<=1.0 and kwargs.src>=0)then
 kwargs.src=calc[attr]*(kwargs.src or 1)calcsrc=true
 end
@@ -2218,7 +2221,8 @@ function rtk.Widget:queue_reflow(mode,widget)local window=self:_slow_get_window(
 window:queue_reflow(mode,widget or self)end
 return self
 end
-function rtk.Widget:reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local expw,exph
+function rtk.Widget:reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
+local expw,exph
 if not boxx then
 if self.box then
 expw,exph=self:_reflow(table.unpack(self.box))else
@@ -2228,7 +2232,6 @@ else
 self.viewport=viewport
 self.window=window
 self.box={boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh}expw,exph=self:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)end
-local calc=self.calc
 self:onreflow()self.realized=true
 return calc.x,calc.y,calc.w,calc.h,expw or fillw,exph or fillh
 end
@@ -2243,52 +2246,50 @@ calc.tborder and calc.tborder[2] or 0,calc.rborder and calc.rborder[2] or 0,calc
 end
 function rtk.Widget:_get_padding_and_border()local tp,rp,bp,lp=self:_get_padding()local tb,rb,bb,lb=self:_get_border_sizes()return tp+tb,rp+rb,bp+bb,lp+lb
 end
-function rtk.Widget:_adjscale(val)if not val then
+function rtk.Widget:_adjscale(val,scale,box)if not val then
 return
-elseif self.calc.scalability&rtk.Widget.FULL~=rtk.Widget.FULL then
+elseif val>0 and val<=1.0 and box then
+return val*box
+elseif(self.calc.scalability&rtk.Widget.FULL~=rtk.Widget.FULL)then
 return val
 else
-return val*rtk.scale.value
+return val*(scale or rtk.scale.value)end
 end
-end
-local function _clamp_size(sz,min,max,box,scalability)max=box and(max and math.min(box,max)or box)if scalability&rtk.Widget.FULL==rtk.Widget.FULL then
+function rtk.Widget:_get_box_pos(boxx,boxy)local x=self.x or 0
+local y=self.y or 0
+if self.calc.scalability&rtk.Widget.FULL==rtk.Widget.FULL then
 local scale=rtk.scale.value
-return rtk.clamp(sz,min and(min*scale),max and(max*scale))else
-return rtk.clamp(sz,min,max)end
-end
-function rtk.Widget:_clampw(w,box)local calc=self.calc
-return _clamp_size(w,calc.minw,calc.maxw,box,calc.scalability)end
-function rtk.Widget:_clamph(h,box)local calc=self.calc
-return _clamp_size(h,calc.minh,calc.maxh,box,calc.scalability)end
-function rtk.Widget:_get_box_pos(boxx,boxy)if self.calc.scalability&rtk.Widget.FULL==rtk.Widget.FULL then
-local scale=rtk.scale.value
-return scale*self.x+boxx,scale*self.y+boxy
+return scale*x+boxx,scale*y+boxy
 else
-return self.x+boxx,self.y+boxy
+return x+boxx,y+boxy
 end
 end
-local function _get_content_dimension(size,bounds,padding,fill,clamp,scale)if size then
-if bounds and size<-1 then
-return bounds+(size*scale)-padding
-elseif bounds and size<=1.0 then
-return math.abs(bounds*size)-padding
+local function _get_content_dimension(size,box,padding,fill,clamp,greedy,scale)if size then
+if box and size<-1 then
+return box+(size*scale)-padding
+elseif box and size<=1.0 then
+return greedy and math.abs(box*size)-padding
 else
 return(size*scale)-padding
 end
 end
-if fill and bounds then
-return bounds-padding
+if fill and box and greedy then
+return box-padding
 end
 end
-function rtk.Widget:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,scale)scale=self:_adjscale(scale or 1)local tp,rp,bp,lp=self:_get_padding_and_border()local w=_get_content_dimension(self.w,boxw,lp+rp,fillw,clampw,scale)local h=_get_content_dimension(self.h,boxh,tp+bp,fillh,clamph,scale)local calc=self.calc
-if w and(calc.minw or calc.maxw)then
-w=self:_clampw(w)end
-if h and(calc.minh or calc.maxh)then
-h=self:_clamph(h)end
-return w,h,tp,rp,bp,lp
+function rtk.Widget:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,scale,greedyw,greedyh)scale=self:_adjscale(scale or 1)local tp,rp,bp,lp=self:_get_padding_and_border()local w=_get_content_dimension(self.w,boxw,lp+rp,fillw,clampw,greedyw,scale)local h=_get_content_dimension(self.h,boxh,tp+bp,fillh,clamph,greedyh,scale)local minw,maxw,minh,maxh=self:_get_min_max_sizes(boxw,boxh,greedyw,greedyh,scale)maxw=maxw and clampw and math.min(maxw,boxw)or maxw
+maxh=maxh and clamph and math.min(maxh,boxh)or maxh
+minw=minw and minw-lp-rp
+maxw=maxw and maxw-lp-rp
+minh=minh and minh-tp-bp
+maxh=maxh and maxh-tp-bp
+return w,h,tp,rp,bp,lp,minw,maxw,minh,maxh
 end
+function rtk.Widget:_get_min_max_sizes(boxw,boxh,greedyw,greedyh,scale)local minw,maxw,minh,maxh=self.minw,self.maxw,self.minh,self.maxh
+return minw and((minw>1 or minw<=0)and(minw*scale)or(greedyw and minw*boxw)),maxw and((maxw>1 or maxw<=0)and(maxw*scale)or(greedyw and maxw*boxw)),minh and((minh>1 or minh<=0)and(minh*scale)or(greedyh and minh*boxh)),maxh and((maxh>1 or maxh<=0)and(maxh*scale)or(greedyh and maxh*boxh))end
 function rtk.Widget:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)calc.w=w or self:_clampw(fillw and(boxw-lp-rp)or 0)calc.h=h or self:_clamph(fillh and(boxh-tp-bp)or 0)return fillw,fillh
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)calc.w=rtk.clamp(w or(fillw and(boxw-lp-rp)or 0),minw,maxw)calc.h=rtk.clamp(h or(fillh and(boxh-tp-bp)or 0),minh,maxh)return fillw,fillh
 end
 function rtk.Widget:_realize_geometry()self.realized=true
 end
@@ -2482,6 +2483,8 @@ event:set_handled(self)self:queue_draw()end
 if self.mouseover and calc.cursor then
 self.window:request_mouse_cursor(calc.cursor)end
 end
+if event.type==rtk.Event.WINDOWCLOSE then
+self:_handle_windowclose(event)end
 return true
 end
 function rtk.Widget:_deferred_mousedown(event,x,y)local mousedown_handled=event:get_button_state('mousedown-handled')if not mousedown_handled and event:is_widget_pressed(self)and not event:get_button_state(self)then
@@ -2591,6 +2594,7 @@ function rtk.Widget:onreflow()end
 function rtk.Widget:_handle_reflow()return self:onreflow()end
 function rtk.Widget:ondropfile(event)end
 function rtk.Widget:_handle_dropfile(event)return self:ondropfile(event)end
+function rtk.Widget:_handle_windowclose(event)end
 end)()
 
 __mod_rtk_viewport=(function()
@@ -2633,9 +2637,10 @@ return true
 end
 function rtk.Viewport:_sync_child_refs(child,action)return rtk.Container._sync_child_refs(self,child,action)end
 function rtk.Viewport:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)local hpadding=lp+rp
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)local hpadding=lp+rp
 local vpadding=tp+bp
-local inner_maxw=w or(boxw-hpadding)local inner_maxh=h or(boxh-vpadding)local scrollw,scrollh=0,0
+local inner_maxw=rtk.clamp(w or(boxw-hpadding),minw,maxw)local inner_maxh=rtk.clamp(h or(boxh-vpadding),minh,maxh)local scrollw,scrollh=0,0
 if calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS then
 scrollw=calc.scrollbar_size*rtk.scale.value
 inner_maxw=inner_maxw-scrollw
@@ -2669,7 +2674,7 @@ child:_realize_geometry()innerw=math.ceil(rtk.clamp(ww+wx,fillw and greedyw and 
 innerw,innerh=inner_maxw,inner_maxh
 hmargin,vmargin=0,0
 end
-calc.w=self:_clampw((w or(innerw+scrollw+hmargin))+hpadding,clampw and boxw)calc.h=self:_clamph((h or(innerh+scrollh+vmargin))+vpadding,clamph and boxh)if not self._backingstore then
+calc.w=rtk.clamp((w or(innerw+scrollw+hmargin))+hpadding,minw,maxw)calc.h=rtk.clamp((h or(innerh+scrollh+vmargin))+vpadding,minh,maxh)if not self._backingstore then
 self._backingstore=rtk.Image(innerw,innerh)else
 self._backingstore:resize(innerw,innerh,false)end
 self._vscrollh=0
@@ -2681,7 +2686,7 @@ function rtk.Viewport:_realize_geometry()local calc=self.calc
 local tp,rp,bp,lp=self:_get_padding_and_border()if self.child then
 local innerh=self._backingstore.h
 local ch=self.child.calc.h
-if calc.vscrollbar~=rtk.Viewport.SCROLLBAR_NEVER and ch>innerh then
+if ch>innerh then
 self._vscrollx=calc.x+calc.w-calc.scrollbar_size*rtk.scale.value-calc.vscrollbar_offset
 self._vscrolly=calc.y+calc.h*calc.scroll_top/ch+tp
 self._vscrollh=calc.h*innerh/ch
@@ -2823,11 +2828,10 @@ local ssy=self:_get_vscrollbar_client_pos()if event.y>=ssy and event.y<=ssy+self
 return false
 end
 end
-local innerh=calc.h-pre.tp-pre.bp
 local target
 if natural then
 target=calc.scroll_top+(voffset-event.y)else
-local pct=rtk.clamp(event.y-self.clienty-voffset,0,innerh)/innerh
+local pct=rtk.clamp(event.y-self.clienty-voffset,0,calc.h)/calc.h
 target=pct*(self.child.calc.h)end
 self:scrollto(calc.scroll_left,target,false)end
 end
@@ -2982,8 +2986,8 @@ if self._realize_on_draw then
 self:_realize_geometry()self._realize_on_draw=false
 end
 rtk.Viewport._draw(self,offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)end
-function rtk.Popup:_release_modal()if self.calc.autoclose then
-self:close()end
+function rtk.Popup:_release_modal(event)if self.calc.autoclose then
+self:_close(event)end
 end
 function rtk.Popup:open(attrs)if self:onopen()==false then
 return
@@ -3007,15 +3011,17 @@ self:cancel_animation('alpha')self:attr('alpha', 1)elseif anchor and not anchor.
 return
 end
 rtk.add_modal(self,anchor)self:show()self:focus()self:scrollto(0,0)end
-function rtk.Popup:close()if not self.calc.visible or not self.calc.opened then
+function rtk.Popup:close()return self:_close()end
+function rtk.Popup:_close(event)if not self.calc.visible or not self.calc.opened then
 return
 end
-if self:onclose()==false then
+if self:onclose(event)==false then
 return
 end
 self:sync('opened', false)self:animate{attr='alpha', dst=0, duration=0.15}:done(function()self:hide()self:attr('alpha', 1)self.window:remove(self)end)rtk.reset_modal()end
+function rtk.Popup:_handle_windowclose(event)self:onclose(event)self:sync('opened', false)end
 function rtk.Popup:onopen()end
-function rtk.Popup:onclose()end
+function rtk.Popup:onclose(event)end
 end)()
 
 __mod_rtk_container=(function()
@@ -3189,7 +3195,8 @@ return
 end
 function rtk.Container:_set_cell_box(attrs,x,y,w,h)attrs._cellbox={math.round(x),math.round(y),math.round(w),math.round(h)}end
 function rtk.Container:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-local x,y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph,nil)local inner_maxw=w or(boxw-lp-rp)local inner_maxh=h or(boxh-tp-bp)local innerw=w or 0
+local x,y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph,nil,greedyw,greedyh
+)local inner_maxw=rtk.clamp(w or(boxw-lp-rp),minw,maxw)local inner_maxh=rtk.clamp(h or(boxh-tp-bp),minh,maxh)local innerw=w or 0
 local innerh=h or 0
 clampw=clampw or w~=nil or fillw
 clamph=clamph or h~=nil or fillh
@@ -3198,8 +3205,8 @@ local widget,attrs=table.unpack(widgetattrs)local wcalc=widget.calc
 attrs._cellbox=nil
 self._child_index_by_id[widget.id]=n
 if widget.visible==true then
-local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)local minw=self:_adjscale(attrs.minw or wcalc.minw)local maxw=self:_adjscale(attrs.maxw or wcalc.maxw)local minh=self:_adjscale(attrs.minh or wcalc.minh)local maxh=self:_adjscale(attrs.maxh or wcalc.maxh)local wx,wy,ww,wh=widget:reflow(0,0,rtk.clamprel(inner_maxw-widget.x-clp-crp,minw,maxw),rtk.clamprel(inner_maxh-widget.y-ctp-cbp,minh,maxh),attrs.fillw,attrs.fillh,clampw or attrs.maxw~=nil,clamph or attrs.maxh~=nil,uiscale,viewport,window,greedyw,greedyh
-)ww=math.max(ww,minw or 0)wh=math.max(wh,minh or 0)attrs._halign=attrs.halign or calc.halign
+local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)attrs._minw=self:_adjscale(attrs.minw,uiscale,greedyw and inner_maxw)attrs._maxw=self:_adjscale(attrs.maxw,uiscale,greedyh and inner_maxw)attrs._minh=self:_adjscale(attrs.minh,uiscale,greedyh and inner_maxh)attrs._maxh=self:_adjscale(attrs.maxh,uiscale,greedyh and inner_maxh)local wx,wy,ww,wh=widget:reflow(0,0,rtk.clamp(inner_maxw-widget.x-clp-crp,attrs._minw,attrs._maxw),rtk.clamp(inner_maxh-widget.y-ctp-cbp,attrs._minh,attrs._maxh),attrs.fillw,attrs.fillh,clampw or attrs.maxw~=nil,clamph or attrs.maxh~=nil,uiscale,viewport,window,greedyw,greedyh
+)ww=math.max(ww,attrs._minw or 0)wh=math.max(wh,attrs._minh or 0)attrs._halign=attrs.halign or calc.halign
 attrs._valign=attrs.valign or calc.valign
 if not attrs._halign or attrs._halign==rtk.Widget.LEFT then
 wx=lp+clp
@@ -3221,7 +3228,7 @@ end
 end
 self:_determine_zorders()calc.x=x
 calc.y=y
-calc.w=self:_clampw((w or innerw)+lp+rp,clampw and boxw)calc.h=self:_clamph((h or innerh)+tp+bp,clamph and boxh)end
+calc.w=math.ceil(rtk.clamp((w or innerw)+lp+rp,minw,maxw))calc.h=math.ceil(rtk.clamp((h or innerh)+tp+bp,minh,maxh))end
 function rtk.Container:_draw(offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)local calc=self.calc
 rtk.Widget._draw(self,offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)local x,y=calc.x+offx,calc.y+offy
 if y+calc.h<0 or y>cliph or calc.ghost then
@@ -3266,11 +3273,8 @@ end
 end
 icon:popdest()rtk.Window.static._icon_resize_grip=icon
 end
-rtk.Window.register{x=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_NONE,redraw=false,window_sync=true,},y=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_NONE,redraw=false,window_sync=true,},w=rtk.Attribute{priority=true,type='number',window_sync=true,animate=function(self,anim)return rtk.Widget.attributes.w.animate(self,anim,rtk.scale.framebuffer)end,calculate=function(self,attr,value,target)return value and math.max(self.minw or 0,value)*rtk.scale.framebuffer
-end,},h=rtk.Attribute{priority=true,type='number',window_sync=true,animate=rtk.Reference('w'),calculate=function(self,attr,value,target)return math.max(self.minh or 0,value or 0)*rtk.scale.framebuffer
-end,},minw=rtk.Attribute{default=100,calculate=function(self,attr,value,target)return value and value*rtk.scale.framebuffer or 0
-end,},minh=rtk.Attribute{default=30,calculate=rtk.Reference('minw'),},maxw=rtk.Attribute{default=800,calculate=function(self,attr,value,target)return value and value*rtk.scale.framebuffer
-end,},maxh=rtk.Attribute{default=600,calculate=rtk.Reference('maxw'),},visible=rtk.Attribute{window_sync=true,},docked=rtk.Attribute{default=false,window_sync=true,reflow=rtk.Widget.REFLOW_NONE,},dock=rtk.Attribute{default=rtk.Window.DOCK_RIGHT,calculate={bottom=rtk.Window.DOCK_BOTTOM,left=rtk.Window.DOCK_LEFT,top=rtk.Window.DOCK_TOP,right=rtk.Window.DOCK_RIGHT,floating=rtk.Window.DOCK_FLOATING
+rtk.Window.register{x=rtk.Attribute{type='number',default=rtk.Attribute.NIL,reflow=rtk.Widget.REFLOW_NONE,redraw=false,window_sync=true,},y=rtk.Attribute{type='number',default=rtk.Attribute.NIL,reflow=rtk.Widget.REFLOW_NONE,redraw=false,window_sync=true,},w=rtk.Attribute{priority=true,type='number',window_sync=true,reflow_uses_exterior_value=true,animate=function(self,anim)return rtk.Widget.attributes.w.animate(self,anim,rtk.scale.framebuffer)end,calculate=function(self,attr,value,target)return value and value*rtk.scale.framebuffer
+end,},h=rtk.Attribute{priority=true,type='number',window_sync=true,reflow_uses_exterior_value=true,animate=rtk.Reference('w'),calculate=rtk.Reference('w'),},minw=rtk.Attribute{default=100,window_sync=true,reflow_uses_exterior_value=true,},minh=rtk.Attribute{default=30,window_sync=true,reflow_uses_exterior_value=true,},maxw=rtk.Attribute{window_sync=true,reflow_uses_exterior_value=true,},maxh=rtk.Attribute{window_sync=true,reflow_uses_exterior_value=true,},visible=rtk.Attribute{window_sync=true,},docked=rtk.Attribute{default=false,window_sync=true,reflow=rtk.Widget.REFLOW_NONE,},dock=rtk.Attribute{default=rtk.Window.DOCK_RIGHT,calculate={bottom=rtk.Window.DOCK_BOTTOM,left=rtk.Window.DOCK_LEFT,top=rtk.Window.DOCK_TOP,right=rtk.Window.DOCK_RIGHT,floating=rtk.Window.DOCK_FLOATING
 },window_sync=true,reflow=rtk.Widget.REFLOW_NONE,},pinned=rtk.Attribute{default=false,window_sync=true,calculate=function(self,attr,value,target)return rtk.has_js_reascript_api and value
 end,},borderless=rtk.Attribute{default=false,window_sync=true,calculate=rtk.Reference('pinned')},title=rtk.Attribute{default='REAPER application',reflow=rtk.Widget.REFLOW_NONE,window_sync=true,redraw=false,},opacity=rtk.Attribute{default=1.0,reflow=rtk.Widget.REFLOW_NONE,window_sync=true,redraw=false,},resizable=rtk.Attribute{default=true,reflow=rtk.Widget.REFLOW_NONE,window_sync=true,},hwnd=nil,in_window=false,is_focused=not rtk.has_js_reascript_api and true or false,running=false,cursor=rtk.mouse.cursors.POINTER,scalability=rtk.Widget.BOX,}function rtk.Window:initialize(attrs,...)rtk.Container.initialize(self,attrs,self.class.attributes.defaults,...)rtk.window=self
 self.window=self
@@ -3286,7 +3290,7 @@ self._reflow_widgets=nil
 self._blits_queued=0
 self._draw_queued=false
 self._mouse_refresh_queued=false
-self._sync_window_attrs_on_update=false
+self._sync_window_attrs_on_update=true
 self._resize_grip=nil
 self._move_grip=nil
 self._os_window_frame_width=0
@@ -3355,20 +3359,34 @@ function rtk.Window:_run()self:_update()if self.running then
 rtk.defer(self._run,self)end
 self._run_queued=self.running
 end
-function rtk.Window:_get_display_resolution(working,frame)local x=math.floor(self.x)local y=math.floor(self.y)local w=math.floor(x+(self.w or 1))local h=math.floor(y+(self.h or 1))local l,t,r,b=reaper.my_getViewport(0,0,0,0,x,y,w,h,working and 1 or 0)local sw=r-l
+function rtk.Window:_get_display_resolution(working,frame)local x=math.floor(self.x or 0)local y=math.floor(self.y or 0)local w=math.floor(x+(self.w or 1))local h=math.floor(y+(self.h or 1))local l,t,r,b=reaper.my_getViewport(0,0,0,0,x,y,w,h,working and 1 or 0)local sw=r-l
 local sh=math.abs(b-t)if frame then
 local borderless=self.calc.borderness
 sw=sw-(borderless and 0 or self._os_window_frame_width)sh=sh-(borderless and 0 or self._os_window_frame_height)end
 return l,t,sw,sh
 end
-function rtk.Window:_get_geometry_from_attrs(overrides)local scale=rtk.scale.framebuffer or 1
+function rtk.Window:_get_relative_size_from_display(w,h)local sz=w or h
+if sz>0 and sz<=1.0 then
+local _,_,sw,sh=self:_get_display_resolution(true,not self.calc.borderless)return w and sw*w or sh*h
+else
+return sz
+end
+end
+function rtk.Window:_get_geometry_from_attrs(overrides)overrides=overrides or {}local scale=rtk.scale.framebuffer or 1
+local minw,maxw,minh,maxh,sx,sy,sw,sh=self:_get_min_max_sizes()if not sh then
+sx,sy,sw,sh=self:_get_display_resolution(true,not self.calc.borderless)end
+local calc=self.calc
 local x=self.x
 local y=self.y
-local calc=self.calc
-local w=calc.w/scale
-local h=calc.h/scale
-if overrides then
-local sx,sy,sw,sh=self:_get_display_resolution(true)if sw and sh then
+if not x then
+x=0
+overrides.halign=rtk.Widget.CENTER
+end
+if not y then
+y=0
+overrides.valign=rtk.Widget.CENTER
+end
+local w=rtk.isrel(self.w)and(self.w*sw)or(calc.w/scale)local h=rtk.isrel(self.h)and(self.h*sh)or(calc.h/scale)w=rtk.clamp(w,minw and minw/scale,maxw and maxw/scale)h=rtk.clamp(h,minh and minh/scale,maxh and maxh/scale)if sw and sh then
 if overrides.halign==rtk.Widget.LEFT then
 x=sx
 elseif overrides.halign==rtk.Widget.CENTER then
@@ -3391,7 +3409,6 @@ y=sy+(overrides.y or 0)+(sh-h)end
 end
 if overrides.constrain then
 x=rtk.clamp(x,sx,sx+sw-w)y=rtk.clamp(y,sy,sy+sh-h)w=rtk.clamp(w,self.minw or 0,sw-(x-sx))h=rtk.clamp(h,self.minh or 0,sh-(rtk.os.mac and y-sy-h or y-sy))end
-end
 end
 return math.round(x),math.round(y),math.round(w),math.round(h)end
 function rtk.Window:_sync_window_attrs(overrides)local calc=self.calc
@@ -3492,7 +3509,7 @@ self:_run()end
 end
 function rtk.Window:_close()self.running=false
 gfx.quit()end
-function rtk.Window:close()self.hwnd=nil
+function rtk.Window:close()local event=rtk.Event{type=rtk.Event.WINDOWCLOSE}self:_handle_window_event(event,reaper.time_precise())self.hwnd=nil
 self:_close()self:onclose()end
 function rtk.Window:_setup_borderless()if self._move_grip then
 return
@@ -3626,15 +3643,23 @@ function rtk.Window:queue_draw()self._draw_queued=true
 end
 function rtk.Window:queue_blit()self._blits_queued=self._blits_queued+2
 end
-function rtk.Window:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,scale)local tp,rp,bp,lp=self:_get_padding_and_border()local calc=self.calc
-return self.w and(calc.w-lp-rp)or nil,self.h and(calc.h-tp-bp)or nil,tp,rp,bp,lp
-end
 function rtk.Window:queue_mouse_refresh()self._mouse_refresh_queued=true
 end
-function rtk.Window:_clampw(w,box)return self.calc.w and w or rtk.Container._clampw(self,w,box)end
-function rtk.Window:_clamph(h,box)return self.calc.h and h or rtk.Container._clamph(self,h,box)end
-function rtk.Window:_reflow(boxx,boxy,boxw,boxh,fillw,filly,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)rtk.Container._reflow(self,boxx,boxy,boxw,boxh,fillw,filly,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)self.calc.x=0
-self.calc.y=0
+function rtk.Window:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,scale,greedyw,greedyh)local calc=self.calc
+local tp,rp,bp,lp=self:_get_padding_and_border()local w=rtk.isrel(self.w)and(self.w*boxw)or(self.w and(calc.w-lp-rp))or nil
+local h=rtk.isrel(self.h)and(self.h*boxh)or(self.h and(calc.h-tp-bp))or nil
+local minw,maxw,minh,maxh=self:_get_min_max_sizes(boxw,boxh,greedyw,greedyh,scale)return w,h,tp,rp,bp,lp,minw,maxw,minh,maxh
+end
+function rtk.Window:_get_min_max_sizes(boxw,boxh,greedyw,greedyh,scale)if not self._sync_window_attrs_on_update then
+return
+end
+local calc=self.calc
+local sx,sy,sw,sh=self:_get_display_resolution(true,not calc.borderless)scale=rtk.scale.framebuffer
+local minw,maxw,minh,maxh=rtk.Container._get_min_max_sizes(self,sw*scale,sh*scale,true,true,scale)return minw,maxw,minh,maxh,sx,sy,sw,sh
+end
+function rtk.Window:_reflow(boxx,boxy,boxw,boxh,fillw,filly,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
+rtk.Container._reflow(self,boxx,boxy,boxw,boxh,fillw,filly,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)calc.x=0
+calc.y=0
 end
 function rtk.Window:reflow(mode)local calc=self.calc
 local widgets=self._reflow_widgets
@@ -3651,14 +3676,12 @@ calc.h=self.h and calc.h or calc.minh
 else
 local saved_size
 local boxw,boxh=calc.w,calc.h
-if not self.w or not self.h then
-saved_size={self.w,self.h}local _,_,sw,sh=self:_get_display_resolution(true,not calc.borderless)boxw=not self.w and(calc.maxw or sw*rtk.scale.framebuffer)or calc.w or calc.minw
-boxh=not self.h and(calc.maxh or sh*rtk.scale.framebuffer)or calc.h or calc.minh
+if not self.w or not self.h or rtk.isrel(self.w)or rtk.isrel(self.h)then
+local _,_,sw,sh=self:_get_display_resolution(true,not calc.borderless)boxw=(rtk.isrel(self.w)or not self.w)and sw*rtk.scale.framebuffer or boxw
+boxh=(rtk.isrel(self.h)or not self.h)and sh*rtk.scale.framebuffer or boxh
 end
 local _,_,w,h=rtk.Container.reflow(self,0,0,boxw,boxh,nil,nil,true,true,rtk.scale.value,nil,self,self.w~=nil,self.h~=nil
 )self:_realize_geometry()full=true
-if saved_size then
-self.w,self.h=table.unpack(saved_size)end
 end
 end
 local reflow_time=reaper.time_precise()-t0
@@ -4020,7 +4043,8 @@ function rtk.Box:_validate_child(child)if child~=rtk.Box.FLEXSPACE then
 rtk.Container._validate_child(self,child)end
 end
 function rtk.Box:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)local inner_maxw=w or(boxw-lp-rp)local inner_maxh=h or(boxh-tp-bp)clampw=clampw or w~=nil or fillw
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)local inner_maxw=rtk.clamp(w or(boxw-lp-rp),minw,maxw)local inner_maxh=rtk.clamp(h or(boxh-tp-bp),minh,maxh)clampw=clampw or w~=nil or fillw
 clamph=clamph or h~=nil or fillh
 self._reflowed_children={}self._child_index_by_id={}local innerw,innerh,expand_unit_size,expw,exph=self:_reflow_step1(inner_maxw,inner_maxh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )if self.orientation==rtk.Box.HORIZONTAL then
@@ -4029,7 +4053,7 @@ elseif self.orientation==rtk.Box.VERTICAL then
 exph=(expand_unit_size>0)or exph
 end
 innerw,innerh=self:_reflow_step2(inner_maxw,inner_maxh,innerw,innerh,clampw,clamph,expand_unit_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp
-)fillw=fillw or(self.w and tonumber(self.w)<1.0)fillh=fillh or(self.h and tonumber(self.h)<1.0)innerw=w or math.max(innerw,fillw and greedyw and inner_maxw or 0)innerh=h or math.max(innerh,fillh and greedyh and inner_maxh or 0)calc.w=self:_clampw(innerw+lp+rp,clampw and boxw)calc.h=self:_clamph(innerh+tp+bp,clamph and boxh)return expw,exph
+)fillw=fillw or(self.w and tonumber(self.w)<1.0)fillh=fillh or(self.h and tonumber(self.h)<1.0)innerw=w or math.max(innerw,fillw and greedyw and inner_maxw or 0)innerh=h or math.max(innerh,fillh and greedyh and inner_maxh or 0)calc.w=math.ceil(rtk.clamp(innerw+lp+rp,minw,maxw))calc.h=math.ceil(rtk.clamp(innerh+tp+bp,minh,maxh))return expw,exph
 end
 function rtk.Box:_reflow_step1(w,h,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
 local orientation=calc.orientation
@@ -4056,7 +4080,7 @@ expand_units=expand_units+(attrs.expand or 1)spacing=0
 elseif widget.visible==true then
 attrs._halign=attrs.halign or calc.halign
 attrs._valign=attrs.valign or calc.valign
-attrs._minw=self:_adjscale(attrs.minw or wcalc.minw)attrs._maxw=self:_adjscale(attrs.maxw or wcalc.maxw)attrs._minh=self:_adjscale(attrs.minh or wcalc.minh)attrs._maxh=self:_adjscale(attrs.maxh or wcalc.maxh)local implicit_expand
+attrs._minw=self:_adjscale(attrs.minw,uiscale,greedyw and w)attrs._maxw=self:_adjscale(attrs.maxw,uiscale,greedyw and w)attrs._minh=self:_adjscale(attrs.minh,uiscale,greedyh and h)attrs._maxh=self:_adjscale(attrs.maxh,uiscale,greedyh and h)local implicit_expand
 if orientation==rtk.Box.HORIZONTAL then
 implicit_expand=attrs.fillw and greedyw
 else
@@ -4069,18 +4093,14 @@ if attrs._calculated_expand==0 or not greedy then
 local ww,wh=0,0
 local wexpw,wexph
 local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)if orientation==rtk.Box.HORIZONTAL then
-local child_maxw=rtk.clamprel(remaining_size-clp-crp-spacing,attrs._minw,attrs._maxw
-)local child_maxh=rtk.clamprel(h-ctp-cbp,attrs._minh,attrs._maxh
-)_,_,ww,wh,wexpw,wexph=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw and greedyw,attrs.fillh and greedyh and attrs.stretch~=rtk.Box.STRETCH_TO_SIBLINGS,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local child_maxw=rtk.clamp(remaining_size-clp-crp-spacing,attrs._minw,attrs._maxw)local child_maxh=rtk.clamp(h-ctp-cbp,attrs._minh,attrs._maxh)_,_,ww,wh,wexpw,wexph=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw and greedyw,attrs.fillh and greedyh and attrs.stretch~=rtk.Box.STRETCH_TO_SIBLINGS,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )expw=wexpw or expw
 exph=wexph or exph
 ww=math.max(ww,attrs._minw or 0)wh=math.max(wh,attrs._minh or 0)if wexpw and clampw and ww>=child_maxw and n<#self.children then
 attrs._calculated_expand=1
 end
 else
-local child_maxw=rtk.clamprel(w-clp-crp,attrs._minw,attrs._maxw
-)local child_maxh=rtk.clamprel(remaining_size-ctp-cbp-spacing,attrs._minh,attrs._maxh
-)_,_,ww,wh,wexpw,wexph=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw and greedyw and attrs.stretch~=rtk.Box.STRETCH_TO_SIBLINGS,attrs.fillh and greedyh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local child_maxw=rtk.clamp(w-clp-crp,attrs._minw,attrs._maxw)local child_maxh=rtk.clamp(remaining_size-ctp-cbp-spacing,attrs._minh,attrs._maxh)_,_,ww,wh,wexpw,wexph=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw and greedyw and attrs.stretch~=rtk.Box.STRETCH_TO_SIBLINGS,attrs.fillh and greedyh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )expw=wexpw or expw
 exph=wexph or exph
 ww=math.max(ww,attrs._minw or 0)wh=math.max(wh,attrs._minh or 0)if wexph and clamph and wh>=child_maxh and n<#self.children then
@@ -4134,9 +4154,7 @@ attrs.stretch~=rtk.Box.STRETCH_FULL))local offx=lp+clp
 local offy=offset+tp+ctp+spacing
 local expand=attrs._calculated_expand
 if expand and expand>0 then
-local child_maxw=rtk.clamprel(w-clp-crp,attrs._minw,attrs._maxw
-)local child_maxh=rtk.clamprel((expand_unit_size*expand)-ctp-cbp-spacing,attrs._minh,attrs._maxh
-)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local child_maxw=rtk.clamp(w-clp-crp,attrs._minw,attrs._maxw)local child_maxh=rtk.clamp((expand_unit_size*expand)-ctp-cbp-spacing,attrs._minh,attrs._maxh)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )if attrs.stretch==rtk.Box.STRETCH_FULL and greedyw then
 ww=maxw
 end
@@ -4154,7 +4172,7 @@ end
 if wcalc.position&rtk.Widget.POSITION_INFLOW~=0 then
 offset=offset+spacing+ctp+wh+cbp
 end
-maxw=math.max(maxw,ww+clp+crp)maxh=math.max(maxh,offset)spacing=(attrs.spacing or self.spacing)*rtk.scale.value
+maxw=math.max(maxw,ww+clp+crp)maxh=math.max(maxh,offset)spacing=(attrs.spacing or self.spacing)*uiscale
 if not need_second_pass then
 widget:_realize_geometry()end
 end
@@ -4211,9 +4229,7 @@ attrs.stretch~=rtk.Box.STRETCH_FULL))local offx=offset+lp+clp+spacing
 local offy=tp+ctp
 local expand=attrs._calculated_expand
 if expand and greedyw and expand>0 then
-local child_maxw=rtk.clamprel((expand_unit_size*expand)-clp-crp-spacing,attrs._minw,attrs._maxh
-)local child_maxh=rtk.clamprel(h-ctp-cbp,attrs._minh,attrs._maxh
-)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local child_maxw=rtk.clamp((expand_unit_size*expand)-clp-crp-spacing,attrs._minw,attrs._maxh)local child_maxh=rtk.clamp(h-ctp-cbp,attrs._minh,attrs._maxh)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )if attrs.stretch==rtk.Box.STRETCH_FULL and greedyh then
 wh=maxh
 end
@@ -4231,7 +4247,7 @@ end
 if wcalc.position&rtk.Widget.POSITION_INFLOW~=0 then
 offset=offset+spacing+clp+ww+crp
 end
-maxw=math.max(maxw,offset)maxh=math.max(maxh,wh+ctp+cbp)spacing=(attrs.spacing or self.spacing)*rtk.scale.value
+maxw=math.max(maxw,offset)maxh=math.max(maxh,wh+ctp+cbp)spacing=(attrs.spacing or self.spacing)*uiscale
 if not need_second_pass then
 widget:_realize_geometry()end
 end
@@ -4270,7 +4286,8 @@ __mod_rtk_flowbox=(function()
 local rtk=__mod_rtk_core
 rtk.FlowBox=rtk.class('rtk.FlowBox', rtk.Container)rtk.FlowBox.register{vspacing=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,},hspacing=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,},}function rtk.FlowBox:initialize(attrs,...)rtk.Container.initialize(self,attrs,self.class.attributes.defaults,...)end
 function rtk.FlowBox:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-local x,y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)local inner_maxw=w or(boxw-lp-rp)local inner_maxh=h or(boxh-tp-bp)clampw=clampw or w~=nil or fillw
+local x,y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)local inner_maxw=rtk.clamp(w or(boxw-lp-rp),minw,maxw)local inner_maxh=rtk.clamp(h or(boxh-tp-bp),minh,maxh)clampw=clampw or w~=nil or fillw
 clamph=clamph or h~=nil or fillh
 local child_geometry={}local hspacing=(calc.hspacing or 0)*rtk.scale.value
 local vspacing=(calc.vspacing or 0)*rtk.scale.value
@@ -4279,11 +4296,10 @@ local child_totalh=0
 for _,widgetattrs in ipairs(self.children)do
 local widget,attrs=table.unpack(widgetattrs)local wcalc=widget.calc
 if wcalc.visible==true and wcalc.position&rtk.Widget.POSITION_INFLOW~=0 then
-local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)local wx,wy,ww,wh=widget:reflow(0,0,inner_maxw,inner_maxh,nil,nil,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)attrs._minw=self:_adjscale(attrs.minw,uiscale,greedyw and inner_maxw)attrs._maxw=self:_adjscale(attrs.maxw,uiscale,greedyw and inner_maxw)attrs._minh=self:_adjscale(attrs.minh,uiscale,greedyh and inner_maxh)attrs._maxh=self:_adjscale(attrs.maxh,uiscale,greedyh and inner_maxh)local wx,wy,ww,wh=widget:reflow(0,0,rtk.clamp(inner_maxw,attrs._minw,attrs._maxw),rtk.clamp(inner_maxh,attrs._minh,attrs._maxh),nil,nil,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )ww=ww+clp+crp
 wh=wh+ctp+cbp
-local minw=self:_adjscale((attrs.minw or wcalc.minw or 0)+clp+crp)child_maxw=math.min(math.max(child_maxw,ww,minw),inner_maxw)child_totalh=child_totalh+wh
-child_geometry[#child_geometry+1]={x=wx,y=wy,w=ww,h=wh}end
+child_maxw=math.min(math.max(child_maxw,ww,attrs._minw or 0),inner_maxw)child_totalh=child_totalh+math.max(wh,attrs._minh or 0)child_geometry[#child_geometry+1]={x=wx,y=wy,w=ww,h=wh}end
 end
 child_totalh=child_totalh+(#self.children-1)*vspacing
 local col_width=math.ceil(child_maxw)local num_columns=math.floor((inner_maxw+hspacing)/(col_width+hspacing))local col_height=h
@@ -4338,7 +4354,7 @@ end
 end
 self:_determine_zorders()inner.w=inner.w+col.w
 calc.x,calc.y=x,y
-calc.w=self:_clampw((w or inner.w)+lp+rp,clampw and boxw)calc.h=self:_clamph((h or inner.h)+tp+bp,clamph and boxh)end
+calc.w=math.ceil(rtk.clamp((w or inner.w)+lp+rp,minw,maxw))calc.h=math.ceil(rtk.clamp((h or inner.h)+tp+bp,minh,maxh))end
 end)()
 
 __mod_rtk_spacer=(function()
@@ -4412,7 +4428,8 @@ else
 return self._font:layout(calc.label,boxw,boxh,calc.wrap)end
 end
 function rtk.Button:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)local icon=calc.icon
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)local icon=calc.icon
 if icon and uiscale~=self._last_reflow_scale then
 icon:refresh_scale()self._last_reflow_scale=uiscale
 end
@@ -4457,7 +4474,7 @@ else
 calc.w=0
 calc.h=0
 end
-calc.w=math.ceil(self:_clampw(calc.w+hpadding,clampw and boxw))calc.h=math.ceil(self:_clamph(calc.h+vpadding,clamph and boxh))end
+calc.w=math.ceil(rtk.clamp(calc.w+hpadding,minw,maxw))calc.h=math.ceil(rtk.clamp(calc.h+vpadding,minh,maxh))end
 function rtk.Button:_realize_geometry()if self.circular then
 return
 end
@@ -4708,7 +4725,7 @@ end
 return true
 end
 function rtk.Entry:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-local maxw,maxh=nil,nil
+local lmaxw,lmaxh=nil,nil
 if self._font:set(calc.font,calc.fontsize,calc.fontscale,calc.fontflags)then
 self._dirty_positions=1
 end
@@ -4716,10 +4733,11 @@ if calc.icon and uiscale~=self._last_reflow_scale then
 calc.icon:refresh_scale()self._last_reflow_scale=uiscale
 end
 if calc.textwidth and not self.w then
-local charwidth, _=gfx.measurestr('W')maxw,maxh=charwidth*calc.textwidth,self._font.texth
+local charwidth, _=gfx.measurestr('W')lmaxw,lmaxh=charwidth*calc.textwidth,self._font.texth
 else
-maxw, maxh=gfx.measurestr(calc.placeholder or "Dummy string!")end
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)calc.w=math.ceil(self:_clampw((w or maxw)+lp+rp))calc.h=math.ceil(self:_clamph((h or maxh)+tp+bp))self._ctp,self._crp,self._cbp,self._clp=tp,rp,bp,lp
+lmaxw, lmaxh=gfx.measurestr(calc.placeholder or "Dummy string!")end
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)calc.w=math.ceil(rtk.clamp((w or lmaxw)+lp+rp,minw,maxw))calc.h=math.ceil(rtk.clamp((h or lmaxh)+tp+bp,minh,maxh))self._ctp,self._crp,self._cbp,self._clp=tp,rp,bp,lp
 if not self._backingstore then
 self._backingstore=rtk.Image()end
 self._backingstore:resize(calc.w,calc.h,false)self._dirty_text=true
@@ -5048,7 +5066,9 @@ if not self._blinking and showcursor then
 self:_blink()end
 self:_draw_borders(offx,offy,alpha,calc.border_focused)if self._caretctr%32<16 and showcursor then
 local curx=x+self._positions[calc.caret]+lp-self._loffset
+if curx>x and curx<x+calc.w-lp then
 self:setcolor(calc.textcolor,alpha)gfx.line(curx,y+tp,curx,y+calc.h-bp,0)end
+end
 else
 self._blinking=false
 if self.hovering then
@@ -5089,7 +5109,8 @@ end
 return ok
 end
 function rtk.Text:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)self._font:set(calc.font,calc.fontsize,calc.fontscale,calc.fontflags)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)local hpadding=lp+rp
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)self._font:set(calc.font,calc.fontsize,calc.fontscale,calc.fontflags)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)local hpadding=lp+rp
 local vpadding=tp+bp
 local lmaxw=(clampw or(fillw and greedyw))and(boxw-hpadding)or w or math.inf
 local lmaxh=(clamph or(fillh and greedyh))and(boxh-vpadding)or h or math.inf
@@ -5097,7 +5118,7 @@ local seg=self._segments
 if not seg or seg.boxw~=lmaxw or not seg.isvalid()then
 self._segments,self.lw,self.lh=self._font:layout(calc.text,lmaxw,lmaxh,calc.wrap~=rtk.Text.WRAP_NONE,self.textalign and calc.textalign or calc.halign,true,calc.spacing,calc.wrap==rtk.Text.WRAP_BREAK_WORD
 )end
-calc.w=(w and w+hpadding)or(fillw and greedyw and boxw)or math.min(clampw and boxw or math.inf,self.lw+hpadding)calc.h=(h and h+vpadding)or(fillh and greedyh and boxh)or math.min(clamph and boxh or math.inf,self.lh+vpadding)calc.w=math.ceil(self:_clampw(calc.w))calc.h=math.ceil(self:_clamph(calc.h))end
+calc.w=(w and w+hpadding)or(fillw and greedyw and boxw)or math.min(clampw and boxw or math.inf,self.lw+hpadding)calc.h=(h and h+vpadding)or(fillh and greedyh and boxh)or math.min(clamph and boxh or math.inf,self.lh+vpadding)calc.w=math.ceil(rtk.clamp(calc.w,minw,maxw))calc.h=math.ceil(rtk.clamp(calc.h,minh,maxh))end
 function rtk.Text:_realize_geometry()local calc=self.calc
 local tp,rp,bp,lp=self:_get_padding_and_border()local lx,ly
 if calc.halign==rtk.Widget.LEFT then
@@ -5134,7 +5155,7 @@ end)()
 __mod_rtk_imagebox=(function()
 local rtk=__mod_rtk_core
 local log=__mod_rtk_log
-rtk.ImageBox=rtk.class('rtk.ImageBox', rtk.Widget)rtk.ImageBox.register{[1]=rtk.Attribute{alias='image'},image=rtk.Attribute{calculate=rtk.Entry.attributes.icon.calculate,reflow=rtk.Widget.REFLOW_FULL,},scale=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL,},aspect=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL,},}function rtk.ImageBox:initialize(attrs,...)rtk.Widget.initialize(self,attrs,self.class.attributes.defaults,...)end
+rtk.ImageBox=rtk.class('rtk.ImageBox', rtk.Widget)rtk.ImageBox.register{[1]=rtk.Attribute{alias='image'},image=rtk.Attribute{calculate=rtk.Entry.attributes.icon.calculate,reflow=rtk.Widget.REFLOW_FULL,},scale=rtk.Attribute{default=rtk.Attribute.NIL,reflow=rtk.Widget.REFLOW_FULL,},aspect=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL,},}function rtk.ImageBox:initialize(attrs,...)rtk.Widget.initialize(self,attrs,self.class.attributes.defaults,...)end
 function rtk.ImageBox:_handle_attr(attr,value,oldval,trigger,reflow,sync)local ret=rtk.Widget._handle_attr(self,attr,value,oldval,trigger,reflow,sync)if ret==false then
 return ret
 end
@@ -5144,7 +5165,7 @@ end
 return ret
 end
 function rtk.ImageBox:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw,fillh,clampw and greedyw,clamph and greedyh,self.scale or 1
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,self.scale or 1,greedyw,greedyh
 )local dstw,dsth=0,0
 local hpadding=lp+rp
 local vpadding=tp+bp
@@ -5153,7 +5174,7 @@ if image then
 if uiscale~=self._last_reflow_scale then
 image:refresh_scale()self._last_reflow_scale=uiscale
 end
-local scale=(self.scale or 1)*rtk.scale.value/image.density
+local scale=(self.scale or 1)*uiscale/image.density
 local native_aspect=image.w/image.h
 local aspect=calc.aspect or native_aspect
 dstw=(w and w-hpadding)or((fillw and greedyw)and boxw-hpadding)dsth=(h and h-vpadding)or((fillh and greedyh)and boxh-vpadding)local constrain=self.scale==nil and not w and not h
@@ -5180,7 +5201,7 @@ calc.scale=self.iscale
 else
 self.iscale=1.0
 end
-self.iw=math.round(math.max(0,dstw))self.ih=math.round(math.max(0,dsth))calc.w=(fillw and greedyw and boxw)or math.min(clampw and boxw or math.inf,self.iw+hpadding)calc.h=(fillh and greedyh and boxh)or math.min(clamph and boxh or math.inf,self.ih+vpadding)calc.w=math.ceil(self:_clampw(calc.w))calc.h=math.ceil(self:_clamph(calc.h))end
+self.iw=math.round(math.max(0,dstw))self.ih=math.round(math.max(0,dsth))calc.w=(fillw and greedyw and boxw)or math.min(clampw and boxw or math.inf,self.iw+hpadding)calc.h=(fillh and greedyh and boxh)or math.min(clamph and boxh or math.inf,self.ih+vpadding)calc.w=math.ceil(rtk.clamp(calc.w,minw,maxw))calc.h=math.ceil(rtk.clamp(calc.h,minh,maxh))end
 function rtk.ImageBox:_realize_geometry()local calc=self.calc
 local tp,rp,bp,lp=self:_get_padding_and_border()local ix,iy
 if calc.halign==rtk.Widget.LEFT then
@@ -5431,7 +5452,8 @@ self._label_segments=nil
 end
 end
 function rtk.Slider:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
-calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp=self:_get_content_size(boxw,boxh,fillw and greedyw,fillh and greedyh,clampw,clamph)local hpadding=lp+rp
+calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
+)local hpadding=lp+rp
 local vpadding=tp+bp
 local lh=0
 local segments=self._label_segments
@@ -5448,10 +5470,8 @@ lh=lh+calc.spacing
 self._label_segments=segments
 end
 self.lh=lh
-local minw=math.max(calc.minw or 0,#calc.value*calc.thumbsize*2)*rtk.scale.value
-local minh=math.max(calc.minh or 0,calc.thumbsize*2,calc.tracksize)*rtk.scale.value
-local size=math.max(calc.thumbsize*2,calc.ticksize,calc.tracksize)*rtk.scale.value
-calc.w=w and(w+hpadding)or(greedyw and boxw or 50)calc.h=h and(h+vpadding)or(size+self.lh+vpadding)calc.w=math.ceil(rtk.clamp(calc.w,minw,calc.maxw))calc.h=math.ceil(rtk.clamp(calc.h,minh,calc.maxh))return not w,false
+minw=math.max(minw or 0,math.max(calc.minw or 0,#calc.value*calc.thumbsize*2)*rtk.scale.value)minh=math.max(minh or 0,math.max(calc.minh or 0,calc.thumbsize*2,calc.tracksize)*rtk.scale.value)local size=math.max(calc.thumbsize*2,calc.ticksize,calc.tracksize)*rtk.scale.value
+calc.w=w and(w+hpadding)or(greedyw and boxw or 50)calc.h=h and(h+vpadding)or(size+self.lh+vpadding)calc.w=math.ceil(rtk.clamp(calc.w,minw,maxw))calc.h=math.ceil(rtk.clamp(calc.h,minh,maxh))return not w,false
 end
 function rtk.Slider:_realize_geometry()local calc=self.calc
 local tp,rp,bp,lp=self:_get_padding_and_border()local scale=rtk.scale.value
