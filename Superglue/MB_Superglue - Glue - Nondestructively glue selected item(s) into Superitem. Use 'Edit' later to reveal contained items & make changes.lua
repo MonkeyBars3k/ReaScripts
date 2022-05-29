@@ -26,11 +26,11 @@
 --   [nomain] MB_Superglue-Utils.lua
 --   [nomain] serpent.lua
 --   [nomain] rtk.lua
+--   [nomain] sg-dev-functions.lua
 --   sg-bg-restored.png
 --   sg-bg-superitem.png
 --   sg-bg-restoredinstance.png
 --   gnu_license_v3.txt
---   [nomain] sg-dev-functions.lua
 -- @link Superglue forum thread https://forum.cockos.com/showthread.php?p=2540818
 -- @about Main Glue script & package metadata for MB_Superglue
 
