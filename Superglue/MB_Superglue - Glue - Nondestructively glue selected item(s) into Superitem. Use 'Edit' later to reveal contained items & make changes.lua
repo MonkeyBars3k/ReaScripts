@@ -9,7 +9,7 @@
 --   [main] MB_Superglue - Options - Global - Open script options window.lua
 --   [main] MB_Superglue - Options - Glue - Auto-increase channel count with take FX (On-Off).lua
 --   [main] MB_Superglue - Options - Glue - Time selection (not sizing region) determines Superitem bounds (On-Off).lua
---   [main] MB_Superglue - Options - Reglue - Absolute or relative length change on Siblings if length propagation enabled (can still be altered by playrate) (Absolute-Ask-Relative).lua
+--   [main] MB_Superglue - Options - Reglue - Absolute or relative propagation length change on Siblings (still altered by playrate) (Absolute-Ask-Relative).lua
 --   [main] MB_Superglue - Options - Reglue - Audio source position of Siblings is maintained (Enable-Ask-Disable).lua
 --   [main] MB_Superglue - Options - Reglue - Length change of Edited Superitem propagates to Siblings (Enable-Ask-Disable).lua
 --   [main] MB_Superglue - Options - Reglue - Looped source of Superitem determines Sizing Region bounds (On-Off).lua
@@ -19,7 +19,7 @@
 --   [main] MB_Superglue - Pool - Remove selected Superitem from current Pool & create new Pool for it.lua
 --   [main] MB_Superglue - Smart Action - Glue or Edit selected item(s) by context.lua
 --   [main] MB_Superglue - Smart Action - Glue or Unglue selected item(s) by context.lua
---   [main] MB_Superglue - Unglue - Reveal contained item(s) from selected Superitem & detach from Pool. Use this instead of 'Edit' if you don't want your changes to propagate on reglue.lua
+--   [main] MB_Superglue - Unglue - Reveal contained item(s) from selected Superitem & detach from Pool (won't propagate changes to siblings on Reglue).lua
 --   [main] MB_Superglue - Utility - Display selected Superglue item info - Pool no., No. of contained items, Parent Pool, etc.lua
 --   [main] MB_Superglue - Utility - Set all Superitems in project to one custom color.lua
 --   [nomain] MB_Superglue - Utility - Dump Superglue project data to log.lua
