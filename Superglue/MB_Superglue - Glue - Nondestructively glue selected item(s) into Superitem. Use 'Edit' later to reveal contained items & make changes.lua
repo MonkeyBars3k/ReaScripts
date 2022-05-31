@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 2.00
--- @changelog Enable Glue/Edit/Unglue on multiple tracks at once (https://github.com/MonkeyBars3k/ReaScripts/issues/11); Enable Editing/Ungluing multiple Superitems at once (https://github.com/MonkeyBars3k/ReaScripts/issues/15)
+-- @version 1.990
+-- @changelog Add logo to options window (https://github.com/MonkeyBars3k/ReaScripts/issues/292)
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
@@ -27,6 +27,7 @@
 --   [nomain] serpent.lua
 --   [nomain] rtk.lua
 --   [nomain] sg-dev-functions.lua
+--   mb_superglue_logo_nobg_sm.png
 --   sg-bg-restored.png
 --   sg-bg-superitem.png
 --   sg-bg-restoredinstance.png
