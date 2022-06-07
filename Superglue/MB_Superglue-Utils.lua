@@ -625,7 +625,7 @@ end
 
 
 function initSuperglue()
-  local selected_item_count, restored_items_pool_id, selected_items, first_selected_item, first_selected_item_track, superitem
+  local selected_item_count, restored_items_pool_id, selected_items, first_selected_item, item_selection_is_invalid
 
   selected_item_count = initAction("glue")
 
@@ -634,25 +634,10 @@ function initSuperglue()
   restored_items_pool_id = getFirstPoolIdFromSelectedItems(selected_item_count)
   _active_glue_pool_id = restored_items_pool_id
   selected_items, first_selected_item = getSelectedItems(selected_item_count)
-  first_selected_item_track = reaper.GetMediaItemTrack(first_selected_item)
+  item_selection_is_invalid = handleMultipleSuperglues(selected_item_count, restored_items_pool_id, selected_items)
 
-  if itemsOnMultipleTracksAreSelected(selected_item_count) == true or
-    superitemSelectionIsInvalid(selected_item_count, "Glue") == true or
-    pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track) == true then
-
-      return
-  end
-
-  if restored_items_pool_id then
-    handleRemovedItems(restored_items_pool_id, selected_items)
-  end
-
-  superitem = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track)
+  if item_selection_is_invalid == false then return end
   
-  if superitem then
-    exclusiveSelectItem(superitem)
-  end
-
   cleanUpAction(_glue_undo_block_string)
 end
 
@@ -901,74 +886,38 @@ function getSelectedItems(selected_item_count)
 end
 
 
-function handleRemovedItems(restored_items_pool_id, selected_items)
-  local pool_contained_item_states_key_label, retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, this_stored_item_guid, this_item_last_glue_state, this_stored_item_is_unmatched, i, this_selected_item, this_selected_item_guid, this_unmatched_item
-
-  pool_contained_item_states_key_label = _pool_key_prefix .. restored_items_pool_id .. _pool_contained_item_states_key_suffix
-  retval, last_glue_stored_item_states_string = storeRetrieveProjectData(pool_contained_item_states_key_label)
-    
-  if retval then
-    retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
-
-    for this_stored_item_guid, this_item_last_glue_state in pairs(last_glue_stored_item_states_table) do
-      this_stored_item_is_unmatched = true
-
-      for i = 1, #selected_items do
-        this_selected_item = selected_items[i]
-        this_selected_item_guid = reaper.BR_GetMediaItemGUID(this_selected_item)
-
-        if this_selected_item_guid == this_stored_item_guid then
-          this_stored_item_is_unmatched = false
-
-          break
-        end
-      end
-
-      if this_stored_item_is_unmatched then
-        this_unmatched_item = reaper.BR_GetMediaItemByGUID(_api_current_project, this_stored_item_guid)
-
-        if this_unmatched_item then
-          addRemoveItemImage(this_unmatched_item, false)
-          storeRetrieveItemData(this_unmatched_item, _parent_pool_id_key_suffix, "")
-        end
-      end
-    end
-  end
-end
-
-
 function getFirstSelectedItem()
   return reaper.GetSelectedMediaItem(_api_current_project, 0)
 end
 
 
-function itemsOnMultipleTracksAreSelected(selected_item_count)
-  local items_on_multiple_tracks_are_selected = detectSelectedItemsOnMultipleTracks(selected_item_count)
+function handleMultipleSuperglues(selected_item_count, restored_items_pool_id, selected_items)
+  local superitem
 
-  if items_on_multiple_tracks_are_selected == true then 
-      reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " only works on items on a single track.", _msg_type_ok)
+  if itemsOnMultipleTracksAreSelected(selected_item_count) == true then
+    -- cycle thru each track w selected items on it
 
-      return true
-  end
-end
+      -- get items from this track
+      -- check removed items on track
+      -- triggerSuperglue on track
+    -- exclusive select all new superitems
 
+  else
+    first_selected_item_track = reaper.GetMediaItemTrack(first_selected_item)
+      
+    if superitemSelectionIsInvalid(selected_item_count, "Glue") == true or
+      pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track) == true then
 
-function detectSelectedItemsOnMultipleTracks(selected_item_count)
-  local item_is_on_different_track_than_previous, i, this_item, this_item_track, prev_item_track
-
-  item_is_on_different_track_than_previous = false
-
-  for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
-    this_item_track = reaper.GetMediaItemTrack(this_item)
-    item_is_on_different_track_than_previous = this_item_track and prev_item_track and this_item_track ~= prev_item_track
-  
-    if item_is_on_different_track_than_previous == true then
-
-      return item_is_on_different_track_than_previous
+        return false
     end
+
+    checkForRemovedItemsOnReglue(restored_items_pool_id, selected_items)
+
+    superitem = triggerSuperglue(selected_items, restored_items_pool_id, first_selected_item_track)
     
-    prev_item_track = this_item_track
+    if superitem then
+      exclusiveSelectItem(superitem)
+    end
   end
 end
 
@@ -1154,6 +1103,112 @@ function throwOfflineTakeWarning(recommend_undo, is_restored_item)
   end
 
   reaper.ShowMessageBox(msg, _script_brand_name .. ": Your " .. item_string .. "'s inactive takes are empty, offline or have some other weird setting going on.", _msg_type_ok)
+end
+
+
+function itemsOnMultipleTracksAreSelected(selected_item_count)
+  local items_on_multiple_tracks_are_selected = detectSelectedItemsOnMultipleTracks(selected_item_count)
+
+  if items_on_multiple_tracks_are_selected == true then 
+      reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " only works on items on a single track.", _msg_type_ok)
+
+      return true
+  end
+end
+
+
+function detectSelectedItemsOnMultipleTracks(selected_item_count)
+  local item_is_on_different_track_than_previous, i, this_item, this_item_track, prev_item_track
+
+  item_is_on_different_track_than_previous = false
+
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
+    this_item_track = reaper.GetMediaItemTrack(this_item)
+    item_is_on_different_track_than_previous = this_item_track and prev_item_track and this_item_track ~= prev_item_track
+  
+    if item_is_on_different_track_than_previous == true then
+
+      return item_is_on_different_track_than_previous
+    end
+    
+    prev_item_track = this_item_track
+  end
+end
+
+
+function checkForRemovedItemsOnReglue(restored_items_pool_id, selected_items)
+
+  if restored_items_pool_id then
+    handleRemovedItems(restored_items_pool_id, selected_items)
+  end
+end
+
+
+function handleRemovedItems(restored_items_pool_id, selected_items)
+  local pool_contained_item_states_key_label, retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, this_stored_item_guid, this_item_last_glue_state, this_stored_item_is_unmatched, i, this_selected_item, this_selected_item_guid, this_unmatched_item
+
+  pool_contained_item_states_key_label = _pool_key_prefix .. restored_items_pool_id .. _pool_contained_item_states_key_suffix
+  retval, last_glue_stored_item_states_string = storeRetrieveProjectData(pool_contained_item_states_key_label)
+    
+  if retval then
+    retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
+
+    for this_stored_item_guid, this_item_last_glue_state in pairs(last_glue_stored_item_states_table) do
+      this_stored_item_is_unmatched = true
+
+      for i = 1, #selected_items do
+        this_selected_item = selected_items[i]
+        this_selected_item_guid = reaper.BR_GetMediaItemGUID(this_selected_item)
+
+        if this_selected_item_guid == this_stored_item_guid then
+          this_stored_item_is_unmatched = false
+
+          break
+        end
+      end
+
+      if this_stored_item_is_unmatched then
+        this_unmatched_item = reaper.BR_GetMediaItemByGUID(_api_current_project, this_stored_item_guid)
+
+        if this_unmatched_item then
+          addRemoveItemImage(this_unmatched_item, false)
+          storeRetrieveItemData(this_unmatched_item, _parent_pool_id_key_suffix, "")
+        end
+      end
+    end
+  end
+end
+
+
+function addRemoveItemImage(item, type_or_remove)
+  local item_images_are_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_item_images_key) == "true"
+
+  if item_images_are_enabled then
+    local add, type, remove, img_path
+
+    add = type_or_remove
+    type = type_or_remove
+    remove = type_or_remove == false
+
+    if add then
+
+      if type == "superitem" then
+        img_path = _superitem_bg_img_path
+
+      elseif type == "restored" then
+        img_path = _restored_item_bg_img_path
+
+      elseif type == "restored_instance" then
+        img_path = _restored_instance_bg_img_path
+      end
+
+    elseif remove then
+      img_path = ""
+    end
+
+    reaper.BR_SetMediaItemImageResource(item, img_path, _api_item_image_full_height)
+  end
 end
 
 
@@ -1881,37 +1936,6 @@ function setSuperitemName(item, superitem_name_ending)
   new_superitem_name = _superitem_name_prefix .. superitem_name_ending
 
   reaper.GetSetMediaItemTakeInfo_String(take, _api_take_name_key, new_superitem_name, true)
-end
-
-
-function addRemoveItemImage(item, type_or_remove)
-  local item_images_are_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_item_images_key) == "true"
-
-  if item_images_are_enabled then
-    local add, type, remove, img_path
-
-    add = type_or_remove
-    type = type_or_remove
-    remove = type_or_remove == false
-
-    if add then
-
-      if type == "superitem" then
-        img_path = _superitem_bg_img_path
-
-      elseif type == "restored" then
-        img_path = _restored_item_bg_img_path
-
-      elseif type == "restored_instance" then
-        img_path = _restored_instance_bg_img_path
-      end
-
-    elseif remove then
-      img_path = ""
-    end
-
-    reaper.BR_SetMediaItemImageResource(item, img_path, _api_item_image_full_height)
-  end
 end
 
 
