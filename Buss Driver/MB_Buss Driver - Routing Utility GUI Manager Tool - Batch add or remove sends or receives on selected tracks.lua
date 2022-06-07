@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.2
--- @changelog New script name
+-- @version 1.0.3
+-- @changelog Add logo
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -46,7 +46,7 @@ rtk.set_theme_overrides({
 
 
 
-local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name
+local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path
 
 _selected_tracks_count = reaper.CountSelectedTracks(0)
 _data_storage_track = reaper.GetMasterTrack(0)
@@ -72,6 +72,7 @@ _default_routing_settings_values = {
 }
 _api_script_ext_name = "MB_Buss-Driver"
 _api_save_options_key_name = "save_options"
+_logo_img_path = "bussdriver_logo_nobg.png"
 
 
 function toggleSaveOptions(initialize)
@@ -182,7 +183,9 @@ function getRoutingOptionsObjects()
   _routing_options_objs = {
     ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
-    ["title"] = rtk.Heading{"Buss Driver", halign = "left", fontscale = "0.6", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
+    ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
+    ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
+    ["logo"] = rtk.ImageBox{rtk.Image():load(_logo_img_path), w = 50, halign = "center", margin = "1 0"},
     ["configure_wrapper"] = rtk.Container{w = 1, halign = "right", margin = "5 3 0 0"},
     ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created", padding = "4 5 6", fontscale = 0.67},
     ["content"] = rtk.VBox{halign = "center", padding = "10 0 0"},
@@ -1164,8 +1167,10 @@ function populateRoutingOptionsWindow()
   _routing_options_objs.content:add(_routing_options_objs.form_bottom)
   _routing_options_objs.viewport:attr("child", _routing_options_objs.content)
   _routing_options_objs.configure_wrapper:add(_routing_options_objs.configure_btn)
+  _routing_options_objs.brand:add(_routing_options_objs.title)
+  _routing_options_objs.brand:add(_routing_options_objs.logo)
   _routing_options_objs.window:add(_routing_options_objs.configure_wrapper)
-  _routing_options_objs.window:add(_routing_options_objs.title)
+  _routing_options_objs.window:add(_routing_options_objs.brand)
   _routing_options_objs.window:add(_routing_options_objs.viewport)
 end
 
