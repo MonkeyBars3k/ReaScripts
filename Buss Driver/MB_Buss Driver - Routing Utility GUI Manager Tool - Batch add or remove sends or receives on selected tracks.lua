@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.3
--- @changelog Add logo
+-- @version 1.0.4
+-- @changelog Add Select/deselect tracks checkbox
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -27,7 +27,6 @@
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
 -- TO DO:
--- select all target tracks
 -- add hardware routing type?
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
@@ -182,11 +181,12 @@ end
 function getRoutingOptionsObjects()
   _routing_options_objs = {
     ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
+    -- ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, h = 375},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
-    ["logo"] = rtk.ImageBox{rtk.Image():load(_logo_img_path), w = 50, halign = "center", margin = "1 0"},
-    ["configure_wrapper"] = rtk.Container{w = 1, halign = "right", margin = "5 3 0 0"},
+    ["logo"] = rtk.ImageBox{rtk.Image():load(_logo_img_path), w = 47, halign = "center", margin = "1 0"},
+    ["configure_btn_wrapper"] = rtk.Container{w = 1, halign = "right", margin = "5 3 0 0"},
     ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created", padding = "4 5 6", fontscale = 0.67},
     ["content"] = rtk.VBox{halign = "center", padding = "10 0 0"},
     ["action_sentence_wrapper"] = rtk.Container{w = 1, halign = "center"},
@@ -199,6 +199,7 @@ function getRoutingOptionsObjects()
     ["send_checkbox"] = rtk.CheckBox{"sends", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", value = true, ref = "send_checkbox"},
     ["receive_checkbox"] = rtk.CheckBox{"receives", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "receive_checkbox"},
     ["action_text_end"] = rtk.Text{" to the selected tracks."},
+    ["select_all_tracks"] = rtk.CheckBox{"Select/deselect all tracks", position = "absolute", h = 18, tmargin = 13, padding = "1 2 3", border = "1px #555555", spacing = 3, valign = "center", fontscale = 0.75, color = "#bbbbbb", textcolor2 = "#bbbbbb", ref = "select_all_tracks"},
     ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want to add sends to?", w = 1, tmargin = 14, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
     ["form_fields"] = rtk.VBox{padding = "10 10 5", spacing = 10},
     ["form_bottom"] = rtk.Container{w = 1, margin = 10},
@@ -293,6 +294,10 @@ function defineRoutingOptionsMethods()
 
   _routing_options_objs.configure_btn.onclick = function()
     launchRoutingSettings()
+  end
+
+  _routing_options_objs.select_all_tracks.onchange = function(self)
+    selectDeselectAllTracks(self)
   end
 
   _routing_options_objs.save_options.onchange = function()
@@ -428,8 +433,8 @@ function updateRoutingForm(is_action_change)
   action_text_end = " " .. action_preposition .. " the selected tracks."
   target_tracks_subheading_routing_type_text = " " .. routing_type .. "s "
   new_target_tracks_subheading_text = target_tracks_subheading_text_intro .. routing_action .. target_tracks_subheading_routing_type_text .. type_preposition .. "?"
-  _routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
 
+  _routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
   _routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
   _routing_options_objs.action_text_end:attr("text", action_text_end)
   updateButtons(routing_action, is_action_change)
@@ -865,6 +870,29 @@ function populateRoutingSettingsPopup()
 end
 
 
+function selectDeselectAllTracks(checkbox)
+  local new_checkbox_value, target_track_lines, this_track_line, this_track_checkbox
+
+  if checkbox.value then
+    new_checkbox_value = true
+
+  else
+    new_checkbox_value = false
+  end
+
+  target_track_lines = _routing_options_objs.target_tracks_box.children
+
+  for j = 1, #target_track_lines do
+    this_track_line = target_track_lines[j][1]
+
+    if this_track_line then
+      this_track_checkbox = this_track_line.children[2][1]
+      this_track_checkbox:attr("value", new_checkbox_value)
+    end
+  end
+end
+
+
 function submitRoutingOptionChanges()
   getSetTargetTracksChoices()
   addRemoveRouting(_routing_options_objs.form_fields)
@@ -1154,6 +1182,7 @@ function populateRoutingOptionsWindow()
   _routing_options_objs.action_sentence:add(_routing_options_objs.action_text_end)
   _routing_options_objs.action_sentence_wrapper:add(_routing_options_objs.action_sentence)
   _routing_options_objs.form_fields:add(_routing_options_objs.action_sentence_wrapper)
+  _routing_options_objs.form_fields:add(_routing_options_objs.select_all_tracks)
   _routing_options_objs.form_fields:add(_routing_options_objs.target_tracks_subheading)
   _routing_options_objs.form_fields:add(_routing_options_objs.target_tracks_box)
   _routing_options_objs.save_options_wrapper:add(_routing_options_objs.save_options)
@@ -1166,10 +1195,10 @@ function populateRoutingOptionsWindow()
   _routing_options_objs.content:add(_routing_options_objs.form_fields)
   _routing_options_objs.content:add(_routing_options_objs.form_bottom)
   _routing_options_objs.viewport:attr("child", _routing_options_objs.content)
-  _routing_options_objs.configure_wrapper:add(_routing_options_objs.configure_btn)
+  _routing_options_objs.configure_btn_wrapper:add(_routing_options_objs.configure_btn)
   _routing_options_objs.brand:add(_routing_options_objs.title)
   _routing_options_objs.brand:add(_routing_options_objs.logo)
-  _routing_options_objs.window:add(_routing_options_objs.configure_wrapper)
+  _routing_options_objs.window:add(_routing_options_objs.configure_btn_wrapper)
   _routing_options_objs.window:add(_routing_options_objs.brand)
   _routing_options_objs.window:add(_routing_options_objs.viewport)
 end

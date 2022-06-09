@@ -5,9 +5,9 @@
 -- 
 -- This is generated code. See https://reapertoolkit.dev/ for more info.
 -- 
--- version: 1.2.0-40-g2c31150-dev
--- build: Wed May 18 02:07:08 UTC 2022
-__RTK_VERSION='1.2.0-40-g2c31150-dev'
+-- version: 1.2.0-98-ga99b6a1-dev
+-- build: Mon Jun  6 23:12:45 UTC 2022
+__RTK_VERSION='1.2.0-98-ga99b6a1-dev'
 rtk=(function()
 __mod_rtk_core=(function()
 __mod_rtk_log=(function()
@@ -109,7 +109,7 @@ return log
 end)()
 
 local log=__mod_rtk_log
-local rtk={touchscroll=false,smoothscroll=true,touch_activate_delay=0.1,long_press_delay=0.5,double_click_delay=0.5,tooltip_delay=0.5,light_luma_threshold=0.6,debug=false,window=nil,has_js_reascript_api=(reaper.JS_Window_GetFocus~=nil),has_sws_extension=(reaper.BR_Win32_GetMonitorRectFromRect~=nil),script_path=nil,reaper_hwnd=nil,fps=30,focused_hwnd=nil,focused=nil,theme=nil,_dest_stack={},_image_paths={},_animations={},_animations_len=0,_easing_functions={},_frame_count=0,_frame_time=nil,_modal=nil,_touch_activate_event=nil,_last_traceback=nil,_last_error=nil,_quit=false,_refs=setmetatable({}, {__mode='v'}),_run_soon=nil,_reactive_attr={},}rtk.scale=setmetatable({user=nil,_user=1.0,system=nil,reaper=1.0,framebuffer=nil,value=1.0,_discover=function()local inifile=reaper.get_ini_file()local ini,err=rtk.file.read(inifile)if not err then
+local rtk={touchscroll=false,smoothscroll=true,touch_activate_delay=0.1,long_press_delay=0.5,double_click_delay=0.5,tooltip_delay=0.5,light_luma_threshold=0.6,debug=false,window=nil,has_js_reascript_api=(reaper.JS_Window_GetFocus~=nil),has_sws_extension=(reaper.BR_Win32_GetMonitorRectFromRect~=nil),script_path=nil,reaper_hwnd=nil,tick=0,fps=30,focused_hwnd=nil,focused=nil,theme=nil,_dest_stack={},_image_paths={},_animations={},_animations_len=0,_easing_functions={},_frame_count=0,_frame_time=nil,_modal=nil,_touch_activate_event=nil,_last_traceback=nil,_last_error=nil,_quit=false,_refs=setmetatable({}, {__mode='v'}),_run_soon=nil,_reactive_attr={},}rtk.scale=setmetatable({user=nil,_user=1.0,system=nil,reaper=1.0,framebuffer=nil,value=1.0,_discover=function()local inifile=reaper.get_ini_file()local ini,err=rtk.file.read(inifile)if not err then
 rtk.scale.reaper = ini:match('uiscale=([^\n]*)') or 1.0
 end
 local ok, dpi=reaper.ThemeLayout_GetLayout("mcp", -3)if not ok then
@@ -135,7 +135,7 @@ end
 else
 rawset(t,key,value)end
 end
-})rtk.dnd={dragging=nil,droppable=nil,dropping=nil,arg=nil,buttons=nil,}local _os=reaper.GetOS():lower():sub(1,3)rtk.os={mac = (_os == 'osx' or _os == 'mac'),windows=(_os=='win'),linux = (_os == 'lin' or _os == 'oth'),bits=32,}rtk.mouse={BUTTON_LEFT=1,BUTTON_MIDDLE=64,BUTTON_RIGHT=2,BUTTON_MASK=(1|2|64),x=0,y=0,down=0,state={order={}}}local _load_cursor
+})rtk.dnd={dragging=nil,droppable=nil,dropping=nil,arg=nil,buttons=nil,}local _os=reaper.GetOS():lower():sub(1,3)rtk.os={mac = (_os == 'osx' or _os == 'mac'),windows=(_os=='win'),linux = (_os == 'lin' or _os == 'oth'),bits=32,}rtk.mouse={BUTTON_LEFT=1,BUTTON_MIDDLE=64,BUTTON_RIGHT=2,BUTTON_MASK=(1|2|64),x=0,y=0,down=0,state={order={},latest=nil},last={},}local _load_cursor
 if rtk.has_js_reascript_api then
 function _load_cursor(cursor)return reaper.JS_Mouse_LoadCursor(cursor)end
 else
@@ -145,7 +145,7 @@ end
 rtk.mouse.cursors={UNDEFINED=0,POINTER=_load_cursor(32512),BEAM=_load_cursor(32513),LOADING=_load_cursor(32514),CROSSHAIR=_load_cursor(32515),UP_ARROW=_load_cursor(32516),SIZE_NW_SE=_load_cursor(rtk.os.linux and 32643 or 32642),SIZE_SW_NE=_load_cursor(rtk.os.linux and 32642 or 32643),SIZE_EW=_load_cursor(32644),SIZE_NS=_load_cursor(32645),MOVE=_load_cursor(32646),INVALID=_load_cursor(32648),HAND=_load_cursor(32649),POINTER_LOADING=_load_cursor(32650),POINTER_HELP=_load_cursor(32651),REAPER_FADEIN_CURVE=_load_cursor(105),REAPER_FADEOUT_CURVE=_load_cursor(184),REAPER_CROSSFADE=_load_cursor(463),REAPER_DRAGDROP_COPY=_load_cursor(182),REAPER_DRAGDROP_RIGHT=_load_cursor(1011),REAPER_POINTER_ROUTING=_load_cursor(186),REAPER_POINTER_MOVE=_load_cursor(187),REAPER_POINTER_MARQUEE_SELECT=_load_cursor(488),REAPER_POINTER_DELETE=_load_cursor(464),REAPER_POINTER_LEFTRIGHT=_load_cursor(465),REAPER_POINTER_ARMED_ACTION=_load_cursor(434),REAPER_MARKER_HORIZ=_load_cursor(188),REAPER_MARKER_VERT=_load_cursor(189),REAPER_ADD_TAKE_MARKER=_load_cursor(190),REAPER_TREBLE_CLEF=_load_cursor(191),REAPER_BORDER_LEFT=_load_cursor(417),REAPER_BORDER_RIGHT=_load_cursor(418),REAPER_BORDER_TOP=_load_cursor(419),REAPER_BORDER_BOTTOM=_load_cursor(421),REAPER_BORDER_LEFTRIGHT=_load_cursor(450),REAPER_VERTICAL_LEFTRIGHT=_load_cursor(462),REAPER_GRID_RIGHT=_load_cursor(460),REAPER_GRID_LEFT=_load_cursor(461),REAPER_HAND_SCROLL=_load_cursor(429),REAPER_FIST_LEFT=_load_cursor(430),REAPER_FIST_RIGHT=_load_cursor(431),REAPER_FIST_BOTH=_load_cursor(453),REAPER_PENCIL=_load_cursor(185),REAPER_PENCIL_DRAW=_load_cursor(433),REAPER_ERASER=_load_cursor(472),REAPER_BRUSH=_load_cursor(473),REAPER_ARP=_load_cursor(502),REAPER_CHORD=_load_cursor(503),REAPER_TOUCHSEL=_load_cursor(515),REAPER_SWEEP=_load_cursor(517),REAPER_FADEIN_CURVE_ALT=_load_cursor(525),REAPER_FADEOUT_CURVE_ALT=_load_cursor(526),REAPER_XFADE_WIDTH=_load_cursor(528),REAPER_XFADE_CURVE=_load_cursor(529),REAPER_EXTMIX_SECTION_RESIZE=_load_cursor(530),REAPER_EXTMIX_MULTI_RESIZE=_load_cursor(531),REAPER_EXTMIX_MULTISECTION_RESIZE=_load_cursor(532),REAPER_EXTMIX_RESIZE=_load_cursor(533),REAPER_EXTMIX_ALLSECTION_RESIZE=_load_cursor(534),REAPER_EXTMIX_ALL_RESIZE=_load_cursor(535),REAPER_ZOOM=_load_cursor(1009),REAPER_INSERT_ROW=_load_cursor(1010),REAPER_RAZOR=_load_cursor(599),REAPER_RAZOR_MOVE=_load_cursor(600),REAPER_RAZOR_ADD=_load_cursor(601),REAPER_RAZOR_ENVELOPE_VERTICAL=_load_cursor(202),REAPER_RAZOR_ENVELOPE_RIGHT_TILT=_load_cursor(203),REAPER_RAZOR_ENVELOPE_LEFT_TILT=_load_cursor(204),}local FONT_FLAG_BOLD=string.byte('b')local FONT_FLAG_ITALICS=string.byte('i') << 8
 local FONT_FLAG_UNDERLINE=string.byte('u') << 16
 rtk.font={BOLD=FONT_FLAG_BOLD,ITALICS=FONT_FLAG_ITALICS,UNDERLINE=FONT_FLAG_UNDERLINE,multiplier=1.0
-}rtk.keycodes={UP=30064,DOWN=1685026670,LEFT=1818584692,RIGHT=1919379572,RETURN=13,ENTER=13,SPACE=32,BACKSPACE=8,ESCAPE=27,TAB=9,HOME=1752132965,END=6647396,INSERT=6909555,DELETE=6579564,F1=26161,F2=26162,F3=26163,F4=26164,F5=26165,F6=26166,F7=26167,F8=26168,F9=26169,F10=6697264,F11=6697265,F12=6697266,}rtk.themes={dark={name='dark',dark=true,light=false,bg='#252525',default_font={'Calibri', 18},accent='#47abff',accent_subtle='#306088',tooltip_bg='#ffffff',tooltip_text='#000000',tooltip_font={'Segoe UI (TrueType)', 16},text='#ffffff',text_faded='#bbbbbb',text_font=nil,button='#555555',heading=nil,heading_font={'Calibri', 26},button_label='#ffffff',button_font=nil,button_gradient_mul=1,button_tag_alpha=0.32,button_normal_gradient=-0.37,button_normal_border_mul=0.7,button_hover_gradient=0.17,button_hover_brightness=0.9,button_hover_mul=1,button_hover_border_mul=1.1,button_clicked_gradient=0.47,button_clicked_brightness=0.9,button_clicked_mul=0.85,button_clicked_border_mul=1,entry_font=nil,entry_bg='#5f5f5f7f',entry_placeholder='#ffffff7f',entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_selection_bg='#0066bb',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111166',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',slider_font=nil,slider_tick_label=nil,},light={name='light',light=true,dark=false,accent='#47abff',accent_subtle='#a1d3fc',bg='#dddddd',default_font={'Calibri', 18},tooltip_font={'Segoe UI (TrueType)', 16},tooltip_bg='#ffffff',tooltip_text='#000000',button='#dedede',button_label='#000000',button_gradient_mul=1,button_tag_alpha=0.15,button_normal_gradient=-0.28,button_normal_border_mul=0.85,button_hover_gradient=0.12,button_hover_brightness=1,button_hover_mul=1,button_hover_border_mul=0.9,button_clicked_gradient=0.3,button_clicked_brightness=1.0,button_clicked_mul=0.9,button_clicked_border_mul=0.7,text='#000000',text_faded='#555555',heading_font={'Calibri', 26},entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_bg='#00000020',entry_placeholder='#0000007f',entry_selection_bg='#9fcef4',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111122',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',}}local function _postprocess_theme()local iconstyle=rtk.color.get_icon_style(rtk.theme.bg)rtk.theme.iconstyle=iconstyle
+}rtk.keycodes={UP=30064,DOWN=1685026670,LEFT=1818584692,RIGHT=1919379572,RETURN=13,ENTER=13,SPACE=32,BACKSPACE=8,ESCAPE=27,TAB=9,HOME=1752132965,END=6647396,INSERT=6909555,DELETE=6579564,F1=26161,F2=26162,F3=26163,F4=26164,F5=26165,F6=26166,F7=26167,F8=26168,F9=26169,F10=6697264,F11=6697265,F12=6697266,}rtk.themes={dark={name='dark',dark=true,light=false,bg='#252525',default_font={'Calibri', 18},accent='#47abff',accent_subtle='#306088',tooltip_bg='#ffffff',tooltip_text='#000000',tooltip_font={'Segoe UI (TrueType)', 16},text='#ffffff',text_faded='#bbbbbb',text_font=nil,button='#555555',heading=nil,heading_font={'Calibri', 26},button_label='#ffffff',button_font=nil,button_gradient_mul=1,button_tag_alpha=0.32,button_normal_gradient=-0.37,button_normal_border_mul=0.7,button_hover_gradient=0.17,button_hover_brightness=0.9,button_hover_mul=1,button_hover_border_mul=1.1,button_clicked_gradient=0.47,button_clicked_brightness=0.9,button_clicked_mul=0.85,button_clicked_border_mul=1,entry_font=nil,entry_bg='#5f5f5f7f',entry_placeholder='#ffffff7f',entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_selection_bg='#0066bb',popup_bg=nil,popup_overlay='#00000040',popup_bg_brightness=1.3,popup_shadow='#11111166',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',slider_font=nil,slider_tick_label=nil,},light={name='light',light=true,dark=false,accent='#47abff',accent_subtle='#a1d3fc',bg='#dddddd',default_font={'Calibri', 18},tooltip_font={'Segoe UI (TrueType)', 16},tooltip_bg='#ffffff',tooltip_text='#000000',button='#dedede',button_label='#000000',button_gradient_mul=1,button_tag_alpha=0.15,button_normal_gradient=-0.28,button_normal_border_mul=0.85,button_hover_gradient=0.12,button_hover_brightness=1,button_hover_mul=1,button_hover_border_mul=0.9,button_clicked_gradient=0.3,button_clicked_brightness=1.0,button_clicked_mul=0.9,button_clicked_border_mul=0.7,text='#000000',text_faded='#555555',heading_font={'Calibri', 26},entry_border_hover='#3a508e',entry_border_focused='#4960b8',entry_bg='#00000020',entry_placeholder='#0000007f',entry_selection_bg='#9fcef4',popup_bg=nil,popup_bg_brightness=1.5,popup_shadow='#11111122',popup_border='#385074',slider='#2196f3',slider_track='#5a5a5a',}}local function _postprocess_theme()local iconstyle=rtk.color.get_icon_style(rtk.theme.bg)rtk.theme.iconstyle=iconstyle
 for k,v in pairs(rtk.theme)do
 if type(v) == 'string' and v:byte(1) == 35 then
 rtk.theme[k]={rtk.color.rgba(v)}end
@@ -180,9 +180,12 @@ rtk.themes.dark=table.merge(rtk.themes.dark,overrides)rtk.themes.light=table.mer
 function rtk.new_theme(name,base,overrides)assert(not base or rtk.themes[base], string.format('base theme %s not found', base))assert(not rtk.themes[name], string.format('theme %s already exists', name))local theme=base and table.shallow_copy(rtk.themes[base])or {}rtk.themes[name]=table.merge(theme,overrides or {})end
 function rtk.add_modal(...)if rtk._modal==nil then
 rtk._modal={}end
-local widgets={...}for _,widget in ipairs(widgets)do
-rtk._modal[widget.id]=widget
+local state=rtk.mouse.state[rtk.mouse.state.latest]
+if state then
+state.modaltick=rtk.tick
 end
+local widgets={...}for _,widget in ipairs(widgets)do
+rtk._modal[widget.id]={widget,rtk.tick}end
 end
 function rtk.is_modal(widget)if widget==nil then
 return rtk._modal~=nil
@@ -792,7 +795,7 @@ if anim.sync_exterior_value then
 widget[attr]=exterior or value
 end
 else
-widget:attr(attr,exterior or anim.doneval)end
+widget:attr(attr,anim.doneval or exterior)end
 local reflow=anim.reflow or(anim.attrmeta and anim.attrmeta.reflow)or rtk.Widget.REFLOW_PARTIAL
 if reflow and reflow~=rtk.Widget.REFLOW_NONE then
 widget:queue_reflow(reflow)end
@@ -883,15 +886,15 @@ local r,g,b,a=table.unpack(color)return r,g,b,a or 1
 elseif tp=='string' then
 local hash=color:find('#')if hash==1 then
 return rtk.color.hex2rgba(color)else
-local a=1
+local a
 if hash then
 a=(tonumber(color:sub(hash+1),16)or 0)/255
 color=color:sub(1,hash-1)end
 local resolved=rtk.color.names[color:lower()]
 if not resolved then
-log.warning('rtk: color "%s" is invalid, defaulting to black', color)return 0,0,0,a
+log.warning('rtk: color "%s" is invalid, defaulting to black', color)return 0,0,0,a or 1
 end
-local r,g,b,_=rtk.color.hex2rgba(resolved)return r,g,b,a
+local r,g,b,a2=rtk.color.hex2rgba(resolved)return r,g,b,a or a2
 end
 elseif tp=='number' then
 local r,g,b=color&0xff,(color>>8)&0xff,(color>>16)&0xff
@@ -899,8 +902,11 @@ return r/255,g/255,b/255,1
 else
 error('invalid type ' .. tp .. ' passed to rtk.color.rgba()')end
 end
-function rtk.color.luma(color,under)local r,g,b,a=rtk.color.rgba(color)local luma=(0.2126*r+0.7152*g+0.0722*b)if a<1.0 and under then
-luma=math.abs((luma*a)+rtk.color.luma(under)*(1-a))end
+function rtk.color.luma(color,under)if not color then
+return under and rtk.color.luma(under)or 0
+end
+local r,g,b,a=rtk.color.rgba(color)local luma=(0.2126*r+0.7152*g+0.0722*b)if a<1.0 then
+luma=math.abs((luma*a)+(under and(rtk.color.luma(under)*(1-a))or 0))end
 return luma
 end
 function rtk.color.hsv(color)local r,g,b,a=rtk.color.rgba(color)local h,s,v
@@ -1007,7 +1013,7 @@ local q=(l<0.5)and(l*(1+s))or(l+s-l*s)local p=2*l-q
 r=hue2rgb(p,q,h+1/3)g=hue2rgb(p,q,h)b=hue2rgb(p,q,h-1/3)end
 return r,g,b,a or 1.0
 end
-rtk.color.names={black='#000000',silver='#c0c0c0',gray='#808080',white='#ffffff',maroon='#800000',red='#ff0000',purple='#800080',fuchsia='#ff00ff',green='#008000',lime='#00ff00',olive='#808000',yellow='#ffff00',navy='#000080',blue='#0000ff',teal='#008080',aqua='#00ffff',orange='#ffa500',aliceblue='#f0f8ff',antiquewhite='#faebd7',aquamarine='#7fffd4',azure='#f0ffff',beige='#f5f5dc',bisque='#ffe4c4',blanchedalmond='#ffebcd',blueviolet='#8a2be2',brown='#a52a2a',burlywood='#deb887',cadetblue='#5f9ea0',chartreuse='#7fff00',chocolate='#d2691e',coral='#ff7f50',cornflowerblue='#6495ed',cornsilk='#fff8dc',crimson='#dc143c',cyan='#00ffff',darkblue='#00008b',darkcyan='#008b8b',darkgoldenrod='#b8860b',darkgray='#a9a9a9',darkgreen='#006400',darkgrey='#a9a9a9',darkkhaki='#bdb76b',darkmagenta='#8b008b',darkolivegreen='#556b2f',darkorange='#ff8c00',darkorchid='#9932cc',darkred='#8b0000',darksalmon='#e9967a',darkseagreen='#8fbc8f',darkslateblue='#483d8b',darkslategray='#2f4f4f',darkslategrey='#2f4f4f',darkturquoise='#00ced1',darkviolet='#9400d3',deeppink='#ff1493',deepskyblue='#00bfff',dimgray='#696969',dimgrey='#696969',dodgerblue='#1e90ff',firebrick='#b22222',floralwhite='#fffaf0',forestgreen='#228b22',gainsboro='#dcdcdc',ghostwhite='#f8f8ff',gold='#ffd700',goldenrod='#daa520',greenyellow='#adff2f',grey='#808080',honeydew='#f0fff0',hotpink='#ff69b4',indianred='#cd5c5c',indigo='#4b0082',ivory='#fffff0',khaki='#f0e68c',lavender='#e6e6fa',lavenderblush='#fff0f5',lawngreen='#7cfc00',lemonchiffon='#fffacd',lightblue='#add8e6',lightcoral='#f08080',lightcyan='#e0ffff',lightgoldenrodyellow='#fafad2',lightgray='#d3d3d3',lightgreen='#90ee90',lightgrey='#d3d3d3',lightpink='#ffb6c1',lightsalmon='#ffa07a',lightseagreen='#20b2aa',lightskyblue='#87cefa',lightslategray='#778899',lightslategrey='#778899',lightsteelblue='#b0c4de',lightyellow='#ffffe0',limegreen='#32cd32',linen='#faf0e6',magenta='#ff00ff',mediumaquamarine='#66cdaa',mediumblue='#0000cd',mediumorchid='#ba55d3',mediumpurple='#9370db',mediumseagreen='#3cb371',mediumslateblue='#7b68ee',mediumspringgreen='#00fa9a',mediumturquoise='#48d1cc',mediumvioletred='#c71585',midnightblue='#191970',mintcream='#f5fffa',mistyrose='#ffe4e1',moccasin='#ffe4b5',navajowhite='#ffdead',oldlace='#fdf5e6',olivedrab='#6b8e23',orangered='#ff4500',orchid='#da70d6',palegoldenrod='#eee8aa',palegreen='#98fb98',paleturquoise='#afeeee',palevioletred='#db7093',papayawhip='#ffefd5',peachpuff='#ffdab9',peru='#cd853f',pink='#ffc0cb',plum='#dda0dd',powderblue='#b0e0e6',rosybrown='#bc8f8f',royalblue='#4169e1',saddlebrown='#8b4513',salmon='#fa8072',sandybrown='#f4a460',seagreen='#2e8b57',seashell='#fff5ee',sienna='#a0522d',skyblue='#87ceeb',slateblue='#6a5acd',slategray='#708090',slategrey='#708090',snow='#fffafa',springgreen='#00ff7f',steelblue='#4682b4',tan='#d2b48c',thistle='#d8bfd8',tomato='#ff6347',turquoise='#40e0d0',violet='#ee82ee',wheat='#f5deb3',whitesmoke='#f5f5f5',yellowgreen='#9acd32',rebeccapurple='#663399',}end)()
+rtk.color.names={transparent="#ffffff00",black='#000000',silver='#c0c0c0',gray='#808080',white='#ffffff',maroon='#800000',red='#ff0000',purple='#800080',fuchsia='#ff00ff',green='#008000',lime='#00ff00',olive='#808000',yellow='#ffff00',navy='#000080',blue='#0000ff',teal='#008080',aqua='#00ffff',orange='#ffa500',aliceblue='#f0f8ff',antiquewhite='#faebd7',aquamarine='#7fffd4',azure='#f0ffff',beige='#f5f5dc',bisque='#ffe4c4',blanchedalmond='#ffebcd',blueviolet='#8a2be2',brown='#a52a2a',burlywood='#deb887',cadetblue='#5f9ea0',chartreuse='#7fff00',chocolate='#d2691e',coral='#ff7f50',cornflowerblue='#6495ed',cornsilk='#fff8dc',crimson='#dc143c',cyan='#00ffff',darkblue='#00008b',darkcyan='#008b8b',darkgoldenrod='#b8860b',darkgray='#a9a9a9',darkgreen='#006400',darkgrey='#a9a9a9',darkkhaki='#bdb76b',darkmagenta='#8b008b',darkolivegreen='#556b2f',darkorange='#ff8c00',darkorchid='#9932cc',darkred='#8b0000',darksalmon='#e9967a',darkseagreen='#8fbc8f',darkslateblue='#483d8b',darkslategray='#2f4f4f',darkslategrey='#2f4f4f',darkturquoise='#00ced1',darkviolet='#9400d3',deeppink='#ff1493',deepskyblue='#00bfff',dimgray='#696969',dimgrey='#696969',dodgerblue='#1e90ff',firebrick='#b22222',floralwhite='#fffaf0',forestgreen='#228b22',gainsboro='#dcdcdc',ghostwhite='#f8f8ff',gold='#ffd700',goldenrod='#daa520',greenyellow='#adff2f',grey='#808080',honeydew='#f0fff0',hotpink='#ff69b4',indianred='#cd5c5c',indigo='#4b0082',ivory='#fffff0',khaki='#f0e68c',lavender='#e6e6fa',lavenderblush='#fff0f5',lawngreen='#7cfc00',lemonchiffon='#fffacd',lightblue='#add8e6',lightcoral='#f08080',lightcyan='#e0ffff',lightgoldenrodyellow='#fafad2',lightgray='#d3d3d3',lightgreen='#90ee90',lightgrey='#d3d3d3',lightpink='#ffb6c1',lightsalmon='#ffa07a',lightseagreen='#20b2aa',lightskyblue='#87cefa',lightslategray='#778899',lightslategrey='#778899',lightsteelblue='#b0c4de',lightyellow='#ffffe0',limegreen='#32cd32',linen='#faf0e6',magenta='#ff00ff',mediumaquamarine='#66cdaa',mediumblue='#0000cd',mediumorchid='#ba55d3',mediumpurple='#9370db',mediumseagreen='#3cb371',mediumslateblue='#7b68ee',mediumspringgreen='#00fa9a',mediumturquoise='#48d1cc',mediumvioletred='#c71585',midnightblue='#191970',mintcream='#f5fffa',mistyrose='#ffe4e1',moccasin='#ffe4b5',navajowhite='#ffdead',oldlace='#fdf5e6',olivedrab='#6b8e23',orangered='#ff4500',orchid='#da70d6',palegoldenrod='#eee8aa',palegreen='#98fb98',paleturquoise='#afeeee',palevioletred='#db7093',papayawhip='#ffefd5',peachpuff='#ffdab9',peru='#cd853f',pink='#ffc0cb',plum='#dda0dd',powderblue='#b0e0e6',rosybrown='#bc8f8f',royalblue='#4169e1',saddlebrown='#8b4513',salmon='#fa8072',sandybrown='#f4a460',seagreen='#2e8b57',seashell='#fff5ee',sienna='#a0522d',skyblue='#87ceeb',slateblue='#6a5acd',slategray='#708090',slategrey='#708090',snow='#fffafa',springgreen='#00ff7f',steelblue='#4682b4',tan='#d2b48c',thistle='#d8bfd8',tomato='#ff6347',turquoise='#40e0d0',violet='#ee82ee',wheat='#f5deb3',whitesmoke='#f5f5f5',yellowgreen='#9acd32',rebeccapurple='#663399',}end)()
 __mod_rtk_font=(function()
 local rtk=__mod_rtk_core
 local _fontcache={}local _idmgr=rtk.IndexManager(2,127)rtk.Font=rtk.class('rtk.Font')rtk.Font.register{name=nil,size=nil,scale=nil,flags=nil,texth=nil,}function rtk.Font:initialize(name,size,scale,flags)if size then
@@ -1172,7 +1178,7 @@ rtk.Event.static.MOUSEWHEEL=4
 rtk.Event.static.KEY=5
 rtk.Event.static.DROPFILE=6
 rtk.Event.static.WINDOWCLOSE=7
-rtk.Event.static.typenames={[rtk.Event.MOUSEDOWN]='mousedown',[rtk.Event.MOUSEUP]='mouseup',[rtk.Event.MOUSEMOVE]='mousemove',[rtk.Event.MOUSEWHEEL]='mousewheel',[rtk.Event.KEY]='key',[rtk.Event.DROPFILE]='dropfile',[rtk.Event.WINDOWCLOSE]='windowclose',}rtk.Event.register{type=nil,handled=nil,button=0,buttons=0,wheel=0,hwheel=0,keycode=nil,char=nil,ctrl=false,shift=false,alt=false,meta=false,modifiers=nil,files=nil,x=nil,y=nil,time=0,simulated=nil,debug=nil,}function rtk.Event:initialize(attrs)self:reset()if attrs then
+rtk.Event.static.typenames={[rtk.Event.MOUSEDOWN]='mousedown',[rtk.Event.MOUSEUP]='mouseup',[rtk.Event.MOUSEMOVE]='mousemove',[rtk.Event.MOUSEWHEEL]='mousewheel',[rtk.Event.KEY]='key',[rtk.Event.DROPFILE]='dropfile',[rtk.Event.WINDOWCLOSE]='windowclose',}rtk.Event.register{type=nil,handled=nil,button=0,buttons=0,wheel=0,hwheel=0,char=nil,keycode=nil,keynorm=nil,ctrl=false,shift=false,alt=false,meta=false,modifiers=nil,files=nil,x=nil,y=nil,time=0,tick=nil,simulated=nil,debug=nil,}function rtk.Event:initialize(attrs)self:reset()if attrs then
 table.merge(self,attrs)end
 end
 function rtk.Event:__tostring()local custom
@@ -1191,6 +1197,7 @@ self.time=nil
 self.char=nil
 self.x=gfx.mouse_x
 self.y=gfx.mouse_y
+self.tick=rtk.tick
 return self
 end
 function rtk.Event:is_mouse_event()return self.type<=rtk.Event.MOUSEWHEEL
@@ -1203,7 +1210,7 @@ end
 function rtk.Event:set_widget_mouseover(widget)if rtk.debug and not self.debug then
 self.debug=widget
 end
-if widget.tooltip and not rtk._mouseover_widget and self.type==rtk.Event.MOUSEMOVE and not self.simulated then
+if widget.calc.tooltip and not rtk._mouseover_widget and self.type==rtk.Event.MOUSEMOVE and not self.simulated then
 rtk._mouseover_widget=widget
 end
 end
@@ -1225,12 +1232,28 @@ self.alt=cap&16~=0
 self.meta=cap&32~=0
 self.buttons=cap&(1|2|64)self.button=button
 end
+local keynorm_map={[33]=49,[64]=50,[35]=51,[36]=52,[37]=53,[94]=54,[38]=55,[42]=56,[40]=57,[41]=48,[126]=96,[95]=45,[43]=61,[123]=91,[125]=93,[58]=59,[34]=39,[60]=44,[62]=46,[63]=47,}function rtk.Event:set_keycode(keycode)self.keycode=math.ceil(keycode)self.keynorm=keycode
+if keycode<=26 and self.ctrl then
+self.keynorm=keycode+96
+self.char=string.char(self.keynorm)elseif keycode>=65 and keycode<=90 then
+self.keynorm=keycode+32
+self.char=string.char(keycode)elseif keycode>=32 and keycode~=127 then
+if keycode<=255 then
+self.keynorm=keynorm_map[keycode] or self.keycode
+self.char=string.char(self.keycode)elseif keycode<=282 then
+self.keynorm=keycode-160
+self.char=string.char(self.keynorm)elseif keycode<=346 then
+self.keynorm=keycode-224
+self.char=string.char(self.keynorm)end
+end
+end
 function rtk.Event:set_handled(widget)self.handled=widget or true
 end
 function rtk.Event:clone(overrides)local event=rtk.Event()for k,v in pairs(self)do
 event[k]=v
 end
 event.handled=nil
+event.tick=rtk.tick
 table.merge(event,overrides or {})return event
 end
 end)()
@@ -1393,15 +1416,16 @@ local sw=attrs.sw or self.w
 local sh=attrs.sh or self.h
 local dx=attrs.dx or 0
 local dy=attrs.dy or 0
-local dw=attrs.dw or(sw*scale)local dh=attrs.dh or(sh*scale)if attrs.clipw and dw>attrs.clipw then
+local dw=attrs.dw or(sw*scale)local dh=attrs.dh or(sh*scale)local rotation=attrs.rotation and math.rad(attrs.rotation)or self._rotation_rads
+if attrs.clipw and dw>attrs.clipw then
 sw=sw-(dw-attrs.clipw)/(dw/sw)dw=attrs.clipw
 end
 if attrs.cliph and dh>attrs.cliph then
 sh=sh-(dh-attrs.cliph)/(dh/sh)dh=attrs.cliph
 end
-if self.rotation==0 then
+if rotation==0 or not rotation then
 gfx.blit(src or self.id,1.0,0,sx,sy,sw,sh,dx or 0,dy or 0,dw,dh,0,0)else
-gfx.blit(src or self.id,1.0,self.rotation,sx-(self._soffx or 0),sy-(self._soffy or 0),self._dw,self._dh,dx-(self._doffx or 0),dy-(self._doffy or 0),self._dw,self._dh,0,0
+gfx.blit(src or self.id,1.0,rotation,sx-(self._soffx or 0),sy-(self._soffy or 0),self._dw,self._dh,dx-(self._doffx or 0),dy-(self._doffy or 0),self._dw,self._dh,0,0
 )end
 gfx.mode=0
 if src then
@@ -1430,11 +1454,13 @@ gfx.transformblit(self.id,self.x,self.y,self.w,self.h,2,2,{self.x,self.y+self.h,
 })rtk.popdest()return self
 end
 local function _xlate(x,y,theta)return x*math.cos(theta)-y*math.sin(theta),x*math.sin(theta)+y*math.cos(theta)end
-function rtk.Image:rotate(degrees)self.rotation=math.rad(degrees)local x1,y1=0,0
-local xt1,yt1=_xlate(x1,y1,self.rotation)local x2,y2=0+self.w,0
-local xt2,yt2=_xlate(x2,y2,self.rotation)local x3,y3=0,self.h
-local xt3,yt3=_xlate(x3,y3,self.rotation)local x4,y4=0+self.w,self.h
-local xt4,yt4=_xlate(x4,y4,self.rotation)local xmin=math.min(xt1,xt2,xt3,xt4)local xmax=math.max(xt1,xt2,xt3,xt4)local ymin=math.min(yt1,yt2,yt3,yt4)local ymax=math.max(yt1,yt2,yt3,yt4)local dw=xmax-xmin
+function rtk.Image:rotate(degrees)self.rotation=degrees
+local rads=math.rad(degrees)self._rotation_rads=rads
+local x1,y1=0,0
+local xt1,yt1=_xlate(x1,y1,rads)local x2,y2=0+self.w,0
+local xt2,yt2=_xlate(x2,y2,rads)local x3,y3=0,self.h
+local xt3,yt3=_xlate(x3,y3,rads)local x4,y4=0+self.w,self.h
+local xt4,yt4=_xlate(x4,y4,rads)local xmin=math.min(xt1,xt2,xt3,xt4)local xmax=math.max(xt1,xt2,xt3,xt4)local ymin=math.min(yt1,yt2,yt3,yt4)local ymax=math.max(yt1,yt2,yt3,yt4)local dw=xmax-xmin
 local dh=ymax-ymin
 local dmax=math.max(dw,dh)self._dw=dmax
 self._dh=dmax
@@ -1886,7 +1912,10 @@ else
 error('invalid value')end
 end
 end
-rtk.Widget.register{x=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,},y=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,},w=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,animate=function(self,anim,scale)local calculated=anim.resolve(anim.easingfunc(anim.pct))local exterior=(anim.pct<1 and calculated or anim.doneval)/(scale or rtk.scale.value)if anim.dst==0 or anim.dst>1 then
+rtk.Widget.register{x=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,},y=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,},w=rtk.Attribute{type='number',reflow=rtk.Widget.REFLOW_FULL,reflow_uses_exterior_value=true,animate=function(self,anim,scale)local calculated=anim.resolve(anim.easingfunc(anim.pct))local exterior
+if anim.doneval and anim.doneval~=rtk.Attribute.NIL and anim.doneval~=rtk.Attribute.DEFAULT then
+exterior=(anim.pct<1 and calculated or anim.doneval)/(scale or rtk.scale.value)end
+if anim.dst==0 or anim.dst>1 then
 exterior = (type(exterior) == 'number' and exterior > 0 and exterior <= 1.0) and 1.01 or exterior
 end
 return calculated,exterior
@@ -1903,18 +1932,31 @@ target.border_uniform=true
 return border
 end
 },tborder=rtk.Attribute{priority=true,reflow=rtk.Widget.REFLOW_FULL,calculate=function(self,attr,value,target)target.border_uniform=false
-return rtk.Widget.static._calc_border(self,value)end,},rborder=rtk.Reference('tborder'),bborder=rtk.Reference('tborder'),lborder=rtk.Reference('tborder'),visible=rtk.Attribute{default=true,reflow=rtk.Widget.REFLOW_FULL},disabled=false,ghost=false,tooltip=nil,cursor=nil,alpha=rtk.Attribute{default=1.0,reflow=rtk.Widget.REFLOW_NONE,},autofocus=false,bg=rtk.Attribute{calculate=function(self,attr,value,target)return value and {rtk.color.rgba(value)}end,},scroll_on_drag=true,show_scrollbar_on_drag=true,touch_activate_delay=nil,realized=false,drawn=false,viewport=nil,window=nil,mouseover=false,hovering=false,debug=nil,id=nil,ref=nil,refs=nil,}rtk.Widget.static.last_index=0
+return rtk.Widget.static._calc_border(self,value)end,},rborder=rtk.Reference('tborder'),bborder=rtk.Reference('tborder'),lborder=rtk.Reference('tborder'),visible=rtk.Attribute{default=true,reflow=rtk.Widget.REFLOW_FULL},disabled=false,ghost=rtk.Attribute{default=false,reflow=rtk.Widget.REFLOW_NONE,},tooltip=nil,cursor=nil,alpha=rtk.Attribute{default=1.0,reflow=rtk.Widget.REFLOW_NONE,},autofocus=nil,bg=rtk.Attribute{reflow=rtk.Widget.REFLOW_NONE,calculate=function(self,attr,value,target,animation)if not value and animation then
+local parent=self.parent
+value=parent and parent.calc.bg or rtk.theme.bg
+end
+return value and {rtk.color.rgba(value)}end,},hotzone=rtk.Attribute{reflow=rtk.Widget.REFLOW_NONE,replaces={'thotzone', 'rhotzone', 'bhotzone', 'lhotzone'},get=function(self,attr,target)return {target.thotzone,target.rhotzone,target.bhotzone,target.lhotzone}end,calculate=function(self,attr,value,target)local t,r,b,l=rtk.Widget.static._calc_padding_or_margin(value)target.thotzone,target.rhotzone,target.bhotzone,target.lhotzone=t,r,b,l
+target._hotzone_set=true
+return {t,r,b,l}end
+},thotzone=rtk.Attribute{priority=true,reflow=rtk.Widget.REFLOW_NONE,calculate=function(self,attr,value,target)target._hotzone_set=true
+return value
+end,},rhotzone=rtk.Reference('thotzone'),bhotzone=rtk.Reference('thotzone'),lhotzone=rtk.Reference('thotzone'),scroll_on_drag=true,show_scrollbar_on_drag=true,touch_activate_delay=nil,realized=false,drawn=false,viewport=nil,window=nil,mouseover=false,hovering=false,debug=nil,id=nil,ref=nil,refs=nil,}local _refs_metatable={__mode='v',__index=function(table,key)return table.__self:_ref(table,key)end,__newindex=function(table,key,value)rawset(table,key,value)table.__empty=false
+end
+}local _calc_metatable={__call=function(table,_,attr,instant)return table.__self:_calc(attr,instant)end
+}rtk.Widget.static.last_index=0
 function rtk.Widget:__allocate()self.__id=tostring(rtk.Widget.static.last_index)rtk.Widget.static.last_index=rtk.Widget.static.last_index+1
 end
-function rtk.Widget:initialize(attrs,...)self.refs={__empty=true}setmetatable(self.refs,{__mode='v',__index=function(table,key)return self:_ref(table,key)end,__newindex=function(table,key,value)rawset(table,key,value)table.__empty=false
+function rtk.Widget:initialize(attrs,...)self.refs=setmetatable({__empty=true,__self=self},_refs_metatable)self.calc=setmetatable({__self=self,border_uniform=true},_calc_metatable)local clsattrs=self.class.attributes
+local tables={clsattrs.defaults,...}local merged={}for n=1,#tables do
+for k,v in pairs(tables[n])do
+merged[k]=v
 end
-})self.calc={border_uniform=true
-}setmetatable(self.calc,{__call=function(_,_,attr,instant)return self:_calc(attr,instant)end
-})local tables={self.class.attributes.defaults,...}local merged={}for n=1,#tables do
-table.merge(merged,tables[n])end
+end
 if attrs then
 for k,v in pairs(attrs)do
-local meta=self.class.attributes.get(k)local attr=meta.alias
+local meta=clsattrs[k] or rtk.Attribute.NIL
+local attr=meta.alias
 if attr then
 merged[attr]=v
 end
@@ -1924,8 +1966,11 @@ for n=1,#replaces do
 merged[replaces[n]]=nil
 end
 end
+if not tonumber(k)then
+merged[k]=v
 end
-table.merge(merged,attrs)if attrs.ref then
+end
+if attrs.ref then
 rtk._refs[attrs.ref]=self
 self.refs[attrs.ref]=self
 end
@@ -1942,13 +1987,13 @@ function rtk.Widget:__tostring_info()end
 function rtk.Widget:_setattrs(attrs)if not attrs then
 return
 end
-local get=self.class.attributes.get
+local clsattrs=self.class.attributes
 local priority={}local calc=self.calc
 for k,v in pairs(attrs)do
-if not tonumber(k)then
-local meta=get(k)if not meta.priority then
+local meta=clsattrs[k]
+if meta and not meta.priority then
 if v==rtk.Attribute.FUNCTION then
-v=self.class.attributes[k].default_func(self,k)elseif v==rtk.Attribute.NIL then
+v=clsattrs[k].default_func(self,k)elseif v==rtk.Attribute.NIL then
 v=nil
 end
 local calculated=self:_calc_attr(k,v,nil,meta)self:_set_calc_attr(k,v,calculated,calc,meta)else
@@ -1956,11 +2001,13 @@ priority[#priority+1]=k
 end
 self[k]=v
 end
+if #priority==0 then
+return
 end
 for _,k in ipairs(priority)do
 local v=self[k]
 if v==rtk.Attribute.FUNCTION then
-v=self.class.attributes[k].default_func(self,k)self[k]=v
+v=clsattrs[k].default_func(self,k)self[k]=v
 end
 if v~=nil then
 if v==rtk.Attribute.NIL then
@@ -2004,8 +2051,8 @@ bw=bw+20
 bh=bh+10
 local x=self.clientx
 local y=self.clienty
-if x+bw>self.window.w then
-x=self.window.w-bw
+if x+bw>self.window.calc.w then
+x=self.window.calc.w-bw
 elseif x<0 then
 x=0
 end
@@ -2126,21 +2173,25 @@ function rtk.Widget:toggle()if self.calc.visible==true then
 return self:hide()else
 return self:show()end
 end
-function rtk.Widget:focused()return rtk.focused==self
+function rtk.Widget:focused(event)return rtk.focused==self
 end
 function rtk.Widget:focus(event)if rtk.focused and rtk.focused~=self then
 rtk.focused:blur(event,self)end
 if rtk.focused==nil and self:_handle_focus(event)~=false then
 rtk.focused=self
+if self.parent then
+self.parent:_set_focused_child(self)end
 self:queue_draw()return true
 end
 return false
 end
-function rtk.Widget:blur(event,other)if not self:focused()then
+function rtk.Widget:blur(event,other)if not self:focused(event)then
 return true
 end
 if self:_handle_blur(event,other)~=false then
 rtk.focused=nil
+if self.parent then
+self.parent:_set_focused_child(nil)end
 self:queue_draw()return true
 end
 return false
@@ -2171,25 +2222,30 @@ end
 local calcsrc,calcdst
 local doneval=kwargs.dst or rtk.Attribute.DEFAULT
 if attr == 'w' or attr == 'h' then
-if not kwargs.src or(kwargs.src<=1.0 and kwargs.src>=0)then
+if(not kwargs.src or kwargs.src==rtk.Attribute.NIL)or(kwargs.src<=1.0 and kwargs.src>=0)then
+if kwargs.src==rtk.Attribute.NIL then
+kwargs.src=nil
+end
 kwargs.src=calc[attr]*(kwargs.src or 1)calcsrc=true
 end
-if not kwargs.dst or(kwargs.dst<=1.0 and kwargs.dst>0)then
+if(not kwargs.dst or kwargs.dst==rtk.Attribute.NIL)or(kwargs.dst<=1.0 and kwargs.dst>0)then
+if kwargs.dst==rtk.Attribute.NIL then
+kwargs.dst=nil
+end
 local current=self[attr]
 local current_calc=calc[attr]
 self[attr]=kwargs.dst
-calc[attr]=meta.calculate and meta.calculate(self,attr,kwargs.dst,{})or kwargs.dst
+calc[attr]=meta.calculate and meta.calculate(self,attr,kwargs.dst,{},true)or kwargs.dst
 local window=self:_slow_get_window()if not window then
 return rtk.Future():resolve(self)end
 window:reflow(rtk.Widget.REFLOW_FULL)kwargs.dst=calc[attr] or 0
 calcdst=true
-doneval=kwargs.dst
 self[attr]=current
 calc[attr]=current_calc
 window:reflow(rtk.Widget.REFLOW_FULL)end
 end
 if not calcdst and meta.calculate then
-kwargs.dst=meta.calculate(self,attr,kwargs.dst,{})doneval=kwargs.dst or rtk.Attribute.DEFAULT
+kwargs.dst=meta.calculate(self,attr,kwargs.dst,{},true)doneval=kwargs.dst or rtk.Attribute.DEFAULT
 end
 if curdst==kwargs.dst then
 if curanim then
@@ -2201,8 +2257,10 @@ if kwargs.doneval==nil then
 kwargs.doneval=doneval
 end
 if not kwargs.src then
-kwargs.src=self:calc(attr,true)elseif not calcsrc and meta.calculate then
-kwargs.src=meta.calculate(self,attr,kwargs.src,{})end
+kwargs.src=self:calc(attr,true)calcsrc=kwargs.src~=nil
+end
+if not calcsrc and meta.calculate then
+kwargs.src=meta.calculate(self,attr,kwargs.src,{},true)end
 return rtk.queue_animation(kwargs)end
 function rtk.Widget:cancel_animation(attr)local anim=self:get_animation(attr)if anim then
 anim.future:cancel()end
@@ -2232,8 +2290,8 @@ else
 self.viewport=viewport
 self.window=window
 self.box={boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh}expw,exph=self:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)end
-self:onreflow()self.realized=true
-return calc.x,calc.y,calc.w,calc.h,expw or fillw,exph or fillh
+self.realized=true
+self:onreflow()return calc.x,calc.y,calc.w,calc.h,expw or fillw,exph or fillh
 end
 function rtk.Widget:_get_padding()local calc=self.calc
 local scale=rtk.scale.value
@@ -2289,7 +2347,9 @@ function rtk.Widget:_get_min_max_sizes(boxw,boxh,greedyw,greedyh,scale)local min
 return minw and((minw>1 or minw<=0)and(minw*scale)or(greedyw and minw*boxw)),maxw and((maxw>1 or maxw<=0)and(maxw*scale)or(greedyw and maxw*boxw)),minh and((minh>1 or minh<=0)and(minh*scale)or(greedyh and minh*boxh)),maxh and((maxh>1 or maxh<=0)and(maxh*scale)or(greedyh and maxh*boxh))end
 function rtk.Widget:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
 calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
-)calc.w=rtk.clamp(w or(fillw and(boxw-lp-rp)or 0),minw,maxw)calc.h=rtk.clamp(h or(fillh and(boxh-tp-bp)or 0),minh,maxh)return fillw,fillh
+)calc.w=rtk.clamp(w or(fillw and greedyw and(boxw-lp-rp)or 0),minw,maxw)+lp+rp
+calc.h=rtk.clamp(h or(fillh and greedyh and(boxh-tp-bp)or 0),minh,maxh)+tp+bp
+return fillw and greedyw,fillh and greedyh
 end
 function rtk.Widget:_realize_geometry()self.realized=true
 end
@@ -2306,8 +2366,15 @@ end
 end
 function rtk.Widget:_is_mouse_over(clparentx,clparenty,event)local calc=self.calc
 local x,y=calc.x+clparentx,calc.y+clparenty
+local w,h=calc.w,calc.h
+if calc._hotzone_set then
+local l=calc.lhotzone or 0
+local t=calc.thotzone or 0
+x=x-l
+y=y-t
+w=w+l+(calc.rhotzone or 0)h=h+t+(calc.bhotzone or 0)end
 return self.window and self.window.in_window and
-rtk.point_in_box(event.x,event.y,x,y,calc.w,calc.h)end
+rtk.point_in_box(event.x,event.y,x,y,w,h)end
 function rtk.Widget:_draw(offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)self.offx=offx
 self.offy=offy
 self.clientx=cltargetx+offx+self.calc.x
@@ -2318,7 +2385,8 @@ function rtk.Widget:_draw_bg(offx,offy,alpha,event)local calc=self.calc
 if calc.bg and not calc.ghost then
 self:setcolor(calc.bg,alpha)gfx.rect(calc.x+offx,calc.y+offy,calc.w,calc.h,1)end
 end
-function rtk.Widget:_draw_tooltip(clientx,clienty,clientw,clienth)local font=rtk.Font(table.unpack(rtk.theme.tooltip_font))local segments,w,h=font:layout(self.calc.tooltip,clientw-10,clienth-10,true)rtk.color.set(rtk.theme.tooltip_bg)local x=rtk.clamp(clientx,0,clientw-w-10)local y=rtk.clamp(clienty+16,0,clienth-h-10-self.calc.h)gfx.rect(x,y,w+10,h+10,1)rtk.color.set(rtk.theme.tooltip_text)gfx.rect(x,y,w+10,h+10,0)font:draw(segments,x+5,y+5,w,h)end
+function rtk.Widget:_draw_tooltip(clientx,clienty,clientw,clienth,tooltip)tooltip=tooltip or self.calc.tooltip
+local font=rtk.Font(table.unpack(rtk.theme.tooltip_font))local segments,w,h=font:layout(tooltip,clientw-10,clienth-10,true)rtk.color.set(rtk.theme.tooltip_bg)local x=rtk.clamp(clientx,0,clientw-w-10)local y=rtk.clamp(clienty+16,0,clienth-h-10-self.calc.h)gfx.rect(x,y,w+10,h+10,1)rtk.color.set(rtk.theme.tooltip_text)gfx.rect(x,y,w+10,h+10,0)font:draw(segments,x+5,y+5,w,h)end
 function rtk.Widget:_unpack_border(border,alpha)local color,thickness=table.unpack(border)if color then
 self:setcolor(color or rtk.theme.button,alpha*self.calc.alpha)end
 return thickness or 1
@@ -2332,9 +2400,11 @@ return
 end
 local x,y,w,h=calc.x+offx,calc.y+offy,calc.w,calc.h
 local tb,rb,bb,lb
-local all=all or(calc.border_uniform and calc.tborder)if all then
+all=all or(calc.border_uniform and calc.tborder)if all then
 local thickness=self:_unpack_border(all,alpha)if thickness==1 then
 gfx.rect(x,y,w,h,0)return
+elseif thickness==0 then
+return
 else
 tb,rb,bb,lb=all,all,all,all
 end
@@ -2356,7 +2426,7 @@ else
 if not self.viewport or not self.viewport:scrollable()then
 return 0
 end
-return(not self:focused()and event.button==rtk.mouse.BUTTON_LEFT)and
+return(not self:focused(event)and event.button==rtk.mouse.BUTTON_LEFT)and
 self.touch_activate_delay or rtk.touch_activate_delay
 end
 end
@@ -2377,10 +2447,12 @@ if dnd.dragging==self then
 if calc.cursor then
 self.window:request_mouse_cursor(calc.cursor)end
 self:_handle_dragmousemove(event,dnd.arg)elseif self.hovering==false then
-if event.buttons==0 or self:focused()then
+if event.buttons==0 or self:focused(event)then
 if not event.handled and not self.mouseover and self:_handle_mouseenter(event)then
 self.hovering=true
-self:_handle_mousemove(event)self:queue_draw()elseif rtk.debug then
+self:_handle_mousemove(event)self:queue_draw()elseif event.handled and self.mouseover then
+self.mouseover=false
+elseif rtk.debug then
 self:queue_draw()end
 else
 if dnd.arg and not event.simulated and rtk.dnd.droppable then
@@ -2397,15 +2469,13 @@ end
 if not self.mouseover and(not event.handled or event.handled==self)and event.buttons==0 then
 self.mouseover=true
 self:queue_draw()end
-if self.mouseover and calc.cursor then
-self.window:request_mouse_cursor(calc.cursor)end
 else
 if event.handled then
 self:_handle_mouseleave(event)self.hovering=false
 self.mouseover=false
 self:queue_draw()else
 self.mouseover=true
-self.window:request_mouse_cursor(calc.cursor)self:_handle_mousemove(event)event:set_handled(self)end
+self:_handle_mousemove(event)event:set_handled(self)end
 end
 elseif event.type==rtk.Event.MOUSEDOWN and not calc.disabled then
 local duration=event:get_button_duration()if duration==0 then
@@ -2413,7 +2483,7 @@ event:set_widget_pressed(self)end
 if not event.handled then
 local state=event:get_button_state(self)or 0
 local threshold=self:_get_touch_activate_delay(event)if duration>=threshold and state==0 and event:is_widget_pressed(self)then
-event:set_button_state(self,1)if self:_handle_mousedown(event)then
+event:set_button_state(self,1)if self:_handle_mousedown(event)~=false then
 self:_accept_mousedown(event,duration,state)end
 elseif state&8==0 then
 if duration>=rtk.long_press_delay then
@@ -2422,11 +2492,9 @@ self:queue_draw()event:set_button_state(self,state|8|16)else
 event:set_button_state(self,state|8)end
 end
 end
-if self:focused()then
+if self:focused(event)then
 event:set_handled(self)end
 end
-if self.mouseover and calc.cursor then
-self.window:request_mouse_cursor(calc.cursor)end
 elseif event.type==rtk.Event.MOUSEUP and not calc.disabled then
 if not event.handled then
 if not dnd.dragging then
@@ -2434,19 +2502,20 @@ self:_deferred_mousedown(event)end
 if self:_handle_mouseup(event)then
 event:set_handled(self)self:queue_draw()end
 local state=event:get_button_state(self)or 0
-if state>0 or event:is_widget_pressed(self)then
+if state&2~=0 then
 if state&16==0 and not dnd.dragging then
 if self:_handle_click(event)then
 event:set_handled(self)self:queue_draw()end
-if state&4~=0 then
+local last=rtk.mouse.last[event.button]
+local dx=last and math.abs(last.x-event.x)or 0
+local dy=last and math.abs(last.y-event.y)or 0
+if state&4~=0 and dx<3 and dy<3 then
 if self:_handle_doubleclick(event)then
 event:set_handled(self)self:queue_draw()end
 self._last_mousedown_time=0
 end
 end
 end
-if self.mouseover and calc.cursor then
-self.window:request_mouse_cursor(calc.cursor)end
 end
 if dnd.dropping==self then
 self:_handle_dropblur(event,dnd.dragging,dnd.arg)if self:_handle_drop(event,dnd.dragging,dnd.arg)then
@@ -2472,19 +2541,21 @@ if dnd.dropping==self then
 self:_handle_dropblur(event,dnd.dragging,dnd.arg)dnd.dropping=nil
 end
 self:queue_draw()end
+else
+self.mouseover=false
 end
-if rtk.touchscroll and event.type==rtk.Event.MOUSEUP and self:focused()then
+if rtk.touchscroll and event.type==rtk.Event.MOUSEUP and self:focused(event)then
 if event:get_button_state('mousedown-handled') == self then
 event:set_handled(self)self:queue_draw()end
 end
-if event.type==rtk.Event.KEY and not event.handled and self:focused()then
-if self:_handle_keypress(event)then
+if event.type==rtk.Event.KEY and not event.handled then
+if self:focused(event)and self:_handle_keypress(event)then
 event:set_handled(self)self:queue_draw()end
-if self.mouseover and calc.cursor then
-self.window:request_mouse_cursor(calc.cursor)end
 end
 if event.type==rtk.Event.WINDOWCLOSE then
 self:_handle_windowclose(event)end
+if(self.mouseover or dnd.dragging==self)and calc.cursor then
+self.window:request_mouse_cursor(calc.cursor)end
 return true
 end
 function rtk.Widget:_deferred_mousedown(event,x,y)local mousedown_handled=event:get_button_state('mousedown-handled')if not mousedown_handled and event:is_widget_pressed(self)and not event:get_button_state(self)then
@@ -2493,9 +2564,9 @@ self:_accept_mousedown(event)end
 end
 end
 function rtk.Widget:_accept_mousedown(event,duration,state)event:set_button_state('mousedown-handled', self)event:set_handled(self)if not event.simulated and event.time-self._last_mousedown_time<=rtk.double_click_delay then
-event:set_button_state(self,(state or 0)|4)self._last_mousedown_time=0
+event:set_button_state(self,(state or 0)|2|4)self._last_mousedown_time=0
 else
-self._last_mousedown_time=event.time
+event:set_button_state(self,(state or 0)|2)self._last_mousedown_time=event.time
 end
 self:queue_draw()end
 function rtk.Widget:_unrealize()self.realized=false
@@ -2531,8 +2602,10 @@ function rtk.Widget:ondraw(offx,offy,alpha,event)end
 function rtk.Widget:_handle_draw(offx,offy,alpha,event)return self:ondraw(offx,offy,alpha,event)end
 function rtk.Widget:onmousedown(event)end
 function rtk.Widget:_handle_mousedown(event)local ok=self:onmousedown(event)if ok~=false then
-if self.calc.autofocus then
-self:focus(event)return ok or self:focused()else
+local autofocus=self.calc.autofocus
+if autofocus or
+(autofocus==nil and self.onclick~=rtk.Widget.onclick)then
+self:focus(event)return ok or self:focused(event)else
 return ok or false
 end
 end
@@ -2601,16 +2674,16 @@ __mod_rtk_viewport=(function()
 local rtk=__mod_rtk_core
 rtk.Viewport=rtk.class('rtk.Viewport', rtk.Widget)rtk.Viewport.static.SCROLLBAR_NEVER=0
 rtk.Viewport.static.SCROLLBAR_HOVER=1
-rtk.Viewport.static.SCROLLBAR_ALWAYS=2
-rtk.Viewport.register{[1]=rtk.Attribute{alias='child'},child=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL},scroll_left=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_NONE,calculate=function(self,attr,value,target)return math.round(value)end,},scroll_top=rtk.Reference('scroll_left'),smoothscroll=rtk.Attribute{reflow=rtk.Widget.REFLOW_NONE},scrollbar_size=15,vscrollbar=rtk.Attribute{default=rtk.Viewport.SCROLLBAR_HOVER,calculate={never=rtk.Viewport.SCROLLBAR_NEVER,always=rtk.Viewport.SCROLLBAR_ALWAYS,hover=rtk.Viewport.SCROLLBAR_HOVER,},},vscrollbar_offset=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_NONE,},vscrollbar_gutter=25,hscrollbar=rtk.Attribute{default=rtk.Viewport.SCROLLBAR_NEVER,calculate=rtk.Reference('vscrollbar'),},hscrollbar_offset=0,hscrollbar_gutter=25,flexw=false,flexh=true,shadow=nil,elevation=20,show_scrollbar_on_drag=false,touch_activate_delay=0,}function rtk.Viewport:initialize(attrs,...)rtk.Widget.initialize(self,attrs,self.class.attributes.defaults,...)self:_handle_attr('child', self.calc.child, nil, true)self:_handle_attr('bg', self.calc.bg)self._backingstore=nil
+rtk.Viewport.static.SCROLLBAR_AUTO=2
+rtk.Viewport.static.SCROLLBAR_ALWAYS=3
+rtk.Viewport.register{[1]=rtk.Attribute{alias='child'},child=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL},scroll_left=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_NONE,calculate=function(self,attr,value,target)return math.round(value)end,},scroll_top=rtk.Reference('scroll_left'),smoothscroll=rtk.Attribute{reflow=rtk.Widget.REFLOW_NONE},scrollbar_size=15,vscrollbar=rtk.Attribute{default=rtk.Viewport.SCROLLBAR_HOVER,calculate={never=rtk.Viewport.SCROLLBAR_NEVER,always=rtk.Viewport.SCROLLBAR_ALWAYS,hover=rtk.Viewport.SCROLLBAR_HOVER,auto=rtk.Viewport.SCROLLBAR_AUTO,},},vscrollbar_offset=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_NONE,},vscrollbar_gutter=25,hscrollbar=rtk.Attribute{default=rtk.Viewport.SCROLLBAR_NEVER,calculate=rtk.Reference('vscrollbar'),},hscrollbar_offset=0,hscrollbar_gutter=25,flexw=false,flexh=true,shadow=nil,elevation=20,show_scrollbar_on_drag=false,touch_activate_delay=0,}function rtk.Viewport:initialize(attrs,...)rtk.Widget.initialize(self,attrs,self.class.attributes.defaults,...)self:_handle_attr('child', self.calc.child, nil, true)self:_handle_attr('bg', self.calc.bg)self._backingstore=nil
 self._needs_clamping=false
 self._last_draw_scroll_left=nil
 self._last_draw_scroll_top=nil
 self._vscrollx=0
 self._vscrolly=0
 self._vscrollh=0
-self._vscrolla={current=self.calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS and 0.1 or 0,target=0,delta=0.05
-}self._vscroll_in_gutter=false
+self._vscrolla={current=self.calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS and 0.1 or 0,target=0,}self._vscroll_in_gutter=false
 end
 function rtk.Viewport:_handle_attr(attr,value,oldval,trigger,reflow,sync)local ok=rtk.Widget._handle_attr(self,attr,value,oldval,trigger,reflow,sync)if ok==false then
 return ok
@@ -2620,15 +2693,19 @@ if oldval then
 oldval:_unrealize()oldval.viewport=nil
 oldval.parent=nil
 oldval.window=nil
-self:_sync_child_refs(oldval, 'remove')end
+self:_sync_child_refs(oldval, 'remove')if rtk.focused==oldval then
+self:_set_focused_child(nil)end
+end
 if value then
 value.viewport=self
 value.parent=self
 value.window=self.window
-self:_sync_child_refs(value, 'add')end
+self:_sync_child_refs(value, 'add')if rtk.focused==value then
+self:_set_focused_child(value)end
+end
 elseif attr=='bg' then
 value=value or rtk.theme.bg
-local luma=rtk.color.luma(value)local offset=math.max(0,1-(1.5-3*luma)^2)self._scrollbar_alpha_proximity=0.19*(1+offset^0.2)self._scrollbar_alpha_hover=0.44*(1+offset^0.4)self._scrollbar_color=luma < 0.5 and '#ffffff' or '#000000'elseif attr=='shadow' then
+local luma=rtk.color.luma(value)local offset=math.max(0,1-(1.5-3*luma)^2)self._scrollbar_alpha_proximity=0.16*(1+offset^0.2)self._scrollbar_alpha_hover=0.40*(1+offset^0.4)self._scrollbar_color=luma < 0.5 and '#ffffff' or '#000000'elseif attr=='shadow' then
 self._shadow=nil
 elseif attr == 'scroll_top' or attr == 'scroll_left' then
 self._needs_clamping=true
@@ -2636,16 +2713,21 @@ end
 return true
 end
 function rtk.Viewport:_sync_child_refs(child,action)return rtk.Container._sync_child_refs(self,child,action)end
+function rtk.Viewport:_set_focused_child(child)return rtk.Container._set_focused_child(self,child)end
+function rtk.Viewport:focused(event)return rtk.Container.focused(self,event)end
+function rtk.Viewport:remove()self:attr('child', nil)end
 function rtk.Viewport:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
 calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
 )local hpadding=lp+rp
 local vpadding=tp+bp
 local inner_maxw=rtk.clamp(w or(boxw-hpadding),minw,maxw)local inner_maxh=rtk.clamp(h or(boxh-vpadding),minh,maxh)local scrollw,scrollh=0,0
-if calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS then
+if calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS or
+(calc.vscrollbar==rtk.Viewport.SCROLLBAR_AUTO and self._vscrollh>0)then
 scrollw=calc.scrollbar_size*rtk.scale.value
 inner_maxw=inner_maxw-scrollw
 end
-if calc.hscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS then
+if calc.hscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS or
+(calc.hscrollbar==rtk.Viewport.SCROLLBAR_AUTO and self._hscrollh>0)then
 scrollh=calc.scrollbar_size*rtk.scale.value
 inner_maxh=inner_maxh-scrollh
 end
@@ -2659,8 +2741,21 @@ hmargin=ccalc.lmargin+ccalc.rmargin
 vmargin=ccalc.tmargin+ccalc.bmargin
 inner_maxw=inner_maxw-hmargin
 inner_maxh=inner_maxh-vmargin
-local wx,wy,ww,wh=child:reflow(0,0,inner_maxw,inner_maxh,false,false,not calc.flexw,not calc.flexh,uiscale,self,window,greedyw,greedyh
-)if calc.halign==rtk.Widget.CENTER then
+local wx,wy,ww,wh=self:_reflow_child(inner_maxw,inner_maxh,uiscale,window,greedyw,greedyh)local pass2=false
+if calc.vscrollbar==rtk.Viewport.SCROLLBAR_AUTO then
+if scrollw==0 and wh>inner_maxh then
+scrollw=calc.scrollbar_size*rtk.scale.value
+inner_maxw=inner_maxw-scrollw
+pass2=ww>inner_maxw
+elseif scrollw>0 and wh<=inner_maxh then
+pass2=ww>=inner_maxw
+inner_maxw=inner_maxw+scrollw
+scrollw=0
+end
+end
+if pass2 then
+wx,wy,ww,wh=self:_reflow_child(inner_maxw,inner_maxh,uiscale,window,greedyw,greedyh)end
+if calc.halign==rtk.Widget.CENTER then
 wx=wx+math.max(0,inner_maxw-ccalc.w)/2
 elseif calc.halign==rtk.Widget.RIGHT then
 wx=wx+math.max(0,(inner_maxw-ccalc.w)-rp)end
@@ -2682,6 +2777,9 @@ self._needs_clamping=true
 if ccalc then
 self._scroll_clamp_left=math.max(0,ccalc.w-calc.w+lp+rp+ccalc.lmargin+ccalc.rmargin)self._scroll_clamp_top=math.max(0,ccalc.h-calc.h+tp+bp+ccalc.tmargin+ccalc.bmargin)end
 end
+function rtk.Viewport:_reflow_child(maxw,maxh,uiscale,window,greedyw,greedyh)local calc=self.calc
+return calc.child:reflow(0,0,maxw,maxh,false,false,not calc.flexw,not calc.flexh,uiscale,self,window,greedyw,greedyh
+)end
 function rtk.Viewport:_realize_geometry()local calc=self.calc
 local tp,rp,bp,lp=self:_get_padding_and_border()if self.child then
 local innerh=self._backingstore.h
@@ -2729,75 +2827,83 @@ if child and child.realized then
 self:_clamp()x=x+child.calc.lmargin
 y=y+child.calc.tmargin
 self._backingstore:blit{src=gfx.dest,sx=x,sy=y,mode=rtk.Image.FAST_BLIT}self._backingstore:pushdest()child:_draw(-calc.scroll_left,-calc.scroll_top,1.0,event,calc.w,calc.h,cltargetx+x,cltargety+y,0,0
-)child:_draw_debug_box(-calc.scroll_left,-calc.scroll_top,event)self._backingstore:popdest()self._backingstore:blit{dx=x,dy=y,alpha=alpha*calc.alpha}self:_draw_scrollbars(offx,offy,cltargetx,cltargety,alpha*calc.alpha,event)end
+)child:_draw_debug_box(-calc.scroll_left,-calc.scroll_top,event)self._backingstore:popdest()self._backingstore:blit{dx=x,dy=y,alpha=alpha*calc.alpha}self:_draw_scrollbars(offx,offy,cltargetx,cltargety,alpha,event)end
 if calc.shadow then
 self._shadow:draw(calc.x+offx,calc.y+offy,alpha*calc.alpha)end
 self:_draw_borders(offx,offy,alpha)if scrolled then
 self:onscroll(lastleft,lasttop,event)end
 self:_handle_draw(offx,offy,alpha,event)end
-function rtk.Viewport:_draw_scrollbars(offx,offy,cltargetx,cltargety,alpha,event)local calc=self.calc
-local animate=self._vscrolla.current~=self._vscrolla.target
-if calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS or
-(calc.vscrollbar==rtk.Viewport.SCROLLBAR_HOVER and self._vscrollh>0 and
-((not rtk.dnd.dragging and self._vscroll_in_gutter)or animate or self._vscrolla.target>0))then
+function rtk.Viewport:_draw_scrollbars(offx,offy,cltargetx,cltargety,alpha,event)if self._vscrolla.current==0 or self._vscrollh==0 then
+return
+end
+local calc=self.calc
 local scrx=offx+self._vscrollx
 local scry=offy+calc.y+calc.h*calc.scroll_top/self.child.calc.h
-local should_handle_hovering=rtk.point_in_box(event.x,event.y,scrx+cltargetx,scry+cltargety,calc.scrollbar_size*rtk.scale.value,self._vscrollh
-)if(should_handle_hovering and self._vscroll_in_gutter)or rtk.dnd.dragging==self then
-self._vscrolla.target=self._scrollbar_alpha_hover
-self._vscrolla.delta=0.1
-elseif self._vscroll_in_gutter or calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS then
-self._vscrolla.target=self._scrollbar_alpha_proximity
-self._vscrolla.delta=0.1
+self:setcolor(self._scrollbar_color,self._vscrolla.current*alpha)gfx.rect(scrx,scry,calc.scrollbar_size*rtk.scale.value,self._vscrollh+1,1)end
+function rtk.Viewport:_calc_scrollbar_alpha(clparentx,clparenty,event,dragchild)local calc=self.calc
+if calc.vscrollbar==rtk.Viewport.SCROLLBAR_NEVER then
+return
 end
-if animate then
-local newval
-if self._vscrolla.current<self._vscrolla.target then
-newval=math.min(self._vscrolla.current+self._vscrolla.delta,self._vscrolla.target)else
-newval=math.max(self._vscrolla.current-self._vscrolla.delta,self._vscrolla.target)end
-self._vscrolla.current=newval
-self:queue_draw()end
-self:setcolor(self._scrollbar_color)gfx.a=self._vscrolla.current*alpha
+local dragself=(rtk.dnd.dragging==self)local alpha=0
+local duration=0.2
 if self._vscrollh>0 then
-gfx.rect(scrx,scry,calc.scrollbar_size*rtk.scale.value,self._vscrollh+1,1)end
+if not rtk._modal or rtk.is_modal(self)then
+local overthumb=event:get_button_state(self.id)if self.mouseover then
+if overthumb==nil and self._vscroll_in_gutter then
+overthumb=rtk.point_in_box(event.x,event.y,clparentx+self._vscrollx,clparenty+calc.y+calc.h*calc.scroll_top/self.child.calc.h,calc.scrollbar_size*rtk.scale.value,self._vscrollh
+)end
+if event.type==rtk.Event.MOUSEDOWN then
+event:set_button_state(self.id,overthumb)end
 end
+if self._vscroll_in_gutter or dragself then
+if overthumb then
+alpha=self._scrollbar_alpha_hover
+duration=0.1
+else
+alpha=self._scrollbar_alpha_proximity
+end
+elseif self.mouseover or calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS then
+alpha=self._scrollbar_alpha_proximity
+elseif dragchild and dragchild.show_scrollbar_on_drag then
+alpha=self._scrollbar_alpha_proximity
+duration=0.15
+end
+elseif calc.vscrollbar==rtk.Viewport.SCROLLBAR_ALWAYS then
+alpha=self._scrollbar_alpha_proximity
+end
+end
+if alpha~=self._vscrolla.target then
+if alpha==0 then
+duration=0.3
+end
+rtk.queue_animation{key=string.format('%s.vscrollbar', self.id),src=self._vscrolla.current,dst=alpha,duration=duration,update=function(value)self._vscrolla.current=value
+self:queue_draw()end,}self._vscrolla.target=alpha
+self:queue_draw()end
 end
 function rtk.Viewport:_handle_event(clparentx,clparenty,event,clipped,listen)local calc=self.calc
 local pre=self._pre
 listen=self:_should_handle_event(listen)local x=calc.x+clparentx
 local y=calc.y+clparenty
-local hovering=rtk.point_in_box(event.x,event.y,x,y,calc.w,calc.h)local dragging=rtk.dnd.dragging
+local hovering=rtk.point_in_box(event.x,event.y,x,y,calc.w,calc.h)and self.window.in_window
+local dragging=rtk.dnd.dragging
 local is_child_dragging=dragging and dragging.viewport==self
 local child=self.child
 if event.type==rtk.Event.MOUSEMOVE then
-local vscroll_in_gutter=false
+self._vscroll_in_gutter=false
 if listen and is_child_dragging and dragging.scroll_on_drag then
 if event.y-20<y then
 self:scrollby(0,-math.max(5,math.abs(y-event.y)),false)elseif event.y+20>y+calc.h then
 self:scrollby(0,math.max(5,math.abs(y+calc.h-event.y)),false)end
-if dragging.show_scrollbar_on_drag then
-self._vscrolla.target=self._scrollbar_alpha_proximity
-self._vscrolla.delta=0.03
-end
 elseif listen and not dragging and not event.handled and hovering then
 if calc.vscrollbar~=rtk.Viewport.SCROLLBAR_NEVER and self._vscrollh>0 then
 local gutterx=self._vscrollx+clparentx-calc.vscrollbar_gutter
 local guttery=calc.y+clparenty
 if rtk.point_in_box(event.x,event.y,gutterx,guttery,calc.vscrollbar_gutter+calc.scrollbar_size*rtk.scale.value,calc.h)then
-vscroll_in_gutter=true
+self._vscroll_in_gutter=true
 if event.x>=self._vscrollx+clparentx then
 event:set_handled(self)end
-self:queue_draw()end
 end
 end
-if vscroll_in_gutter~=self._vscroll_in_gutter or self._vscrolla.current>0 then
-self._vscroll_in_gutter=vscroll_in_gutter
-if calc.vscrollbar==rtk.Viewport.SCROLLBAR_HOVER then
-if not vscroll_in_gutter and not is_child_dragging then
-self._vscrolla.target=0
-self._vscrolla.delta=0.02
-end
-self:queue_draw()end
 end
 elseif listen and not event.handled and event.type==rtk.Event.MOUSEDOWN then
 if not self:cancel_animation('scroll_top') then
@@ -2809,14 +2915,15 @@ event:set_handled(self)end
 end
 if(not event.handled or event.type==rtk.Event.MOUSEMOVE)and
 not(event.type==rtk.Event.MOUSEMOVE and self.window:_is_touch_scrolling(self))and
-self.child and self.child.visible and self.child.realized then
-self:_clamp()self.child:_handle_event(x-calc.scroll_left+pre.lp+child.calc.lmargin,y-calc.scroll_top+pre.tp+child.calc.tmargin,event,clipped or not hovering,listen
+child and child.visible and child.realized then
+self:_clamp()child:_handle_event(x-calc.scroll_left+pre.lp+child.calc.lmargin,y-calc.scroll_top+pre.tp+child.calc.tmargin,event,clipped or not hovering,listen
 )end
 if listen and hovering and not event.handled and event.type==rtk.Event.MOUSEWHEEL then
-if self.child and self._vscrollh>0 and event.wheel~=0 then
+if child and self._vscrollh>0 and event.wheel~=0 then
 local distance=event.wheel*math.min(calc.h/2,120)self:scrollby(0,distance)event:set_handled(self)end
 end
-rtk.Widget._handle_event(self,clparentx,clparenty,event,clipped,listen)end
+listen=rtk.Widget._handle_event(self,clparentx,clparenty,event,clipped,listen)self.mouseover=self.mouseover or(child and child.mouseover)self:_calc_scrollbar_alpha(clparentx,clparenty,event,is_child_dragging and dragging)return listen
+end
 function rtk.Viewport:_get_vscrollbar_client_pos()local calc=self.calc
 return self.clienty+calc.h*calc.scroll_top/self.child.calc.h
 end
@@ -2935,31 +3042,38 @@ end)()
 
 __mod_rtk_popup=(function()
 local rtk=__mod_rtk_core
-rtk.Popup=rtk.class('rtk.Popup', rtk.Viewport)rtk.Popup.register{anchor=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL},margin=rtk.Attribute{default=20,reflow=rtk.Widget.REFLOW_FULL,},width_from_anchor=rtk.Attribute{default=true,reflow=rtk.Widget.REFLOW_FULL,},overlay=rtk.Reference('bg'),autoclose=true,opened=false,bg=rtk.Attribute{default=function(self,attr)return rtk.theme.popup_bg or {rtk.color.mod(rtk.theme.bg,1,1,rtk.theme.popup_bg_brightness,0.96)}end,},border=rtk.Attribute{default=function(self,attr)return rtk.theme.popup_border
+rtk.Popup=rtk.class('rtk.Popup', rtk.Viewport)rtk.Popup.AUTOCLOSE_DISABLED=0
+rtk.Popup.AUTOCLOSE_LOCAL=1
+rtk.Popup.AUTOCLOSE_GLOBAL=2
+rtk.Popup.register{anchor=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL},margin=rtk.Attribute{default=20,reflow=rtk.Widget.REFLOW_FULL,},width_from_anchor=rtk.Attribute{default=true,reflow=rtk.Widget.REFLOW_FULL,},overlay=rtk.Attribute{default=function(self,attr)return rtk.theme.popup_overlay
+end,calculate=rtk.Reference('bg'),},autoclose=rtk.Attribute{default=rtk.Popup.AUTOCLOSE_LOCAL,calculate={['disabled']=rtk.Popup.AUTOCLOSE_DISABLED,['local']=rtk.Popup.AUTOCLOSE_LOCAL,['global']=rtk.Popup.AUTOCLOSE_GLOBAL,[true]=rtk.Popup.AUTOCLOSE_LOCAL,[false]=rtk.Popup.AUTOCLOSE_DISABLED,}},opened=false,bg=rtk.Attribute{default=function(self,attr)return rtk.theme.popup_bg or {rtk.color.mod(rtk.theme.bg,1,1,rtk.theme.popup_bg_brightness,0.96)}end,},border=rtk.Attribute{default=function(self,attr)return rtk.theme.popup_border
 end,},shadow=rtk.Attribute{default=function()return rtk.theme.popup_shadow
-end,},visible=false,elevation=35,padding=10,z=1000,}function rtk.Popup:initialize(attrs,...)rtk.Viewport.initialize(self,attrs,self.class.attributes.defaults,...)end
-function rtk.Popup:_handle_event(clparentx,clparenty,event,clipped,listen)rtk.Viewport._handle_event(self,clparentx,clparenty,event,clipped,listen)if event.type==rtk._touch_activate_event and self.mouseover then
-event:set_handled(self)end
+end,},visible=false,elevation=35,padding=10,z=1000,}function rtk.Popup:initialize(attrs,...)rtk.Viewport.initialize(self,attrs,self.class.attributes.defaults,...)self._popup_visible=false
 end
-function rtk.Popup:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,rescale,viewport,window,greedyw,greedyh)local calc=self.calc
+function rtk.Popup:_handle_event(clparentx,clparenty,event,clipped,listen)listen=rtk.Viewport._handle_event(self,clparentx,clparenty,event,clipped,listen)if event.type==rtk._touch_activate_event and self.mouseover then
+event:set_handled(self)end
+return listen
+end
+function rtk.Popup:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
 local anchor=calc.anchor
 if anchor then
 local y=anchor.clienty
-if y<window.h/2 then
+local wh=self.window.calc.h
+if y<wh/2 then
 y=y+anchor.calc.h
-boxh=math.floor(math.min(boxh,window.h-y-calc.bmargin))else
+boxh=math.floor(math.min(boxh,wh-y-calc.bmargin))else
 boxh=math.floor(math.min(boxh,y-calc.tmargin))end
 if self.width_from_anchor then
-self.w=math.floor(anchor.calc.w)end
+self.w=math.floor(anchor.calc.w/uiscale)end
 end
-rtk.Viewport._reflow(self,boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,rescale,viewport,window,greedyw,greedyh)if anchor then
+rtk.Viewport._reflow(self,boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)if anchor then
 self._realize_on_draw=true
 end
 end
 function rtk.Popup:_realize_geometry()local calc=self.calc
 local anchor=calc.anchor
 local st,sb=calc.elevation,calc.elevation
-if anchor and anchor.realized then
+if anchor and anchor.clientx and(anchor.realized or self._popup_visible)then
 calc.x=anchor.clientx
 if anchor.clienty+anchor.calc.h+calc.h<self.window.calc.h then
 calc.y=anchor.clienty+anchor.calc.h
@@ -2980,37 +3094,42 @@ sb=5
 end
 end
 rtk.Viewport._realize_geometry(self)self._shadow:set_rectangle(calc.w,calc.h,nil,st,calc.elevation,sb,calc.elevation)end
-function rtk.Popup:_draw(offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)if self.calc.overlay then
-self:setcolor(self.calc.overlay,alpha)gfx.rect(0,0,self.window.calc.w,self.window.calc.h,1)end
+function rtk.Popup:_draw(offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)if self.overlay and not self.anchor then
+self:setcolor(self.calc.overlay or self.calc.bg,alpha)gfx.rect(0,0,self.window.calc.w,self.window.calc.h,1)end
 if self._realize_on_draw then
 self:_realize_geometry()self._realize_on_draw=false
 end
 rtk.Viewport._draw(self,offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)end
-function rtk.Popup:_release_modal(event)if self.calc.autoclose then
+function rtk.Popup:_release_modal(event)local ac=self.calc.autoclose
+if ac==rtk.Popup.AUTOCLOSE_GLOBAL or(ac==rtk.Popup.AUTOCLOSE_LOCAL and not event.simulated)then
 self:_close(event)end
 end
-function rtk.Popup:open(attrs)if self:onopen()==false then
-return
+function rtk.Popup:open(attrs)if self.calc.opened or self:onopen()==false then
+return self
 end
 local calc=self.calc
 local anchor=calc.anchor
-self:sync('opened', true)if not attrs and not anchor then
+if not attrs and not anchor then
 attrs = {valign='center', halign='center'}end
 if calc.visible and not self:get_animation('alpha') then
 return self
 end
 rtk.reset_modal()if not self.parent then
 local window=(anchor and anchor.window)or(attrs and attrs.window)or rtk.window
-assert(window, 'no rtk.Window has been created or explicitly passed to open()')window:add(self,attrs)rtk.defer(self._open,self)else
-self:_open()end
-return self
+assert(window, 'no rtk.Window has been created or explicitly passed to open()')window:add(self,attrs)if anchor and not anchor.clientx then
+rtk.defer(self._open,self,attrs)return self
 end
-function rtk.Popup:_open()local anchor=self.calc.anchor
+end
+self:_open(attrs)return self
+end
+function rtk.Popup:_open(attrs)local anchor=self.calc.anchor
 if self:get_animation('alpha') then
 self:cancel_animation('alpha')self:attr('alpha', 1)elseif anchor and not anchor.realized then
-return
+return false
 end
-rtk.add_modal(self,anchor)self:show()self:focus()self:scrollto(0,0)end
+self:sync('opened', true)self._popup_visible=true
+rtk.add_modal(self,anchor)self:show()self:focus()self:scrollto(0,0)return true
+end
 function rtk.Popup:close()return self:_close()end
 function rtk.Popup:_close(event)if not self.calc.visible or not self.calc.opened then
 return
@@ -3018,7 +3137,8 @@ end
 if self:onclose(event)==false then
 return
 end
-self:sync('opened', false)self:animate{attr='alpha', dst=0, duration=0.15}:done(function()self:hide()self:attr('alpha', 1)self.window:remove(self)end)rtk.reset_modal()end
+self:sync('opened', false)self:animate{attr='alpha', dst=0, duration=0.15}:done(function()self:hide()self:attr('alpha', 1)self.window:remove(self)self._popup_visible=false
+end)rtk.reset_modal()end
 function rtk.Popup:_handle_windowclose(event)self:onclose(event)self:sync('opened', false)end
 function rtk.Popup:onopen()end
 function rtk.Popup:onclose(event)end
@@ -3067,21 +3187,33 @@ end
 end
 end
 end
+function rtk.Container:_set_focused_child(child)local w=self
+while w do
+w._focused_child=child
+w=w.parent
+end
+end
 function rtk.Container:_validate_child(child)assert(rtk.isa(child, rtk.Widget), 'object being added to container is not subclassed from rtk.Widget')end
 function rtk.Container:_reparent_child(child)self:_validate_child(child)if child.parent and child.parent~=self then
 child.parent:remove(child)end
 child.parent=self
 child.window=self.window
-self:_sync_child_refs(child, 'add')end
+self:_sync_child_refs(child, 'add')if rtk.focused==child then
+self:_set_focused_child(child)end
+end
 function rtk.Container:_unparent_child(pos)local child=self.children[pos][1]
 if child then
 if child.visible then
 child:_unrealize()end
 child.parent=nil
 child.window=nil
-self:_sync_child_refs(child, 'remove')return child
+self:_sync_child_refs(child, 'remove')if rtk.focused==child then
+self:_set_focused_child(nil)end
+return child
 end
 end
+function rtk.Container:focused(event)return rtk.focused==self or(event and event.type==rtk.Event.KEY and rtk.focused and rtk.focused==self._focused_child
+)end
 function rtk.Container:add(widget,attrs)self:_reparent_child(widget)self.children[#self.children+1]={widget,self:_calc_cell_attrs(widget,attrs)}self._child_index_by_id=nil
 self:queue_reflow(rtk.Widget.REFLOW_FULL)return widget
 end
@@ -3121,7 +3253,7 @@ if not attrs then
 return {}end
 local keys=table.keys(attrs)local calculated={}for n=1,#keys do
 local k=keys[n]
-calculated[k]=self:_calc_attr(k, attrs[k], attrs, nil, 'cell', widget)end
+calculated[k]=self:_calc_attr(k, attrs[k], calculated, nil, 'cell', widget)end
 return calculated
 end
 function rtk.Container:reorder(widget,targetidx)local srcidx=self:get_child_index(widget)if srcidx~=nil and srcidx~=targetidx and(targetidx<=srcidx or targetidx-1~=srcidx)then
@@ -3163,20 +3295,28 @@ self.clientx,self.clienty=x,y
 listen=self:_should_handle_event(listen)if y+calc.h<0 or y>self.window.calc.h or calc.ghost then
 return false
 end
+local chmouseover
 local zs=self._z_indexes
 for zidx=#zs,1,-1 do
 local zchildren=self._reflowed_children[zs[zidx]]
 local nzchildren=zchildren and #zchildren or 0
 for cidx=nzchildren,1,-1 do
 local widget,attrs=table.unpack(zchildren[cidx])if widget and widget.realized and widget.parent then
+local wx,wy
 if widget.calc.position&rtk.Widget.POSITION_FIXED~=0 and self.viewport then
 local vcalc=self.viewport.calc
-widget:_handle_event(x+vcalc.scroll_left,y+vcalc.scroll_top,event,clipped,listen)else
-widget:_handle_event(x,y,event,clipped,listen)end
+wx,wy=x+vcalc.scroll_left,y+vcalc.scroll_top
+else
+wx,wy=x,y
+end
+self:_handle_event_child(clparentx,clparenty,event,clipped,listen,wx,wy,widget,attrs)chmouseover=chmouseover or widget.mouseover
 end
 end
 end
-rtk.Widget._handle_event(self,clparentx,clparenty,event,clipped,listen)end
+listen=rtk.Widget._handle_event(self,clparentx,clparenty,event,clipped,listen)self.mouseover=self.mouseover or chmouseover
+return listen
+end
+function rtk.Container:_handle_event_child(clparentx,clparenty,event,clipped,listen,wx,wy,child,attrs)return child:_handle_event(wx,wy,event,clipped,listen)end
 function rtk.Container:_add_reflowed_child(widgetattrs,z)local z_children=self._reflowed_children[z]
 if z_children then
 z_children[#z_children+1]=widgetattrs
@@ -3713,7 +3853,8 @@ else
 return-v/120
 end
 end
-function rtk.Window:_update()local calc=self.calc
+function rtk.Window:_update()rtk.tick=rtk.tick+1
+local calc=self.calc
 local now=reaper.time_precise()local need_draw=false
 if gfx.ext_retina~=rtk.scale.system then
 rtk.scale.system=gfx.ext_retina
@@ -3764,33 +3905,31 @@ elseif self._reflow_queued then
 self:reflow()need_draw=true
 end
 local event=nil
-local last_cursor=calc.cursor
 calc.cursor=rtk.mouse.cursors.UNDEFINED
 if gfx.mouse_wheel~=0 or gfx.mouse_hwheel~=0 then
 event=self._event:reset(rtk.Event.MOUSEWHEEL)event:set_modifiers(gfx.mouse_cap,0)event.wheel=_get_wheel_distance(gfx.mouse_wheel)event.hwheel=_get_wheel_distance(gfx.mouse_hwheel)self:onmousewheel(event)gfx.mouse_wheel=0
 gfx.mouse_hwheel=0
 self:_handle_window_event(event,now)end
-local char=gfx.getchar()if char>0 then
-event=self._event:reset(rtk.Event.KEY)event:set_modifiers(gfx.mouse_cap,0)event.char=nil
-event.keycode=char
-if char<=26 and event.ctrl then
-event.char=string.char(char+96)elseif char>=32 and char~=127 then
-if char<=255 then
-event.char=string.char(char)elseif char<=282 then
-event.char=string.char(char-160)elseif char<=346 then
-event.char=string.char(char-224)end
+local keycode=gfx.getchar()if keycode>0 then
+while keycode>0 do
+event=self._event:reset(rtk.Event.KEY)event:set_modifiers(gfx.mouse_cap,0)event:set_keycode(keycode)self:onkeypresspre(event)self:_handle_window_event(event,now)self:onkeypresspost(event)if not event.handled then
+if event.keycode==rtk.keycodes.F12 and log.level<=log.DEBUG then
+rtk.debug=not rtk.debug
+self:queue_draw()elseif event.keycode==rtk.keycodes.ESCAPE and not self.docked then
+self:close()end
 end
-self:onkeypresspre(event)self:_handle_window_event(event,now)elseif char<0 then
+keycode=gfx.getchar()end
+elseif keycode<0 then
 self:close()end
 if files then
 event=self:_get_mousemove_event(false)event.type=rtk.Event.DROPFILE
 event.files=files
 self:_handle_window_event(event,now)end
 rtk._touch_activate_event=rtk.touchscroll and rtk.Event.MOUSEUP or rtk.Event.MOUSEDOWN
-need_draw=need_draw or self._draw_queued
 local mouse_button_changed=(rtk.mouse.down~=gfx.mouse_cap&rtk.mouse.BUTTON_MASK)local buttons_down=(gfx.mouse_cap&rtk.mouse.BUTTON_MASK~=0)local mouse_moved=(rtk.mouse.x~=gfx.mouse_x or rtk.mouse.y~=gfx.mouse_y)local last_in_window=self.in_window
 self.in_window=gfx.mouse_x>=0 and gfx.mouse_y>=0 and gfx.mouse_x<=gfx.w and gfx.mouse_y<=gfx.h
 local in_window_changed=self.in_window~=last_in_window
+need_draw=need_draw or self._draw_queued or in_window_changed
 if self._last_mousemove_time and rtk._mouseover_widget and
 rtk._mouseover_widget~=self._tooltip_widget and
 now-self._last_mousemove_time>rtk.tooltip_delay then
@@ -3811,8 +3950,8 @@ tmp.button=0
 self:_handle_window_event(tmp,now)need_draw=true
 end
 end
-if not event or mouse_moved then
 local suppress=false
+if not event or mouse_moved then
 if self.in_window and rtk.has_js_reascript_api and self.hwnd then
 local x,y=reaper.GetMousePosition()local hwnd=reaper.JS_Window_FromPoint(x,y)if hwnd~=self.hwnd then
 self.in_window=false
@@ -3847,19 +3986,10 @@ if not buttonstate then
 buttonstate={}rtk.mouse.state[event.button]=buttonstate
 end
 buttonstate.time=now
+buttonstate.tick=rtk.tick
 rtk.mouse.state.order[#rtk.mouse.state.order+1]=event.button
 rtk.mouse.state.latest=event.button
 elseif event.type==rtk.Event.MOUSEUP then
-for i=1,#rtk.mouse.state.order do
-if rtk.mouse.state.order[i]==event.button then
-table.remove(rtk.mouse.state.order,i)break
-end
-end
-if #rtk.mouse.state.order>0 then
-rtk.mouse.state.latest=rtk.mouse.state.order[#rtk.mouse.state.order]
-else
-rtk.mouse.state.latest=0
-end
 if rtk.touchscroll and event.buttons==0 and self._restore_mouse_pos then
 local x,y=table.unpack(self._restore_mouse_pos)rtk.callafter(0.2,reaper.JS_Mouse_SetPosition,x,y)self._restore_mouse_pos=nil
 end
@@ -3871,12 +4001,12 @@ if rtk._soon_funcs then
 rtk._run_soon()end
 local blitted=false
 if event and calc.visible then
-if self._reflow_queued and not self._sync_window_attrs_on_update then
+if need_draw or self._draw_queued then
+if self._reflow_queued then
 if self:reflow()then
 calc.cursor=rtk.mouse.cursors.UNDEFINED
-self:_handle_window_event(self:_get_mousemove_event(true),now)end
+local tmp=event:clone{type=rtk.Event.MOUSEMOVE,simulated=true}self:_handle_window_event(tmp,now)end
 end
-if need_draw or self._draw_queued then
 self._backingstore:resize(calc.w,calc.h,false)self._backingstore:pushdest()self:clear()self._draw_queued=false
 self:_draw(0,0,calc.alpha,event,calc.w,calc.h,0,0,0,0)if event.debug then
 event.debug:_draw_debug_info(event)end
@@ -3895,26 +4025,36 @@ self._focused_saved=rtk.focused
 rtk.focused:blur(event,nil)end
 self:onblur(event)end
 end
-if not event.handled and rtk.is_modal()and not event.simulated and
+if not event.handled and rtk.is_modal()and
 ((focus_changed and not self.is_focused)or event.type==rtk._touch_activate_event)then
-for _,widget in pairs(rtk._modal)do
+for _,info in pairs(rtk._modal)do
+local widget,modaltick=table.unpack(info)local state=rtk.mouse.state[event.button]
+if not state or(modaltick~=state.modaltick)then
 widget:_release_modal(event)end
+end
 end
 if not event.handled and rtk.focused and event.type==rtk._touch_activate_event then
 rtk.focused:blur(event,nil)end
-if event.type==rtk.Event.KEY then
-self:onkeypresspost(event)if event.handled then
-return
+if event.type==rtk.Event.MOUSEUP then
+rtk.mouse.last[event.button]={x=event.x,y=event.y}for i=1,#rtk.mouse.state.order do
+if rtk.mouse.state.order[i]==event.button then
+table.remove(rtk.mouse.state.order,i)break
 end
-if event.keycode==rtk.keycodes.F12 and log.level<=log.DEBUG then
-rtk.debug=not rtk.debug
-self:queue_draw()elseif event.keycode==rtk.keycodes.ESCAPE and not self.docked then
-self:close()end
+end
+if #rtk.mouse.state.order>0 then
+rtk.mouse.state.latest=rtk.mouse.state.order[#rtk.mouse.state.order]
+else
+rtk.mouse.state.latest=0
+end
+rtk.mouse.state[event.button]=nil
+if event.buttons==0 then
+rtk._pressed_widgets=nil
+end
 end
 if calc.cursor==rtk.mouse.cursors.UNDEFINED then
 calc.cursor=self.cursor
 end
-if self.in_window then
+if self.in_window and not suppress then
 if type(calc.cursor)=='userdata' then
 reaper.JS_Mouse_SetCursor(calc.cursor)reaper.JS_WindowMessage_Intercept(self.hwnd, "WM_SETCURSOR", false)else
 gfx.setcursor(calc.cursor,0)end
@@ -3946,10 +4086,6 @@ event.time=now
 if not suppress then
 rtk.Container._handle_event(self,0,0,event,false,rtk._modal==nil)end
 assert(event.type~=rtk.Event.MOUSEDOWN or event.button~=0)if event.type==rtk.Event.MOUSEUP then
-rtk.mouse.state[event.button]=nil
-if event.buttons==0 then
-rtk._pressed_widgets=nil
-end
 self._last_mouseup_time=event.time
 rtk._drag_candidates=nil
 if rtk.dnd.dropping then
@@ -4046,13 +4182,13 @@ function rtk.Box:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,v
 calc.x,calc.y=self:_get_box_pos(boxx,boxy)local w,h,tp,rp,bp,lp,minw,maxw,minh,maxh=self:_get_content_size(boxw,boxh,fillw,fillh,clampw,clamph,nil,greedyw,greedyh
 )local inner_maxw=rtk.clamp(w or(boxw-lp-rp),minw,maxw)local inner_maxh=rtk.clamp(h or(boxh-tp-bp),minh,maxh)clampw=clampw or w~=nil or fillw
 clamph=clamph or h~=nil or fillh
-self._reflowed_children={}self._child_index_by_id={}local innerw,innerh,expand_unit_size,expw,exph=self:_reflow_step1(inner_maxw,inner_maxh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+self._reflowed_children={}self._child_index_by_id={}local innerw,innerh,expw,exph,expand_units,remaining_size=self:_reflow_step1(inner_maxw,inner_maxh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )if self.orientation==rtk.Box.HORIZONTAL then
-expw=(expand_unit_size>0)or expw
+expw=(expand_units>0)or expw
 elseif self.orientation==rtk.Box.VERTICAL then
-exph=(expand_unit_size>0)or exph
+exph=(expand_units>0)or exph
 end
-innerw,innerh=self:_reflow_step2(inner_maxw,inner_maxh,innerw,innerh,clampw,clamph,expand_unit_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp
+innerw,innerh=self:_reflow_step2(inner_maxw,inner_maxh,innerw,innerh,clampw,clamph,expand_units,remaining_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp
 )fillw=fillw or(self.w and tonumber(self.w)<1.0)fillh=fillh or(self.h and tonumber(self.h)<1.0)innerw=w or math.max(innerw,fillw and greedyw and inner_maxw or 0)innerh=h or math.max(innerh,fillh and greedyh and inner_maxh or 0)calc.w=math.ceil(rtk.clamp(innerw+lp+rp,minw,maxw))calc.h=math.ceil(rtk.clamp(innerh+tp+bp,minh,maxh))return expw,exph
 end
 function rtk.Box:_reflow_step1(w,h,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
@@ -4127,8 +4263,7 @@ self:_add_reflowed_child(widgetattrs,attrs.z or wcalc.z or 0)else
 widget.realized=false
 end
 end
-self:_determine_zorders()local expand_unit_size=expand_units>0 and(remaining_size/expand_units)or 0
-return maxw,maxh,expand_unit_size,expw,exph
+self:_determine_zorders()return maxw,maxh,expw,exph,expand_units,remaining_size
 end
 end)()
 
@@ -4136,7 +4271,8 @@ __mod_rtk_vbox=(function()
 local rtk=__mod_rtk_core
 rtk.VBox=rtk.class('rtk.VBox', rtk.Box)rtk.VBox.register{orientation=rtk.Box.VERTICAL
 }function rtk.VBox:initialize(attrs,...)rtk.Box.initialize(self,attrs,self.class.attributes.defaults,...)end
-function rtk.VBox:_reflow_step2(w,h,maxw,maxh,clampw,clamph,expand_unit_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp)local offset=0
+function rtk.VBox:_reflow_step2(w,h,maxw,maxh,clampw,clamph,expand_units,remaining_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp)local expand_unit_size=expand_units>0 and(remaining_size/expand_units)or 0
+local offset=0
 local spacing=0
 local second_pass={}for n,widgetattrs in ipairs(self.children)do
 local widget,attrs=table.unpack(widgetattrs)local wcalc=widget.calc
@@ -4153,24 +4289,32 @@ not(attrs.fillw and greedyw)and
 attrs.stretch~=rtk.Box.STRETCH_FULL))local offx=lp+clp
 local offy=offset+tp+ctp+spacing
 local expand=attrs._calculated_expand
-if expand and expand>0 then
-local child_maxw=rtk.clamp(w-clp-crp,attrs._minw,attrs._maxw)local child_maxh=rtk.clamp((expand_unit_size*expand)-ctp-cbp-spacing,attrs._minh,attrs._maxh)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local cellh
+if expand and greedyh and expand>0 then
+local expanded_size=(expand_unit_size*expand)expand_units=expand_units-expand
+if attrs._minh and attrs._minh>expanded_size then
+expand_unit_size=(remaining_size-attrs._minh-ctp-cbp-spacing)/expand_units
+end
+local child_maxw=rtk.clamp(w-clp-crp,attrs._minw,attrs._maxw)local child_maxh=rtk.clamp(expanded_size-ctp-cbp-spacing,attrs._minh,attrs._maxh)child_maxh=math.min(child_maxh,h-maxh-spacing)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )if attrs.stretch==rtk.Box.STRETCH_FULL and greedyw then
 ww=maxw
 end
+wh=math.max(child_maxh,wh)cellh=ctp+wh+cbp
+remaining_size=remaining_size-spacing-cellh
 if need_second_pass then
 second_pass[#second_pass+1]={widget,attrs,offx,offy,ww,child_maxh,ctp,crp,cbp,clp,offset,spacing
 }else
-self:_align_child(widget,attrs,offx,offy,ww,child_maxh,crp,cbp)self:_set_cell_box(attrs,lp,tp+offset+spacing,ww+clp+crp,child_maxh+ctp+cbp)end
-wh=math.max(child_maxh,wh)else
-ww=attrs.stretch==rtk.Box.STRETCH_FULL and greedyw and maxw or wcalc.w
-wh=math.max(wcalc.h,attrs._minh or 0)if need_second_pass then
+self:_align_child(widget,attrs,offx,offy,ww,child_maxh,crp,cbp)self:_set_cell_box(attrs,lp,tp+offset+spacing,ww+clp+crp,cellh)end
+else
+ww=attrs.stretch==rtk.Box.STRETCH_FULL and greedyw and(maxw-clp-crp)or wcalc.w
+wh=math.max(wcalc.h,attrs._minh or 0)cellh=ctp+wh+cbp
+if need_second_pass then
 second_pass[#second_pass+1]={widget,attrs,offx,offy,ww,wh,ctp,crp,cbp,clp,offset,spacing
 }else
-self:_align_child(widget,attrs,offx,offy,ww,wh,crp,cbp)self:_set_cell_box(attrs,lp,tp+offset+spacing,ww+clp+crp,wh+ctp+cbp)end
+self:_align_child(widget,attrs,offx,offy,ww,wh,crp,cbp)self:_set_cell_box(attrs,lp,tp+offset+spacing,ww+clp+crp,cellh)end
 end
 if wcalc.position&rtk.Widget.POSITION_INFLOW~=0 then
-offset=offset+spacing+ctp+wh+cbp
+offset=offset+spacing+cellh
 end
 maxw=math.max(maxw,ww+clp+crp)maxh=math.max(maxh,offset)spacing=(attrs.spacing or self.spacing)*uiscale
 if not need_second_pass then
@@ -4211,7 +4355,8 @@ __mod_rtk_hbox=(function()
 local rtk=__mod_rtk_core
 rtk.HBox=rtk.class('rtk.HBox', rtk.Box)rtk.HBox.register{orientation=rtk.Box.HORIZONTAL
 }function rtk.HBox:initialize(attrs,...)rtk.Box.initialize(self,attrs,self.class.attributes.defaults,...)end
-function rtk.HBox:_reflow_step2(w,h,maxw,maxh,clampw,clamph,expand_unit_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp)local offset=0
+function rtk.HBox:_reflow_step2(w,h,maxw,maxh,clampw,clamph,expand_units,remaining_size,uiscale,viewport,window,greedyw,greedyh,tp,rp,bp,lp)local expand_unit_size=expand_units>0 and(remaining_size/expand_units)or 0
+local offset=0
 local spacing=0
 local second_pass={}for n,widgetattrs in ipairs(self.children)do
 local widget,attrs=table.unpack(widgetattrs)local wcalc=widget.calc
@@ -4228,24 +4373,32 @@ not(attrs.fillh and greedyh)and
 attrs.stretch~=rtk.Box.STRETCH_FULL))local offx=offset+lp+clp+spacing
 local offy=tp+ctp
 local expand=attrs._calculated_expand
+local cellw
 if expand and greedyw and expand>0 then
-local child_maxw=rtk.clamp((expand_unit_size*expand)-clp-crp-spacing,attrs._minw,attrs._maxh)local child_maxh=rtk.clamp(h-ctp-cbp,attrs._minh,attrs._maxh)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local expanded_size=(expand_unit_size*expand)expand_units=expand_units-expand
+if attrs._minw and attrs._minw>expanded_size then
+expand_unit_size=(remaining_size-attrs._minw-clp-crp-spacing)/expand_units
+end
+local child_maxw=rtk.clamp(expanded_size-clp-crp-spacing,attrs._minw,attrs._maxh)child_maxw=math.min(child_maxw,w-maxw-spacing)local child_maxh=rtk.clamp(h-ctp-cbp,attrs._minh,attrs._maxh)wx,wy,ww,wh=widget:reflow(0,0,child_maxw,child_maxh,attrs.fillw,attrs.fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
 )if attrs.stretch==rtk.Box.STRETCH_FULL and greedyh then
 wh=maxh
 end
+ww=math.max(child_maxw,ww)cellw=clp+ww+crp
+remaining_size=remaining_size-spacing-cellw
 if need_second_pass then
 second_pass[#second_pass+1]={widget,attrs,offx,offy,child_maxw,wh,ctp,crp,cbp,clp,offset,spacing
 }else
-self:_align_child(widget,attrs,offx,offy,child_maxw,wh,crp,cbp)self:_set_cell_box(attrs,lp+offset+spacing,tp,child_maxw+clp+crp,wh+ctp+cbp)end
-ww=math.max(child_maxw,ww)else
-ww=math.max(wcalc.w,attrs._minw or 0)wh=attrs.stretch==rtk.Box.STRETCH_FULL and greedyh and maxh or wcalc.h
+self:_align_child(widget,attrs,offx,offy,child_maxw,wh,crp,cbp)self:_set_cell_box(attrs,lp+offset+spacing,tp,cellw,wh+ctp+cbp)end
+else
+ww=math.max(wcalc.w,attrs._minw or 0)wh=attrs.stretch==rtk.Box.STRETCH_FULL and greedyh and(maxh-ctp-cbp)or wcalc.h
+cellw=clp+ww+crp
 if need_second_pass then
 second_pass[#second_pass+1]={widget,attrs,offx,offy,ww,wh,ctp,crp,cbp,clp,offset,spacing
 }else
-self:_align_child(widget,attrs,offx,offy,ww,wh,crp,cbp)self:_set_cell_box(attrs,lp+offset+spacing,tp,ww+clp+crp,wh+ctp+cbp)end
+self:_align_child(widget,attrs,offx,offy,ww,wh,crp,cbp)self:_set_cell_box(attrs,lp+offset+spacing,tp,cellw,wh+ctp+cbp)end
 end
 if wcalc.position&rtk.Widget.POSITION_INFLOW~=0 then
-offset=offset+spacing+clp+ww+crp
+offset=offset+spacing+cellw
 end
 maxw=math.max(maxw,offset)maxh=math.max(maxh,wh+ctp+cbp)spacing=(attrs.spacing or self.spacing)*uiscale
 if not need_second_pass then
@@ -4296,7 +4449,7 @@ local child_totalh=0
 for _,widgetattrs in ipairs(self.children)do
 local widget,attrs=table.unpack(widgetattrs)local wcalc=widget.calc
 if wcalc.visible==true and wcalc.position&rtk.Widget.POSITION_INFLOW~=0 then
-local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)attrs._minw=self:_adjscale(attrs.minw,uiscale,greedyw and inner_maxw)attrs._maxw=self:_adjscale(attrs.maxw,uiscale,greedyw and inner_maxw)attrs._minh=self:_adjscale(attrs.minh,uiscale,greedyh and inner_maxh)attrs._maxh=self:_adjscale(attrs.maxh,uiscale,greedyh and inner_maxh)local wx,wy,ww,wh=widget:reflow(0,0,rtk.clamp(inner_maxw,attrs._minw,attrs._maxw),rtk.clamp(inner_maxh,attrs._minh,attrs._maxh),nil,nil,clampw,clamph,uiscale,viewport,window,greedyw,greedyh
+local ctp,crp,cbp,clp=self:_get_cell_padding(widget,attrs)attrs._minw=self:_adjscale(attrs.minw,uiscale,greedyw and inner_maxw)attrs._maxw=self:_adjscale(attrs.maxw,uiscale,greedyw and inner_maxw)attrs._minh=self:_adjscale(attrs.minh,uiscale,greedyh and inner_maxh)attrs._maxh=self:_adjscale(attrs.maxh,uiscale,greedyh and inner_maxh)local wx,wy,ww,wh=widget:reflow(0,0,rtk.clamp(inner_maxw,attrs._minw,attrs._maxw),rtk.clamp(inner_maxh,attrs._minh,attrs._maxh),nil,nil,clampw,clamph,uiscale,viewport,window,false,false
 )ww=ww+clp+crp
 wh=wh+ctp+cbp
 child_maxw=math.min(math.max(child_maxw,ww,attrs._minw or 0),inner_maxw)child_totalh=child_totalh+math.max(wh,attrs._minh or 0)child_geometry[#child_geometry+1]={x=wx,y=wy,w=ww,h=wh}end
@@ -4376,7 +4529,7 @@ rtk.Button.static.LABEL=2
 rtk.Button.register{[1]=rtk.Attribute{alias='label'},label=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL},icon=rtk.Attribute{priority=true,reflow=rtk.Widget.REFLOW_FULL,calculate=function(self,attr,value,target)if type(value)=='string' then
 local color=self.color
 if self.calc.flat==rtk.Button.FLAT then
-color=rtk.theme.bg
+color=self.parent and self.parent.calc.bg or rtk.theme.bg
 end
 local style=rtk.color.get_icon_style(color,rtk.theme.bg)if self.icon and self.icon.style==style then
 return self.icon
@@ -4661,7 +4814,8 @@ local rtk=__mod_rtk_core
 local log=__mod_rtk_log
 rtk.Entry=rtk.class('rtk.Entry', rtk.Widget)rtk.Entry.static.contextmenu={{'Undo', id='undo'},rtk.NativeMenu.SEPARATOR,{'Cut', id='cut'},{'Copy', id='copy'},{'Paste', id='paste'},{'Delete', id='delete'},rtk.NativeMenu.SEPARATOR,{'Select All', id='select_all'},}rtk.Entry.register{[1]=rtk.Attribute{alias='value'},value=rtk.Attribute{default='',reflow=rtk.Widget.REFLOW_NONE,calculate=function(self,attr,value,target)return value and tostring(value) or ''end,},textwidth=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL},icon=rtk.Attribute{reflow=rtk.Widget.REFLOW_FULL,calculate=function(self,attr,value,target)if type(value)=='string' then
 local icon=self.calc.icon
-local style=rtk.color.get_icon_style(self.calc.bg or rtk.theme.bg,rtk.theme.bg)if icon and icon.style==style then
+local parentbg=self.parent and self.parent.calc.bg
+local style=rtk.color.get_icon_style(self.calc.bg,parentbg or rtk.theme.bg)if icon and icon.style==style then
 return icon
 end
 local img=rtk.Image.icon(value,style)if not img then
@@ -4754,7 +4908,7 @@ end
 function rtk.Entry:_calcview()local calc=self.calc
 local curx=self._positions[calc.caret]
 local curoffset=curx-self._loffset
-local innerw=calc.w-(self._clp+self._crp)if calc.icon then
+local innerw=math.max(0,calc.w-(self._clp+self._crp))if calc.icon then
 innerw=innerw-(calc.icon.w*rtk.scale.value/calc.icon.density)-calc.spacing
 end
 local loffset=self._loffset
@@ -4899,6 +5053,7 @@ end
 if event.button==rtk.mouse.BUTTON_LEFT then
 local caret=self:_caret_from_mouse_event(event)self._selstart=nil
 self._dirty_text=true
+self._caretctr=0
 self:sync('caret', caret)self:queue_draw()elseif event.button==rtk.mouse.BUTTON_RIGHT then
 if not self._popup then
 self._popup=rtk.NativeMenu(rtk.Entry.contextmenu)end
@@ -4985,12 +5140,12 @@ self._caretctr=0
 log.debug2('keycode=%s char=%s caret=%s ctrl=%s shift=%s meta=%s alt=%s sel=%s-%s',event.keycode,event.char,calc.caret,event.ctrl,event.shift,event.meta,event.alt,self._selstart,self._selend
 )return true
 end
-function rtk.Entry:_get_touch_activate_delay(event)if self:focused()then
+function rtk.Entry:_get_touch_activate_delay(event)if self:focused(event)then
 return 0
 else
 return rtk.Widget._get_touch_activate_delay(self,event)end
 end
-function rtk.Entry:_handle_dragstart(event)if not self:focused()or event.button~=rtk.mouse.BUTTON_LEFT then
+function rtk.Entry:_handle_dragstart(event)if not self:focused(event)or event.button~=rtk.mouse.BUTTON_LEFT then
 return
 end
 local draggable,droppable=self:ondragstart(self,event)if draggable==nil then
@@ -5014,7 +5169,12 @@ function rtk.Entry:_handle_click(event)local ok=rtk.Widget._handle_click(self,ev
 return ok
 end
 if event.time-self._last_doubleclick_time<0.7 then
-self:select_all()self._last_doubleclick_time=0
+local last=rtk.mouse.last[event.button]
+local dx=last and math.abs(last.x-event.x)or 0
+local dy=last and math.abs(last.y-event.y)or 0
+if dx<3 and dy<3 then
+self:select_all()end
+self._last_doubleclick_time=0
 elseif rtk.dnd.dragging~=self then
 self:select_range(nil)rtk.Widget.focus(self)end
 return ok
@@ -5025,8 +5185,8 @@ end
 self._last_doubleclick_time=event.time
 local left=self:_get_word_left(false)local right=self:_get_word_right(true)self:sync('caret', right)self:select_range(left,right-1)return true
 end
-function rtk.Entry:_rendertext(x,y)self._font:set()self._backingstore:blit{src=gfx.dest,sx=x+self._clp,sy=y+self._ctp,mode=rtk.Image.FAST_BLIT
-}self._backingstore:pushdest()if self._selstart and self:focused()then
+function rtk.Entry:_rendertext(x,y,event)self._font:set()self._backingstore:blit{src=gfx.dest,sx=x+self._clp,sy=y+self._ctp,mode=rtk.Image.FAST_BLIT
+}self._backingstore:pushdest()if self._selstart and self:focused(event)then
 local a,b=self:get_selection_range()self:setcolor(rtk.theme.entry_selection_bg)gfx.rect(self._positions[a]-self._loffset,0,self._positions[b]-self._positions[a],self._backingstore.h,1
 )end
 self:setcolor(self.calc.textcolor)self._font:draw(self.calc.value,-self._loffset,rtk.os.mac and 1 or 0)self._backingstore:popdest()self._dirty_text=false
@@ -5036,7 +5196,7 @@ if offy~=self.offy or offx~=self.offx then
 self._dirty_text=true
 end
 rtk.Widget._draw(self,offx,offy,alpha,event,clipw,cliph,cltargetx,cltargety,parentx,parenty)local x,y=calc.x+offx,calc.y+offy
-local focused=self:focused()if(y+calc.h<0 or y>cliph or calc.ghost)and not focused then
+local focused=self:focused(event)if(y+calc.h<0 or y>cliph or calc.ghost)and not focused then
 return false
 end
 if self.disabled then
@@ -5044,12 +5204,19 @@ alpha=alpha*0.5
 end
 local scale=rtk.scale.value
 local tp,rp,bp,lp=self._ctp,self._crp,self._cbp,self._clp
-self:_handle_drawpre(offx,offy,alpha,event)self:_draw_bg(offx,offy,alpha,event)if self._dirty_positions then
+self:_handle_drawpre(offx,offy,alpha,event)self:_draw_bg(offx,offy,alpha,event)if not self._dirty_text then
+gfx.x,gfx.y=x+lp,y+tp
+local r,g,b=gfx.getpixel()if self._lastbg_r~=r or self._lastbg_g~=g or self._lastbg_b~=b then
+self._lastbg_r,self._lastbg_g,self._lastbg_b=r,g,b
+self._dirty_text=true
+end
+end
+if self._dirty_positions then
 self:_calcpositions(self._dirty_positions)end
 if self._dirty_view or self._dirty_text then
 self:_calcview()end
 if self._dirty_text then
-self:_rendertext(x,y)end
+self:_rendertext(x,y,event)end
 local amul=calc.alpha*alpha
 local icon=calc.icon
 if icon then
@@ -5066,7 +5233,7 @@ if not self._blinking and showcursor then
 self:_blink()end
 self:_draw_borders(offx,offy,alpha,calc.border_focused)if self._caretctr%32<16 and showcursor then
 local curx=x+self._positions[calc.caret]+lp-self._loffset
-if curx>x and curx<x+calc.w-lp then
+if curx>x and curx<=x+calc.w-rp then
 self:setcolor(calc.textcolor,alpha)gfx.line(curx,y+tp,curx,y+calc.h-bp,0)end
 end
 else
@@ -5085,8 +5252,11 @@ local rtk=__mod_rtk_core
 rtk.Text=rtk.class('rtk.Text', rtk.Widget)rtk.Text.static.WRAP_NONE=false
 rtk.Text.static.WRAP_NORMAL=true
 rtk.Text.static.WRAP_BREAK_WORD=2
-rtk.Text.register{[1]=rtk.Attribute{alias='text'},text=rtk.Attribute{default='Text',reflow=rtk.Widget.REFLOW_FULL,},color=rtk.Attribute{default=function(self,attr)return rtk.theme.text
-end,calculate=rtk.Reference('bg'),},wrap=rtk.Attribute{default=rtk.Text.WRAP_NONE,reflow=rtk.Widget.REFLOW_FULL,calculate={['none']=rtk.Text.WRAP_NONE,['normal']=rtk.Text.WRAP_NORMAL,['break-word']=rtk.Text.WRAP_BREAK_WORD
+rtk.Text.register{[1]=rtk.Attribute{alias='text'},text=rtk.Attribute{default='Text',reflow=rtk.Widget.REFLOW_FULL,},color=rtk.Attribute{reflow=rtk.Widget.REFLOW_NONE,default=rtk.Attribute.NIL,calculate=function(self,attr,value,target)if not value then
+local parentbg=self.parent and self.parent.calc.bg
+local luma=rtk.color.luma(self.calc.bg,parentbg or rtk.theme.bg)value=rtk.themes[luma > rtk.light_luma_threshold and 'light' or 'dark'].text
+end
+return {rtk.color.rgba(value)}end,},wrap=rtk.Attribute{default=rtk.Text.WRAP_NONE,reflow=rtk.Widget.REFLOW_FULL,calculate={['none']=rtk.Text.WRAP_NONE,['normal']=rtk.Text.WRAP_NORMAL,['break-word']=rtk.Text.WRAP_BREAK_WORD
 },},textalign=rtk.Attribute{default=nil,calculate=rtk.Reference('halign'),},overflow=false,spacing=rtk.Attribute{default=0,reflow=rtk.Widget.REFLOW_FULL,},font=rtk.Attribute{default=function(self,attr)return self._theme_font[1]
 end,reflow=rtk.Widget.REFLOW_FULL,},fontsize=rtk.Attribute{default=function(self,attr)return self._theme_font[2]
 end,reflow=rtk.Widget.REFLOW_FULL,},fontscale=rtk.Attribute{default=1.0,reflow=rtk.Widget.REFLOW_FULL,},fontflags=rtk.Attribute{default=function(self,attr)return self._theme_font[3]
@@ -5105,7 +5275,8 @@ return ok
 end
 if self._segments and (attr == 'text' or attr == 'wrap' or attr == 'textalign' or attr == 'spacing') then
 self._segments.dirty=true
-end
+elseif attr=='bg' and not self.color then
+self:attr('color', self.color, true, rtk.Widget.REFLOW_NONE)end
 return ok
 end
 function rtk.Text:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
@@ -5161,7 +5332,8 @@ return ret
 end
 if attr=='image' and value then
 self._last_reflow_scale=nil
-end
+elseif attr == 'bg' and type(self.image) == 'string' then
+self:attr('image', self.image, true, rtk.Widget.REFLOW_NONE)end
 return ret
 end
 function rtk.ImageBox:_reflow(boxx,boxy,boxw,boxh,fillw,fillh,clampw,clamph,uiscale,viewport,window,greedyw,greedyh)local calc=self.calc
@@ -5304,7 +5476,7 @@ gfx.lineto(wp+5,hp+10)gfx.lineto(wp+11,hp+3)icon:popdest()rtk.CheckBox.static._i
 icon=rtk.CheckBox.static._icon_unchecked:clone()icon:pushdest()rtk.color.set(colors.iborder)gfx.rect(wp+3,hp+3,w-wp*2-6,h-hp*2-6)rtk.color.set(colors.fill)gfx.rect(wp+4,hp+4,w-wp*2-8,h-hp*2-8,1)icon:popdest()rtk.CheckBox.static._icon_intermediate=icon
 rtk.CheckBox.static._icon_hover=rtk.CheckBox.static._icon_unchecked:clone():recolor(rtk.theme.accent)end
 rtk.CheckBox.register{type=rtk.Attribute{default=rtk.CheckBox.DUALSTATE,calculate={dualstate=rtk.CheckBox.DUALSTATE,tristate=rtk.CheckBox.TRISTATE
-},},label=nil,value=rtk.Attribute{default=rtk.CheckBox.UNCHECKED,calculate={[rtk.Attribute.NIL]=rtk.CheckBox.UNCHECKED,checked=rtk.CheckBox.static.CHECKED,unchecked=rtk.CheckBox.static.UNCHECKED,indeterminate=rtk.CheckBox.static.INDETERMINATE,}},icon=rtk.Attribute{default=function(self,attr)return self._value_map[rtk.CheckBox.UNCHECKED]
+},},label=nil,value=rtk.Attribute{default=rtk.CheckBox.UNCHECKED,calculate={[rtk.Attribute.NIL]=rtk.CheckBox.UNCHECKED,['true']=rtk.CheckBox.static.CHECKED,checked=rtk.CheckBox.static.CHECKED,['false']=rtk.CheckBox.static.UNCHECKED,unchecked=rtk.CheckBox.static.UNCHECKED,indeterminate=rtk.CheckBox.static.INDETERMINATE,}},icon=rtk.Attribute{default=function(self,attr)return self._value_map[rtk.CheckBox.UNCHECKED]
 end,},surface=false,valign=rtk.Widget.TOP,wrap=true,tpadding=0,rpadding=0,lpadding=0,bpadding=0,}function rtk.CheckBox:initialize(attrs,...)if rtk.CheckBox.static._icon_unchecked==nil then
 rtk.CheckBox._make_icons()end
 self._value_map={[rtk.CheckBox.UNCHECKED]=rtk.CheckBox._icon_unchecked,[rtk.CheckBox.CHECKED]=rtk.CheckBox._icon_checked,[rtk.CheckBox.INDETERMINATE]=rtk.CheckBox._icon_intermediate
@@ -5649,7 +5821,7 @@ function rtk.Slider:_animate_thumb_overlays(event,focused,force)if rtk.dnd.dragg
 return
 end
 if focused==nil then
-focused=self.window.is_focused and self:focused()end
+focused=self.window.is_focused and self:focused(event)end
 for i=1,#self._thumbs do
 local dst=nil
 local thumb=self:_get_thumb(i)if focused and thumb.idx==self.focused_thumb_index then
