@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.4
--- @changelog Add Select/deselect tracks checkbox
+-- @version 1.0.5
+-- @changelog Fix submit button text; fix channel dropdown options & behavior; clarify tracks subheading wording
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -200,7 +200,7 @@ function getRoutingOptionsObjects()
     ["receive_checkbox"] = rtk.CheckBox{"receives", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "receive_checkbox"},
     ["action_text_end"] = rtk.Text{" to the selected tracks."},
     ["select_all_tracks"] = rtk.CheckBox{"Select/deselect all tracks", position = "absolute", h = 18, tmargin = 13, padding = "1 2 3", border = "1px #555555", spacing = 3, valign = "center", fontscale = 0.75, color = "#bbbbbb", textcolor2 = "#bbbbbb", ref = "select_all_tracks"},
-    ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want to add sends to?", w = 1, tmargin = 14, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
+    ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want the new sends to send to?", w = 1, tmargin = 14, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
     ["form_fields"] = rtk.VBox{padding = "10 10 5", spacing = 10},
     ["form_bottom"] = rtk.Container{w = 1, margin = 10},
     ["form_buttons"] = rtk.HBox{spacing = 10},
@@ -417,6 +417,7 @@ function populateRadioCheckboxMethods(checkbox1, checkbox2)
     _routing_options_objs[checkbox1].onchange = function()
       _routing_options_objs[checkbox2]:toggle()
       updateRoutingForm("is_action_change")
+
       _routing_options_objs[checkbox1].onchange = nil
     end
   end
@@ -424,15 +425,21 @@ end
 
 
 function updateRoutingForm(is_action_change)
-  local routing_action, routing_type, target_tracks_subheading_text_intro, target_tracks_subheading_routing_action_text, type_preposition, action_preposition, action_text_end, target_tracks_subheading_routing_type_text, new_target_tracks_subheading_text
+  local routing_action, routing_type, target_tracks_subheading_text_intro, target_tracks_subheading_routing_action_text, type_preposition, action_preposition, action_text_end, new_target_tracks_subheading_text
 
   routing_action, routing_type = getRoutingChoices()
-  target_tracks_subheading_text_intro = "Which tracks do you want to "
+
+  if routing_action == "add" then
+    target_tracks_subheading_text_intro = "Which tracks do you want the new " .. routing_type .. "s to "
+
+  elseif routing_action == "remove" then
+    target_tracks_subheading_text_intro = "Which tracks do the " .. routing_type .. "s you want to remove "
+  end
+
   target_tracks_subheading_routing_action_text = routing_action .. " "
   type_preposition, action_preposition = getRoutingPrepositions(routing_action, routing_type)
   action_text_end = " " .. action_preposition .. " the selected tracks."
-  target_tracks_subheading_routing_type_text = " " .. routing_type .. "s "
-  new_target_tracks_subheading_text = target_tracks_subheading_text_intro .. routing_action .. target_tracks_subheading_routing_type_text .. type_preposition .. "?"
+  new_target_tracks_subheading_text = target_tracks_subheading_text_intro .. routing_type .. " " .. type_preposition .. "?"
 
   _routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
   _routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
@@ -483,7 +490,7 @@ function getRoutingPrepositions(routing_action, routing_type)
 end
 
 
-function updateButtons(routing_action, configure_btn, submit_btn, is_action_change)
+function updateButtons(routing_action, is_action_change)
   local configure_btn_height, routing_options_submit_btn_text
 
   if is_action_change == "is_action_change" then
@@ -497,8 +504,8 @@ function updateButtons(routing_action, configure_btn, submit_btn, is_action_chan
       routing_options_submit_btn_text = "Remove"
     end
 
-    configure_btn:animate{"h", dst = configure_btn_height, duration = 0.33}
-    submit_btn:attr("label", routing_options_submit_btn_text)
+    _routing_options_objs.configure_btn:animate{"h", dst = configure_btn_height, duration = 0.33}
+    _routing_options_objs.form_submit:attr("label", routing_options_submit_btn_text)
   end
 end
 
@@ -514,16 +521,16 @@ end
 
 
 function initRoutingSettings()
-  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_options
+  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_src_options, midi_channel_rcv_options
 
   audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
-  midi_channel_options = defineMIDIChannelOptions()
+  midi_channel_src_options, midi_channel_rcv_options = defineMIDIChannelOptions()
 
-  populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+  populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_src_options, midi_channel_rcv_options)
   gatherRoutingSettingsFormFields()
   setRoutingSettingsPopupEventHandlers()
-  setRoutingSettingsFormEventHandlers()
   populateRoutingSettingsFormValues()
+  setRoutingSettingsFormEventHandlers()
   populateRoutingSettingsPopup()
 end
 
@@ -564,10 +571,10 @@ end
 
 
 function defineMIDIChannelOptions()
-  local midi_channel_submenu_bus_options, midi_channel_submenu_bus_option_val, midi_channel_options
+  local midi_channel_submenu_bus_options, midi_channel_submenu_bus_option_val, midi_channel_rcv_options, midi_channel_src_options
 
   -- none -1 / stereo idx / mono 1024+idx / hwout 512+idx
-  midi_channel_options = {
+  midi_channel_src_options = {
     {
       ["label"] = "None",
       ["id"] = -1 .. "/" .. -1
@@ -579,7 +586,7 @@ function defineMIDIChannelOptions()
   }
 
   for i = 3, 18 do
-    midi_channel_options[i] = {
+    midi_channel_src_options[i] = {
       ["label"] = tostring(i-2),
       ["id"] = 0 .. "/" .. i-2
     }
@@ -602,17 +609,21 @@ function defineMIDIChannelOptions()
       }
     end
 
-    midi_channel_options[i] = {
+    midi_channel_src_options[i] = {
       ["label"] = "Bus " .. i-18,
       ["submenu"] = midi_channel_submenu_bus_options
     }
   end
 
-  return midi_channel_options
+  midi_channel_rcv_options = deepTableCopy(midi_channel_src_options)
+
+  table.remove(midi_channel_rcv_options, 1)
+
+  return midi_channel_src_options, midi_channel_rcv_options
 end
 
 
-function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_options)
+function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_src_options, midi_channel_rcv_options)
   _routing_settings_objs = {
     ["popup"] = rtk.Popup{w = _routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0},
     ["content"] = rtk.VBox(),
@@ -636,11 +647,11 @@ function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rc
     ["midi_velpan"] = rtk.Button{icon = "gen_midi_off", valign = "center", surface = false, tooltip = "Toggle Midi Volume/Pan", data_class = "routing_setting_field"},
     ["bottomrow"] = rtk.HBox{tmargin = 8, spacing = 3, valign = "center"},
     ["audio_txt"] = rtk.Text{"Audio:", bmargin = "2", fontscale = 0.63},
-    ["audio_src_channel"] = rtk.OptionMenu{menu = audio_channel_src_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
-    ["audio_rcv_channel"] = rtk.OptionMenu{menu = audio_channel_rcv_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
+    ["audio_src_channel"] = rtk.OptionMenu{menu = audio_channel_src_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field", ref = "audio_src_channel"},
+    ["audio_rcv_channel"] = rtk.OptionMenu{menu = audio_channel_rcv_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field", ref = "audio_rcv_channel"},
     ["midi_txt"] = rtk.Text{"MIDI:", margin = "0 0 2 10", fontscale = 0.63},
-    ["midi_src"] = rtk.OptionMenu{menu = midi_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
-    ["midi_rcv"] = rtk.OptionMenu{menu = midi_channel_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"}
+    ["midi_src"] = rtk.OptionMenu{menu = midi_channel_src_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, ref = "midi_src", data_class = "routing_setting_field"},
+    ["midi_rcv"] = rtk.OptionMenu{menu = midi_channel_rcv_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, ref = "midi_rcv", data_class = "routing_setting_field"}
   }
 end
 
@@ -739,6 +750,14 @@ function setRoutingSettingsFormEventHandlers()
   _routing_settings_objs.midi_velpan.onclick = function(self)
     toggleBtnState(self, "gen_midi")
   end
+
+  _routing_settings_objs.audio_src_channel.onchange = function(self)
+    toggleChannelDropdown(self)
+  end
+
+  _routing_settings_objs.midi_src.onchange = function(self)
+    toggleChannelDropdown(self)
+  end
 end
 
 
@@ -751,6 +770,31 @@ function toggleBtnState(btn, img_filename_base)
   elseif btn.value == 1 then
     btn:attr("value", 0)
     btn:attr("icon", img_filename_base .. "_off")
+  end
+end
+
+
+function toggleChannelDropdown(active_dropdown)
+  local none_value, affected_dropdown, arrow_ref
+
+  if active_dropdown.ref == "audio_src_channel" then
+    none_value = -1
+    affected_dropdown = _routing_settings_objs["audio_rcv_channel"]
+    arrow_ref = "audio_arrow"
+
+  elseif active_dropdown.ref == "midi_src" then
+    none_value = "-1/-1"
+    affected_dropdown = _routing_settings_objs["midi_rcv"]
+    arrow_ref = "midi_arrow"
+  end
+
+  if active_dropdown.selected_id == none_value then
+    affected_dropdown:attr("ghost", true)
+    affected_dropdown.refs[arrow_ref]:attr("ghost", true)
+
+  else
+    affected_dropdown:attr("ghost", false)
+    affected_dropdown.refs[arrow_ref]:attr("ghost", false)
   end
 end
 
@@ -858,11 +902,11 @@ function populateRoutingSettingsPopup()
   _routing_settings_objs.form:add(_routing_settings_objs.middlerow)
   _routing_settings_objs.bottomrow:add(_routing_settings_objs.audio_txt)
   _routing_settings_objs.bottomrow:add(_routing_settings_objs.audio_src_channel)
-  _routing_settings_objs.bottomrow:add(rtk.Text{_right_arrow, bmargin = "3", fontscale = 1.2})
+  _routing_settings_objs.bottomrow:add(rtk.Text{_right_arrow, bmargin = "3", fontscale = 1.2, ref = "audio_arrow"})
   _routing_settings_objs.bottomrow:add(_routing_settings_objs.audio_rcv_channel)
   _routing_settings_objs.bottomrow:add(_routing_settings_objs.midi_txt)
   _routing_settings_objs.bottomrow:add(_routing_settings_objs.midi_src)
-  _routing_settings_objs.bottomrow:add(rtk.Text{_right_arrow, bmargin = "3", fontscale = 1.2})
+  _routing_settings_objs.bottomrow:add(rtk.Text{_right_arrow, bmargin = "3", fontscale = 1.2, ref = "midi_arrow"})
   _routing_settings_objs.bottomrow:add(_routing_settings_objs.midi_rcv)
   _routing_settings_objs.form:add(_routing_settings_objs.bottomrow)
   _routing_settings_objs.content:add(_routing_settings_objs.form)
@@ -1211,3 +1255,23 @@ function initBussDriver()
 end
 
 initBussDriver()
+
+
+
+
+
+--- UTILITY FUNCTIONS ---
+
+function deepTableCopy( original, copies )
+  if type( original ) ~= 'table' then return original end
+  copies = copies or {}
+  if copies[original] then return copies[original] end
+  local copy = {}
+  copies[original] = copy
+  for key, value in pairs( original ) do
+      local dc_key, dc_value = deepTableCopy( key, copies ), deepTableCopy( value, copies )
+      copy[dc_key] = dc_value
+  end
+  setmetatable(copy, deepTableCopy( getmetatable( original ), copies) )
+  return copy
+end
