@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.5
--- @changelog Fix submit button text; fix channel dropdown options & behavior; clarify tracks subheading wording
+-- @version 1.0.6
+-- @changelog Add selected tracks display; fix Reset btn before settings opened
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -45,7 +45,7 @@ rtk.set_theme_overrides({
 
 
 
-local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path
+local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _bullet, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path
 
 _selected_tracks_count = reaper.CountSelectedTracks(0)
 _data_storage_track = reaper.GetMasterTrack(0)
@@ -55,6 +55,7 @@ _api_routing_types = {
 }
 _api_all_routing_settings = {"B_MUTE", "B_PHASE", "B_MONO", "D_VOL", "D_PAN", "D_PANLAW", "I_SENDMODE", "I_SRCCHAN", "I_DSTCHAN", "I_MIDI_SRCCHAN", "I_MIDI_DSTCHAN", "I_MIDI_SRCBUS", "I_MIDI_DSTBUS", "I_MIDI_LINK_VOLPAN"}
 _api_msg_answer_yes = 6
+_bullet = "\u{2022}"
 _right_arrow = "\u{2192}"
 _default_routing_settings_values = {
   ["mute"] = 0,
@@ -181,7 +182,6 @@ end
 function getRoutingOptionsObjects()
   _routing_options_objs = {
     ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
-    -- ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, h = 375},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
@@ -189,6 +189,9 @@ function getRoutingOptionsObjects()
     ["configure_btn_wrapper"] = rtk.Container{w = 1, halign = "right", margin = "5 3 0 0"},
     ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created", padding = "4 5 6", fontscale = 0.67},
     ["content"] = rtk.VBox{halign = "center", padding = "10 0 0"},
+    ["selected_tracks_box"] = rtk.VBox{maxw = 0.67, halign = "center", padding = "4 6", border = "1px #555555"},
+    ["selected_tracks_heading"] = rtk.Text{"Selected tracks", bmargin = 4, fontscale = 0.8, fontflags = rtk.font.UNDERLINE, color = "#D6D6D6"},
+    ["selected_tracks_list"] = getSelectedTracksList(),
     ["action_sentence_wrapper"] = rtk.Container{w = 1, halign = "center"},
     ["action_sentence"] = rtk.HBox{valign = "center", tmargin = 9},
     ["action_text_start"] = rtk.Text{"I want to "},
@@ -202,6 +205,7 @@ function getRoutingOptionsObjects()
     ["select_all_tracks"] = rtk.CheckBox{"Select/deselect all tracks", position = "absolute", h = 18, tmargin = 13, padding = "1 2 3", border = "1px #555555", spacing = 3, valign = "center", fontscale = 0.75, color = "#bbbbbb", textcolor2 = "#bbbbbb", ref = "select_all_tracks"},
     ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want the new sends to send to?", w = 1, tmargin = 14, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
     ["form_fields"] = rtk.VBox{padding = "10 10 5", spacing = 10},
+    ["target_tracks_box"] = getUnselectedTracks(),
     ["form_bottom"] = rtk.Container{w = 1, margin = 10},
     ["form_buttons"] = rtk.HBox{spacing = 10},
     ["save_options_wrapper"] = rtk.HBox{tmargin = 5},
@@ -211,7 +215,21 @@ function getRoutingOptionsObjects()
     ["reset_wrapper"] = rtk.HBox{valign = "center"},
     ["reset_btn"] = rtk.Button{"Reset all options", tooltip = "Return all tracks and settings to initial state", padding = "4 5 6", color = "#8A4C00R", fontscale = 0.67, textcolor = "#D6D6D6"}
   }
-  _routing_options_objs.target_tracks_box = getUnselectedTracks()
+end
+
+
+function getSelectedTracksList()
+  local selected_tracks_list, retval, this_track_name
+
+  selected_tracks_list = rtk.FlowBox{hspacing = 10}
+
+  for i = 1, #_selected_tracks do
+    retval, this_track_name = reaper.GetTrackName(_selected_tracks[i])
+    
+    selected_tracks_list:add(rtk.Text{_bullet .. " " .. this_track_name, fontscale = 0.67, color = "#D6D6D6"})
+  end
+
+  return selected_tracks_list
 end
 
 
@@ -852,10 +870,10 @@ function populateRoutingSettingsFormValues(reset)
     end
 
     getSetRoutingSettingsValues("set", new_routing_settings_values)
-  end
 
-  if reset == "reset" then
-    updateRoutingSettingsBtns("reset")
+    if reset == "reset" then
+      updateRoutingSettingsBtns("reset")
+    end
   end
 end
 
@@ -1216,6 +1234,8 @@ end
 
 
 function populateRoutingOptionsWindow()
+  _routing_options_objs.selected_tracks_box:add(_routing_options_objs.selected_tracks_heading)
+  _routing_options_objs.selected_tracks_box:add(_routing_options_objs.selected_tracks_list)
   _routing_options_objs.addremove_wrapper:add(_routing_options_objs.add_checkbox)
   _routing_options_objs.addremove_wrapper:add(_routing_options_objs.remove_checkbox)
   _routing_options_objs.type_wrapper:add(_routing_options_objs.send_checkbox)
@@ -1236,6 +1256,7 @@ function populateRoutingOptionsWindow()
   _routing_options_objs.form_bottom:add(_routing_options_objs.save_options_wrapper, {halign = "left"})
   _routing_options_objs.form_bottom:add(_routing_options_objs.form_buttons, {halign = "center"})
   _routing_options_objs.form_bottom:add(_routing_options_objs.reset_wrapper, {halign = "right"})
+  _routing_options_objs.content:add(_routing_options_objs.selected_tracks_box)
   _routing_options_objs.content:add(_routing_options_objs.form_fields)
   _routing_options_objs.content:add(_routing_options_objs.form_bottom)
   _routing_options_objs.viewport:attr("child", _routing_options_objs.content)
