@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.6
--- @changelog Add selected tracks display; fix Reset btn before settings opened
+-- @version 1.0.7
+-- @changelog Change target tracks box margin
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -40,7 +40,7 @@ local serpent = require("serpent")
 
 
 rtk.set_theme_overrides({
-    tooltip_font = {'Segoe UI (TrueType)', 13}
+  tooltip_font = {'Segoe UI (TrueType)', 13}
 })
 
 
@@ -202,7 +202,7 @@ function getRoutingOptionsObjects()
     ["send_checkbox"] = rtk.CheckBox{"sends", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", value = true, ref = "send_checkbox"},
     ["receive_checkbox"] = rtk.CheckBox{"receives", h = 17, fontscale = 0.925, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "receive_checkbox"},
     ["action_text_end"] = rtk.Text{" to the selected tracks."},
-    ["select_all_tracks"] = rtk.CheckBox{"Select/deselect all tracks", position = "absolute", h = 18, tmargin = 13, padding = "1 2 3", border = "1px #555555", spacing = 3, valign = "center", fontscale = 0.75, color = "#bbbbbb", textcolor2 = "#bbbbbb", ref = "select_all_tracks"},
+    ["select_all_tracks"] = rtk.CheckBox{"Select/deselect all tracks", position = "absolute", h = 18, tmargin = 21, padding = "1 2 3", border = "1px #555555", spacing = 3, valign = "center", fontscale = 0.75, color = "#bbbbbb", textcolor2 = "#bbbbbb", ref = "select_all_tracks"},
     ["target_tracks_subheading"] = rtk.Text{"Which tracks do you want the new sends to send to?", w = 1, tmargin = 14, fontscale = 0.95, fontflags = rtk.font.BOLD, halign = "center", fontflags = rtk.font.BOLD},
     ["form_fields"] = rtk.VBox{padding = "10 10 5", spacing = 10},
     ["target_tracks_box"] = getUnselectedTracks(),
@@ -236,7 +236,7 @@ end
 function getUnselectedTracks()
   local routing_option_target_tracks_box, this_track
 
-  routing_option_target_tracks_box = rtk.FlowBox{w = 1, ref = "routing_option_target_tracks_box"}
+  routing_option_target_tracks_box = rtk.FlowBox{w = 1, tmargin = 7, ref = "routing_option_target_tracks_box"}
 
   for i = 0, _all_tracks_count_on_launch-1 do
     this_track = reaper.GetTrack(0, i)
