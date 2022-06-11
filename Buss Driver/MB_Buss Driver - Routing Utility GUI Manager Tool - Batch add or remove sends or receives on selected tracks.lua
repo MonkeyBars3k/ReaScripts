@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
 -- @version 1.0.7
--- @changelog Change target tracks box margin
+-- @changelog Change target tracks box margin; add selected tracks numbers
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -181,7 +181,8 @@ end
 
 function getRoutingOptionsObjects()
   _routing_options_objs = {
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
+    -- ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
+    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL, autoclose},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
@@ -219,14 +220,16 @@ end
 
 
 function getSelectedTracksList()
-  local selected_tracks_list, retval, this_track_name
+  local selected_tracks_list, this_track, retval, this_track_name
 
   selected_tracks_list = rtk.FlowBox{hspacing = 10}
 
   for i = 1, #_selected_tracks do
-    retval, this_track_name = reaper.GetTrackName(_selected_tracks[i])
+    this_track = _selected_tracks[i]
+    retval, this_track_name = reaper.GetTrackName(this_track)
+    this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
     
-    selected_tracks_list:add(rtk.Text{_bullet .. " " .. this_track_name, fontscale = 0.67, color = "#D6D6D6"})
+    selected_tracks_list:add(rtk.Text{_bullet .. " " .. this_track_num .. ": " .. this_track_name, fontscale = 0.67, color = "#D6D6D6"})
   end
 
   return selected_tracks_list
@@ -286,7 +289,7 @@ function getTrackObjs(this_track)
   this_track_guid = reaper.BR_GetMediaTrackGUID(this_track)
   retval, this_track_name = reaper.GetSetMediaTrackInfo_String(this_track, "P_NAME", "", 0)
   this_track_color = reaper.GetTrackColor(this_track)
-  this_track_checkbox = rtk.CheckBox{this_track_num .. ". " .. this_track_name, h = 17, fontscale = 0.75, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "target_track_" .. this_track_num, data_class = "target_track_checkbox"}
+  this_track_checkbox = rtk.CheckBox{this_track_num .. ": " .. this_track_name, h = 17, fontscale = 0.75, margin = "0 5 1 2", padding = "0 2 3 2", spacing = 3, valign = "center", ref = "target_track_" .. this_track_num, data_class = "target_track_checkbox"}
   this_track_line.data_guid = this_track_guid
 
   return this_track_line, this_track_icon_path, this_track_icon, this_track_num, this_track_name, this_track_color, this_track_checkbox
