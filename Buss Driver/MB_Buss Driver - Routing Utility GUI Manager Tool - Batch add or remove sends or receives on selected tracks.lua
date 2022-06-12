@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.7
--- @changelog Change target tracks box margin; add selected tracks numbers
+-- @version 1.0.8
+-- @changelog Fix regex for channel dropdowns
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -55,7 +55,6 @@ _api_routing_types = {
 }
 _api_all_routing_settings = {"B_MUTE", "B_PHASE", "B_MONO", "D_VOL", "D_PAN", "D_PANLAW", "I_SENDMODE", "I_SRCCHAN", "I_DSTCHAN", "I_MIDI_SRCCHAN", "I_MIDI_DSTCHAN", "I_MIDI_SRCBUS", "I_MIDI_DSTBUS", "I_MIDI_LINK_VOLPAN"}
 _api_msg_answer_yes = 6
-_bullet = "\u{2022}"
 _right_arrow = "\u{2192}"
 _default_routing_settings_values = {
   ["mute"] = 0,
@@ -220,7 +219,7 @@ end
 
 
 function getSelectedTracksList()
-  local selected_tracks_list, this_track, retval, this_track_name
+  local selected_tracks_list, this_track, retval, this_track_name, this_track_num
 
   selected_tracks_list = rtk.FlowBox{hspacing = 10}
 
@@ -229,7 +228,7 @@ function getSelectedTracksList()
     retval, this_track_name = reaper.GetTrackName(this_track)
     this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
     
-    selected_tracks_list:add(rtk.Text{_bullet .. " " .. this_track_num .. ": " .. this_track_name, fontscale = 0.67, color = "#D6D6D6"})
+    selected_tracks_list:add(rtk.Text{this_track_num .. ": " .. this_track_name, fontscale = 0.67, color = "#D6D6D6"})
   end
 
   return selected_tracks_list
@@ -1167,14 +1166,15 @@ function processRoutingSetting(i, routing_settings_api_objs_conversion, dest_tra
   this_routing_obj_name = routing_settings_api_objs_conversion[this_api_routing_setting]
   this_routing_obj_value = _routing_settings_objs.all_values[this_routing_obj_name]
 
+
   if is_volume then
     this_user_routing_setting_value = getAPIVolume(this_routing_obj_value)
 
   elseif is_midi_channel then
-    this_user_routing_setting_value = string.gsub(this_routing_obj_value, "/%d+", "")
+    this_user_routing_setting_value = string.gsub(this_routing_obj_value, "/%-?%d+", "")
   
   elseif is_midi_bus then
-    this_user_routing_setting_value = string.gsub(this_routing_obj_value, "%d+/", "")
+    this_user_routing_setting_value = string.gsub(this_routing_obj_value, "%-?%d+/", "")
 
   else
     this_user_routing_setting_value = this_routing_obj_value
