@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.8
--- @changelog Fix regex for channel dropdowns
+-- @version 1.0.9
+-- @changelog Filter target tracks for existing sends/receives on change to Remove
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -32,7 +32,7 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
--- require("mb-dev-functions")
+require("mb-dev-functions")
 
 
 local rtk = require('rtk')
@@ -180,8 +180,8 @@ end
 
 function getRoutingOptionsObjects()
   _routing_options_objs = {
+    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL, h = 0.4},
     -- ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL, autoclose},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
@@ -189,8 +189,8 @@ function getRoutingOptionsObjects()
     ["configure_btn_wrapper"] = rtk.Container{w = 1, halign = "right", margin = "5 3 0 0"},
     ["configure_btn"] = rtk.Button{label = "Configure send settings", tooltip = "Pop up routing settings to be applied to all sends or receives created", padding = "4 5 6", fontscale = 0.67},
     ["content"] = rtk.VBox{halign = "center", padding = "10 0 0"},
-    ["selected_tracks_box"] = rtk.VBox{maxw = 0.67, halign = "center", padding = "4 6", border = "1px #555555"},
-    ["selected_tracks_heading"] = rtk.Text{"Selected tracks", bmargin = 4, fontscale = 0.8, fontflags = rtk.font.UNDERLINE, color = "#D6D6D6"},
+    ["selected_tracks_box"] = rtk.VBox{maxw = 0.67, halign = "center", padding = "4 6 2", border = "1px #555555"},
+    ["selected_tracks_heading"] = rtk.Text{"Selected track(s)", bmargin = 4, fontscale = 0.8, fontflags = rtk.font.UNDERLINE, color = "#D6D6D6"},
     ["selected_tracks_list"] = getSelectedTracksList(),
     ["action_sentence_wrapper"] = rtk.Container{w = 1, halign = "center"},
     ["action_sentence"] = rtk.HBox{valign = "center", tmargin = 9},
@@ -228,7 +228,7 @@ function getSelectedTracksList()
     retval, this_track_name = reaper.GetTrackName(this_track)
     this_track_num = math.tointeger(reaper.GetMediaTrackInfo_Value(this_track, "IP_TRACKNUMBER"))
     
-    selected_tracks_list:add(rtk.Text{this_track_num .. ": " .. this_track_name, fontscale = 0.67, color = "#D6D6D6"})
+    selected_tracks_list:add(rtk.Text{this_track_num .. ": " .. this_track_name, bpadding = 3, fontscale = 0.67, color = "#D6D6D6"})
   end
 
   return selected_tracks_list
@@ -511,22 +511,100 @@ end
 
 
 function updateButtons(routing_action, is_action_change)
-  local configure_btn_height, routing_options_submit_btn_text
+  local configure_btn_height, routing_options_submit_btn_text, saved_target_track_choices
 
   if is_action_change == "is_action_change" then
 
     if routing_action == "add" then
       configure_btn_height = nil
       routing_options_submit_btn_text = "Add"
+
+      filterTargetTracks("reset")
     
     elseif routing_action == "remove" then
       configure_btn_height = 0
       routing_options_submit_btn_text = "Remove"
+
+      filterTargetTracks()
     end
 
     _routing_options_objs.configure_btn:animate{"h", dst = configure_btn_height, duration = 0.33}
     _routing_options_objs.form_submit:attr("label", routing_options_submit_btn_text)
   end
+end
+
+
+
+function filterTargetTracks(reset)
+  local this_track_choice, this_track_choice_guid, this_selected_track, this_selected_track_routing_count, api_routing_type, api_target_track_string, this_routing_track, this_routing_track_guid, this_track_choice_is_present_in_routing, target_track_lines, this_track_line, this_track_line_guid, this_track_line_matches_current_track
+
+  if reset == "reset" then
+    showHideTargetTrackChoices("show")
+    getSetTargetTracksChoices(_routing_options_objs.saved_target_track_choices)
+
+  else
+    target_track_lines = showHideTargetTrackChoices("hide")
+
+    for i = 1, #_selected_tracks do
+      this_selected_track = _selected_tracks[i]
+      this_selected_track_routing_count = {
+        ["sends"] = reaper.GetTrackNumSends(this_selected_track, 0),
+        ["receives"] = reaper.GetTrackNumSends(this_selected_track, -1)
+      }
+
+      for routing_type, routing_count in pairs(this_selected_track_routing_count) do
+        
+        if routing_type == "sends" then
+          api_routing_type = 0
+          api_target_track_string = "P_DESTTRACK"
+
+        elseif routing_type == "receives" then
+          api_routing_type = -1
+          api_target_track_string = "P_SRCTRACK"
+        end
+
+        for j = 0, routing_count-1 do
+          this_routing_track = reaper.GetTrackSendInfo_Value(this_selected_track, api_routing_type, j, api_target_track_string)
+          this_routing_track_guid = reaper.BR_GetMediaTrackGUID(this_routing_track)
+
+          for k = 1, #target_track_lines do
+            this_track_line = target_track_lines[k][1]
+
+            if this_track_line then
+              this_track_line_guid = this_track_line.data_guid
+              this_track_line_matches_current_track = this_track_line_guid == this_routing_track_guid
+
+              if this_track_line_matches_current_track then
+                this_track_line:show()
+
+                break
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+
+function showHideTargetTrackChoices(show_hide)
+  local target_track_lines, this_track_line
+
+  target_track_lines = _routing_options_objs.target_tracks_box.children
+
+  for i = 1, #target_track_lines do
+    this_track_line = target_track_lines[i][1]
+
+    if show_hide == "show" then
+      this_track_line:show()
+
+    elseif show_hide == "hide" then
+      this_track_line:hide()
+    end
+  end
+
+  return target_track_lines
 end
 
 
@@ -587,6 +665,21 @@ function defineAudioChannelOptions()
   }
 
   return audio_channel_src_options, audio_channel_rcv_options
+end
+
+
+function deepTableCopy( original, copies )
+  if type( original ) ~= 'table' then return original end
+  copies = copies or {}
+  if copies[original] then return copies[original] end
+  local copy = {}
+  copies[original] = copy
+  for key, value in pairs( original ) do
+      local dc_key, dc_value = deepTableCopy( key, copies ), deepTableCopy( value, copies )
+      copy[dc_key] = dc_value
+  end
+  setmetatable(copy, deepTableCopy( getmetatable( original ), copies) )
+  return copy
 end
 
 
@@ -1009,11 +1102,10 @@ end
 
 
 function setTargetTrackChoices(new_choices)
-  local target_track_lines, this_track_idx, this_track_guid, this_track_line_guid, this_track_line, this_track_checkbox
+  local target_track_lines, this_track_guid, this_track_line_guid, this_track_line, this_track_checkbox
 
   for i = 1, #new_choices do
     target_track_lines = _routing_options_objs.target_tracks_box.children
-    this_track_idx = new_choices[i].idx
     this_track_guid = new_choices[i].guid
 
     for j = 1, #target_track_lines do
@@ -1024,6 +1116,7 @@ function setTargetTrackChoices(new_choices)
 
         if this_track_line_guid == this_track_guid then
           this_track_checkbox = this_track_line.children[2][1]
+
           this_track_checkbox:attr("value", true)
 
           break
@@ -1214,7 +1307,7 @@ function removeRouting(routing_option_type_choice, selected_track, target_track)
 end
 
 
-function resetTargetTrackChoices()
+function resetTargetTrackChoices(none)
   local target_tracks_box, this_target_tracks_box_child_line, this_track_line_child
 
   target_tracks_box = _routing_options_objs.form_fields.refs.routing_option_target_tracks_box
@@ -1279,23 +1372,3 @@ function initBussDriver()
 end
 
 initBussDriver()
-
-
-
-
-
---- UTILITY FUNCTIONS ---
-
-function deepTableCopy( original, copies )
-  if type( original ) ~= 'table' then return original end
-  copies = copies or {}
-  if copies[original] then return copies[original] end
-  local copy = {}
-  copies[original] = copy
-  for key, value in pairs( original ) do
-      local dc_key, dc_value = deepTableCopy( key, copies ), deepTableCopy( value, copies )
-      copy[dc_key] = dc_value
-  end
-  setmetatable(copy, deepTableCopy( getmetatable( original ), copies) )
-  return copy
-end
