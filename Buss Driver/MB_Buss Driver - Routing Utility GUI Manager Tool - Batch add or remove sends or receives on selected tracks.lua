@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.1
--- @changelog Remove dev code
+-- @version 1.1.2
+-- @changelog Edit window title
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -180,7 +180,7 @@ end
 
 function getRoutingOptionsObjects()
   _routing_options_objs = {
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
+    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove sends or receives on selected tracks", w = 0.4, maxh = rtk.Attribute.NIL},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
