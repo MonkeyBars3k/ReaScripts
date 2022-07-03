@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.0.9
--- @changelog Filter target tracks for existing sends/receives on change to Remove
+-- @version 1.1
+-- @changelog Filter target tracks for existing routing on sends/receives change 
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -180,8 +180,7 @@ end
 
 function getRoutingOptionsObjects()
   _routing_options_objs = {
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL, h = 0.4},
-    -- ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
+    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)", w = 0.4, maxh = rtk.Attribute.NIL},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
@@ -365,7 +364,6 @@ function storeRetrieveUserOptions(store)
     elseif store == "retrieve" then
       all_user_options = storeRetrieveProjectData("all_user_options")
       retval, all_user_options = serpent.load(all_user_options)
-
       _routing_options_objs.all_user_options = all_user_options
     end
   end
@@ -464,7 +462,7 @@ function updateRoutingForm(is_action_change)
   _routing_options_objs.target_tracks_subheading:attr("text", new_target_tracks_subheading_text)
   _routing_options_objs.configure_btn:attr("label", "Configure " .. routing_type .. " settings")
   _routing_options_objs.action_text_end:attr("text", action_text_end)
-  updateButtons(routing_action, is_action_change)
+  updateButtons(routing_action, is_action_change, routing_type)
 end
 
 
@@ -510,7 +508,7 @@ function getRoutingPrepositions(routing_action, routing_type)
 end
 
 
-function updateButtons(routing_action, is_action_change)
+function updateButtons(routing_action, is_action_change, selected_routing_type)
   local configure_btn_height, routing_options_submit_btn_text, saved_target_track_choices
 
   if is_action_change == "is_action_change" then
@@ -525,7 +523,7 @@ function updateButtons(routing_action, is_action_change)
       configure_btn_height = 0
       routing_options_submit_btn_text = "Remove"
 
-      filterTargetTracks()
+      filterTargetTracks(nil, selected_routing_type)
     end
 
     _routing_options_objs.configure_btn:animate{"h", dst = configure_btn_height, duration = 0.33}
@@ -535,10 +533,10 @@ end
 
 
 
-function filterTargetTracks(reset)
-  local this_track_choice, this_track_choice_guid, this_selected_track, this_selected_track_routing_count, api_routing_type, api_target_track_string, this_routing_track, this_routing_track_guid, this_track_choice_is_present_in_routing, target_track_lines, this_track_line, this_track_line_guid, this_track_line_matches_current_track
+function filterTargetTracks(action, selected_routing_type)
+  local this_track_choice, this_track_choice_guid, this_selected_track, this_selected_track_routing_count, api_routing_type, api_target_track_string, this_routing_track, this_routing_track_guid, this_track_choice_is_present_in_routing, target_track_lines
 
-  if reset == "reset" then
+  if action == "reset" then
     showHideTargetTrackChoices("show")
     getSetTargetTracksChoices(_routing_options_objs.saved_target_track_choices)
 
@@ -547,41 +545,13 @@ function filterTargetTracks(reset)
 
     for i = 1, #_selected_tracks do
       this_selected_track = _selected_tracks[i]
-      this_selected_track_routing_count = {
-        ["sends"] = reaper.GetTrackNumSends(this_selected_track, 0),
-        ["receives"] = reaper.GetTrackNumSends(this_selected_track, -1)
-      }
+      this_selected_track_routing_count, api_routing_type, api_target_track_string = getRoutingValues(this_selected_track, selected_routing_type)
 
-      for routing_type, routing_count in pairs(this_selected_track_routing_count) do
-        
-        if routing_type == "sends" then
-          api_routing_type = 0
-          api_target_track_string = "P_DESTTRACK"
+      for j = 0, this_selected_track_routing_count-1 do
+        this_routing_track = reaper.GetTrackSendInfo_Value(this_selected_track, api_routing_type, j, api_target_track_string)
+        this_routing_track_guid = reaper.BR_GetMediaTrackGUID(this_routing_track)
 
-        elseif routing_type == "receives" then
-          api_routing_type = -1
-          api_target_track_string = "P_SRCTRACK"
-        end
-
-        for j = 0, routing_count-1 do
-          this_routing_track = reaper.GetTrackSendInfo_Value(this_selected_track, api_routing_type, j, api_target_track_string)
-          this_routing_track_guid = reaper.BR_GetMediaTrackGUID(this_routing_track)
-
-          for k = 1, #target_track_lines do
-            this_track_line = target_track_lines[k][1]
-
-            if this_track_line then
-              this_track_line_guid = this_track_line.data_guid
-              this_track_line_matches_current_track = this_track_line_guid == this_routing_track_guid
-
-              if this_track_line_matches_current_track then
-                this_track_line:show()
-
-                break
-              end
-            end
-          end
-        end
+        showTargetTracksWithExistingRouting(this_routing_track_guid, target_track_lines)
       end
     end
   end
@@ -605,6 +575,44 @@ function showHideTargetTrackChoices(show_hide)
   end
 
   return target_track_lines
+end
+
+
+function getRoutingValues(selected_track, selected_routing_type)
+  local selected_track_routing_count, api_routing_type, api_target_track_string
+
+  if selected_routing_type == "send" then
+    selected_track_routing_count = reaper.GetTrackNumSends(selected_track, 0)
+    api_routing_type = 0
+    api_target_track_string = "P_DESTTRACK"
+
+  elseif selected_routing_type == "receive" then
+    selected_track_routing_count = reaper.GetTrackNumSends(selected_track, -1)
+    api_routing_type = -1
+    api_target_track_string = "P_SRCTRACK"
+  end
+
+  return selected_track_routing_count, api_routing_type, api_target_track_string
+end
+
+
+function showTargetTracksWithExistingRouting(this_routing_track_guid, target_track_lines)
+  local this_track_line, this_track_line_guid, this_track_line_matches_current_track
+
+  for i = 1, #target_track_lines do
+    this_track_line = target_track_lines[i][1]
+
+    if this_track_line then
+      this_track_line_guid = this_track_line.data_guid
+      this_track_line_matches_current_track = this_track_line_guid == this_routing_track_guid
+
+      if this_track_line_matches_current_track then
+        this_track_line:show()
+
+        break
+      end
+    end
+  end
 end
 
 
@@ -1356,12 +1364,14 @@ function populateRoutingOptionsWindow()
   _routing_options_objs.content:add(_routing_options_objs.form_fields)
   _routing_options_objs.content:add(_routing_options_objs.form_bottom)
   _routing_options_objs.viewport:attr("child", _routing_options_objs.content)
+  _routing_options_objs.viewport:reflow()
   _routing_options_objs.configure_btn_wrapper:add(_routing_options_objs.configure_btn)
   _routing_options_objs.brand:add(_routing_options_objs.title)
   _routing_options_objs.brand:add(_routing_options_objs.logo)
   _routing_options_objs.window:add(_routing_options_objs.configure_btn_wrapper)
   _routing_options_objs.window:add(_routing_options_objs.brand)
   _routing_options_objs.window:add(_routing_options_objs.viewport)
+
 end
 
 
