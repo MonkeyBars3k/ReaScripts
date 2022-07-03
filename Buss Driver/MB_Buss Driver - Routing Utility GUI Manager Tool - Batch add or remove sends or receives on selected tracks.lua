@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1
--- @changelog Filter target tracks for existing routing on sends/receives change 
+-- @version 1.1.1
+-- @changelog Remove dev code
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -32,7 +32,7 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
-require("mb-dev-functions")
+-- require("mb-dev-functions")
 
 
 local rtk = require('rtk')
