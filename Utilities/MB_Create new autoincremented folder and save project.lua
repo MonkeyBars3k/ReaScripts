@@ -34,12 +34,13 @@
 -- end
 
 
+-- THIS SCRIPT LOOKS IN THE AUTOINCREMENTING PARENT FOLDER FOR THE LAST (ALPHABETICAL/NUMERICAL) FOLDER IN THERE, FOR EXAMPLE ONE FOLDER PER MONTH, AND ADDS A NEW PROJECT FOLDER [NNN] AND PROJECT FILE INSIDE.
 
+-- MACOS SUPPORT, POSSIBLY LINUX, PROBABLY NOT WINDOWS YET
 -- CHANGE THESE 2 VALUES TO MATCH YOUR SYSTEM'S PATHS
 
-local main_projects_folder = "/Users/gabriel/Projects/proj_save_test"
-local project_template_path = "/Users/gabriel/Library/Application Support/REAPER/ProjectTemplates/StreamBasic-template_test.RPP"
-
+local main_projects_folder = "/Users/[YOURUSERNAME]/Projects/[AUTOINCREMENTING_PARENT_FOLDER]"
+local project_template_path = "/Users/[YOURUSERNAME]/Library/Application Support/REAPER/ProjectTemplates/[DESIRED_TEMPLATE_PROJECT].RPP"
 
 
 

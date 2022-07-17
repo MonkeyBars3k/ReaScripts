@@ -1,7 +1,6 @@
 -- @noindex
 
 function updateSelectedItems()
-  local i
   for i = 0, reaper.CountSelectedMediaItems(0)-1 do
     reaper.UpdateItemInProject(reaper.GetMediaItem(0,i))
   end
@@ -27,7 +26,6 @@ function logStr(val)
 end
 
 function logTable(t, name)
-  local k,v
   if name then
     log("Iterate through table " .. name .. ":")
   end
@@ -37,7 +35,6 @@ function logTable(t, name)
 end
 
 function logTableMediaItems(t, name)
-  local k,v
   if name then
     log("Iterate through table " .. name .. ":")
   end

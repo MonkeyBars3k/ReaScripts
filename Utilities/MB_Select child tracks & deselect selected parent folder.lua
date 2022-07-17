@@ -1,7 +1,7 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.1.2
--- @changelog Remove undo block
+-- @version 1.1.3
+-- @changelog Add comments
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect child tracks & select their parent folder.lua
