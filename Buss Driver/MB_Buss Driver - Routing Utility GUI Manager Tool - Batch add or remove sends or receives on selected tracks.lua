@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.2
--- @changelog Edit window title
+-- @version 1.1.3
+-- @changelog Add color contrast to track list
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -259,6 +259,8 @@ function populateTargetTrackField(this_track, routing_option_target_tracks_box)
     if this_track_color ~= 0 then
       this_track_color = rtk.color.convert_native(this_track_color)
       this_track_checkbox:attr("bg", this_track_color)
+
+      this_track_checkbox = correctTrackColor(this_track_checkbox, this_track_color)
     end
 
     this_track_checkbox.onchange = function(self)
@@ -291,6 +293,27 @@ function getTrackObjs(this_track)
   this_track_line.data_guid = this_track_guid
 
   return this_track_line, this_track_icon_path, this_track_icon, this_track_num, this_track_name, this_track_color, this_track_checkbox
+end
+
+
+function correctTrackColor(track_checkbox, track_color)
+  local this_track_color_r, this_track_color_g, this_track_color_b, this_track_color_rgb, this_track_color_is_dark
+
+  this_track_color_r, this_track_color_g, this_track_color_b = reaper.ColorFromNative(track_color)
+  this_track_color_rgb = this_track_color_r .. this_track_color_g .. this_track_color_b
+  this_track_color_rgb = tonumber(this_track_color_rgb)
+  this_track_color_is_dark = colorIsDark(this_track_color_rgb)
+
+  if not this_track_color_is_dark then
+    track_checkbox:attr("textcolor2", "#000000")
+  end
+
+  return track_checkbox
+end
+
+
+function colorIsDark(rgb)
+  return rgb < 3 * 256 / 2
 end
 
 
