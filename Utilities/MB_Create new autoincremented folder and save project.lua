@@ -77,8 +77,6 @@ end
 local all_month_folders, last_month_folder, all_project_folders, last_project_folder, last_project_number, new_project_number, new_project_folder, new_project_name, retval, current_project_path, temp_reaproject, temp_project_path, new_project_path, rename_succeeded
 
 
-reaper.Undo_BeginBlock()
-
 all_month_folders = listFolders(main_projects_folder)
 
 table.sort(all_month_folders)
@@ -111,4 +109,3 @@ new_project_path = last_month_folder .. "/" .. new_project_folder .. "/" .. new_
 rename_succeeded = os.rename(temp_project_path, new_project_path)
 
 reaper.Main_openProject(new_project_path)
-reaper.Undo_EndBlock("MB_Create new autoincremented folder and save project", -1)
