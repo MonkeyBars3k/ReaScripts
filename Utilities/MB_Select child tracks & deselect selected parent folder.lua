@@ -1,8 +1,9 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.1
--- @changelog Add undo blocks; organize metapackage
+-- @version 1.1.1
+-- @changelog Add new script Autoincrement and Save Project
 -- @provides [main] .
+--   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect child tracks & select their parent folder.lua
 --   gnu_license_v3.txt
 
