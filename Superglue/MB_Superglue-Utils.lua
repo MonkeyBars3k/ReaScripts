@@ -260,7 +260,7 @@ end
 
 
 function setDefaultOptionValues()
-  local i, this_option_ext_state_key, this_option_exists_in_extstate
+  local this_option_ext_state_key, this_option_exists_in_extstate
 
   for i = 1, #_all_global_options_params do
     this_option_ext_state_key = _all_global_options_params[i].ext_state_key
@@ -277,7 +277,7 @@ setDefaultOptionValues()
 
 
 function toggleOption(option_name)
-  local i, active_option_idx, active_option, current_val, new_val
+  local active_option_idx, active_option, current_val, new_val
 
   for i = 1, #_all_global_options_params do
 
@@ -359,7 +359,7 @@ end
 
 
 function populateOptionControls(all_option_controls, options_window_content, option_form_submit)
-  local i, this_option, this_option_name
+  local this_option, this_option_name
 
   for i = 1, #_all_global_options_params do
     this_option = _all_global_options_params[i]
@@ -406,7 +406,7 @@ end
 
 
 function getOptionDropdown(option, option_form_submit)
-  local option_saved_value, option_dropdown_box, dropdown_label, dropdown_control, dropdown_menu, i, this_option_value, this_option_value_menu_item
+  local option_saved_value, option_dropdown_box, dropdown_label, dropdown_control, dropdown_menu, this_option_value, this_option_value_menu_item
 
   option_saved_value = reaper.GetExtState(_global_options_section, option.ext_state_key)
   option_dropdown_box = rtk.HBox{spacing = 10}
@@ -436,7 +436,7 @@ end
 
 
 function submitOptionChanges(all_option_controls, options_window)
-  local i, this_option, this_option_saved_value, this_option_form_value, dropdown
+  local this_option, this_option_saved_value, this_option_form_value, dropdown
 
   for i = 1, #_all_global_options_params do
     this_option = _all_global_options_params[i]
@@ -488,7 +488,7 @@ end
 
 
 function handleItemInfoWindow(selected_item)
-  local selected_superitem_instance_pool_id, this_is_superitem, selected_item_parent_pool_id, this_is_child_item, selected_item_params, i
+  local selected_superitem_instance_pool_id, this_is_superitem, selected_item_parent_pool_id, this_is_child_item, selected_item_params
 
   selected_superitem_instance_pool_id = storeRetrieveItemData(selected_item, _instance_pool_id_key_suffix)
   this_is_superitem = selected_superitem_instance_pool_id and selected_superitem_instance_pool_id ~= ""
@@ -757,7 +757,7 @@ end
 
 
 function checkItemsOffscreen(item_count, action)
-  local i, this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg_text_start, offscreen_msg_text_end, offscreen_msg_text_item_type, offscreen_msg_text, items_offscreen_response
+  local this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg_text_start, offscreen_msg_text_end, offscreen_msg_text_item_type, offscreen_msg_text, items_offscreen_response
 
   for i = 0, item_count-1 do
     this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg_text_start, offscreen_msg_text_end = getOffscreenItemParams(i)
@@ -817,7 +817,7 @@ end
 
 
 function setResetUsersItemSelection(set_reset)
-  local set, reset, selected_items_count, i, this_selected_item
+  local set, reset, selected_items_count, this_selected_item
 
   set = set_reset
   reset = not set_reset
@@ -843,7 +843,7 @@ end
 
 
 function getFirstPoolIdFromSelectedItems(selected_item_count)
-  local i, this_item, this_item_pool_id, this_item_has_stored_pool_id
+  local this_item, this_item_pool_id, this_item_has_stored_pool_id
 
   for i = 0, selected_item_count-1 do
     this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
@@ -878,7 +878,7 @@ end
 
 
 function getSelectedItems(selected_item_count)
-  local selected_items, i, this_item, first_selected_item
+  local selected_items, this_item, first_selected_item
 
   selected_items = {}
   
@@ -897,7 +897,7 @@ end
 
 
 function handleRemovedItems(restored_items_pool_id, selected_items)
-  local pool_contained_item_states_key_label, retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, this_stored_item_guid, this_item_last_glue_state, this_stored_item_is_unmatched, i, this_selected_item, this_selected_item_guid, this_unmatched_item
+  local pool_contained_item_states_key_label, retval, last_glue_stored_item_states_string, last_glue_stored_item_states_table, this_stored_item_guid, this_item_last_glue_state, this_stored_item_is_unmatched, this_selected_item, this_selected_item_guid, this_unmatched_item
 
   pool_contained_item_states_key_label = _pool_key_prefix .. restored_items_pool_id .. _pool_contained_item_states_key_suffix
   retval, last_glue_stored_item_states_string = storeRetrieveProjectData(pool_contained_item_states_key_label)
@@ -948,7 +948,7 @@ end
 
 
 function detectSelectedItemsOnMultipleTracks(selected_item_count)
-  local item_is_on_different_track_than_previous, i, this_item, this_item_track, prev_item_track
+  local item_is_on_different_track_than_previous, this_item, this_item_track, prev_item_track
 
   item_is_on_different_track_than_previous = false
 
@@ -987,7 +987,7 @@ end
 
 
 function getSelectedSuperglueItemTypes(selected_item_count, requested_types)
-  local item_types_data, i, this_item, superitem_pool_id, restored_item_pool_id, j, this_requested_item_type
+  local item_types_data, this_item, superitem_pool_id, restored_item_pool_id, this_requested_item_type
 
   item_types_data = getItemTypes()
 
@@ -1015,7 +1015,7 @@ end
 
 
 function getItemTypes()
-  local item_types, item_types_data, i, this_item_type
+  local item_types, item_types_data, this_item_type
 
   item_types = {"superitem", "restored", "nonsuperitem", "child_instance", "parent_instance"}
   item_types_data = {}
@@ -1032,7 +1032,7 @@ end
 
 
 function detectSiblings(restored_items)
-  local siblings_are_selected, i, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id 
+  local siblings_are_selected, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id 
 
   siblings_are_selected = false
 
@@ -1060,7 +1060,7 @@ end
 
 
 function recursiveSuperitemIsBeingGlued(superitems, restored_items)
-  local i, this_superitem, this_superitem_instance_pool_id, j, this_restored_item, this_restored_item_parent_pool_id, this_restored_item_is_from_same_pool_as_selected_superitem
+  local this_superitem, this_superitem_instance_pool_id, this_restored_item, this_restored_item_parent_pool_id, this_restored_item_is_from_same_pool_as_selected_superitem
 
   for i = 1, #superitems do
     this_superitem = superitems[i]
@@ -1083,7 +1083,7 @@ end
 
 
 function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track)
-  local track_has_no_virtual_instrument, i, this_item, midi_item_is_selected
+  local track_has_no_virtual_instrument, this_item, midi_item_is_selected
 
   track_has_no_virtual_instrument = reaper.TrackFX_GetInstrument(first_selected_item_track) == -1
 
@@ -1256,14 +1256,7 @@ function setUpGlue(depool_superitem_params, this_is_ancestor_update, first_selec
 
   if this_is_new_glue then
     pool_id = handlePoolId()
-    sizing_params = getBoundsFromItems(selected_items)
-
-    if this_is_depool then
-      sizing_params = setUpDePool(pool_id, depool_superitem_params, first_selected_item_track)
-
-    else
-      instantiateDummySizingItem(sizing_params, first_selected_item_track)
-    end
+    sizing_params = handleNewGlueSizing(selected_items, this_is_depool, pool_id, depool_superitem_params, first_selected_item_track)
 
   elseif this_is_reglue then
     sizing_params = setUpReglue(this_is_ancestor_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
@@ -1290,20 +1283,31 @@ function handlePoolId()
 end
 
 
-function incrementPoolId(last_pool_id)
-  local this_is_first_glue_in_project, new_pool_id
+function handleNewGlueSizing(selected_items, this_is_depool, pool_id, depool_superitem_params, first_selected_item_track)
+  local global_option_time_selection_sets_bounds_enabled, sizing_params
+  
+  global_option_time_selection_sets_bounds_enabled = reaper.GetExtState(_global_options_section, _global_option_toggle_time_selection_sets_bounds_key)
 
-  this_is_first_glue_in_project = not last_pool_id or last_pool_id == ""
+  if global_option_time_selection_sets_bounds_enabled == "true" then
+    _users_time_selection_before_action.position, _users_time_selection_before_action.end_point = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
+    sizing_params = {
+      ["position"] = _users_time_selection_before_action.position,
+      ["length"] = _users_time_selection_before_action.end_point - _users_time_selection_before_action.position,
+      ["end_point"] = _users_time_selection_before_action.end_point
+    }
 
-  if this_is_first_glue_in_project then
-    new_pool_id = 1
-
-  else
-    last_pool_id = tonumber(last_pool_id)
-    new_pool_id = math.floor(last_pool_id + 1)
+  elseif global_option_time_selection_sets_bounds_enabled == "false" then
+    sizing_params = getBoundsFromItems(selected_items)
   end
 
-  return new_pool_id
+  if this_is_depool then
+    sizing_params = setUpDePool(pool_id, depool_superitem_params, first_selected_item_track)
+
+  else
+    instantiateDummySizingItem(sizing_params, first_selected_item_track)
+  end
+
+  return sizing_params
 end
 
 
@@ -1319,6 +1323,49 @@ function getBoundsFromItems(items)
   sizing_region_params.length = sizing_region_params.end_point - sizing_region_params.position
 
   return sizing_region_params
+end
+
+
+function setUpDePool(pool_id, depool_superitem_params, first_selected_item_track)
+  local sizing_params
+
+  _last_glue_stored_item_states = storeRetrievePoolData(pool_id, _pool_contained_item_states_key_suffix)
+  sizing_params = {
+    ["position"] = depool_superitem_params.position,
+    ["end_point"] = depool_superitem_params.end_point
+  }
+  sizing_params.length = sizing_params.end_point - sizing_params.position
+
+  storeRetrievePoolData(pool_id, _pool_last_glue_contained_item_states_key_suffix, _last_glue_stored_item_states)
+  instantiateDummySizingItem(sizing_params, first_selected_item_track)
+
+  return sizing_params
+end
+
+
+function instantiateDummySizingItem(sizing_params, first_selected_item_track)
+  local dummy_sizing_item = reaper.AddMediaItemToTrack(first_selected_item_track)
+
+  reaper.SetMediaItemPosition(dummy_sizing_item, sizing_params.position, false)
+  reaper.SetMediaItemLength(dummy_sizing_item, sizing_params.length, false)
+  reaper.SetMediaItemSelected(dummy_sizing_item, true)
+end
+
+
+function incrementPoolId(last_pool_id)
+  local this_is_first_glue_in_project, new_pool_id
+
+  this_is_first_glue_in_project = not last_pool_id or last_pool_id == ""
+
+  if this_is_first_glue_in_project then
+    new_pool_id = 1
+
+  else
+    last_pool_id = tonumber(last_pool_id)
+    new_pool_id = math.floor(last_pool_id + 1)
+  end
+
+  return new_pool_id
 end
 
 
@@ -1492,15 +1539,6 @@ function handleSizingRegionPoolData(region_idx, pool_id, delete)
 end
 
 
-function instantiateDummySizingItem(sizing_params, first_selected_item_track)
-  local dummy_sizing_item = reaper.AddMediaItemToTrack(first_selected_item_track)
-
-  reaper.SetMediaItemPosition(dummy_sizing_item, sizing_params.position, false)
-  reaper.SetMediaItemLength(dummy_sizing_item, sizing_params.length, false)
-  reaper.SetMediaItemSelected(dummy_sizing_item, true)
-end
-
-
 function setUpParentUpdate(first_selected_item_track, pool_id, obey_time_selection)
   local pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_end_point, sizing_params
 
@@ -1517,25 +1555,8 @@ function setUpParentUpdate(first_selected_item_track, pool_id, obey_time_selecti
 end
 
 
-function setUpDePool(pool_id, depool_superitem_params, first_selected_item_track)
-  local sizing_params
-
-  _last_glue_stored_item_states = storeRetrievePoolData(pool_id, _pool_contained_item_states_key_suffix)
-  sizing_params = {
-    ["position"] = depool_superitem_params.position,
-    ["end_point"] = depool_superitem_params.end_point
-  }
-  sizing_params.length = sizing_params.end_point - sizing_params.position
-
-  storeRetrievePoolData(pool_id, _pool_last_glue_contained_item_states_key_suffix, _last_glue_stored_item_states)
-  instantiateDummySizingItem(sizing_params, first_selected_item_track)
-
-  return sizing_params
-end
-
-
 function handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_ancestor_update, this_is_depool)
-  local selected_item_states, selected_items_pool_params, i, last_selected_item_position, last_selected_item_length
+  local selected_item_states, selected_items_pool_params, last_selected_item_position, last_selected_item_length
 
   setPreglueItemsData(selected_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
 
@@ -1549,7 +1570,7 @@ end
 
 
 function setPreglueItemsData(preglue_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
-  local this_is_new_glue, i, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position
+  local this_is_new_glue, this_item, this_is_1st_item, this_item_position, first_item_position, offset_position
 
   this_is_new_glue = not this_is_reglue
 
@@ -1577,7 +1598,7 @@ end
 
 
 function getItemStates(items, active_pool_id)
-  local selected_item_states, selected_items_pool_params, i, item, this_item, this_item_instance_pool_id, this_item_parent_pool_id, this_item_guid, this_item_state
+  local selected_item_states, selected_items_pool_params, item, this_item, this_item_instance_pool_id, this_item_parent_pool_id, this_item_guid, this_item_state
 
   selected_item_states = {}
   selected_items_pool_params = {}
@@ -1680,7 +1701,7 @@ end
 
 
 function selectDeselectItems(items, select_deselect)
-  local i, this_item
+  local this_item
 
   for i = 1, #items do
     this_item = items[i]
@@ -1822,7 +1843,7 @@ end
 
 
 function renameSuperitemSource(superitem, pool_id)
-  local project_path, superitem_active_take, superitem_active_take_source, superitem_active_take_source_peaks, superitem_active_take_source_filepath, i, superitem_active_take_source_filename, superitem_source_new_filepath, superitem_new_source_file
+  local project_path, superitem_active_take, superitem_active_take_source, superitem_active_take_source_peaks, superitem_active_take_source_filepath, superitem_active_take_source_filename, superitem_source_new_filepath, superitem_new_source_file
 
   project_path = reaper.GetProjectPath()
   superitem_active_take = reaper.GetActiveTake(superitem)
@@ -1849,7 +1870,7 @@ end
 
 
 function refreshActiveTakeFlag(item, active_take, pool_id)
-  local all_takes, superitem_superglue_active_take_key, i, this_take
+  local all_takes, superitem_superglue_active_take_key, this_take
 
   all_takes = reaper.CountTakes(item)
   superitem_superglue_active_take_key = _api_data_key .. _global_script_prefix .. _pool_key_prefix .. pool_id .. _superglue_active_take_key_suffix
@@ -1949,7 +1970,7 @@ end
 
 
 function handleDescendantPoolReferences(pool_id, contained_items_pool_params)
-  local this_pool_descendants, i, this_contained_item_instance_pool_id, this_contained_item_params, this_selected_item_is_superitem, this_child_pool_descendant_pool_ids, j, this_pool_descendants_string
+  local this_pool_descendants, this_contained_item_instance_pool_id, this_contained_item_params, this_selected_item_is_superitem, this_child_pool_descendant_pool_ids, this_pool_descendants_string
 
   this_pool_descendants = {}
 
@@ -1988,7 +2009,7 @@ end
 
 
 function storeParentPoolReferencesInChildPool(preglue_child_instance_pool_id, active_pool_id)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids_referenced_in_child_pool, i, this_parent_pool_id, this_parent_pool_id_is_referenced_in_child_pool
+  local parent_pool_ids_data_key_label, retval, parent_pool_ids_referenced_in_child_pool, this_parent_pool_id, this_parent_pool_id_is_referenced_in_child_pool
 
   parent_pool_ids_data_key_label = _pool_key_prefix .. preglue_child_instance_pool_id .. _parent_pool_ids_data_key_suffix
   retval, parent_pool_ids_referenced_in_child_pool = storeRetrieveProjectData(parent_pool_ids_data_key_label)
@@ -2019,7 +2040,7 @@ end
 
 
 function deleteUnselectedContainedItems()
-  local i, this_contained_item_outside, this_contained_item_track
+  local this_contained_item_outside, this_contained_item_track
 
   if _unselected_contained_items then
 
@@ -2064,7 +2085,7 @@ end
 
 
 function cleanUnselectedRestoredItemsFromPool(pool_id)
-  local all_items_count, i, this_item, this_item_is_selected, this_item_parent_pool_id
+  local all_items_count, this_item, this_item_is_selected, this_item_parent_pool_id
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
 
@@ -2342,7 +2363,7 @@ end
 
 
 function adjustTakeEnvelopes(instance_active_take, position_adjustment_delta)
-  local take_envelopes_count, i, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_position, adjusted_envelope_point_position
+  local take_envelopes_count, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_position, adjusted_envelope_point_position
   
   take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
 
@@ -2364,7 +2385,7 @@ end
 
 
 function adjustTakeMarkers(instance_active_take, position_adjustment_delta, fresh_glue_source_offset)
-  local take_markers_count, all_take_markers, i, this_marker_position, this_marker_name, retval, adjusted_marker_position
+  local take_markers_count, all_take_markers, this_marker_position, this_marker_name, retval, adjusted_marker_position
 
   take_markers_count = reaper.GetNumTakeMarkers(instance_active_take)
 
@@ -2417,7 +2438,7 @@ end
 
 
 function adjustTakeStretchMarkers(instance_active_take, stretch_markers_count, marker_position_adjustment, marker_source_position_adjustment)
-  local all_stretch_markers, i, this_marker_position, this_marker_source_position, adjusted_marker_position, adjusted_marker_source_position
+  local all_stretch_markers, this_marker_position, this_marker_source_position, adjusted_marker_position, adjusted_marker_source_position
 
   all_stretch_markers = {}
 
@@ -2442,7 +2463,7 @@ end
 
 
 function editAncestors(pool_id, superitem, descendant_nesting_depth_of_active_parent)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, i, this_parent_pool_id, parent_edit_temp_track, restored_items, this_parent_instance_params, no_parent_instances_were_found
+  local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, this_parent_pool_id, parent_edit_temp_track, restored_items, this_parent_instance_params, no_parent_instances_were_found
 
   parent_pool_ids_data_key_label = _pool_key_prefix .. pool_id .. _parent_pool_ids_data_key_suffix
   retval, parent_pool_ids = storeRetrieveProjectData(parent_pool_ids_data_key_label)
@@ -2501,7 +2522,7 @@ end
 
 
 function getFirstPoolInstanceParams(pool_id)
-  local all_items_count, i, this_item, this_item_instance_pool_id, parent_instance_params
+  local all_items_count, this_item, this_item_instance_pool_id, parent_instance_params
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
 
@@ -2522,7 +2543,7 @@ end
 
 
 function checkParentPoolIsAncestorInProject(this_parent_pool_id)
-  local all_pool_ids_in_project, this_pool, this_pool_descendant_pool_ids, retval, j
+  local all_pool_ids_in_project, this_pool, this_pool_descendant_pool_ids, retval
 
   all_pool_ids_in_project = getAllPoolIdsInProject()
 
@@ -2552,7 +2573,7 @@ end
 
 
 function getAllPoolIdsInProject()
-  local all_items_count, all_pool_ids_in_project, i, this_item, this_item_instance_pool_id
+  local all_items_count, all_pool_ids_in_project, this_item, this_item_instance_pool_id
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
   all_pool_ids_in_project = {}
@@ -2876,7 +2897,7 @@ end
 
 
 function propagateChangesToSuperitems(sizing_region_guid)
-  local this_is_ancestor_update, ancestor_pools_near_project_start, ancestor_pools_params_sorted_by_ascending_nesting_depth, i, this_ancestor_pool_id
+  local this_is_ancestor_update, ancestor_pools_near_project_start, ancestor_pools_params_sorted_by_ascending_nesting_depth, this_ancestor_pool_id
 
   this_is_ancestor_update = false
   ancestor_pools_near_project_start = handleSuperitemsChangedByReglue(this_is_ancestor_update)
@@ -2903,7 +2924,7 @@ end
 
 
 function handleSuperitemsChangedByReglue(this_is_ancestor_update)
-  local all_items_count, ancestor_pools_near_project_start, i, this_item, this_active_pool_instance, global_option_toggle_depool_all_siblings_on_reglue, this_instance_active_take
+  local all_items_count, ancestor_pools_near_project_start, this_item, this_active_pool_instance, global_option_toggle_depool_all_siblings_on_reglue, this_instance_active_take
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
   ancestor_pools_near_project_start = {}
@@ -3085,7 +3106,7 @@ end
 
 
 function getPropagateDialogValues()
-  local propagate_dialog_data, propagate_dialog_params, i
+  local propagate_dialog_data, propagate_dialog_params
 
   propagate_dialog_data = {
     {"source_position", _global_option_maintain_source_position_default_key, "audio source timeline locations so they remain in the same place?", "left edge"},
@@ -3257,7 +3278,7 @@ end
 
 
 function adjustParentPoolChildrenNearProjectStart(parent_pool_id, active_pool_id)
-  local all_items_count, i, this_item, this_item_parent_pool_id, this_item_is_pool_child, this_child_instance_pool_id, this_child_is_active_sibling, this_child_current_position, this_child_adjusted_position
+  local all_items_count, this_item, this_item_parent_pool_id, this_item_is_pool_child, this_child_instance_pool_id, this_child_is_active_sibling, this_child_current_position, this_child_adjusted_position
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
   
@@ -3305,7 +3326,7 @@ end
 
 
 function refreshCurrentPoolStoredItemsPostDePool()
-  local i, this_restored_item_exists, all_items_count, j, this_item, this_item_parent_pool_id, this_item_belongs_to_current_pool
+  local this_restored_item_exists, all_items_count, this_item, this_item_parent_pool_id, this_item_belongs_to_current_pool
 
   for i = 1, #_current_pool_fresh_glue_params.restored_items do
     this_restored_item_exists = reaper.ValidatePtr(_current_pool_fresh_glue_params.restored_items[i], "MediaItem*")
@@ -3389,7 +3410,7 @@ end
 
 
 function otherInstanceIsOpen(edit_pool_id)
-  local all_items_count, i, this_item, restored_item_pool_id
+  local all_items_count, this_item, restored_item_pool_id
 
   all_items_count = reaper.CountMediaItems(_api_current_project)
 
@@ -3516,7 +3537,7 @@ end
 
 
 function explodeSuperitemTakes(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
-  local this_duplicated_item, this_duplicated_item_new_position, j, this_duplicated_item_new_active_take
+  local this_duplicated_item, this_duplicated_item_new_position, this_duplicated_item_new_active_take
 
   duplicateSelectedItems()
 
@@ -3671,7 +3692,7 @@ end
 
 
 function updateDePooledRestoredItemsData(restored_items, pool_id)
-  local i, this_restored_item
+  local this_restored_item
 
   for i = 1, #restored_items do
     this_restored_item = restored_items[i]
@@ -3811,7 +3832,7 @@ end
 
 
 function processUserInitiatedDePool(target_item, target_item_params)
-  local restored_items, active_track, selected_items_count, i, this_restored_item
+  local restored_items, active_track, selected_items_count, this_restored_item
   
   restored_items = {}
   active_track = reaper.GetMediaItemTrack(target_item)
@@ -3829,7 +3850,7 @@ end
 
 
 function processSiblingDePool(target_item, target_item_params)
-  local restored_items, active_track, selected_items_count, i, this_restored_item
+  local restored_items, active_track, selected_items_count, this_restored_item
 
   restored_items = {}
   target_item_params.pool_id = storeRetrieveItemData(target_item, _instance_pool_id_key_suffix)
@@ -3861,7 +3882,7 @@ end
 
 
 function setAllSuperitemsColor()
-  local current_window, retval, color, all_items_count, i, this_item, this_item_instance_pool_id
+  local current_window, retval, color, all_items_count, this_item, this_item_instance_pool_id
 
   current_window = reaper.GetMainHwnd()
   retval, color = reaper.GR_SelectColor(current_window)
@@ -3925,7 +3946,7 @@ function getTableSize(t)
 end
 
 function numberizeAndRoundElements(tables, elems)
-  local i, this_table, j
+  local this_table
   for i = 1, #tables do
     this_table = tables[i]
     for j = 1, #elems do
