@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 1.832
--- @changelog Glue to Time Selection wrong placement if items outside TS (https://github.com/MonkeyBars3k/ReaScripts/issues/298)
+-- @version 1.833
+-- @changelog Limit time selection bounds option to glue only, not reglue (https://github.com/MonkeyBars3k/ReaScripts/issues/303)
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
