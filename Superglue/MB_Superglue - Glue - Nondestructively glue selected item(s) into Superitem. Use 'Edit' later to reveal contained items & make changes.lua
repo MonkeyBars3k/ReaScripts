@@ -8,7 +8,7 @@
 --   [main] MB_Superglue - Options - Display - Randomly color newly Superglued Superitem (On-Off).lua
 --   [main] MB_Superglue - Options - Global - Open script options window.lua
 --   [main] MB_Superglue - Options - Glue - Auto-increase channel count with take FX (On-Off).lua
---   [main] MB_Superglue - Options - Glue - Time selection (not sizing region) determines Superitem bounds (On-Off).lua
+--   [main] MB_Superglue - Options - Glue - Time selection determines Superitem bounds on initial glue (On-Off).lua
 --   [main] MB_Superglue - Options - Reglue - Absolute or relative propagation length change on Siblings (still altered by playrate) (Absolute-Ask-Relative).lua
 --   [main] MB_Superglue - Options - Reglue - Audio source position of Siblings is maintained (Enable-Ask-Disable).lua
 --   [main] MB_Superglue - Options - Reglue - Length change of Edited Superitem propagates to Siblings (Enable-Ask-Disable).lua
