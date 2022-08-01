@@ -1,10 +1,11 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.3
--- @changelog Add color contrast to track list
+-- @version 1.1.4
+-- @changelog Add script logo to ReaPack metadata
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
+--  bussdriver_logo_nobg.png
 --  gen_midi_off.png
 --  gen_midi_on.png
 --  gen_mono_off.png
