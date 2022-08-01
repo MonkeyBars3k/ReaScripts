@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.4
--- @changelog Add script logo to ReaPack metadata
+-- @version 1.1.5
+-- @changelog Routing Settings: Pre-Fader (Post FX)/Pre FX are reversed (https://github.com/MonkeyBars3k/ReaScripts/issues/306)
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -782,8 +782,8 @@ function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rc
     ["mono_stereo"] = rtk.Button{icon = "gen_mono_off", w = 23, h = 20, tooltip = "Mono/Stereo", lmargin = 5, padding = 0, surface = false, data_class = "routing_setting_field"},
     ["send_mode"] = rtk.OptionMenu{menu = {
       {"Post-Fader (Post-Pan)", id = 0},
-      {"Pre-Fader (Post-FX)", id = 1},
-      {"Pre-FX", id = 3}
+      {"Pre-Fader (Post-FX)", id = 3},
+      {"Pre-FX", id = 1}
     }, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field"},
     ["middlerow"] = rtk.HBox{tmargin = 8},
     ["volume"] = rtk.Slider{"0.0", tooltip = "Volume", min = 0, max = 4, tmargin = 8, color = "orange", data_class = "routing_setting_field"},
