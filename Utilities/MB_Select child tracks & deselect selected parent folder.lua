@@ -1,11 +1,15 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.1.3
--- @changelog Add comments
+-- @version 1.1.4
+-- @changelog Add new double click script
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect child tracks & select their parent folder.lua
+--   [main] MB_Open MIDI Editor or audio item properties.lua
 --   gnu_license_v3.txt
+
+-- NOTES:
+-- "MB_Open MIDI Editor or audio item properties.lua" requires Stephan Roemer's script "Script: sr_Open MIDI editor and zoom to content.lua" available in his ReaPack repo: https://github.com/StephanRoemer/ReaScripts/raw/master/index.xml
 
 
 -- to do:
