@@ -1,7 +1,7 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.1.4
--- @changelog Add new double click script
+-- @version 1.1.5
+-- @changelog Change new script name; add subproject
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect child tracks & select their parent folder.lua
