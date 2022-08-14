@@ -5,7 +5,7 @@
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect child tracks & select their parent folder.lua
---   [main] MB_Open MIDI Editor or audio item properties.lua
+--   [main] MB_Open item properties or subproject or MIDI Editor and zoom to content.lua
 --   gnu_license_v3.txt
 
 -- NOTES:
