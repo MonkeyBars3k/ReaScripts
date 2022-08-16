@@ -640,7 +640,7 @@ function initSuperglue()
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or
     superitemSelectionIsInvalid(selected_item_count, "Glue") == true or
-    pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track) == true then
+    pureMIDIItemIsSelected(selected_item_count, first_selected_item_track) == true then
       return
   end
 
@@ -1082,14 +1082,12 @@ function recursiveSuperitemIsBeingGlued(superitems, restored_items)
 end
 
 
-function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track)
-  local track_virtual_instrument_idx, track_has_no_virtual_instrument, this_item, midi_item_is_selected
-
-  track_virtual_instrument_idx = reaper.TrackFX_GetInstrument(first_selected_item_track)
-  track_has_no_virtual_instrument = track_virtual_instrument_idx == -1
+function pureMIDIItemIsSelected(selected_item_count, first_selected_item_track)
+  local this_item, this_item_take, midi_item_is_selected
 
   for i = 0, selected_item_count-1 do
     this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
+    this_item_take = reaper.GetActiveTake(this_item)
     midi_item_is_selected = midiItemIsSelected(this_item)
 
     if midi_item_is_selected then
@@ -1098,9 +1096,9 @@ function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track
     end
   end
 
-  if midi_item_is_selected then
+  if midi_item_is_selected == true then
 
-    return virtualInstrumentIsInactive(first_selected_item_track, track_virtual_instrument_idx, track_has_no_virtual_instrument)
+    return virtualInstrumentIsInactive(this_item_take, first_selected_item_track)
 
   elseif midi_item_is_selected == "abort" then
 
@@ -1152,24 +1150,52 @@ function throwOfflineTakeWarning(recommend_undo, is_restored_item)
 end
 
 
-function virtualInstrumentIsInactive(first_selected_item_track, track_virtual_instrument_idx, track_has_no_virtual_instrument)
-  local track_virtual_instrument_is_enabled, user_response_ignore_muted_virtual_instrument
+function virtualInstrumentIsInactive(item_take, first_selected_item_track)
+  local track_virtual_instrument_idx, track_has_virtual_instrument, track_virtual_instrument_is_enabled, track_virtual_instrument_is_muted, take_first_virtual_instrument_idx, take_virtual_instrument_is_enabled, take_virtual_instrument_is_muted, user_response_ignore_muted_virtual_instrument
 
+  track_virtual_instrument_idx = reaper.TrackFX_GetInstrument(first_selected_item_track)
+  track_has_virtual_instrument = track_virtual_instrument_idx ~= -1
   track_virtual_instrument_is_enabled = reaper.TrackFX_GetEnabled(first_selected_item_track, track_virtual_instrument_idx)
+  track_virtual_instrument_is_muted = track_has_virtual_instrument and not track_virtual_instrument_is_enabled
+  take_first_virtual_instrument_idx, take_virtual_instrument_is_enabled = takeVirtualInstrumentIsActive(item_take)
+  take_virtual_instrument_is_muted = take_first_virtual_instrument_idx and not take_virtual_instrument_is_enabled
 
-  if not track_has_no_virtual_instrument and not track_virtual_instrument_is_enabled then
-    user_response_ignore_muted_virtual_instrument = reaper.ShowMessageBox("Are you sure you want to Superglue the item(s)?", "The first virtual instrument in the track's FX chain is bypassed.", _msg_type_yes_no)
+  if track_virtual_instrument_is_muted or take_virtual_instrument_is_muted then
+    user_response_ignore_muted_virtual_instrument = reaper.ShowMessageBox("Are you sure you want to Superglue the item(s)?", "The first virtual instrument in the FX chain is bypassed.", _msg_type_yes_no)
 
     if user_response_ignore_muted_virtual_instrument == _msg_response_no then
 
       return true
     end
-  end
-
-  if track_has_no_virtual_instrument then
+  
+  elseif not track_has_virtual_instrument and not take_virtual_instrument_is_enabled then
     reaper.ShowMessageBox("Add/enable a virtual instrument to render audio into the superitem or try a different item selection.", _script_brand_name .. " can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
 
     return true
+  end
+end
+
+
+function takeVirtualInstrumentIsActive(item_take)
+  local take_fx_count, retval, take_fx_type, take_fx_is_virtual_instrument, take_first_virtual_instrument_idx, take_first_virtual_instrument_is_enabled
+
+  take_fx_count = reaper.TakeFX_GetCount(item_take)
+
+  for i = 0, take_fx_count-1 do
+    retval, take_fx_type = reaper.TakeFX_GetNamedConfigParm(item_take, i, "fx_type")
+    take_fx_is_virtual_instrument = string.match(take_fx_type, "i$")
+
+    if take_fx_is_virtual_instrument then
+      take_first_virtual_instrument_idx = i
+
+      break
+    end
+  end
+
+  if take_first_virtual_instrument_idx then
+    take_first_virtual_instrument_is_enabled = reaper.TakeFX_GetEnabled(item_take, take_first_virtual_instrument_idx)
+
+    return take_first_virtual_instrument_idx, take_first_virtual_instrument_is_enabled
   end
 end
 

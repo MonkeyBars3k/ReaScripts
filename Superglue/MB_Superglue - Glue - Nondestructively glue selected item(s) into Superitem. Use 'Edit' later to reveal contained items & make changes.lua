@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 1.835
--- @changelog Pure MIDI guardrail: Check for muted VI (https://github.com/MonkeyBars3k/ReaScripts/issues/285)
+-- @version 1.836
+-- @changelog Pure MIDI guardrail: Don't guardrail Take FX VI (https://github.com/MonkeyBars3k/ReaScripts/issues/308)
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
