@@ -1083,9 +1083,10 @@ end
 
 
 function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track)
-  local track_has_no_virtual_instrument, this_item, midi_item_is_selected
+  local track_virtual_instrument_idx, track_has_no_virtual_instrument, this_item, midi_item_is_selected
 
-  track_has_no_virtual_instrument = reaper.TrackFX_GetInstrument(first_selected_item_track) == -1
+  track_virtual_instrument_idx = reaper.TrackFX_GetInstrument(first_selected_item_track)
+  track_has_no_virtual_instrument = track_virtual_instrument_idx == -1
 
   for i = 0, selected_item_count-1 do
     this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
@@ -1097,12 +1098,12 @@ function pureMIDIItemsAreSelected(selected_item_count, first_selected_item_track
     end
   end
 
-  if midi_item_is_selected and track_has_no_virtual_instrument then
-    reaper.ShowMessageBox("Add a virtual instrument to render audio into the superitem or try a different item selection.", _script_brand_name .. " can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
+  if midi_item_is_selected then
 
-    return true
+    return virtualInstrumentIsInactive(first_selected_item_track, track_virtual_instrument_idx, track_has_no_virtual_instrument)
 
   elseif midi_item_is_selected == "abort" then
+
     return true
   end
 end
@@ -1123,6 +1124,7 @@ function midiItemIsSelected(item)
 
   if active_take and active_take_is_midi then
     return true
+
   else
     return false
   end
@@ -1147,6 +1149,28 @@ function throwOfflineTakeWarning(recommend_undo, is_restored_item)
   end
 
   reaper.ShowMessageBox(msg, _script_brand_name .. ": Your " .. item_string .. "'s inactive takes are empty, offline or have some other weird setting going on.", _msg_type_ok)
+end
+
+
+function virtualInstrumentIsInactive(first_selected_item_track, track_virtual_instrument_idx, track_has_no_virtual_instrument)
+  local track_virtual_instrument_is_enabled, user_response_ignore_muted_virtual_instrument
+
+  track_virtual_instrument_is_enabled = reaper.TrackFX_GetEnabled(first_selected_item_track, track_virtual_instrument_idx)
+
+  if not track_has_no_virtual_instrument and not track_virtual_instrument_is_enabled then
+    user_response_ignore_muted_virtual_instrument = reaper.ShowMessageBox("Are you sure you want to Superglue the item(s)?", "The first virtual instrument in the track's FX chain is bypassed.", _msg_type_yes_no)
+
+    if user_response_ignore_muted_virtual_instrument == _msg_response_no then
+
+      return true
+    end
+  end
+
+  if track_has_no_virtual_instrument then
+    reaper.ShowMessageBox("Add/enable a virtual instrument to render audio into the superitem or try a different item selection.", _script_brand_name .. " can't glue pure MIDI without a virtual instrument.", _msg_type_ok)
+
+    return true
+  end
 end
 
 
