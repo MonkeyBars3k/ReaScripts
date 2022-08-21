@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="600e2cd14803be3a5a4194087fe1e90f11f51f86">
+<index version="1" name="MonkeyBars-ReaScripts" commit="b01039ed6bc05c134100d65edeabda75b9c2c812">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
@@ -595,49 +595,15 @@
     </reapack>
   </category>
   <category name="Utilities">
-    <reapack name="MB_Select child tracks &amp; deselect selected parent folder.lua" type="script" desc="MB_Utilities: Various utility scripts for Reaper">
-      <version name="1.1" author="MonkeyBars" time="2022-05-10T20:20:58Z">
-        <changelog><![CDATA[Add undo blocks; organize metapackage]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea3800fe72392d9804695ea2d37cc375aeb0414/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
-        <source main="main" file="MB_Deselect child tracks &amp; select their parent folder.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea3800fe72392d9804695ea2d37cc375aeb0414/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/4ea3800fe72392d9804695ea2d37cc375aeb0414/Utilities/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.1.1" author="MonkeyBars" time="2022-07-17T00:43:14Z">
-        <changelog><![CDATA[Add new script Autoincrement and Save Project]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d06f0aaef0c68476b5bd02f847a1568359bfebcd/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
-        <source main="main" file="MB_Create new autoincremented folder and save project.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d06f0aaef0c68476b5bd02f847a1568359bfebcd/Utilities/MB_Create%20new%20autoincremented%20folder%20and%20save%20project.lua</source>
-        <source main="main" file="MB_Deselect child tracks &amp; select their parent folder.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d06f0aaef0c68476b5bd02f847a1568359bfebcd/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/d06f0aaef0c68476b5bd02f847a1568359bfebcd/Utilities/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.1.2" author="MonkeyBars" time="2022-07-17T00:50:14Z">
-        <changelog><![CDATA[Remove undo block]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ed9f1987b05e86608e7acda1c89636fbe2876b0a/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
-        <source main="main" file="MB_Create new autoincremented folder and save project.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ed9f1987b05e86608e7acda1c89636fbe2876b0a/Utilities/MB_Create%20new%20autoincremented%20folder%20and%20save%20project.lua</source>
-        <source main="main" file="MB_Deselect child tracks &amp; select their parent folder.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ed9f1987b05e86608e7acda1c89636fbe2876b0a/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/ed9f1987b05e86608e7acda1c89636fbe2876b0a/Utilities/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.1.3" author="MonkeyBars" time="2022-07-17T22:05:26Z">
-        <changelog><![CDATA[Add comments]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c75d9dca65cfe431e4b276939b73a2cfc9f95265/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
-        <source main="main" file="MB_Create new autoincremented folder and save project.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/c75d9dca65cfe431e4b276939b73a2cfc9f95265/Utilities/MB_Create%20new%20autoincremented%20folder%20and%20save%20project.lua</source>
-        <source main="main" file="MB_Deselect child tracks &amp; select their parent folder.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/c75d9dca65cfe431e4b276939b73a2cfc9f95265/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/c75d9dca65cfe431e4b276939b73a2cfc9f95265/Utilities/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.1.4" author="MonkeyBars" time="2022-08-14T21:59:19Z">
-        <changelog><![CDATA[Add new double click script]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/605ce27d83ef578aa1329a0e6e640c56b1014a2e/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
-        <source main="main" file="MB_Create new autoincremented folder and save project.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/605ce27d83ef578aa1329a0e6e640c56b1014a2e/Utilities/MB_Create%20new%20autoincremented%20folder%20and%20save%20project.lua</source>
-        <source main="main" file="MB_Deselect child tracks &amp; select their parent folder.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/605ce27d83ef578aa1329a0e6e640c56b1014a2e/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
-        <source main="main" file="MB_Open MIDI Editor or audio item properties.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/605ce27d83ef578aa1329a0e6e640c56b1014a2e/Utilities/MB_Open%20MIDI%20Editor%20or%20audio%20item%20properties.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/605ce27d83ef578aa1329a0e6e640c56b1014a2e/Utilities/gnu_license_v3.txt</source>
-      </version>
-      <version name="1.1.5" author="MonkeyBars" time="2022-08-14T22:24:22Z">
-        <changelog><![CDATA[Change new script name; add subproject]]></changelog>
-        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/ab45a322a614ebc158387a7080db766553916846/Utilities/MB_Select%20child%20tracks%20&amp;%20deselect%20selected%20parent%20folder.lua</source>
-        <source main="main" file="MB_Create new autoincremented folder and save project.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ab45a322a614ebc158387a7080db766553916846/Utilities/MB_Create%20new%20autoincremented%20folder%20and%20save%20project.lua</source>
-        <source main="main" file="MB_Deselect child tracks &amp; select their parent folder.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ab45a322a614ebc158387a7080db766553916846/Utilities/MB_Deselect%20child%20tracks%20&amp;%20select%20their%20parent%20folder.lua</source>
-        <source main="main" file="MB_Open item properties or subproject or MIDI Editor and zoom to content.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/ab45a322a614ebc158387a7080db766553916846/Utilities/MB_Open%20item%20properties%20or%20subproject%20or%20MIDI%20Editor%20and%20zoom%20to%20content.lua</source>
-        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/ab45a322a614ebc158387a7080db766553916846/Utilities/gnu_license_v3.txt</source>
+    <reapack name="MB_Select child (descendent) track(s) &amp; deselect selected parent folder track(s).lua" type="script" desc="MB_Utilities: Various utility scripts for Reaper">
+      <version name="1.1.6" author="MonkeyBars" time="2022-08-21T16:57:12Z">
+        <changelog><![CDATA[Add path check and refactor MB_Create new autoincremented folder and save project; enable nested children selection; deploy new take color script]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/b01039ed6bc05c134100d65edeabda75b9c2c812/Utilities/MB_Select%20child%20(descendent)%20track(s)%20&amp;%20deselect%20selected%20parent%20folder%20track(s).lua</source>
+        <source main="main" file="MB_Create new autoincremented folder and save project.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b01039ed6bc05c134100d65edeabda75b9c2c812/Utilities/MB_Create%20new%20autoincremented%20folder%20and%20save%20project.lua</source>
+        <source main="main" file="MB_Deselect tracks if child track(s) &amp; select their direct parent folder track(s).lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b01039ed6bc05c134100d65edeabda75b9c2c812/Utilities/MB_Deselect%20tracks%20if%20child%20track(s)%20&amp;%20select%20their%20direct%20parent%20folder%20track(s).lua</source>
+        <source main="main" file="MB_Open item properties or subproject or MIDI Editor and zoom to content.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b01039ed6bc05c134100d65edeabda75b9c2c812/Utilities/MB_Open%20item%20properties%20or%20subproject%20or%20MIDI%20Editor%20and%20zoom%20to%20content.lua</source>
+        <source main="main" file="MB_Set all takes on selected items to same series of random colors, correllated by take number.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/b01039ed6bc05c134100d65edeabda75b9c2c812/Utilities/MB_Set%20all%20takes%20on%20selected%20items%20to%20same%20series%20of%20random%20colors,%20correllated%20by%20take%20number.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/b01039ed6bc05c134100d65edeabda75b9c2c812/Utilities/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
