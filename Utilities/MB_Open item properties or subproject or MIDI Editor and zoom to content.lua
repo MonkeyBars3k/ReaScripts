@@ -18,7 +18,7 @@ for i = 0, selected_items_count-1 do
     this_selected_item_source_type = reaper.GetMediaSourceType(this_selected_item_source)
   end
 
-  if this_selected_item_source_type == "MIDI" then
+  if this_selected_item_source_type == "MIDI" or this_selected_item_source_type == "MIDIPOOL" then
     at_least_1_midi_item_is_selected = true
 
   elseif this_selected_item_source_type == "SUBPROJECT" or this_selected_item_source_type == "RPP_PROJECT" then
