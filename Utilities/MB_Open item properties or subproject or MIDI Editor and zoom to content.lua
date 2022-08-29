@@ -1,5 +1,8 @@
 -- @noindex
 
+-- N.B.:
+-- This script requires Stephan Roemer's script "sr_Open MIDI editor and zoom to content.lua" available in his ReaPack repo: https://github.com/StephanRoemer/ReaScripts/raw/master/index.xml
+
 local selected_items_count, open_midi_editor_and_zoom_to_content, show_item_properties, open_item_in_external_editor, this_selected_item, this_selected_item_active_take, this_selected_item_source, this_selected_item_source_type, at_least_1_midi_item_is_selected, at_least_1_subproject_is_selected
 
 reaper.Undo_BeginBlock()
@@ -16,6 +19,11 @@ for i = 0, selected_items_count-1 do
   if this_selected_item_active_take then
     this_selected_item_source = reaper.GetMediaItemTake_Source(this_selected_item_active_take)
     this_selected_item_source_type = reaper.GetMediaSourceType(this_selected_item_source)
+
+    if this_selected_item_source_type == "SECTION" then
+      this_selected_item_source = reaper.GetMediaSourceParent(this_selected_item_source)
+      this_selected_item_source_type = reaper.GetMediaSourceType(this_selected_item_source)
+    end
   end
 
   if this_selected_item_source_type == "MIDI" or this_selected_item_source_type == "MIDIPOOL" then
@@ -36,4 +44,4 @@ else
   reaper.Main_OnCommand(show_item_properties, 0)
 end
 
-reaper.Undo_EndBlock("MB_Open MIDI Editor or audio item properties", -1)
+reaper.Undo_EndBlock("MB_Open item properties or subproject or MIDI Editor and zoom to content", -1)
