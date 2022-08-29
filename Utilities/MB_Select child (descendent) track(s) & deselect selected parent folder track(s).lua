@@ -1,7 +1,7 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.1.7
--- @changelog Add new script duplicate item to lane
+-- @version 1.1.8
+-- @changelog Add pooled midi data type to Open script
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect tracks if child track(s) & select their direct parent folder track(s).lua
