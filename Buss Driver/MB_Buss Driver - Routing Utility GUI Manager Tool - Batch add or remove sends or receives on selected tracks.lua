@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.5
--- @changelog Routing Settings: Pre-Fader (Post FX)/Pre FX are reversed (https://github.com/MonkeyBars3k/ReaScripts/issues/306)
+-- @version 1.1.6
+-- @changelog Change track name color logic (https://github.com/MonkeyBars3k/ReaScripts/issues/315); "Save choices & settings" doesn't save Add/Remove or Sends/Receive selection (https://github.com/MonkeyBars3k/ReaScripts/issues/316)
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -301,7 +301,7 @@ function correctTrackColor(track_checkbox, track_color)
   local this_track_color_r, this_track_color_g, this_track_color_b, this_track_color_rgb, this_track_color_is_dark
 
   this_track_color_r, this_track_color_g, this_track_color_b = reaper.ColorFromNative(track_color)
-  this_track_color_rgb = this_track_color_r .. this_track_color_g .. this_track_color_b
+  this_track_color_rgb = this_track_color_r + this_track_color_g + this_track_color_b
   this_track_color_rgb = tonumber(this_track_color_rgb)
   this_track_color_is_dark = colorIsDark(this_track_color_rgb)
 
@@ -314,6 +314,7 @@ end
 
 
 function colorIsDark(rgb)
+
   return rgb < 3 * 256 / 2
 end
 
@@ -371,7 +372,7 @@ function storeRetrieveUserOptions(store)
   if current_save_options_setting == "true" then
 
     if store == "store" then
-      all_user_options = {}
+      all_user_options = getSetMainActionChoices("get")
 
       getSetTargetTracksChoices()
 
@@ -403,6 +404,7 @@ function propagateSavedUserOptions()
     _routing_options_objs.save_options:attr("value", true)
 
     if _routing_options_objs and _routing_options_objs.all_user_options then
+      getSetMainActionChoices("set")
 
       if _routing_options_objs.all_user_options.target_track_choices then
 
@@ -424,10 +426,42 @@ function propagateSavedUserOptions()
       end
     end
 
-
-
   elseif current_save_options_setting == "false" then
     _routing_options_objs.save_options:attr("value", false)
+  end
+end
+
+
+function getSetMainActionChoices(get_set)
+  local checkbox_labels, main_action_choices, checkbox_string_suffix, this_checkbox_name
+
+  checkbox_labels = {"add", "remove", "send", "receive"}
+  main_action_choices = {}
+  checkbox_string_suffix = "_checkbox"
+
+  if get_set == "get" then
+
+    for i = 1, #checkbox_labels do
+      this_checkbox_name = checkbox_labels[i] .. checkbox_string_suffix
+
+      main_action_choices[this_checkbox_name] = _routing_options_objs[this_checkbox_name].value
+    end
+
+    return main_action_choices
+
+  elseif get_set == "set" then
+
+    for i = 1, #checkbox_labels do
+      this_checkbox_name = checkbox_labels[i] .. checkbox_string_suffix
+
+      _routing_options_objs[this_checkbox_name]:attr("value", false)
+
+      if _routing_options_objs.all_user_options[this_checkbox_name] then
+        _routing_options_objs[this_checkbox_name]:attr("value", _routing_options_objs.all_user_options[this_checkbox_name])
+      end
+    end
+
+    updateRoutingForm("is_action_change")
   end
 end
 
@@ -493,17 +527,17 @@ end
 function getRoutingChoices()
   local routing_action, routing_type
 
-  if _routing_options_objs.add_checkbox.value then
+  if _routing_options_objs.add_checkbox.value == true then
     routing_action = "add"
 
-  elseif _routing_options_objs.remove_checkbox.value then
+  elseif _routing_options_objs.remove_checkbox.value == true then
     routing_action = "remove"
   end
 
-  if _routing_options_objs.send_checkbox.value then
+  if _routing_options_objs.send_checkbox.value == true then
     routing_type = "send"
 
-  elseif _routing_options_objs.receive_checkbox.value then
+  elseif _routing_options_objs.receive_checkbox.value == true then
     routing_type = "receive"
   end
 
