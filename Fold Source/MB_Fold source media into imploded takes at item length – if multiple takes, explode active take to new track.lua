@@ -5,7 +5,7 @@
 -- @provides [main] .
 --   [nomain] sg-dev-functions.lua
 --   gnu_license_v3.txt
--- @link 
+-- @link https://forum.cockos.com/showthread.php?p=2597213
 -- @about Fold Source main script
 
 
