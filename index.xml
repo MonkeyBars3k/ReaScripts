@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="919ab3578688c393940ed637a164ade8768877b3">
+<index version="1" name="MonkeyBars-ReaScripts" commit="9285a8c72c54b280237fad8aaa8669c54f071688">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
@@ -258,6 +258,12 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/919ab3578688c393940ed637a164ade8768877b3/Fold%20Source/MB_Fold%20source%20media%20into%20imploded%20takes%20at%20item%20length%20%E2%80%93%20if%20multiple%20takes,%20explode%20active%20take%20to%20new%20track.lua</source>
         <source file="sg-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/919ab3578688c393940ed637a164ade8768877b3/Fold%20Source/sg-dev-functions.lua</source>
         <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/919ab3578688c393940ed637a164ade8768877b3/Fold%20Source/gnu_license_v3.txt</source>
+      </version>
+      <version name="1.1" author="MonkeyBars" time="2022-09-19T05:29:04Z">
+        <changelog><![CDATA[Fix multiitem logic]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/9285a8c72c54b280237fad8aaa8669c54f071688/Fold%20Source/MB_Fold%20source%20media%20into%20imploded%20takes%20at%20item%20length%20%E2%80%93%20if%20multiple%20takes,%20explode%20active%20take%20to%20new%20track.lua</source>
+        <source file="mb-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/9285a8c72c54b280237fad8aaa8669c54f071688/Fold%20Source/mb-dev-functions.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/9285a8c72c54b280237fad8aaa8669c54f071688/Fold%20Source/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
