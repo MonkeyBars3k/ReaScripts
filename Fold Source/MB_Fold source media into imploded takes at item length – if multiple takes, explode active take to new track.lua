@@ -1,7 +1,7 @@
 -- @description MB_Fold source media into imploded takes at item length – if multiple takes, explode active take to new track
 -- @author MonkeyBars
--- @version 1.0
--- @changelog Initial release
+-- @version 1.1
+-- @changelog Fix multiitem logic
 -- @provides [main] .
 --   [nomain] sg-dev-functions.lua
 --   gnu_license_v3.txt
@@ -22,17 +22,18 @@
 
 -- for dev only
 -- package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
--- require("sg-dev-functions")
+-- require("mb-dev-functions")
 
 
 
 reaper.Undo_BeginBlock()
 
-local _all_take_info_values, _selected_items, _original_item_length, _item_takes_count, _item_all_takes, _active_take, _active_take_source, _active_take_source_length, _active_take_source_type, _active_take_source_filename, _active_take_num, _active_take_params, _new_takes_before_active_count, _source_length_after_active_take, _new_takes_after_active_count, _new_active_take, _explode_active_takes_to_new_tracks, _api_command_flag, _command_id_set_item_bounds_to_source, _command_id_delete_active_take, _command_id_duplicate_active_take, _api_take_src_offset_key, _api_item_length_key, _api_item_position_key, _api_takenumber_key, _api_take_name_key, _api_take_guid_key
+local _all_take_info_values, _selected_items, _original_item_length, _item_takes_count, _item_all_takes, _active_take, _active_take_source, _active_take_source_length, _active_take_source_type, _active_take_source_filename, _active_take_num, _active_take_params, _new_takes_before_active_count, _source_length_after_active_take, _new_takes_after_active_count, _new_active_take, _explode_active_takes_to_new_tracks, _api_command_flag, _command_id_deselect_all_items, _command_id_set_item_bounds_to_source, _command_id_delete_active_take, _command_id_duplicate_active_take, _api_take_src_offset_key, _api_item_length_key, _api_item_position_key, _api_takenumber_key, _api_take_name_key, _api_take_guid_key
 
 _all_take_info_values = {"D_STARTOFFS", "D_VOL", "D_PAN", "D_PANLAW", "D_PLAYRATE", "D_PITCH", "B_PPITCH", "I_CHANMODE", "I_PITCHMODE"}
 _explode_active_takes_to_new_tracks = reaper.NamedCommandLookup("_RS57edce15d7afa714deecb2ac0541e8cdd3af72cb")
 _api_command_flag = 0
+_command_id_deselect_all_items = 40289
 _command_id_set_item_bounds_to_source = 42228
 _command_id_delete_active_take = 40129
 _command_id_duplicate_active_take = 40639
@@ -46,19 +47,15 @@ _api_take_guid_key = "GUID"
 
 
 function initFoldSource()
-  local multiple_takes_are_present
 
   if requiredLibsAreInstalled() == false then return end
 
-  getSelectedItems()
-
-  multiple_takes_are_present = iterateSelectedItems("extract")
-
-  if multiple_takes_are_present then
-    getSelectedItems()
-  end
-
-  iterateSelectedItems("fold")
+  _selected_items = getSetSelectedItems()
+  
+  cleanItemSelection()
+  extractSelectedTakes()
+  foldSelectedItems()
+  getSetSelectedItems(_selected_items)
 end
 
 
@@ -84,38 +81,111 @@ function requiredLibsAreInstalled()
 end
 
 
-function getSelectedItems()
-  local selected_item_count, this_item
+function getSetSelectedItems(new_selected_items)
+  local get_set
 
-  selected_item_count = reaper.CountSelectedMediaItems(0)
-  _selected_items = {}
+  if new_selected_items then
+    get_set = "set"
 
-  for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(0, i)
+  else
+    get_set = "get"
+  end
 
-    table.insert(_selected_items, this_item)
+  if get_set == "get" then
+
+    return getSelectedItems()
+
+  elseif get_set == "set" then
+    reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
+
+    for i = 1, #new_selected_items do
+      reaper.SetMediaItemSelected(new_selected_items[i], true)
+    end
+
+    return new_selected_items
   end
 end
 
 
-function iterateSelectedItems(action)
-  local this_selected_item
+function getSelectedItems()
+  local selected_item_count, selected_items, this_item
+
+  selected_item_count = reaper.CountSelectedMediaItems(0)
+  selected_items = {}
+
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(0, i)
+
+    table.insert(selected_items, this_item)
+  end
+
+  return selected_items
+end
+
+
+function cleanItemSelection()
+  local new_selected_items, this_selected_item, multiple_takes_are_present, newly_extracted_item
+
+  new_selected_items = copySimpleArray(_selected_items)
 
   for i = 1, #_selected_items do
     this_selected_item = _selected_items[i]
 
     getItemAndTakeValues(this_selected_item)
 
-    if _active_take_source_length > _original_item_length then
-
-      if action == "extract" and not multiple_takes_are_present then
-
-        return extractActiveTake(this_selected_item)
-
-      elseif action == "fold" then
-        foldItem(this_selected_item)
-      end
+    if _active_take_source_length <= _original_item_length then
+      new_selected_items = removeItemFromSelection(new_selected_items, this_selected_item)
     end
+  end
+
+  _selected_items = getSetSelectedItems(new_selected_items)
+end
+
+
+function extractSelectedTakes()
+  local this_selected_item, multiple_takes_are_present, newly_extracted_item, new_selected_items
+
+  new_selected_items = copySimpleArray(_selected_items)
+
+  for i = 1, #_selected_items do
+    this_selected_item = _selected_items[i]
+
+    getItemAndTakeValues(this_selected_item)
+    
+    multiple_takes_are_present = extractActiveTake(this_selected_item)
+
+    if multiple_takes_are_present then
+      newly_extracted_item = reaper.GetSelectedMediaItem(0, 0)
+      new_selected_items = removeItemFromSelection(new_selected_items, this_selected_item)
+      new_selected_items = addItemToSelection(new_selected_items, newly_extracted_item)
+    end
+  end
+
+  _selected_items = getSetSelectedItems(new_selected_items)
+end
+
+
+function copySimpleArray(arr)
+  local new_array = {}
+
+  for i = 1, #arr do
+    table.insert(new_array, arr[i])
+  end
+
+  return new_array
+end
+
+
+function foldSelectedItems()
+  local this_selected_item
+
+  for i = 1, #_selected_items do
+    this_selected_item = _selected_items[i]
+
+    reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
+    reaper.SetMediaItemSelected(this_selected_item, true)
+    getItemAndTakeValues(this_selected_item)
+    foldItem(this_selected_item)
   end
 end
 
@@ -134,15 +204,15 @@ function getItemAndTakeValues(item)
   _active_take_source_type = reaper.GetMediaSourceType(_active_take_source)
 
   if _active_take_source_type == "MIDI" or _active_take_source_type == "MIDIPOOL" then
-    handleMidiTake(item)
+    getMidiTakeValues(item)
 
   else
-    handleAudioTake()
+    getAudioTakeValues()
   end
 end
 
 
-function handleMidiTake(item)
+function getMidiTakeValues(item)
   local original_item_position, original_active_take_offset
 
   original_item_position = reaper.GetMediaItemInfo_Value(item, _api_item_position_key)
@@ -151,14 +221,14 @@ function handleMidiTake(item)
   reaper.Main_OnCommand(_command_id_set_item_bounds_to_source, _api_command_flag)
 
   _active_take_source_length = reaper.GetMediaItemInfo_Value(item, _api_item_length_key)
-  
+
   reaper.SetMediaItemPosition(item, original_item_position, false)
   reaper.SetMediaItemLength(item, _original_item_length, false)
   reaper.SetMediaItemTakeInfo_Value(_active_take, _api_take_src_offset_key, original_active_take_offset)
 end
 
 
-function handleAudioTake()
+function getAudioTakeValues()
   _active_take_source_length = reaper.GetMediaSourceLength(_active_take_source)
     
   if _active_take_source_type == "SECTION" then
@@ -179,18 +249,56 @@ function extractActiveTake(item)
 end
 
 
-function foldItem(item)
-  _active_take_num = reaper.GetMediaItemTakeInfo_Value(_active_take, _api_takenumber_key)
-  _active_take_params = getSetTakeParams(_active_take, "get")
-  _new_takes_before_active_count = math.ceil(_active_take_params.D_STARTOFFS / _original_item_length)
-  _source_length_after_active_take = _active_take_source_length - _original_item_length - _active_take_params.D_STARTOFFS
-  _new_takes_after_active_count = math.ceil(_source_length_after_active_take / _original_item_length)
+function removeItemFromSelection(items, item_to_deselect)
+  local new_selected_items, this_selected_item
 
+  new_selected_items = {}
+
+  for i = 1, #items do
+    this_selected_item = items[i]
+
+    if this_selected_item ~= item_to_deselect then
+      table.insert(new_selected_items, this_selected_item)
+    end
+  end
+
+  return new_selected_items
+end
+
+
+function addItemToSelection(items, item_to_select)
+  local new_selected_items, this_selected_item
+
+  new_selected_items = {}
+
+  for i = 1, #items do
+    this_selected_item = items[i]
+
+    table.insert(new_selected_items, this_selected_item)
+  end
+
+  table.insert(new_selected_items, item_to_select)
+
+  return new_selected_items
+end
+
+
+function foldItem(item)
+  defineTakeSetup()
   addFoldedTakesBeforeActive(item)
   handleActiveTake(item)
   addFoldedTakesAfterActive(item)
   renameNewTakes(item)
   cleanUpFoldSource()
+end
+
+
+function defineTakeSetup()
+  _active_take_num = reaper.GetMediaItemTakeInfo_Value(_active_take, _api_takenumber_key)
+  _active_take_params = getSetTakeParams(_active_take, "get")
+  _new_takes_before_active_count = math.ceil(_active_take_params.D_STARTOFFS / _original_item_length)
+  _source_length_after_active_take = _active_take_source_length - _original_item_length - _active_take_params.D_STARTOFFS
+  _new_takes_after_active_count = math.ceil(_source_length_after_active_take / _original_item_length)
 end
 
 
@@ -256,14 +364,9 @@ function addNewTake(item, new_take_idx, new_take_location)
 end
 
 
-function assignTakeNewGUID(take)
-  local new_take_guid = reaper.genGuid("")
-
-  reaper.GetSetMediaItemTakeInfo_String(take, _api_take_guid_key, new_take_guid, true)
-end
-
-
 function handleActiveTake(item)
+  local new_take
+
   reaper.Main_OnCommand(_command_id_duplicate_active_take, _api_command_flag)
 
   new_take = reaper.GetActiveTake(item)
