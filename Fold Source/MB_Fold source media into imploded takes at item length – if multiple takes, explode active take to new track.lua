@@ -3,7 +3,7 @@
 -- @version 1.1
 -- @changelog Fix multiitem logic
 -- @provides [main] .
---   [nomain] sg-dev-functions.lua
+--   [nomain] mb-dev-functions.lua
 --   gnu_license_v3.txt
 -- @link https://forum.cockos.com/showthread.php?p=2597213
 -- @about Fold Source main script
