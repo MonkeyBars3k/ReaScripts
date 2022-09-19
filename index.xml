@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="e1b209150beec2e93d7e10d3e96d178d6a87a82a">
+<index version="1" name="MonkeyBars-ReaScripts" commit="919ab3578688c393940ed637a164ade8768877b3">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
@@ -238,6 +238,26 @@
         <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e1b209150beec2e93d7e10d3e96d178d6a87a82a/Buss%20Driver/table_mute_off.png</source>
         <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/e1b209150beec2e93d7e10d3e96d178d6a87a82a/Buss%20Driver/table_mute_on.png</source>
         <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/e1b209150beec2e93d7e10d3e96d178d6a87a82a/Buss%20Driver/gnu_license_v3.txt</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Fold Source">
+    <reapack name="MB_Fold source media into imploded takes at item length – if multiple takes, explode active take to new track.lua" type="script" desc="MB_Fold source media into imploded takes at item length – if multiple takes, explode active take to new track">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Fold Source main script\par}
+}
+]]></description>
+        <link rel="website">https://forum.cockos.com/showthread.php?p=2597213</link>
+      </metadata>
+      <version name="1.0" author="MonkeyBars" time="2022-09-19T00:48:43Z">
+        <changelog><![CDATA[Initial release]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/919ab3578688c393940ed637a164ade8768877b3/Fold%20Source/MB_Fold%20source%20media%20into%20imploded%20takes%20at%20item%20length%20%E2%80%93%20if%20multiple%20takes,%20explode%20active%20take%20to%20new%20track.lua</source>
+        <source file="sg-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/919ab3578688c393940ed637a164ade8768877b3/Fold%20Source/sg-dev-functions.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/919ab3578688c393940ed637a164ade8768877b3/Fold%20Source/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
