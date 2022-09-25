@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="d6895569365a68d92998c09b3f26d48c196ee79c">
+<index version="1" name="MonkeyBars-ReaScripts" commit="5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
@@ -254,6 +254,23 @@
         <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d6895569365a68d92998c09b3f26d48c196ee79c/Buss%20Driver/table_mute_off.png</source>
         <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/d6895569365a68d92998c09b3f26d48c196ee79c/Buss%20Driver/table_mute_on.png</source>
         <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/d6895569365a68d92998c09b3f26d48c196ee79c/Buss%20Driver/gnu_license_v3.txt</source>
+      </version>
+      <version name="1.1.8" author="MonkeyBars" time="2022-09-25T00:57:35Z">
+        <changelog><![CDATA[Include dev functions in ReaPack just in case]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/MB_Buss%20Driver%20-%20Routing%20Utility%20GUI%20Manager%20Tool%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/rtk.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/serpent.lua</source>
+        <source file="mb-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/mb-dev-functions.lua</source>
+        <source file="bussdriver_logo_nobg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/bussdriver_logo_nobg.png</source>
+        <source file="gen_midi_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/gen_midi_off.png</source>
+        <source file="gen_midi_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/gen_midi_on.png</source>
+        <source file="gen_mono_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/gen_mono_off.png</source>
+        <source file="gen_mono_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/gen_mono_on.png</source>
+        <source file="gen_phase_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/gen_phase_off.png</source>
+        <source file="gen_phase_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/gen_phase_on.png</source>
+        <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/table_mute_off.png</source>
+        <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/table_mute_on.png</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/5e7ec31ce7e9f18e8ae2718779ab350ca2ee4df0/Buss%20Driver/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
