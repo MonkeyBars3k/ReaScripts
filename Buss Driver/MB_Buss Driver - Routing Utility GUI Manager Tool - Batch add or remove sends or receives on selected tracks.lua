@@ -1,10 +1,11 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.7
--- @changelog Receive routing settings don't get picked up correctly (https://github.com/MonkeyBars3k/ReaScripts/issues/318); User options get saved in undo history. Should be outside (https://github.com/MonkeyBars3k/ReaScripts/issues/319)
+-- @version 1.1.8
+-- @changelog Include dev functions in ReaPack just in case
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
+--  [nomain] mb-dev-functions.lua
 --  bussdriver_logo_nobg.png
 --  gen_midi_off.png
 --  gen_midi_on.png
@@ -33,7 +34,7 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
-require("mb-dev-functions")
+-- require("mb-dev-functions")
 
 
 local rtk = require('rtk')
