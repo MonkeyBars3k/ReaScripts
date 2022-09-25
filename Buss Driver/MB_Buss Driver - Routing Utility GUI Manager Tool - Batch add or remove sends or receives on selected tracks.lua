@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.6
--- @changelog Change track name color logic (https://github.com/MonkeyBars3k/ReaScripts/issues/315); "Save choices & settings" doesn't save Add/Remove or Sends/Receive selection (https://github.com/MonkeyBars3k/ReaScripts/issues/316)
+-- @version 1.1.7
+-- @changelog Receive routing settings don't get picked up correctly (https://github.com/MonkeyBars3k/ReaScripts/issues/318); User options get saved in undo history. Should be outside (https://github.com/MonkeyBars3k/ReaScripts/issues/319)
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -33,7 +33,7 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
--- require("mb-dev-functions")
+require("mb-dev-functions")
 
 
 local rtk = require('rtk')
@@ -75,24 +75,42 @@ _api_save_options_key_name = "save_options"
 _logo_img_path = "bussdriver_logo_nobg.png"
 
 
+
+function storeRetrieveProjectData(key, val)
+  local retrieve, store, retval, state_data_val
+
+  retrieve = not val
+  store = val
+
+  if retrieve then
+    retval, state_data_val = reaper.GetProjExtState(0, _api_script_ext_name, key)
+
+  elseif store then
+    reaper.SetProjExtState(0, _api_script_ext_name, key, val)
+  end
+
+  return state_data_val
+end
+
+
 function toggleSaveOptions(initialize)
-  local retval, current_save_options_setting, save_options_checkbox_value
+  local current_save_options_setting, save_options_checkbox_value
 
   if initialize == "initialize" then
-    retval, current_save_options_setting = reaper.GetProjExtState(0, _api_script_ext_name, _api_save_options_key_name)
+    current_save_options_setting = storeRetrieveProjectData(_api_save_options_key_name)
 
     if current_save_options_setting == "" or not current_save_options_setting then
-      reaper.SetProjExtState(0, _api_script_ext_name, _api_save_options_key_name, "true")
+      storeRetrieveProjectData(_api_save_options_key_name, "true")
     end
 
   else
     save_options_checkbox_value = _routing_options_objs.save_options.value
 
     if save_options_checkbox_value then
-      reaper.SetProjExtState(0, _api_script_ext_name, _api_save_options_key_name, "true")
+      storeRetrieveProjectData(_api_save_options_key_name, "true")
 
     else
-      reaper.SetProjExtState(0, _api_script_ext_name, _api_save_options_key_name, "false")
+      storeRetrieveProjectData(_api_save_options_key_name, "false")
     end
   end
 end
@@ -116,28 +134,6 @@ function getSelectedTracks()
 end
 
 _selected_tracks = getSelectedTracks(_selected_tracks_count)
-
-
-
-function storeRetrieveProjectData(key, val)
-  local retrieve, store, store_or_retrieve_state_data, data_param_key, retval, state_data_val
-
-  retrieve = not val
-  store = val
-
-  if retrieve then
-    val = ""
-    store_or_retrieve_state_data = false
-
-  elseif store then
-    store_or_retrieve_state_data = true
-  end
-
-  data_param_key = "P_EXT:MB_Buss-Driver_" .. key
-  retval, state_data_val = reaper.GetSetMediaTrackInfo_String(_data_storage_track, data_param_key, val, store_or_retrieve_state_data)
-
-  return state_data_val
-end
 
 
 function storeRetrieveAllTracksCount(val)
@@ -1234,12 +1230,11 @@ function addRouting(routing_option_type_choice, selected_track, target_track)
 end
 
 
-function applyRoutingSettings(dest_track, routing_option_type_choice, src_track)
-  local routing_settings_api_objs_conversion, dest_track_routing_count, api_routing_type, is_pan_law
+function applyRoutingSettings(src_track, routing_option_type_choice, dest_track)
+  local routing_settings_api_objs_conversion, src_track_routing_count, is_pan_law
 
   routing_settings_api_objs_conversion = getRoutingSettingsAPIObjsConversion()
-  dest_track_routing_count = reaper.GetTrackNumSends(dest_track, 0)
-  api_routing_type = getAPIRoutingType(routing_option_type_choice)
+  src_track_routing_count = reaper.GetTrackNumSends(src_track, 0)
 
   for i = 1, 14 do
     is_pan_law = i == 6
@@ -1248,7 +1243,7 @@ function applyRoutingSettings(dest_track, routing_option_type_choice, src_track)
       goto skip_to_next
     end
 
-    processRoutingSetting(i, routing_settings_api_objs_conversion, dest_track, src_track, api_routing_type, dest_track_routing_count)
+    processRoutingSetting(i, routing_settings_api_objs_conversion, src_track, dest_track, src_track_routing_count)
 
     ::skip_to_next::
   end
@@ -1269,52 +1264,7 @@ function getRoutingSettingsAPIObjsConversion()
 end
 
 
-function getAPIRoutingType(routing_option_type_choice)
-  local api_routing_type
-
-  if routing_option_type_choice == "send" then
-    api_routing_type = 0
-
-  elseif routing_option_type_choice == "receive" then
-    api_routing_type = -1
-  end
-
-  return api_routing_type
-end
-
-
-function createRequiredChannels(i, this_user_routing_setting_value, dest_track, src_track)
-  local is_src_channel, is_dest_channel, is_stereo_channel, is_mono_channel, target_track, current_track_channel_count, required_track_channel_count
-
-  is_src_channel = i == 8
-  is_dest_channel = i == 9
-  is_stereo_channel = (this_user_routing_setting_value > 1 and this_user_routing_setting_value < 16)
-  is_mono_channel = (this_user_routing_setting_value > 1025 and this_user_routing_setting_value < 1041)
-
-  if is_src_channel then
-    target_track = dest_track
-
-  elseif is_dest_channel then
-    target_track = src_track
-  end
-
-  current_track_channel_count = reaper.GetMediaTrackInfo_Value(target_track, "I_NCHAN")
-  required_track_channel_count = 2
-
-  if is_stereo_channel then
-    required_track_channel_count = this_user_routing_setting_value
-
-  elseif is_mono_channel then
-    required_track_channel_count = this_user_routing_setting_value - 1024
-  end
-
-  if required_track_channel_count > current_track_channel_count then
-    reaper.SetMediaTrackInfo_Value(target_track, "I_NCHAN", required_track_channel_count)
-  end
-end
-
-
-function processRoutingSetting(i, routing_settings_api_objs_conversion, dest_track, src_track, api_routing_type, dest_track_routing_count)
+function processRoutingSetting(i, routing_settings_api_objs_conversion, src_track, dest_track, dest_track_routing_count)
   local is_volume, is_midi_channel, is_midi_bus, is_audio_channel, this_api_routing_setting, this_routing_obj_name, this_routing_obj_value, this_user_routing_setting_value
 
   is_volume = i == 4
@@ -1324,7 +1274,6 @@ function processRoutingSetting(i, routing_settings_api_objs_conversion, dest_tra
   this_api_routing_setting = _api_all_routing_settings[i]
   this_routing_obj_name = routing_settings_api_objs_conversion[this_api_routing_setting]
   this_routing_obj_value = _routing_settings_objs.all_values[this_routing_obj_name]
-
 
   if is_volume then
     this_user_routing_setting_value = getAPIVolume(this_routing_obj_value)
@@ -1339,11 +1288,50 @@ function processRoutingSetting(i, routing_settings_api_objs_conversion, dest_tra
     this_user_routing_setting_value = this_routing_obj_value
 
     if is_audio_channel then
-      createRequiredChannels(i, this_user_routing_setting_value, dest_track, src_track)
+      createRequiredChannels(i, this_user_routing_setting_value, src_track, dest_track)
     end
   end
 
-  reaper.BR_GetSetTrackSendInfo(dest_track, api_routing_type, dest_track_routing_count-1, this_api_routing_setting, 1, this_user_routing_setting_value)
+  reaper.BR_GetSetTrackSendInfo(src_track, _api_routing_types.send, dest_track_routing_count-1, this_api_routing_setting, 1, this_user_routing_setting_value)
+end
+
+
+function createRequiredChannels(i, this_user_routing_setting_value, src_track, dest_track)
+  local is_src_channel, is_dest_channel, is_stereo_channel, is_mono_channel, target_track, current_track_channel_count, required_track_channel_count, track_needs_more_channels
+
+  is_src_channel = i == 8
+  is_dest_channel = i == 9
+  is_stereo_channel = (this_user_routing_setting_value > 1 and this_user_routing_setting_value < 16)
+  is_mono_channel = (this_user_routing_setting_value > 1025 and this_user_routing_setting_value < 1041)
+
+  if is_src_channel then
+    target_track = src_track
+
+  elseif is_dest_channel then
+    target_track = dest_track
+  end
+
+  current_track_channel_count = reaper.GetMediaTrackInfo_Value(target_track, "I_NCHAN")
+  required_track_channel_count = getRequiredTrackChannelCount(is_stereo_channel, is_mono_channel, this_user_routing_setting_value)
+  track_needs_more_channels = required_track_channel_count > current_track_channel_count
+
+  if track_needs_more_channels then
+    reaper.SetMediaTrackInfo_Value(target_track, "I_NCHAN", required_track_channel_count)
+  end
+end
+
+
+function getRequiredTrackChannelCount(is_stereo_channel, is_mono_channel, this_user_routing_setting_value)
+  local required_track_channel_count = 2
+
+  if is_stereo_channel then
+    required_track_channel_count = this_user_routing_setting_value
+
+  elseif is_mono_channel then
+    required_track_channel_count = this_user_routing_setting_value - 1024
+  end
+
+  return required_track_channel_count
 end
 
 
