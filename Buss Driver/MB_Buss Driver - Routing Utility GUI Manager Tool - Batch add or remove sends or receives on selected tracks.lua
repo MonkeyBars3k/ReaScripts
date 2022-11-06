@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.9
--- @changelog Reset All Options silently selects all target tracks (https://github.com/MonkeyBars3k/ReaScripts/issues/323)
+-- @version 1.1.10
+-- @changelog Add notice when no routing available to remove (https://github.com/MonkeyBars3k/ReaScripts/issues/317)
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -1111,11 +1111,20 @@ end
 
 
 function submitRoutingOptionChanges()
+  local buss_driven
+
   getSetTargetTracksChoices()
-  addRemoveRouting(_routing_options_objs.form_fields)
-  reaper.Undo_BeginBlock()
-  _routing_options_objs.window:close()
-  reaper.Undo_EndBlock("MB_Buss Driver", 1)
+
+  buss_driven = addRemoveRouting(_routing_options_objs.form_fields)
+  
+  if buss_driven then
+    reaper.Undo_BeginBlock()
+    _routing_options_objs.window:close()
+    reaper.Undo_EndBlock("MB_Buss Driver", 1)
+
+  else
+    reaper.ShowMessageBox("No routing is available to remove on the selected track(s).", "Buss Driver", 1)
+  end
 end
 
 
@@ -1188,7 +1197,7 @@ end
 
 
 function addRemoveRouting(routing_options_form_fields)
-  local routing_option_action_choice, routing_option_type_choice, this_selected_track, j, this_target_track
+  local routing_option_action_choice, routing_option_type_choice, this_selected_track, j, this_target_track, buss_driven
 
   routing_option_action_choice, routing_option_type_choice = getRoutingChoices()
 
@@ -1201,11 +1210,15 @@ function addRemoveRouting(routing_options_form_fields)
       if routing_option_action_choice == "add" then
         addRouting(routing_option_type_choice, this_selected_track, this_target_track)
 
+        buss_driven = true
+
       elseif routing_option_action_choice == "remove" then
-        removeRouting(routing_option_type_choice, this_selected_track, this_target_track)
+        buss_driven = removeRouting(routing_option_type_choice, this_selected_track, this_target_track)
       end
     end
   end
+
+  return buss_driven
 end
 
 
@@ -1334,7 +1347,9 @@ end
 
 
 function removeRouting(routing_option_type_choice, selected_track, target_track)
-  local this_track_dest, this_track_src
+  local this_track_dest, this_track_src, buss_driven
+
+  buss_driven = false
 
   if routing_option_type_choice == "send" then
 
@@ -1343,6 +1358,8 @@ function removeRouting(routing_option_type_choice, selected_track, target_track)
 
       if this_track_dest == target_track then
         reaper.RemoveTrackSend(selected_track, 0, i)
+
+        buss_driven = true
       end
     end
 
@@ -1353,9 +1370,13 @@ function removeRouting(routing_option_type_choice, selected_track, target_track)
 
       if this_track_src == target_track then
         reaper.RemoveTrackSend(selected_track, -1, i)
+
+        buss_driven = true
       end
     end
   end
+
+  return buss_driven
 end
 
 
