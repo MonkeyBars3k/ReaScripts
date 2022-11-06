@@ -1,7 +1,8 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.1.8
--- @changelog Include dev functions in ReaPack just in case
+-- @version 1.1.9
+-- @changelog Reset All Options silently selects all target tracks (https://github.com/MonkeyBars3k/ReaScripts/issues/323)
+-- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -16,20 +17,23 @@
 --  table_mute_off.png
 --  table_mute_on.png
 --  gnu_license_v3.txt
--- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
+
 
 -- Copyright (C) MonkeyBars 2022
 -- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your routing_option) any later version.
 -- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+
 -- ==== MB_BUSS DRIVER SCRIPT ARCHITECTURE NOTES ====
 -- MB_Buss Driver uses the great GUI library Reaper Toolkit (rtk). (https://reapertoolkit.dev/)
 -- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. (https://github.com/pkulchenko/serpent)
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
 
+
 -- TO DO:
 -- add hardware routing type?
+
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
@@ -338,7 +342,7 @@ function defineRoutingOptionsMethods()
   end
 
   _routing_options_objs.select_all_tracks.onchange = function(self)
-    selectDeselectAllTracks(self)
+    selectDeselectAllTargetTracks(self.value)
   end
 
   _routing_options_objs.save_options.onchange = function()
@@ -354,7 +358,7 @@ function defineRoutingOptionsMethods()
   end
 
   _routing_options_objs.reset_btn.onclick = function()
-    resetTargetTrackChoices()
+    selectDeselectAllTargetTracks(false)
     populateRoutingSettingsFormValues("reset")
     disableSubmitButton(true)
   end
@@ -1090,15 +1094,8 @@ function populateRoutingSettingsPopup()
 end
 
 
-function selectDeselectAllTracks(checkbox)
-  local new_checkbox_value, target_track_lines, this_track_line, this_track_checkbox
-
-  if checkbox.value then
-    new_checkbox_value = true
-
-  else
-    new_checkbox_value = false
-  end
+function selectDeselectAllTargetTracks(select_deselect)
+  local target_track_lines, this_track_line, this_track_checkbox
 
   target_track_lines = _routing_options_objs.target_tracks_box.children
 
@@ -1107,7 +1104,7 @@ function selectDeselectAllTracks(checkbox)
 
     if this_track_line then
       this_track_checkbox = this_track_line.children[2][1]
-      this_track_checkbox:attr("value", new_checkbox_value)
+      this_track_checkbox:attr("value", select_deselect)
     end
   end
 end
@@ -1356,28 +1353,6 @@ function removeRouting(routing_option_type_choice, selected_track, target_track)
 
       if this_track_src == target_track then
         reaper.RemoveTrackSend(selected_track, -1, i)
-      end
-    end
-  end
-end
-
-
-function resetTargetTrackChoices(none)
-  local target_tracks_box, this_target_tracks_box_child_line, this_track_line_child
-
-  target_tracks_box = _routing_options_objs.form_fields.refs.routing_option_target_tracks_box
-
-  for i = 1, #target_tracks_box.children do
-    this_target_tracks_box_child_line = target_tracks_box.children[i][1]
-
-    if this_target_tracks_box_child_line.data_class == "target_track_line" then
-
-      for j = 1, #this_target_tracks_box_child_line.children do
-        this_track_line_child = this_target_tracks_box_child_line.children[j][1]
-
-        if this_track_line_child.data_class == "target_track_checkbox" then
-          this_track_line_child:attr("value", "unchecked")
-        end
       end
     end
   end

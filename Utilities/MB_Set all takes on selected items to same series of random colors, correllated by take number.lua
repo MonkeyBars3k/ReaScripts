@@ -27,4 +27,4 @@ for i = 0, selected_items_count-1 do
   reaper.UpdateItemInProject(this_selected_item)
 end
 
-reaper.Undo_EndBlock("Set all takes on selected items to same series of random colors, correllated by take number", -1)
+reaper.Undo_EndBlock("MB_Set all takes on selected items to same series of random colors, correllated by take number", -1)
