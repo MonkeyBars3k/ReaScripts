@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="006a5d7858e050dba3130b8da9cce37294c6f808">
+<index version="1" name="MonkeyBars-ReaScripts" commit="9c94c3e5fd9d3b142701a43d4125a06742f3a1aa">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
@@ -331,6 +331,15 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/9285a8c72c54b280237fad8aaa8669c54f071688/Fold%20Source/MB_Fold%20source%20media%20into%20imploded%20takes%20at%20item%20length%20%E2%80%93%20if%20multiple%20takes,%20explode%20active%20take%20to%20new%20track.lua</source>
         <source file="mb-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/9285a8c72c54b280237fad8aaa8669c54f071688/Fold%20Source/mb-dev-functions.lua</source>
         <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/9285a8c72c54b280237fad8aaa8669c54f071688/Fold%20Source/gnu_license_v3.txt</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="JSFX">
+    <reapack name="volume_0db.jsfx" type="effect" desc="MonkeyBars JSFX for Reaper">
+      <version name="1.0" author="MonkeyBars" time="2022-12-24T17:37:30Z">
+        <changelog><![CDATA[Initial upload]]></changelog>
+        <source>https://github.com/MonkeyBars3k/ReaScripts/raw/9c94c3e5fd9d3b142701a43d4125a06742f3a1aa/JSFX/volume_0db.jsfx</source>
+        <source file="dual_mono_volume.jsfx">https://github.com/MonkeyBars3k/ReaScripts/raw/9c94c3e5fd9d3b142701a43d4125a06742f3a1aa/JSFX/dual_mono_volume.jsfx</source>
       </version>
     </reapack>
   </category>
