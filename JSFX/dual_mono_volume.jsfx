@@ -1,0 +1,24 @@
+// @noindex
+
+desc: Dual Mono Volume
+//tags: utility gain mono
+//author: MonkeyBars
+
+slider1:0<-150,24,0.1>Channel 1 Gain (dB)
+slider2:0<-150,24,0.1>Channel 2 Gain (dB)
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+@init
+ext_tail_size = -2;
+
+@slider
+  adj0=2 ^ (slider1/6); 
+  adj1=2 ^ (slider2/6);
+
+@sample
+spl0=spl0*adj0;
+spl1=spl1*adj1;
