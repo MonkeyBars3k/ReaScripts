@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 1.839
--- @changelog Options: Set all with native boolean SetToggleCommandState() (https://github.com/MonkeyBars3k/ReaScripts/issues/329); update rtk
+-- @version 1.840
+-- @changelog Project can't find item note images if on different system (https://github.com/MonkeyBars3k/ReaScripts/issues/313)
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
