@@ -11,14 +11,14 @@
 
 
 -- for dev only
-require("sg-dev-functions")
+-- require("mb-dev-functions")
  
 
 local rtk = require('rtk')
 local serpent = require("serpent")
 
 
-local _script_path, _os_path_separator, _os_path_splitter_pattern, _custom_path_separator, _script_brand_logo_filename, _superitem_bg_img_path, _restored_item_bg_img_path, _restored_instance_bg_img_path, _peak_data_filename_extension, _command_id_deselect_all_items, _command_id_glue_ignoring_time_selection_incl_fades, _command_id_apply_fx_to_items_multichannel, _command_id_rebuild_peaks_for_selected_items, _command_id_scroll_to_selected_item, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_loop_src_key, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_null_takes_val, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _loop_enabled_value, _sizing_region_1st_display_num, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_bounds_on_glue_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_loop_source_sets_sizing_region_bounds_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
+local _script_path, _os_path_separator, _os_path_splitter_pattern, _custom_path_separator, _script_brand_logo_filename, _superitem_bg_img_path, _restored_item_bg_img_path, _restored_instance_bg_img_path, _peak_data_filename_extension, _command_id_deselect_all_items, _command_id_glue_ignoring_time_selection_incl_fades, _command_id_apply_fx_to_items_multichannel, _command_id_build_missing_peaks, _command_id_rebuild_peaks_for_selected_items, _command_id_scroll_to_selected_item, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_loop_src_key, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_take_guid_key, _api_null_takes_val, _supported_media_types, _proj_renderpath, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_item_offset_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _loop_enabled_value, _sizing_region_1st_display_num, _superitem_instance_offset_delta_since_last_glue, _restored_items_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_bounds_on_glue_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_loop_source_sets_sizing_region_bounds_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _os_path_separator = package.config:sub(1,1)
@@ -32,6 +32,7 @@ _peak_data_filename_extension = ".reapeaks"
 _command_id_deselect_all_items = 40289
 _command_id_glue_ignoring_time_selection_incl_fades = 40257
 _command_id_apply_fx_to_items_multichannel = 41993
+_command_id_build_missing_peaks = 40047
 _command_id_rebuild_peaks_for_selected_items = 40441
 _command_id_scroll_to_selected_item = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
 _script_brand_name = "MB_Superglue"
@@ -64,7 +65,10 @@ _api_take_src_offset_key = "D_STARTOFFS"
 _api_playrate_key = "D_PLAYRATE"
 _api_take_name_key = "P_NAME"
 _api_takenumber_key = "IP_TAKENUMBER"
+_api_take_guid_key = "GUID"
 _api_null_takes_val = "TAKE NULL"
+_supported_media_types = "*.aif\0*aiff\0*avi\0*bwf\0*cda\0*dat\0*edl\0*flac\0*gif\0*jpeg\0*jpg\0*kar\0*lcf\0*m4a\0*m4v\0*mid\0*midi\0*mkv\0*mogg\0*mov\0*mp2\0*mp3\0*mp4\0*mpeg\0*mpg\0*musicxml\0*mxl\0*ogg\0*ogv\0*opus\0*png\0*qt\0*rcy\0*rex\0*rmi\0*rpp\0*rpp-prox\0*rx2\0*syx\0*w64\0*wav\0*webm\0*wma\0*wmv\0*wv\0*xml\0\0"
+_proj_renderpath = reaper.GetProjectPath(_api_current_project)
 _global_script_prefix = "SG_"
 _global_script_item_name_prefix = "sg"
 _separator = ":"
@@ -345,6 +349,7 @@ function openOptionsWindow()
   options_window_content:add(options_window_title)
 
   all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content, option_form_submit)
+
   option_form_submit.onclick = function()
     submitOptionChanges(all_option_controls, options_window)
   end
@@ -698,17 +703,16 @@ end
 
 
 function renderPathIsValid()
-  local platform, proj_renderpath, win_platform_regex, is_win, win_absolute_path_regex, is_win_absolute_path, is_win_local_path, nix_absolute_path_regex, is_nix_absolute_path, is_other_local_path
+  local platform, win_platform_regex, is_win, win_absolute_path_regex, is_win_absolute_path, is_win_local_path, nix_absolute_path_regex, is_nix_absolute_path, is_other_local_path
 
   platform = reaper.GetOS()
-  proj_renderpath = reaper.GetProjectPath(_api_current_project)
   win_platform_regex = "^Win"
   is_win = string.match(platform, win_platform_regex)
   win_absolute_path_regex = "^%u%:\\"
-  is_win_absolute_path = string.match(proj_renderpath, win_absolute_path_regex)
+  is_win_absolute_path = string.match(_proj_renderpath, win_absolute_path_regex)
   is_win_local_path = is_win and not is_win_absolute_path
   nix_absolute_path_regex = "^/"
-  is_nix_absolute_path = string.match(proj_renderpath, nix_absolute_path_regex)
+  is_nix_absolute_path = string.match(_proj_renderpath, nix_absolute_path_regex)
   is_other_local_path = not is_win and not is_nix_absolute_path
   
   if is_win_local_path or is_other_local_path then
@@ -749,7 +753,7 @@ function requiredLibsAreInstalled()
   end
 
   if not can_get_sws_version or not sws_version then
-    reaper.ShowMessageBox("Please install SWS at https://standingwaterstudios.com/ and try again.", _script_brand_name .. " requires the SWS plugin extension to work.", _msg_type_ok)
+    reaper.ShowMessageBox("Please install SWS from https://standingwaterstudios.com/ and try again.", _script_brand_name .. " requires the SWS plugin extension to work.", _msg_type_ok)
     
     return false
   end
@@ -1682,7 +1686,7 @@ function convertMidiItemToAudio(item)
       renderFxToItem()
       
       active_take = reaper.GetActiveTake(item)
-      retval, active_take_guid = reaper.GetSetMediaItemTakeInfo_String(active_take, "GUID", "", false)
+      retval, active_take_guid = reaper.GetSetMediaItemTakeInfo_String(active_take, _api_take_guid_key, "", false)
 
       storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix, active_take_guid)
       reaper.SetMediaItemSelected(item, false)
@@ -1762,7 +1766,7 @@ function getSetItemParams(item, params)
 
   if get then
     track = reaper.GetMediaItemTrack(item)
-    retval, track_guid = reaper.GetSetMediaTrackInfo_String(track, "GUID", "", false)
+    retval, track_guid = reaper.GetSetMediaTrackInfo_String(track, _api_take_guid_key, "", false)
     active_take = reaper.GetActiveTake(item)
 
     if active_take then
@@ -1866,6 +1870,9 @@ function handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, sizing
   if this_is_fresh_glue then
     renameSuperitemSource(superitem, pool_id)
     setSuperitemColor()
+
+  else
+    handleOfflineTake(superitem, "reglued")
   end
 
   if not _active_instance_length_has_changed then
@@ -1919,7 +1926,7 @@ function renameSuperitemSource(superitem, pool_id)
   end
 
   reaper.BR_SetTakeSourceFromFile2(superitem_active_take, superitem_source_new_filepath, true, true)
-  buildMissingPeaks()
+  reaper.Main_OnCommand(_command_id_build_missing_peaks, _api_command_flag)
 end
 
 
@@ -1938,11 +1945,6 @@ function getSuperitemActiveTakeInfo(superitem, pool_id)
   superitem_source_new_filepath = project_path .. _os_path_separator .. _global_script_item_name_prefix .. _custom_path_separator .. _pool_key_prefix .. pool_id .. _custom_path_separator .. superitem_active_take_source_filename
 
   return superitem_active_take, superitem_active_take_source_filepath, superitem_source_new_filepath
-end
-
-
-function buildMissingPeaks()
-  reaper.Main_OnCommand(40047, _api_command_flag)
 end
 
 
@@ -2053,6 +2055,39 @@ end
 
 function setItemToRandomColor()
   reaper.Main_OnCommand(40706, _api_command_flag)
+end
+
+
+function handleOfflineTake(item, context)
+  local active_take, active_src, active_take_is_online, src_filepath, src_exists, src_filename, src_filepath_in_project_folder, user_response, retval, user_chosen_file
+
+  active_take = reaper.GetActiveTake(item)
+  active_src = reaper.GetMediaItemTake_Source(active_take)
+  active_take_is_online = reaper.CF_GetMediaSourceOnline(active_src)
+
+  if not active_take_is_online then
+    src_filepath = reaper.GetMediaSourceFileName(active_src)
+    src_exists = fileExists(src_filepath)
+
+    if not src_exists then
+      src_filename = getFileNameFromPath(src_filepath)
+      src_filepath_in_project_folder = _proj_renderpath .. _os_path_separator .. src_filename
+      src_exists = fileExists(src_filepath_in_project_folder)
+
+      if src_exists then
+        reaper.BR_SetTakeSourceFromFile2(active_take, src_filepath_in_project_folder, true, true)
+
+      else
+        user_response = reaper.ShowMessageBox("Press OK to continue, or Cancel to leave it offline.", "Superglue can't find a media source. Choose a new source file for the offline " .. context .. " item.", _msg_type_ok_cancel)
+
+        if user_response == _msg_response_ok then
+          retval, user_chosen_file = reaper.JS_Dialog_BrowseForOpenFiles("Choose a new source file for the offline item.", _proj_renderpath, src_filename, _supported_media_types, false)
+
+          reaper.BR_SetTakeSourceFromFile2(active_take, user_chosen_file, true, true)
+        end
+      end
+    end
+  end
 end
 
 
@@ -2782,6 +2817,7 @@ function handleRestoredItem(superitem, active_track, stored_item_state, restored
   restored_item = restoreItem(active_track, stored_item_state, this_is_ancestor_update)
   restored_instance_pool_id = storeRetrieveItemData(restored_item, _instance_pool_id_key_suffix)
 
+  handleOfflineTake(restored_item, "restored")
   reaper.SetMediaItemSelected(restored_item, true)
   handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
@@ -4032,6 +4068,10 @@ end
 function fileExists(name)
    local f=io.open(name,"r")
    if f~=nil then io.close(f) return true else return false end
+end
+
+function getFileNameFromPath(file)
+    return file:match("^.+[/\\](.+)$")
 end
 
 function getTableSize(t)

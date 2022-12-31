@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 1.837
--- @changelog Fades disappear in Superglue render on FIP track (https://github.com/MonkeyBars3k/ReaScripts/issues/309)
+-- @version 1.838
+-- @changelog Reglue: Project opened on different system doesn't update source path (https://github.com/MonkeyBars3k/ReaScripts/issues/312)
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
@@ -26,7 +26,7 @@
 --   [nomain] MB_Superglue-Utils.lua
 --   [nomain] serpent.lua
 --   [nomain] rtk.lua
---   [nomain] sg-dev-functions.lua
+--   [nomain] mb-dev-functions.lua
 --   sg-bg-restored.png
 --   sg-bg-superitem.png
 --   sg-bg-restoredinstance.png
