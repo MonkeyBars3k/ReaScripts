@@ -281,24 +281,6 @@ end
 
 
 
-function setDefaultOptionValues()
-  local this_option_ext_state_key, this_option_exists_in_extstate, this_option_is_not_set_in_extstate
-
-  for i = 1, #_all_global_options_params do
-    this_option_ext_state_key = _all_global_options_params[i].ext_state_key
-    this_option_exists_in_extstate = reaper.HasExtState(_global_options_section, this_option_ext_state_key)
-    this_option_is_not_set_in_extstate = not this_option_exists_in_extstate or this_option_exists_in_extstate == "nil"
-
-    if this_option_is_not_set_in_extstate then
-      updateOptionValue(_all_global_options_params[i], _all_global_options_params[i].default_value)
-    end
-  end
-end
-
-setDefaultOptionValues()
-
-
-
 function updateOptionValue(option, val)
   local option_toggle_script_filepath, option_toggle_script_command_id, option_is_boolean, integer_val
 
@@ -321,6 +303,24 @@ function updateOptionValue(option, val)
 
   reaper.SetExtState(_global_options_section, option.ext_state_key, val, _api_extstate_persist_enabled)
 end
+
+
+
+function setDefaultOptionValues()
+  local this_option_ext_state_key, this_option_exists_in_extstate, this_option_is_not_set_in_extstate
+
+  for i = 1, #_all_global_options_params do
+    this_option_ext_state_key = _all_global_options_params[i].ext_state_key
+    this_option_exists_in_extstate = reaper.HasExtState(_global_options_section, this_option_ext_state_key)
+    this_option_is_not_set_in_extstate = not this_option_exists_in_extstate or this_option_exists_in_extstate == "nil"
+
+    if this_option_is_not_set_in_extstate then
+      updateOptionValue(_all_global_options_params[i], _all_global_options_params[i].default_value)
+    end
+  end
+end
+
+setDefaultOptionValues()
 
 
 
