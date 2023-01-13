@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.3
--- @changelog Add multichannel routing (https://github.com/MonkeyBars3k/ReaScripts/issues/300)
+-- @version 1.2
+-- @changelog Add incrementing channels routing (https://github.com/MonkeyBars3k/ReaScripts/issues/297); MIDI channel & bus are reversed (https://github.com/MonkeyBars3k/ReaScripts/issues/330); Mono Audio channels display starts at 0 (https://github.com/MonkeyBars3k/ReaScripts/issues/331); Audio channel type detection broken over 16 chs (https://github.com/MonkeyBars3k/ReaScripts/issues/332); update rtk
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -34,7 +34,7 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
-require("mb-dev-functions")
+-- require("mb-dev-functions")
 
 
 local rtk = require("rtk")
@@ -47,7 +47,7 @@ rtk.set_theme_overrides({
 
 
 
-local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _bullet, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path, _reaper_max_track_channels, _api_multichannel_base, _api_multichannel_addl, _api_mono_channel_base, _regex_digits_at_string_end, _regex_routing_midi_channel, _regex_routing_midi_bus
+local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _bullet, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path, _reaper_max_track_channels, _api_stereo_channel_base, _api_mono_channel_base, _regex_digits_at_string_end, _regex_routing_midi_channel, _regex_routing_midi_bus
 
 _selected_tracks_count = reaper.CountSelectedTracks(0)
 _data_storage_track = reaper.GetMasterTrack(0)
@@ -75,8 +75,7 @@ _api_script_ext_name = "MB_Buss-Driver"
 _api_save_options_key_name = "save_options"
 _logo_img_path = "bussdriver_logo_nobg.png"
 _reaper_max_track_channels = 64
-_api_multichannel_base = 0
-_api_multichannel_addl = 1024
+_api_stereo_channel_base = 0
 _api_mono_channel_base = 1024
 _regex_digits_at_string_end = "%d+$"
 _regex_routing_midi_channel = "/%-?%d+"
@@ -691,12 +690,12 @@ end
 
 
 function initRoutingSettings()
-  local audio_channel_src_options, audio_channel_dest_options, midi_channel_src_options, midi_channel_dest_options
+  local audio_channel_src_options, audio_channel_rcv_options, midi_channel_src_options, midi_channel_rcv_options
 
-  audio_channel_src_options, audio_channel_dest_options = defineAudioChannelOptions()
-  midi_channel_src_options, midi_channel_dest_options = defineMIDIChannelOptions()
+  audio_channel_src_options, audio_channel_rcv_options = defineAudioChannelOptions()
+  midi_channel_src_options, midi_channel_rcv_options = defineMIDIChannelOptions()
 
-  populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_dest_options, midi_channel_src_options, midi_channel_dest_options)
+  populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_src_options, midi_channel_rcv_options)
   gatherRoutingSettingsFormFields()
   setRoutingSettingsPopupEventHandlers()
   populateRoutingSettingsFormValues()
@@ -706,14 +705,12 @@ end
 
 
 function defineAudioChannelOptions()
-  local audio_channel_submenu_mono_options, audio_channel_submenu_stereo_options, track_channels, multichannel_count_options, audio_channel_src_options, audio_channel_dest_options, submenu_audio_channels, audio_channel_submenu_multichannel_count_options_label, multichannel_choices_count, audio_channel_all_multichannel_options, audio_channel_submenu_multichannel_count_options, multichannel_option_val
+  local audio_channel_submenu_mono_options, audio_channel_submenu_stereo_options, audio_channel_src_options, audio_channel_rcv_options
 
   audio_channel_submenu_mono_options = {}
   audio_channel_submenu_stereo_options = {}
-  track_channels = getSelectedTracksLeastChannelCount()
 
   for i = 0, 15 do
-
     audio_channel_submenu_mono_options[i+1] = {
       ["label"] = tostring(i+1),
       ["id"] = _api_mono_channel_base + i
@@ -721,7 +718,6 @@ function defineAudioChannelOptions()
   end
 
   for i = 0, 14 do
-
     audio_channel_submenu_stereo_options[i+1] = {
       ["label"] = tostring(i+1) .. "/" .. tostring(i+2),
       ["id"] = i
@@ -734,70 +730,34 @@ function defineAudioChannelOptions()
     {"Stereo source", submenu = audio_channel_submenu_stereo_options}
   }
 
-      -- audio_channel_dest_options CHANGES DYNAMICALLY BASED ON MULTICHANNEL SELECTION
-
-  audio_channel_dest_options = {
+  audio_channel_rcv_options = {
     {"Mono receiving channels", submenu = audio_channel_submenu_mono_options},
     {"Stereo receiving channels", submenu = audio_channel_submenu_stereo_options}
   }
 
-  if track_channels > 2 then
-    multichannel_count_options = (track_channels - 2) / 2
-    audio_channel_all_multichannel_options = {}
-
-    for i = 1, multichannel_count_options do
-      submenu_audio_channels = (i + 1) * 2
-      audio_channel_submenu_multichannel_count_options_label = submenu_audio_channels .. " channels"
-      multichannel_choices_count = track_channels - submenu_audio_channels
-      audio_channel_submenu_multichannel_count_options = {}
-
-      for j = 0, multichannel_choices_count do
-        multichannel_option_val = (_api_multichannel_addl * i) + j
-
-        audio_channel_submenu_multichannel_count_options[j+1] = {
-          ["label"] = (j+1) .. "-" .. (j + submenu_audio_channels),
-          ["id"] = multichannel_option_val
-        }
-      end
-
-      audio_channel_all_multichannel_options[i] = {
-        ["label"] = audio_channel_submenu_multichannel_count_options_label,
-        ["submenu"] = audio_channel_submenu_multichannel_count_options
-      }
-    end
-
-    audio_channel_src_options[4] = {
-      ["label"] = "Multichannel source",
-      ["submenu"] = audio_channel_all_multichannel_options
-    }
-  end
-
-  return audio_channel_src_options, audio_channel_dest_options
+  return audio_channel_src_options, audio_channel_rcv_options
 end
 
 
-function getSelectedTracksLeastChannelCount()
-  local least_track_channels, this_selected_track_channels
-
-  least_track_channels = reaper.GetMediaTrackInfo_Value(_selected_tracks[1], "I_NCHAN")
-  
-  for i = 2, #_selected_tracks do
-    this_selected_track_channels = reaper.GetMediaTrackInfo_Value(_selected_tracks[i], "I_NCHAN")
-
-    if this_selected_track_channels < least_track_channels then
-      least_track_channels = this_selected_track_channels
-    end
+function deepTableCopy( original, copies )
+  if type( original ) ~= 'table' then return original end
+  copies = copies or {}
+  if copies[original] then return copies[original] end
+  local copy = {}
+  copies[original] = copy
+  for key, value in pairs( original ) do
+      local dc_key, dc_value = deepTableCopy( key, copies ), deepTableCopy( value, copies )
+      copy[dc_key] = dc_value
   end
-
-  return least_track_channels
+  setmetatable(copy, deepTableCopy( getmetatable( original ), copies) )
+  return copy
 end
 
 
 function defineMIDIChannelOptions()
-  local midi_channel_src_options, midi_channel_submenu_bus_options, midi_channel_submenu_bus_option_val, midi_channel_dest_options
+  local midi_channel_submenu_bus_options, midi_channel_submenu_bus_option_val, midi_channel_rcv_options, midi_channel_src_options
 
   -- none -1 / stereo idx / mono 1024+idx / hwout 512+idx
-
   midi_channel_src_options = {
     {
       ["label"] = "None",
@@ -839,30 +799,15 @@ function defineMIDIChannelOptions()
     }
   end
 
-  midi_channel_dest_options = deepTableCopy(midi_channel_src_options)
+  midi_channel_rcv_options = deepTableCopy(midi_channel_src_options)
 
-  table.remove(midi_channel_dest_options, 1)
+  table.remove(midi_channel_rcv_options, 1)
 
-  return midi_channel_src_options, midi_channel_dest_options
+  return midi_channel_src_options, midi_channel_rcv_options
 end
 
 
-function deepTableCopy( original, copies )
-  if type( original ) ~= 'table' then return original end
-  copies = copies or {}
-  if copies[original] then return copies[original] end
-  local copy = {}
-  copies[original] = copy
-  for key, value in pairs( original ) do
-      local dc_key, dc_value = deepTableCopy( key, copies ), deepTableCopy( value, copies )
-      copy[dc_key] = dc_value
-  end
-  setmetatable(copy, deepTableCopy( getmetatable( original ), copies) )
-  return copy
-end
-
-
-function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_dest_options, midi_channel_src_options, midi_channel_dest_options)
+function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_src_options, midi_channel_rcv_options)
   
   _routing_settings_objs = {
     ["popup"] = rtk.Popup{w = _routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0},
@@ -890,13 +835,13 @@ function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_de
     ["audio_channels"] = rtk.HBox{spacing = 3, valign = "center"},
     ["audio_txt"] = rtk.Text{"Audio:", bmargin = "2", fontscale = 0.63},
     ["audio_src_channel"] = rtk.OptionMenu{menu = audio_channel_src_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field", ref = "audio_src_channel"},
-    ["audio_rcv_channel"] = rtk.OptionMenu{menu = audio_channel_dest_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field", ref = "audio_rcv_channel"},
+    ["audio_rcv_channel"] = rtk.OptionMenu{menu = audio_channel_rcv_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, data_class = "routing_setting_field", ref = "audio_rcv_channel"},
     ["audio_incrementing"] = rtk.CheckBox{"Increment audio channels up", spacing = 2, fontscale = 0.63, valign = "center", data_class = "routing_setting_field"},
     ["midi_block"] = rtk.VBox{margin = "0 0 2 5", lpadding = 7, lborder = "1px #676767"},
     ["midi_channels"] = rtk.HBox{spacing = 3, valign = "center"},
     ["midi_txt"] = rtk.Text{"MIDI:", fontscale = 0.63},
     ["midi_src"] = rtk.OptionMenu{menu = midi_channel_src_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, ref = "midi_src", data_class = "routing_setting_field"},
-    ["midi_rcv"] = rtk.OptionMenu{menu = midi_channel_dest_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, ref = "midi_rcv", data_class = "routing_setting_field"},
+    ["midi_rcv"] = rtk.OptionMenu{menu = midi_channel_rcv_options, h = 20, margin = "-1 0 0 2", padding = "0 0 4 4", spacing = 6, fontscale = 0.63, ref = "midi_rcv", data_class = "routing_setting_field"},
     ["midi_incrementing"] = rtk.CheckBox{"Increment MIDI channels up", spacing = 2, fontscale = 0.63, valign = "center", data_class = "routing_setting_field"}
   }
 end
@@ -1023,18 +968,15 @@ end
 
 
 function toggleChannelDropdown(active_dropdown)
-  local active_dropdown_is_audio, active_dropdown_is_midi, none_value, affected_dropdown, arrow_ref, affected_incrementing_checkbox
+  local none_value, affected_dropdown, arrow_ref, affected_incrementing_checkbox
 
-  active_dropdown_is_audio = active_dropdown.ref == "audio_src_channel"
-  active_dropdown_is_midi = active_dropdown.ref == "midi_src"
-
-  if active_dropdown_is_audio then
+  if active_dropdown.ref == "audio_src_channel" then
     none_value = -1
     affected_dropdown = _routing_settings_objs.audio_rcv_channel
     arrow_ref = "audio_arrow"
     affected_incrementing_checkbox = _routing_settings_objs.audio_incrementing
 
-  elseif active_dropdown_is_midi then
+  elseif active_dropdown.ref == "midi_src" then
     none_value = "-1/-1"
     affected_dropdown = _routing_settings_objs.midi_rcv
     arrow_ref = "midi_arrow"
@@ -1050,41 +992,7 @@ function toggleChannelDropdown(active_dropdown)
     affected_dropdown:attr("ghost", false)
     affected_dropdown.refs[arrow_ref]:attr("ghost", false)
     affected_incrementing_checkbox:show()
-
-    if active_dropdown_is_audio then
-      refreshAudioDestChannelDropdown()
-    end
   end
-end
-
-
-function refreshAudioDestChannelDropdown()
-  local audio_dest_channel_all_options, selected_option, user_selected_channels, track_channels, multichannel_choices_count, multichannel_option_val
-
-  audio_dest_channel_all_options = {}
-  selected_option = _routing_settings_objs.audio_src_channel.selected_id
-  user_selected_channels = selected_option / _api_multichannel_addl
-
-  if user_selected_channels < 1 then
-    user_selected_channels = 2
-
-  elseif user_selected_channels > _api_mono_channel_base and user_selected_channels < (_api_multichannel_addl * 2) then
-    user_selected_channels = 1
-  end
-
-  track_channels = getSelectedTracksLeastChannelCount()
-  multichannel_choices_count = track_channels - user_selected_channels
-
-  for i = 1, multichannel_choices_count do
-    multichannel_option_val = user_selected_channels + i
-
-    audio_dest_channel_all_options[i] = {
-      ["label"] = i .. "-" .. user_selected_channels,
-      ["id"] = multichannel_option_val
-    }
-  end
-
-  _routing_settings_objs.audio_rcv_channel.menu = audio_dest_channel_all_options
 end
 
 
@@ -1365,7 +1273,7 @@ function applyRoutingSettings(src_track, routing_option_type_choice, dest_track,
   for routing_setting_idx = 1, 14 do
     is_pan_law = routing_setting_idx == 6
 
-    if not is_pan_law then
+    if is_pan_law then
       goto skip_to_next
     end
 
@@ -1408,7 +1316,7 @@ function processRoutingSetting(routing_setting_idx, routing_settings_api_objs_co
     this_user_routing_setting_value = stripOutMidiData(this_routing_obj_value, "bus")
 
     if is_midi_rcv_channel then
-      this_user_routing_setting_value = incrementDestChannels("midi", this_user_routing_setting_value, target_track_idx)
+      this_user_routing_setting_value = incrementRcvChannels("midi", this_user_routing_setting_value, target_track_idx)
     end
   
   elseif is_midi_bus then
@@ -1436,7 +1344,7 @@ function stripOutMidiData(val, channel_or_bus)
 end
 
 
-function incrementDestChannels(midi_or_audio, this_user_routing_setting_value, target_track_idx)
+function incrementRcvChannels(midi_or_audio, this_user_routing_setting_value, target_track_idx)
   local audio_channel_type, num_to_increment_by, incrementing_enabled
 
   this_user_routing_setting_value = tonumber(this_user_routing_setting_value)
@@ -1448,7 +1356,7 @@ function incrementDestChannels(midi_or_audio, this_user_routing_setting_value, t
   elseif midi_or_audio == "audio" then
     audio_channel_type = getAudioChannelValueType(this_user_routing_setting_value)
   
-    if audio_channel_type == "multichannel" then
+    if audio_channel_type == "stereo" then
       num_to_increment_by = (target_track_idx * 2) - 2
 
     elseif audio_channel_type == "mono" then
@@ -1472,8 +1380,8 @@ end
 
 function getAudioChannelValueType(val)
 
-  if val >= _api_multichannel_base and val < _reaper_max_track_channels then
-    return "multichannel"
+  if val >= _api_stereo_channel_base and val < _reaper_max_track_channels then
+    return "stereo"
 
   elseif val >= _api_mono_channel_base and val < (_api_mono_channel_base + _reaper_max_track_channels) then
 
@@ -1492,7 +1400,7 @@ function processAudioRoutingSetting(routing_setting_idx, this_routing_obj_value,
   if is_audio_channel then
 
     if is_audio_rcv_channel then
-      this_user_routing_setting_value = incrementDestChannels("audio", this_user_routing_setting_value, target_track_idx)
+      this_user_routing_setting_value = incrementRcvChannels("audio", this_user_routing_setting_value, target_track_idx)
     end
 
     createRequiredAudioChannels(routing_setting_idx, this_user_routing_setting_value, src_track, dest_track)
@@ -1529,7 +1437,7 @@ end
 function getRequiredTrackChannelCount(audio_channel_type, this_user_routing_setting_value)
   local required_track_channel_count = 2
 
-  if audio_channel_type == "multichannel" then
+  if audio_channel_type == "stereo" then
     required_track_channel_count = this_user_routing_setting_value
 
   elseif audio_channel_type == "mono" then
