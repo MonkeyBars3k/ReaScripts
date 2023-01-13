@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.2
--- @changelog Add incrementing channels routing (https://github.com/MonkeyBars3k/ReaScripts/issues/297); MIDI channel & bus are reversed (https://github.com/MonkeyBars3k/ReaScripts/issues/330); Mono Audio channels display starts at 0 (https://github.com/MonkeyBars3k/ReaScripts/issues/331); Audio channel type detection broken over 16 chs (https://github.com/MonkeyBars3k/ReaScripts/issues/332); update rtk
+-- @version 1.20
+-- @changelog Revert Issue 300 partial commit
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
