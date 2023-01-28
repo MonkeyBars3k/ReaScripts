@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.20
--- @changelog Revert Issue 300 partial commit
+-- @version 1.21
+-- @changelog Incrementing channels should be on source not destination (https://github.com/MonkeyBars3k/ReaScripts/issues/336); Add warning if incrementing tracks hit max channels (https://github.com/MonkeyBars3k/ReaScripts/issues/337)
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -19,7 +19,7 @@
 --  gnu_license_v3.txt
 
 
--- Copyright (C) MonkeyBars 2022
+-- Copyright (C) MonkeyBars 2023
 -- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your routing_option) any later version.
 -- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -47,7 +47,7 @@ rtk.set_theme_overrides({
 
 
 
-local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _all_tracks_count_on_launch, _api_msg_answer_yes, _bullet, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path, _reaper_max_track_channels, _api_stereo_channel_base, _api_mono_channel_base, _regex_digits_at_string_end, _regex_routing_midi_channel, _regex_routing_midi_bus
+local selected_tracks_count, _selected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _api_msg_type_ok, _all_tracks_count_on_launch, _routing_settings_objs, reaperFade1, reaperFade2, reaperFade3, reaperFadeg, reaperFadeh, reaperFadeIn, reaperFade, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path, _reaper_max_track_channels, _api_stereo_channel_base, _api_mono_channel_base, _api_4channel_base, _regex_digits_at_string_end, _regex_routing_midi_channel, _regex_routing_midi_bus, _enough_audio_channels_are_available
 
 _selected_tracks_count = reaper.CountSelectedTracks(0)
 _data_storage_track = reaper.GetMasterTrack(0)
@@ -56,7 +56,7 @@ _api_routing_types = {
   ["send"] = 0
 }
 _api_all_routing_settings = {"B_MUTE", "B_PHASE", "B_MONO", "D_VOL", "D_PAN", "D_PANLAW", "I_SENDMODE", "I_SRCCHAN", "I_DSTCHAN", "I_MIDI_SRCCHAN", "I_MIDI_DSTCHAN", "I_MIDI_SRCBUS", "I_MIDI_DSTBUS", "I_MIDI_LINK_VOLPAN"}
-_api_msg_answer_yes = 6
+_api_msg_type_ok = 0
 _right_arrow = "\u{2192}"
 _default_routing_settings_values = {
   ["mute"] = 0,
@@ -77,9 +77,11 @@ _logo_img_path = "bussdriver_logo_nobg.png"
 _reaper_max_track_channels = 64
 _api_stereo_channel_base = 0
 _api_mono_channel_base = 1024
+_api_4channel_base = 2048
 _regex_digits_at_string_end = "%d+$"
 _regex_routing_midi_channel = "/%-?%d+"
 _regex_routing_midi_bus = "%-?%d+/"
+_enough_audio_channels_are_available = true
 
 
 
@@ -1141,12 +1143,17 @@ function submitRoutingOptionChanges()
   buss_driven = addRemoveRouting(_routing_options_objs.form_fields)
   
   if buss_driven then
+
+    if not _enough_audio_channels_are_available then
+      reaper.ShowMessageBox("Buss Driver has set the tracks exceeding channel limit to the top channel value.", "You have more destination tracks selected than the " .. _reaper_max_track_channels .. " incrementing channels available.", _api_msg_type_ok)
+    end
+
     reaper.Undo_BeginBlock()
     _routing_options_objs.window:close()
     reaper.Undo_EndBlock("MB_Buss Driver", 1)
 
   else
-    reaper.ShowMessageBox("No routing is available to remove on the selected track(s).", "Buss Driver", 1)
+    reaper.ShowMessageBox("No routing is available to remove on the selected track(s).", "Buss Driver", _api_msg_type_ok)
   end
 end
 
@@ -1299,7 +1306,7 @@ end
 
 
 function processRoutingSetting(routing_setting_idx, routing_settings_api_objs_converted_names, src_track, dest_track, dest_track_routing_count, target_track_idx)
-  local is_volume, is_midi_channel, is_midi_rcv_channel, is_midi_bus, is_audio_channel, is_audio_rcv_channel, this_api_routing_setting, this_routing_obj_name, this_routing_obj_value, this_user_routing_setting_value
+  local is_volume, is_midi_channel, is_midi_rcv_channel, is_midi_bus, this_api_routing_setting, this_routing_obj_name, this_routing_obj_value, this_user_routing_setting_value
 
   is_volume = routing_setting_idx == 4
   is_midi_channel = routing_setting_idx == 10 or routing_setting_idx == 11
@@ -1316,7 +1323,7 @@ function processRoutingSetting(routing_setting_idx, routing_settings_api_objs_co
     this_user_routing_setting_value = stripOutMidiData(this_routing_obj_value, "bus")
 
     if is_midi_rcv_channel then
-      this_user_routing_setting_value = incrementRcvChannels("midi", this_user_routing_setting_value, target_track_idx)
+      this_user_routing_setting_value = incrementSrcChannels("midi", this_user_routing_setting_value, target_track_idx)
     end
   
   elseif is_midi_bus then
@@ -1344,8 +1351,28 @@ function stripOutMidiData(val, channel_or_bus)
 end
 
 
-function incrementRcvChannels(midi_or_audio, this_user_routing_setting_value, target_track_idx)
-  local audio_channel_type, num_to_increment_by, incrementing_enabled
+function processAudioRoutingSetting(routing_setting_idx, this_routing_obj_value, target_track_idx, src_track, dest_track)
+  local is_audio_channel, is_audio_src_channel, this_user_routing_setting_value
+
+  is_audio_channel = routing_setting_idx == 8 or routing_setting_idx == 9
+  is_audio_src_channel = routing_setting_idx == 8
+  this_user_routing_setting_value = this_routing_obj_value
+
+  if is_audio_channel then
+
+    if is_audio_src_channel then
+      this_user_routing_setting_value = incrementSrcChannels("audio", this_user_routing_setting_value, target_track_idx)
+    end
+
+    createRequiredAudioChannels(routing_setting_idx, this_user_routing_setting_value, src_track, dest_track)
+  end
+
+  return this_user_routing_setting_value
+end
+
+
+function incrementSrcChannels(midi_or_audio, this_user_routing_setting_value, target_track_idx)
+  local audio_channel_type, num_to_increment_by, incrementing_enabled, max_audio_channels_are_exceeded
 
   this_user_routing_setting_value = tonumber(this_user_routing_setting_value)
 
@@ -1371,6 +1398,9 @@ function incrementRcvChannels(midi_or_audio, this_user_routing_setting_value, ta
 
     if midi_or_audio == "midi" and this_user_routing_setting_value > 16 then
       this_user_routing_setting_value = 16
+
+    elseif midi_or_audio == "audio" then
+      this_user_routing_setting_value = checkEnoughAudioChannelsAreAvailable(this_user_routing_setting_value)
     end
   end
 
@@ -1387,26 +1417,6 @@ function getAudioChannelValueType(val)
 
     return "mono"
   end
-end
-
-
-function processAudioRoutingSetting(routing_setting_idx, this_routing_obj_value, target_track_idx, src_track, dest_track)
-  local is_audio_channel, is_audio_rcv_channel, this_user_routing_setting_value
-
-  is_audio_channel = routing_setting_idx == 8 or routing_setting_idx == 9
-  is_audio_rcv_channel = routing_setting_idx == 9
-  this_user_routing_setting_value = this_routing_obj_value
-
-  if is_audio_channel then
-
-    if is_audio_rcv_channel then
-      this_user_routing_setting_value = incrementRcvChannels("audio", this_user_routing_setting_value, target_track_idx)
-    end
-
-    createRequiredAudioChannels(routing_setting_idx, this_user_routing_setting_value, src_track, dest_track)
-  end
-
-  return this_user_routing_setting_value
 end
 
 
@@ -1445,6 +1455,41 @@ function getRequiredTrackChannelCount(audio_channel_type, this_user_routing_sett
   end
 
   return required_track_channel_count
+end
+
+
+function checkEnoughAudioChannelsAreAvailable(routing_setting_value)
+  local track_is_stereo, track_is_mono, incrementing_exceeds_available_audio_channels
+
+  track_is_stereo = routing_setting_value < _api_mono_channel_base
+  track_is_mono = routing_setting_value >= _api_mono_channel_base and routing_setting_value < _api_4channel_base
+
+  if track_is_stereo then
+    incrementing_exceeds_available_audio_channels = routing_setting_value >= _reaper_max_track_channels
+
+  elseif track_is_mono then
+    incrementing_exceeds_available_audio_channels = routing_setting_value >= _api_mono_channel_base + _reaper_max_track_channels
+
+-- ADD MULTICHANNEL CASE HERE
+
+  end
+
+  if incrementing_exceeds_available_audio_channels then
+
+    if track_is_stereo then
+      routing_setting_value = _reaper_max_track_channels - 2
+
+    elseif track_is_mono then
+      routing_setting_value = _api_mono_channel_base + _reaper_max_track_channels - 1
+
+  -- ADD MULTICHANNEL CASE HERE TOO
+
+    end
+
+    _enough_audio_channels_are_available = false
+  end
+
+  return routing_setting_value
 end
 
 
