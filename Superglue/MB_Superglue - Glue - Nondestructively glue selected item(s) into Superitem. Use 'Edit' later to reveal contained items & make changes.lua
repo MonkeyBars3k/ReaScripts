@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 1.842
--- @changelog Reglue: Anomalous left edge change warnings (https://github.com/MonkeyBars3k/ReaScripts/issues/321); Reglue: Ancestor left edge calculation is wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/338)
+-- @version 1.843
+-- @changelog Reglue: Editing rendered VI MIDI Superitem throws error; tries to recover MIDI items (https://github.com/MonkeyBars3k/ReaScripts/issues/340); remove log call; clean up nomenclature; require SWS beta
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua

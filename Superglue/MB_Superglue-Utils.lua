@@ -2,7 +2,7 @@
 
 
 -- ==== SUPERGLUE UTILS SCRIPT ARCHITECTURE NOTES ====
--- Superglue requires Reaper SWS plug-in extension (https://standingwaterstudios.com/) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
+-- Superglue requires Reaper SWS plug-in extension v2.13.1.0+ (h/ttps://www.sws-extension.org/download/pre-release) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
 -- Superglue uses the great GUI library Reaper Toolkit (rtk). (https://reapertoolkit.dev/)
 -- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. (https://github.com/pkulchenko/serpent)
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
@@ -18,7 +18,7 @@ local rtk = require('rtk')
 local serpent = require("serpent")
 
 
-local _script_path, _os_path_separator, _os_path_splitter_pattern, _custom_path_separator, _script_brand_logo_filename, _peak_data_filename_extension, _command_id_deselect_all_items, _command_id_glue_ignoring_time_selection_incl_fades, _command_id_apply_fx_to_items_multichannel, _command_id_build_missing_peaks, _command_id_rebuild_peaks_for_selected_items, _command_id_scroll_to_selected_item, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_dont_refresh_ui, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_loop_src_key, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_take_guid_key, _api_null_takes_val, _api_command_section_id_main, _supported_media_types, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _proj_renderpath, _superitem_bg_img_filename, _superitem_bg_img_path, _restored_item_bg_img_filename, _restored_item_bg_img_path, _restored_instance_bg_img_filename, _restored_instance_bg_img_path, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_child_delta_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _loop_enabled_value, _sizing_region_1st_display_num, _superitem_position_delta_during_glue, _superitem_offset_delta_since_last_glue, _restored_items_near_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _offset_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_bounds_on_glue_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_loop_source_sets_sizing_region_bounds_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
+local _script_path, _os_path_separator, _os_path_splitter_pattern, _custom_path_separator, _script_brand_logo_filename, _peak_data_filename_extension, _command_id_deselect_all_items, _command_id_glue_ignoring_time_selection_incl_fades, _command_id_apply_track_take_fx_to_items, _command_id_apply_fx_to_items_multichannel, _command_id_build_missing_peaks, _command_id_rebuild_peaks_for_selected_items, _command_id_delete_active_take_from_items, _command_id_set_item_to_one_random_color, _command_id_duplicate_selected_items, _command_id_crop_selected_items_to_active_takes, _command_id_scroll_to_selected_item, _script_brand_name, _glue_undo_block_string, _edit_undo_block_string, _unglue_undo_block_string, _depool_undo_block_string, _smart_action_undo_block_string, _color_undo_block_string, _sizing_region_label_prefix, _sizing_region_label_suffix, _sizing_region_color, _api_current_project, _api_command_flag, _api_dont_refresh_ui, _api_include_all_undo_states, _api_marker_region_undo_states, _api_item_image_full_height, _api_new_take_marker_idx, _api_time_value_decimal_resolution, _api_extstate_persist_enabled, _api_data_key, _api_project_region_guid_key_prefix, _api_item_loop_src_key, _api_item_mute_key, _api_item_position_key, _api_item_length_key, _api_item_notes_key, _api_item_color_key, _api_take_src_offset_key, _api_playrate_key, _api_take_name_key, _api_takenumber_key, _api_take_guid_key, _api_null_takes_val, _api_command_section_id_main, _supported_media_types, _global_script_prefix, _global_script_item_name_prefix, _separator, _superitem_name_prefix, _proj_renderpath, _superitem_bg_img_filename, _superitem_bg_img_path, _restored_item_bg_img_filename, _restored_item_bg_img_path, _restored_instance_bg_img_filename, _restored_instance_bg_img_path, _pool_key_prefix, _all_pool_ids_with_active_sizing_regions_key, _pool_contained_item_states_key_suffix, _pool_last_glue_contained_item_states_key_suffix, _pool_parent_position_key_suffix, _pool_parent_length_key_suffix, _instance_pool_id_key_suffix, _parent_pool_id_key_suffix, _descendant_pool_ids_key_suffix, _last_pool_id_key_suffix, _preglue_active_take_guid_key_suffix, _superglue_active_take_key_suffix, _glue_data_key_suffix, _edit_data_key_suffix, _superitem_params_suffix, _parent_pool_ids_data_key_suffix, _superitem_preglue_state_suffix, _first_child_delta_to_superitem_position_key_suffix, _freshly_depooled_superitem_flag, _postglue_action_step, _preedit_action_step, _superitem_name_default_prefix, _nested_item_default_name, _double_quotation_mark, _msg_type_ok, _msg_type_ok_cancel, _msg_type_yes_no, _msg_response_ok, _msg_response_yes, _msg_response_no, _msg_change_selected_items, _data_storage_track, _users_time_selection_before_action, _users_item_selection, _active_glue_pool_id, _position_start_of_project, _src_offset_default_value, _playrate_default_value, _loop_enabled_value, _sizing_region_1st_display_num, _superitem_position_delta_during_glue, _superitem_offset_delta_since_last_glue, _restored_items_near_project_start_position_delta, _last_glue_stored_item_states, _preglue_restored_item_states, _unselected_contained_items, _first_restored_item_last_glue_delta_to_parent, _ancestor_pools_params, _edited_pool_last_glue_params, _edited_pool_fresh_glue_params, _edited_pool_post_glue_params, _edited_pool_preedit_params, _current_pool_fresh_glue_params, _current_pool_preedit_params, _position_changed_since_last_glue, _offset_changed_since_last_glue, _propagation_user_responses, _user_wants_propagation_option, _active_instance_length_has_changed, _reglue_position_change_affect_on_length, _pool_parent_last_glue_length, _user_wants_to_depool_all_siblings, _this_depooled_superitem_has_not_been_edited, _noninstance_label, _global_options_section, _global_option_toggle_time_selection_sets_bounds_on_glue_key, _global_option_toggle_auto_increase_channel_count_key, _global_option_toggle_item_images_key, _global_option_toggle_new_superglue_random_color_key, _global_option_toggle_loop_source_sets_sizing_region_bounds_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_key, _global_option_toggle_depool_all_siblings_on_reglue_warning_key, _global_option_maintain_source_position_default_key, _global_option_propagate_position_default_key, _global_option_propagate_length_default_key, _global_option_length_propagation_type_default_key, _global_option_playrate_affects_propagation_default_key, _all_global_options_params
 
 _script_path = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
 _os_path_separator = package.config:sub(1,1)
@@ -28,9 +28,14 @@ _script_brand_logo_filename = "mb_superglue_logo_nobg_sm.png"
 _peak_data_filename_extension = ".reapeaks"
 _command_id_deselect_all_items = 40289
 _command_id_glue_ignoring_time_selection_incl_fades = 40257
+_command_id_apply_track_take_fx_to_items = 40209
 _command_id_apply_fx_to_items_multichannel = 41993
 _command_id_build_missing_peaks = 40047
 _command_id_rebuild_peaks_for_selected_items = 40441
+_command_id_delete_active_take_from_items = 40129
+_command_id_set_item_to_one_random_color = 40706
+_command_id_duplicate_selected_items = 41295
+_command_id_crop_selected_items_to_active_takes = 40131
 _command_id_scroll_to_selected_item = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
 _script_brand_name = "MB_Superglue"
 _glue_undo_block_string = "MB_Superglue"
@@ -692,7 +697,7 @@ function initSuperglue()
 
   if itemsOnMultipleTracksAreSelected(selected_item_count) == true or
     superitemSelectionIsInvalid(selected_item_count, "Glue") == true or
-    pureMIDIItemIsSelected(selected_item_count, first_selected_item_track) == true then
+    pureMidiItemIsSelected(selected_item_count, first_selected_item_track) == true then
       
       return
   end
@@ -912,7 +917,7 @@ function setResetUsersItemSelection(set_reset)
     end
 
   elseif reset then
-    deselectAllItems()
+    reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
 
     for i = 1, #_users_item_selection do
       reaper.SetMediaItemSelected(_users_item_selection[i], true)
@@ -1161,7 +1166,7 @@ function recursiveSuperitemIsBeingGlued(superitems, restored_items)
 end
 
 
-function pureMIDIItemIsSelected(selected_item_count, first_selected_item_track)
+function pureMidiItemIsSelected(selected_item_count, first_selected_item_track)
   local this_item, this_item_take, midi_item_is_selected
 
   for i = 0, selected_item_count-1 do
@@ -1298,14 +1303,9 @@ end
 
 function exclusiveSelectItem(item)
   if item then
-    deselectAllItems()
+    reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
     reaper.SetMediaItemSelected(item, true)
   end
-end
-
-
-function deselectAllItems()
-  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
 end
 
 
@@ -1330,7 +1330,7 @@ function handleGlue(selected_items, first_selected_item_track, pool_id, sizing_r
   first_selected_item = getFirstSelectedItem()
   first_selected_item_name = getSetItemName(first_selected_item)
 
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
 
   pool_id, sizing_params, this_is_reglue = setUpGlue(depool_superitem_params, this_is_ancestor_superitem_update, first_selected_item_track, pool_id, sizing_region_guid, selected_items)
   selected_items_pool_params = handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_ancestor_superitem_update, this_is_depool)
@@ -1686,7 +1686,7 @@ function handlePreglueItems(selected_items, pool_id, sizing_params, this_is_regl
 
   setPreglueItemsData(selected_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
 
-  selected_item_states, selected_items_pool_params = getItemStates(selected_items, pool_id)
+  selected_item_states, selected_items_pool_params = prepareAndGetItemStates(selected_items, pool_id)
 
   storeItemStates(pool_id, selected_item_states)
   selectDeselectItems(selected_items, true)
@@ -1723,7 +1723,7 @@ function setPreglueItemsData(preglue_items, pool_id, sizing_params, this_is_regl
 end
 
 
-function getItemStates(items, active_pool_id)
+function prepareAndGetItemStates(items, active_pool_id)
   local selected_item_states, selected_items_pool_params, item, this_item, this_item_instance_pool_id, this_item_parent_pool_id, this_item_guid, this_item_state
 
   selected_item_states = {}
@@ -1762,32 +1762,20 @@ function convertMidiItemToAudio(item)
     active_take = reaper.GetActiveTake(item)
     this_take_is_midi = active_take and reaper.TakeIsMIDI(active_take)
 
-    if this_take_is_midi then
-      reaper.SetMediaItemSelected(item, true)
-      renderFxToItem()
-      
+    if this_take_is_midi then      
       active_take = reaper.GetActiveTake(item)
       retval, active_take_guid = reaper.GetSetMediaItemTakeInfo_String(active_take, _api_take_guid_key, "", false)
 
       storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix, active_take_guid)
+      reaper.SetMediaItemSelected(item, true)
+      reaper.Main_OnCommand(_command_id_apply_track_take_fx_to_items, _api_command_flag)
       reaper.SetMediaItemSelected(item, false)
       cleanNullTakes(item)
+
+    else
+      storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix, "")
     end
   end
-end
-
-
-function renderFxToItem()
-  reaper.Main_OnCommand(40209, _api_command_flag)
-end
-
-
-function setLastTakeActive(item, item_takes_count)
-  local last_take = reaper.GetTake(item, item_takes_count)
-
-  reaper.SetActiveTake(last_take)
-
-  return last_take
 end
 
 
@@ -1886,7 +1874,7 @@ function glueSelectedItemsIntoSuperitem()
 
   if increase_channel_count_from_take_fx == "true" then
     reaper.Main_OnCommand(_command_id_apply_fx_to_items_multichannel, _api_command_flag)
-    cropSelectedItemsToActiveTakes()
+    reaper.Main_OnCommand(_command_id_crop_selected_items_to_active_takes, _api_command_flag)
   end
 
   reaper.Main_OnCommand(_command_id_glue_ignoring_time_selection_incl_fades, _api_command_flag)
@@ -2128,13 +2116,8 @@ function setSuperitemColor()
   local global_option_toggle_new_superglue_random_color = reaper.GetExtState(_global_options_section, _global_option_toggle_new_superglue_random_color_key)
 
   if global_option_toggle_new_superglue_random_color == "true" then
-    setItemToRandomColor()
+    reaper.Main_OnCommand(_command_id_set_item_to_one_random_color, _api_command_flag)
   end
-end
-
-
-function setItemToRandomColor()
-  reaper.Main_OnCommand(40706, _api_command_flag)
 end
 
 
@@ -2281,7 +2264,7 @@ function handleReglue(selected_items, first_selected_item_track, restored_items_
   setRegluePositionDeltas(superitem_params)
   adjustPostGlueTakeMarkersAndEnvelopes(superitem, nil, nil, true)
   editAncestors(superitem_params.pool_id, superitem)
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
   propagateChangesToSuperitems(sizing_region_guid)
 
   return superitem
@@ -2437,12 +2420,12 @@ function createSizingRegionFromTimeSelection(pool_id, time_selection_start, time
 end
 
 
-function getSetWipeItemAudioSrc(item, src)
-  local get, set, wipe, take, source, filename, filename_is_valid
+function getSetWipeItemAudioSrc(item, src_or_wipe)
+  local get, set, wipe, take, source, filename, filename_is_valid, src
 
-  get = not src
-  set = src and src ~= "wipe"
-  wipe = src == "wipe"
+  get = not src_or_wipe
+  set = src_or_wipe and src_or_wipe ~= "wipe"
+  wipe = src_or_wipe == "wipe"
 
   if get then
     take = reaper.GetActiveTake(item)
@@ -2455,6 +2438,7 @@ function getSetWipeItemAudioSrc(item, src)
     end
 
   elseif set then
+    src = src_or_wipe
     take = reaper.GetActiveTake(item)
 
     reaper.BR_SetTakeSourceFromFile2(take, src, false, true)
@@ -2807,7 +2791,7 @@ function setUpAncestorEdits(parent_instance_params, parent_pool_id, descendant_n
 
   parent_edit_temp_track = reaper.GetTrack(_api_current_project, 0)
 
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
 
   restored_items = restoreStoredItems(parent_pool_id, parent_edit_temp_track, superitem, true, nil)
   parent_instance_params.track = parent_edit_temp_track
@@ -2820,7 +2804,7 @@ end
 
 
 function restoreStoredItems(pool_id, active_track, superitem, this_is_ancestor_superitem_update, action)
-  local stored_item_states_table, restored_items, restored_instances_near_project_start, item_guid, stored_item_state, restored_item
+  local stored_item_states_table, restored_items, restored_instances_near_project_start, restored_item, looped_source_sets_sizing_region_enabled, superitem_loop_is_enabled
 
   stored_item_states_table = getStoredItemStatesTable(pool_id, action)
   restored_items = {}
@@ -2909,7 +2893,7 @@ function handleRestoredItem(superitem, active_track, stored_item_state, restored
   if action == "Unglue" then
     storeRetrieveItemData(restored_item, _parent_pool_id_key_suffix, "")
   end
-  
+
   return restored_item, restored_instances_near_project_start, looped_source_sets_sizing_region_enabled, superitem_loop_is_enabled
 end
 
@@ -2975,47 +2959,32 @@ function restoreItem(track, state, this_is_ancestor_superitem_update)
   getSetItemStateChunk(restored_item, state)
 
   if not this_is_ancestor_superitem_update then
-    restoreOriginalTake(restored_item)
+    restoreOriginalMidiTake(restored_item)
   end
 
   return restored_item
 end
 
 
-function restoreOriginalTake(item)
-  local item_takes_count, preglue_active_take_guid, preglue_active_take, preglue_active_take_num
+function restoreOriginalMidiTake(item)
+  local item_takes_count, preglue_active_midi_take_guid, preglue_active_midi_take, rendered_audio_take, rendered_audio_take_num
 
   item_takes_count = reaper.GetMediaItemNumTakes(item)
   
   if item_takes_count > 0 then
-    preglue_active_take_guid = storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix)
-    preglue_active_take = reaper.SNM_GetMediaItemTakeByGUID(_api_current_project, preglue_active_take_guid)
+    preglue_active_midi_take_guid = storeRetrieveItemData(item, _preglue_active_take_guid_key_suffix)
+    preglue_active_midi_take = reaper.SNM_GetMediaItemTakeByGUID(_api_current_project, preglue_active_midi_take_guid)
 
-    if preglue_active_take then
-      preglue_active_take_num = reaper.GetMediaItemTakeInfo_Value(preglue_active_take, _api_takenumber_key)
+    if preglue_active_midi_take then
+      rendered_audio_take = reaper.GetActiveTake(item)
+      rendered_audio_take_num = reaper.GetMediaItemTakeInfo_Value(rendered_audio_take, "IP_TAKENUMBER")
 
-      if preglue_active_take_num then
-        getSetWipeItemAudioSrc(item, "wipe")
-        reaper.SetMediaItemSelected(item, true)
-        deleteActiveTakeFromItems()
-
-        preglue_active_take_num = tonumber(preglue_active_take_num)
-        preglue_active_take = reaper.GetTake(item, preglue_active_take_num)
-
-        if preglue_active_take then
-          reaper.SetActiveTake(preglue_active_take)
-        end
-
-        reaper.SetMediaItemSelected(item, false)
-        cleanNullTakes(item)
-      end
+      getSetWipeItemAudioSrc(item, "wipe")
+      reaper.NF_DeleteTakeFromItem(item, rendered_audio_take_num)
+      reaper.SetActiveTake(preglue_active_midi_take)
+      cleanNullTakes(item)
     end
   end
-end
-
-
-function deleteActiveTakeFromItems()
-  reaper.Main_OnCommand(40129, _api_command_flag)
 end
 
 
@@ -3392,7 +3361,7 @@ function handleSuperitemNearProjectStart(instance, instance_current_position, in
   end
 
   if _user_wants_propagation_option["source_position"] then
-logStr(instance_is_exactly_at_project_start)
+
     if instance_is_exactly_at_project_start then
       instance_src_offset_adjustment_delta = _edited_pool_fresh_glue_params.source_offset - _edited_pool_preedit_params.source_offset - _superitem_position_delta_during_glue
 
@@ -3519,7 +3488,7 @@ end
 function reglueAncestor(sizing_region_guid)
   local this_is_ancestor_superitem_update, selected_items, this_selected_item, this_selected_item_params, this_selected_instance_pool_id, this_is_direct_parent_instance_update, parent_instance, parent_active_track
 
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
   refreshCurrentPoolStoredItemsPostDePool()
   selectDeselectItems(_current_pool_fresh_glue_params.restored_items, true)
 
@@ -3543,7 +3512,7 @@ function reglueAncestor(sizing_region_guid)
   _current_pool_fresh_glue_params = getSetItemParams(parent_instance)
   _current_pool_fresh_glue_params.updated_src = getSetWipeItemAudioSrc(parent_instance)
 
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
   handleSuperitemsChangedByReglue(this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
   reaper.DeleteTrack(parent_active_track)
 end
@@ -3653,9 +3622,9 @@ function handleOtherOpenInstance(instance, open_instance_pool_id, action)
   open_instance_pool_id = tostring(open_instance_pool_id)
 
   reaper.ShowMessageBox("Reglue the other open instance from pool " .. open_instance_pool_id .. " before trying to " .. action .. " this superitem. It will be selected and scrolled to now.", _script_brand_name .. " can only " .. action .. " one superitem pool instance at a time.", _msg_type_ok)
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
   reaper.SetMediaItemSelected(instance, true)
-  scrollToSelectedItem()
+  reaper.Main_OnCommand(_command_id_scroll_to_selected_item, _api_command_flag)
 end
 
 
@@ -3668,11 +3637,6 @@ function superitemHasMultipleTakes()
   if superitem_takes_count > 1 then
     return true, superitem_takes_count
   end
-end
-
-
-function scrollToSelectedItem()
-  reaper.Main_OnCommand(_command_id_scroll_to_selected_item, _api_command_flag)
 end
 
 
@@ -3727,9 +3691,9 @@ function explodeSuperitem(superitem, superitem_active_take, user_response_explod
     duplicated_item_target_take_num, offline_takes_msg_shown = explodeSuperitemTakes(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
   end
 
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
   reaper.SetMediaItemSelected(superitem, true)
-  cropSelectedItemsToActiveTakes()
+  reaper.Main_OnCommand(_command_id_crop_selected_items_to_active_takes, _api_command_flag)
 end
 
 
@@ -3763,7 +3727,7 @@ end
 function explodeSuperitemTakes(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg_shown)
   local this_duplicated_item, this_duplicated_item_new_position, this_duplicated_item_new_active_take
 
-  duplicateSelectedItems()
+  reaper.Main_OnCommand(_command_id_duplicate_selected_items, _api_command_flag)
 
   this_duplicated_item = getFirstSelectedItem()
 
@@ -3784,15 +3748,10 @@ function explodeSuperitemTakes(i, superitem, user_wants_to_explode_in_order, sup
 
   removeSuperglueTakeNamePrefix(this_duplicated_item)
   addRemoveItemImage(this_duplicated_item, false)
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
   reaper.SetMediaItemSelected(superitem, true)
 
   return duplicated_item_target_take_num, offline_takes_msg_shown
-end
-
-
-function duplicateSelectedItems()
-  reaper.Main_OnCommand(41295, _api_command_flag)
 end
 
 
@@ -3810,7 +3769,7 @@ function handleDuplicatedItemTargetTake(i, this_duplicated_item, duplicated_item
 
   if not targeted_take_is_offline then
     reaper.SetActiveTake(this_duplicated_item_new_active_take)
-    cropSelectedItemsToActiveTakes()
+    reaper.Main_OnCommand(_command_id_crop_selected_items_to_active_takes, _api_command_flag)
 
   elseif not offline_takes_msg_shown then
     throwOfflineTakeWarning(true)
@@ -3819,11 +3778,6 @@ function handleDuplicatedItemTargetTake(i, this_duplicated_item, duplicated_item
   end
 
   return duplicated_item_target_take_num, this_duplicated_item_new_active_take, offline_takes_msg_shown
-end
-
-
-function cropSelectedItemsToActiveTakes()
-  reaper.Main_OnCommand(40131, _api_command_flag)
 end
 
 
@@ -3860,7 +3814,7 @@ function handleEditOrUnglue(pool_id, action)
   if action ~= "DePool" then
     
     if action ~= "Unglue" then
-      updateDePooledRestoredItemsData(restored_items, pool_id)
+      updateRestoredItemsData(restored_items, pool_id)
     end
 
     cleanUpAction(undo_block_string)
@@ -3875,7 +3829,7 @@ function processEditOrUnglue(superitem, pool_id, action)
 
   superitem_preedit_params = getSetItemParams(superitem)
 
-  deselectAllItems()
+  reaper.Main_OnCommand(_command_id_deselect_all_items, _api_command_flag)
 
   active_track = reaper.BR_GetMediaTrackByGUID(_api_current_project, superitem_preedit_params.track_guid)
 
@@ -3915,7 +3869,7 @@ function createSizingRegionFromSuperitem(superitem, pool_id, looped_source_sets_
 end
 
 
-function updateDePooledRestoredItemsData(restored_items, pool_id)
+function updateRestoredItemsData(restored_items, pool_id)
   local this_restored_item
 
   for i = 1, #restored_items do
@@ -4024,7 +3978,7 @@ function initDePool(target_item)
   active_track, target_item_params, restored_items = processDePool(target_item, target_item_params, this_is_user_initiated_depool)
 
   if this_is_sibling_depool then
-    contained_item_states = getItemStates(restored_items, target_item_params.pool_id)
+    contained_item_states = prepareAndGetItemStates(restored_items, target_item_params.pool_id)
   end
 
   superitem = handleGlue(restored_items, active_track, nil, nil, target_item_params, false)
