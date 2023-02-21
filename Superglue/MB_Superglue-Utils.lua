@@ -2,7 +2,7 @@
 
 
 -- ==== SUPERGLUE UTILS SCRIPT ARCHITECTURE NOTES ====
--- Superglue requires Reaper SWS plug-in extension v2.13.1.0+ (h/ttps://www.sws-extension.org/download/pre-release) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
+-- Superglue requires Reaper SWS plug-in extension v2.13.1.0+ (https://www.sws-extension.org/download/pre-release) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
 -- Superglue uses the great GUI library Reaper Toolkit (rtk). (https://reapertoolkit.dev/)
 -- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. (https://github.com/pkulchenko/serpent)
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
@@ -371,72 +371,112 @@ end
 
 
 function openOptionsWindow()
-  local all_option_controls, options_window, options_viewport, options_window_content, options_window_top, options_window_branding, options_window_script_name, options_window_logo, options_window_title, option_form_buttons, option_form_submit, option_form_cancel
+  local option_window_widgets, all_option_controls
+
+  option_window_widgets = createOptionsWidgets()
+
+  populateOptionsWidgets(option_window_widgets)
+
+  all_option_controls = populateOptionControls(option_window_widgets)
+
+  populateOptionsEventHandlers(option_window_widgets, all_option_controls)
+  populateOptionsWindow(option_window_widgets)
+  option_window_widgets.options_window:open{align = "center"}
+end
+
+
+function createOptionsWidgets()
+  local option_window_widgets
+
+  option_window_widgets = {
+    ["options_window"] = rtk.Window{w = 0.5, maxh = 0.85, title = _script_brand_name .. " Global Options"},
+    ["options_window_inner"] = rtk.VBox(),
+    ["options_window_top"] = rtk.Container{valign = "center"},
+    ["options_window_branding"] = rtk.VBox{halign = "center", padding = "3 5", border = "1px #878787", bg = "#505050"},
+    ["options_window_script_name"] = rtk.Text{_script_brand_name, halign = "center", fontscale = 0.8},
+    ["options_window_logo"] = rtk.ImageBox{rtk.Image():load(_script_brand_logo_filename, 2), tmargin = 4},
+    ["options_window_title"] = rtk.Heading{"Global Options", w = 1, halign = "center", bmargin = 25},
+    ["options_viewport"] = rtk.Viewport(),
+    ["options_window_content"] = rtk.VBox{padding = "27 38 7"},
+    ["option_form_buttons"] = rtk.HBox{w = 1, margin = "40 10 10 10", spacing = 10, halign = "center"},
+    ["option_form_submit"] = rtk.Button{"Submit", disabled = true},
+    ["option_form_cancel"] = rtk.Button{"Cancel"},
+    ["option_footer"] = rtk.HBox{w = 1, halign = "center"},
+    ["options_repo_url"] = "https://github.com/MonkeyBars3k/ReaScripts"
+  }
+
+  option_window_widgets.option_repo_text = rtk.Text{option_window_widgets.options_repo_url ..  " [click to copy]", w = 1, halign = "center", fontscale = 0.67, color = "#989898"}
+
+  return option_window_widgets
+end
+
+
+function populateOptionsWidgets(option_window_widgets)
+  option_window_widgets.option_form_buttons:add(option_window_widgets.option_form_submit)
+  option_window_widgets.option_form_buttons:add(option_window_widgets.option_form_cancel)
+  option_window_widgets.option_footer:add(option_window_widgets.option_repo_text)
+  option_window_widgets.options_window_branding:add(option_window_widgets.options_window_script_name)
+  option_window_widgets.options_window_branding:add(option_window_widgets.options_window_logo)
+  option_window_widgets.options_window_top:add(option_window_widgets.options_window_branding)
+  option_window_widgets.options_window_top:add(option_window_widgets.options_window_title)
+end
+
+
+function populateOptionControls(option_window_widgets)
+  local all_option_controls, this_option, this_option_name
 
   all_option_controls = {}
-  options_window = rtk.Window{w = 0.5, maxh = 0.85, title = _script_brand_name .. " Global Options"}
-  options_viewport = rtk.Viewport{halign = "center", padding = "0 38"}
-  options_window_top = rtk.Container{}
-  options_window_branding = rtk.VBox{halign = "center", padding = "3 5", border = "1px #878787", bg = "#505050"}
-  options_window_script_name = rtk.Text{_script_brand_name, halign = "center", fontscale = 0.8}
-  options_window_logo = rtk.ImageBox{rtk.Image():load(_script_brand_logo_filename, 2), tmargin = 4}
-  options_window_title = rtk.Heading{"Global Options", w = 1, halign = "center", bmargin = 25}
-  options_window_content = rtk.VBox{padding = "27 0 7"}
-  option_form_buttons = rtk.HBox{margin = "40 10 10 10", spacing = 10}
-  option_form_submit = rtk.Button{"Submit", disabled = true}
-  option_form_cancel = rtk.Button{"Cancel"}
-
-  option_form_cancel.onclick = function() 
-    options_window:close()
-  end
-
-  option_form_buttons:add(option_form_submit)
-  option_form_buttons:add(option_form_cancel)
-  options_window_branding:add(options_window_script_name)
-  options_window_branding:add(options_window_logo)
-  options_window_top:add(options_window_branding)
-  options_window_top:add(options_window_title)
-  options_window_content:add(options_window_title)
-
-  all_option_controls, options_window_content = populateOptionControls(all_option_controls, options_window_content, option_form_submit)
-
-  option_form_submit.onclick = function()
-    submitOptionChanges(all_option_controls, options_window)
-  end
-
-  populateOptionsWindow(option_form_buttons, options_window_content, options_window, options_viewport, options_window_top)
-end
-
-
-function populateOptionsWindow(option_form_buttons, options_window_content, options_window, options_viewport, options_window_top)
-  local content_padding_adjustment, options_window_content_height
-
-  options_window_content:add(option_form_buttons)
-  options_viewport:attr("child", options_window_content)
-  options_window:add(options_window_top)
-  options_window:add(options_viewport)
-  options_window:open{align = "center"}
-end
-
-
-function populateOptionControls(all_option_controls, options_window_content, option_form_submit)
-  local this_option, this_option_name
 
   for i = 1, #_all_global_options_params do
     this_option = _all_global_options_params[i]
     this_option_name = this_option.name
 
     if this_option.type == "checkbox" then
-      all_option_controls[this_option_name] = getOptionCheckbox(this_option, option_form_submit)
+      all_option_controls[this_option_name] = getOptionCheckbox(this_option, option_window_widgets.option_form_submit)
 
     elseif this_option.type == "dropdown" then
-      all_option_controls[this_option_name] = getOptionDropdown(this_option, option_form_submit)
+      all_option_controls[this_option_name] = getOptionDropdown(this_option, option_window_widgets.option_form_submit)
     end
 
-    options_window_content:add(all_option_controls[this_option_name])
+    option_window_widgets.options_window_content:add(all_option_controls[this_option_name])
   end
 
-  return all_option_controls, options_window_content
+  return all_option_controls
+end
+
+
+function populateOptionsEventHandlers(option_window_widgets, all_option_controls)
+  option_window_widgets.option_form_cancel.onclick = function()
+    option_window_widgets.options_window:close()
+  end
+
+  option_window_widgets.option_repo_text.onclick = function()
+    reaper.CF_SetClipboard(options_repo_url)
+
+    option_window_widgets.option_repo_text:animate{"color", dst = "#FFFFFF", duration = 0.15}
+      :done(function()
+          option_window_widgets.option_repo_text:animate{"color", dst = "#FFFFFE", duration = 0.67}
+            :done(function()
+              option_window_widgets.option_repo_text:animate{"color", dst = "#989898", duration = 0.15}
+            end)
+      end)
+  end
+
+  option_window_widgets.option_form_submit.onclick = function()
+    submitOptionChanges(all_option_controls, option_window_widgets.options_window)
+  end
+end
+
+
+function populateOptionsWindow(option_window_widgets)
+  local content_padding_adjustment, options_window_content_height
+
+  option_window_widgets.options_window_content:add(option_window_widgets.option_form_buttons)
+  option_window_widgets.options_window_content:add(option_window_widgets.option_footer)
+  option_window_widgets.options_viewport:attr("child", option_window_widgets.options_window_content)
+  option_window_widgets.options_window_inner:add(option_window_widgets.options_window_top)
+  option_window_widgets.options_window_inner:add(option_window_widgets.options_viewport)
+  option_window_widgets.options_window:add(option_window_widgets.options_window_inner)
 end
 
 
@@ -612,6 +652,10 @@ function prepareItemInfo(selected_superitem_instance_pool_id, selected_item_pare
     {
       "No. of directly contained items: ",
       selected_superitem_contained_items_count
+    },
+    {
+      "Pool #" .. selected_superitem_instance_pool_id .. " Sibling positions: ",
+      getSiblingPositions(selected_superitem_instance_pool_id)
     }
   }
 
@@ -634,6 +678,45 @@ function storeRetrievePoolData(pool_id, key_suffix, new_value)
   end
 
   return stored_value
+end
+
+
+function getSiblingPositions(pool_id)
+  local sibling_locations_text, all_items_count, this_sibling_num, this_item, this_instance_pool_id, this_active_take, retval, this_active_take_name, this_instance_position_time, measures, beats_since_new_bar
+
+  sibling_locations_text = ""
+  all_items_count = reaper.CountMediaItems(_api_current_project)
+  this_sibling_num = 1
+
+  for i = 0, all_items_count-1 do
+    this_item = reaper.GetMediaItem(_api_current_project, i)
+    this_instance_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
+
+    if this_instance_pool_id and this_instance_pool_id ~= "" and this_instance_pool_id == pool_id then
+      this_active_take = reaper.GetActiveTake(this_item)
+      retval, this_active_take_name = reaper.GetSetMediaItemTakeInfo_String(this_active_take, _api_take_name_key, "", false)
+      this_instance_position_time = reaper.GetMediaItemInfo_Value(this_item, _api_item_position_key)
+      measures, beats_since_new_bar = convertSecondsToMusicTime(this_instance_position_time)
+      sibling_locations_text = sibling_locations_text .. this_sibling_num .. ":  " .. this_active_take_name .. " – " .. measures .. "." .. beats_since_new_bar .. " / " .. round(this_instance_position_time, 3) .. "s" .. "\r\n"
+      this_sibling_num = this_sibling_num + 1
+    end
+  end
+
+  if sibling_locations_text == "" then
+    sibling_locations_text = "none"
+  end
+
+  return sibling_locations_text
+end
+
+
+function convertSecondsToMusicTime(duration_in_seconds)
+  local retval, measures, cml, fullbeats, beats_since_new_bar
+
+  retval, measures, cml, fullbeats = reaper.TimeMap2_timeToBeats(_api_current_project, duration_in_seconds)
+  beats_since_new_bar = fullbeats % measures
+
+  return measures, round(beats_since_new_bar, 3)
 end
 
 
@@ -690,7 +773,7 @@ function initSuperglue()
 
   if not selected_item_count then return end
 
-  restored_items_pool_id = getFirstPoolIdFromSelectedItems(selected_item_count)
+  restored_items_pool_id = getFirstParentPoolIdFromSelectedItems(selected_item_count)
   _active_glue_pool_id = restored_items_pool_id
   selected_items, first_selected_item = getSelectedItems(selected_item_count)
   first_selected_item_track = reaper.GetMediaItemTrack(first_selected_item)
@@ -712,7 +795,7 @@ function initSuperglue()
     exclusiveSelectItem(superitem)
   end
 
-  cleanUpAction(_glue_undo_block_string)
+  cleanUpAction(_glue_undo_block_string, restored_items_pool_id)
 end
 
 
@@ -725,7 +808,7 @@ function initAction(action)
 
   prepareAction(action)
   
-  selected_item_count = getSelectedItemsCount()
+  selected_item_count = reaper.CountSelectedMediaItems(_api_current_project)
 
   if itemsAreSelected(selected_item_count) == false then return false end
 
@@ -738,7 +821,7 @@ function doPreSuperglueChecks(action)
 
   if renderPathIsValid() == false then return false end
 
-  selected_item_count = getSelectedItemsCount()
+  selected_item_count = reaper.CountSelectedMediaItems(_api_current_project)
 
   if not selected_item_count or selected_item_count == 0 then return false end
 
@@ -778,11 +861,6 @@ function renderPathIsValid()
   else
     return true
   end
-end
-
-
-function getSelectedItemsCount()
-  return reaper.CountSelectedMediaItems(_api_current_project)
 end
 
 
@@ -926,16 +1004,46 @@ function setResetUsersItemSelection(set_reset)
 end
 
 
-function getFirstPoolIdFromSelectedItems(selected_item_count)
-  local this_item, this_item_pool_id, this_item_has_stored_pool_id
+function getFirstPoolIdFromSelectedItems()
+  local pool_id = getFirstParentPoolIdFromSelectedItems()
 
-  for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_api_current_project, i)
-    this_item_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
-    this_item_has_stored_pool_id = this_item_pool_id and this_item_pool_id ~= ""
+  if not pool_id then
+    pool_id = getInstancePoolIdFromSelectedItems()
+  end
 
-    if this_item_has_stored_pool_id then
-      return this_item_pool_id
+  return pool_id
+end
+
+
+function getFirstParentPoolIdFromSelectedItems()
+  local this_item, this_item_parent_pool_id, this_item_has_stored_parent_pool_id
+
+  for i = 1, #_users_item_selection do
+    this_item = _users_item_selection[i]
+    this_item_parent_pool_id = storeRetrieveItemData(this_item, _parent_pool_id_key_suffix)
+    this_item_has_stored_parent_pool_id = this_item_parent_pool_id and this_item_parent_pool_id ~= ""
+
+    if this_item_has_stored_parent_pool_id then
+
+      return this_item_parent_pool_id
+    end
+  end
+
+  return false
+end
+
+
+function getInstancePoolIdFromSelectedItems()
+  local this_item, this_item_instance_pool_id, this_item_has_stored_instance_pool_id
+
+  for i = 1, #_users_item_selection do
+    this_item = _users_item_selection[i]
+    this_item_instance_pool_id = storeRetrieveItemData(this_item, _instance_pool_id_key_suffix)
+    this_item_has_stored_instance_pool_id = this_item_instance_pool_id and this_item_instance_pool_id ~= ""
+
+    if this_item_has_stored_instance_pool_id then
+
+      return this_item_instance_pool_id
     end
   end
 
@@ -1309,7 +1417,12 @@ function exclusiveSelectItem(item)
 end
 
 
-function cleanUpAction(undo_block_string)
+function cleanUpAction(undo_block_string, restored_items_pool_id)
+
+  if restored_items_pool_id then
+    undo_block_string = undo_block_string .. " - Pool #" .. restored_items_pool_id
+  end
+
   refreshUI()
   reaper.Undo_EndBlock(undo_block_string, _api_include_all_undo_states)
 end
@@ -3817,7 +3930,7 @@ function handleEditOrUnglue(pool_id, action)
       updateRestoredItemsData(restored_items, pool_id)
     end
 
-    cleanUpAction(undo_block_string)
+    cleanUpAction(undo_block_string, pool_id)
   end
 
   checkItemsOffscreen(#restored_items, action)
@@ -3891,16 +4004,18 @@ function initSmartAction(edit_or_unglue)
   
   if itemsAreSelected(selected_item_count) == false then return end
 
-  pool_id = getFirstPoolIdFromSelectedItems(selected_item_count)
-
+  pool_id = getFirstPoolIdFromSelectedItems()
+  
   if superitemSelectionIsInvalid(selected_item_count, edit_or_unglue) == true then return end
 
-  if triggerAction(selected_item_count, edit_or_unglue) == false then 
+  if triggerAction(selected_item_count, edit_or_unglue) == false then
     reaper.ShowMessageBox(_msg_change_selected_items, _script_brand_name .. " Smart Action can't determine which script to run.", _msg_type_ok)
     setResetUsersItemSelection(false)
 
     return
   end
+
+  _smart_action_undo_block_string = _smart_action_undo_block_string .. " - Pool #" .. pool_id
 
   reaper.Undo_EndBlock(_smart_action_undo_block_string, _api_include_all_undo_states)
 end
@@ -3985,7 +4100,7 @@ function initDePool(target_item)
   new_pool_id = handleDePoolPostGlue(superitem, target_item_state, target_item_params)
 
   if this_is_user_initiated_depool then
-    cleanUpAction(_depool_undo_block_string)
+    cleanUpAction(_depool_undo_block_string, new_pool_id)
   
   elseif this_is_sibling_depool then
     storeItemStates(new_pool_id, contained_item_states)
@@ -4079,7 +4194,7 @@ function setAllSuperitemsColor()
       end
     end
     
-    cleanUpAction(_color_undo_block_string)
+    cleanUpAction(_color_undo_block_string, this_item_instance_pool_id)
   end
 end
 
