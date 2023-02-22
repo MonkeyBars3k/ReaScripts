@@ -4015,7 +4015,9 @@ function initSmartAction(edit_or_unglue)
     return
   end
 
-  _smart_action_undo_block_string = _smart_action_undo_block_string .. " - Pool #" .. pool_id
+  if pool_id then
+    _smart_action_undo_block_string = _smart_action_undo_block_string .. " - Pool #" .. pool_id
+  end
 
   reaper.Undo_EndBlock(_smart_action_undo_block_string, _api_include_all_undo_states)
 end
