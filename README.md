@@ -45,6 +45,7 @@ The **Glue/Edit & Glue/Unglue Smart Action** scripts intelligently determine whi
 - Make sure to examine the **options window** which enables numerous configurations for various use cases. Options are saved in your install's .ini file.
 - Contained Items can extend beyond your Superitem edges, enabling an **extradimensional pocket to hide items in your project** without having to hide a track or add muted items anywhere. (Run the script to **Display Superglue item info** to reveal how many contained items are "in" a Superitem.)
 - While Superglue does add a default Pool number prefix to Superitem take names, you may end up changing the name. In this and other cases, it's useful to open up the **Superglue item info window** to see its Parent Pool ID and other relevant Superglue data.
+- It's recommended to enable the Reaper option `Show project regions/markers in arrange` as this will display lines to help you gauge your Superglue sizing regions.
 
 ### Requirements
 - Requires **Reaper v6.43** or newer
@@ -59,7 +60,6 @@ The **Glue/Edit & Glue/Unglue Smart Action** scripts intelligently determine whi
 - To create **Superitems containing MIDI**, the script uses "Apply FX as new take" on each item to get an audio take. When you Edit, the audio take is removed and just the original MIDI take is made active, so you can edit the original MIDI again.
 #### Editing Superitems
 - When you Edit a Superitem, a **special white region**, the Sizing Region, is automatically created so you can alter the Superitem's eventual edge positions after Reglue. Try not to remove this Sizing Region since its bounds match the edges of the Edited Superitem. If a Sizing Region does get deleted, when you attempt to reglue Superglue will prompt you to create a new region at the edges of the Restored Items.
-- It's recommended to enable the Reaper option `Show project regions/markers in arrange` as this will display lines to help you gauge your Superglue sizing regions.
 - Be careful Editing a parent Superitem **near project start**. If a child Superitem would extend before project start, its source offset will adjust automatically so its audio is in the right place, but regluing could affect its sibling pooled Superitems in unexpected ways.
 - Remember that **restored items can extend beyond the size of your Superitem** on Edit. Stay aware of content in tracks (such as items, track envelopes, etc.) nearby.
 - It's not recommended to **Edit Superitems with adjusted take playrate** because the Contained Items are at their playrate at last Superglue, so they won't match up to the audio in the Superitem with adjusted take playrate. Best either to do your playrate work on the Contained Items in the first place, or Edit a Sibling at 1.0 playrate.
