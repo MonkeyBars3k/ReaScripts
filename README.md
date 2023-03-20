@@ -45,7 +45,7 @@ The **Glue/Edit & Glue/Unglue Smart Action** scripts intelligently determine whi
 - Make sure to examine the **options window** which enables numerous configurations for various use cases. Options are saved in your install's .ini file.
 - Contained Items can extend beyond your Superitem edges, enabling an **extradimensional pocket to hide items in your project** without having to hide a track or add muted items anywhere. (Run the script to **Display Superglue item info** to reveal how many contained items are "in" a Superitem.)
 - While Superglue does add a default Pool number prefix to Superitem take names, you may end up changing the name. In this and other cases, it's useful to open up the **Superglue item info window** to see its Parent Pool ID and other relevant Superglue data.
-- It's recommended to enable the Reaper option `Show project regions/markers in arrange` as this will display lines to help you gauge your Superglue sizing regions.
+- It's recommended to enable the Reaper preference `Show project regions/markers in arrange` (Preferences > Appearance) as this will display lines to help you gauge your Superglue sizing regions.
 
 ### Requirements
 - Requires **Reaper v6.43** or newer
