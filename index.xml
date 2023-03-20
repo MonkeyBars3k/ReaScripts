@@ -1157,7 +1157,7 @@
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Make sure to examine the {\b options window} which enables numerous configurations for various use cases. Options are saved in your install's .ini file.\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Contained Items can extend beyond your Superitem edges, enabling an {\b extradimensional pocket to hide items in your project} without having to hide a track or add muted items anywhere. (Run the script to {\b Display Superglue item info} to reveal how many contained items are "in" a Superitem.)\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab While Superglue does add a default Pool number prefix to Superitem take names, you may end up changing the name. In this and other cases, it's useful to open up the {\b Superglue item info window} to see its Parent Pool ID and other relevant Superglue data.\par}
-{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab It's recommended to enable the Reaper option {\f1 Show project regions/markers in arrange} as this will display lines to help you gauge your Superglue sizing regions.\sa180\par}
+{\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab It's recommended to enable the Reaper preference {\f1 Show project regions/markers in arrange} (Preferences > Appearance) as this will display lines to help you gauge your Superglue sizing regions.\sa180\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \b \fs28 Requirements\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b Reaper v6.43} or newer\par}
 {\pard \ql \f0 \sa0 \li360 \fi-360 \bullet \tx360\tab Requires {\b SWS Plugin Extension} {\field{\*\fldinst{HYPERLINK "https://www.sws-extension.org/download/pre-release"}}{\fldrslt{\ul
