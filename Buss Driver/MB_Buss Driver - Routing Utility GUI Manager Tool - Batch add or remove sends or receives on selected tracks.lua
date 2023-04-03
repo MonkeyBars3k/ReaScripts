@@ -812,7 +812,7 @@ end
 function populateRoutingSettingsObjs(audio_channel_src_options, audio_channel_rcv_options, midi_channel_src_options, midi_channel_rcv_options)
   
   _routing_settings_objs = {
-    ["popup"] = rtk.Popup{w = _routing_options_objs.window.w / 3, overlay = "#303030cc", padding = 0},
+    ["popup"] = rtk.Popup{w = _routing_options_objs.window.w / 3, minw = 341, overlay = "#303030cc", padding = 0},
     ["content"] = rtk.VBox(),
     ["title"] = rtk.Heading{"Configure settings for routing to be added", w = 1, halign = "center", padding = 6, bg = "#777777", fontscale = 0.67},
     ["form"] = rtk.VBox{padding = "20 10 10"},
