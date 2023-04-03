@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 1.21
--- @changelog Incrementing channels should be on source not destination (https://github.com/MonkeyBars3k/ReaScripts/issues/336); Add warning if incrementing tracks hit max channels (https://github.com/MonkeyBars3k/ReaScripts/issues/337)
+-- @version 1.22
+-- @changelog Routing Settings popup too narrow on laptop screen (https://github.com/MonkeyBars3k/ReaScripts/issues/342)
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
