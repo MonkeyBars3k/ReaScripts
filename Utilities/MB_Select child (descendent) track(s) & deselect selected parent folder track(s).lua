@@ -1,7 +1,7 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.2.1
--- @changelog Bugfix DP_Set track playback offset - MB_multitrack: Reset value incorrect
+-- @version 1.2.2
+-- @changelog Add dev functions to ReaPack just in case
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect tracks if child track(s) & select their direct parent folder track(s).lua
@@ -9,6 +9,7 @@
 --   [main] MB_Open item properties or subproject or MIDI Editor and zoom to content.lua
 --   [main] MB_Set all takes on selected items to same series of random colors, correllated by take number.lua
 --   [main] DP_Set track playback offset - MB_multitrack.lua
+--   [nomain] mb-dev-functions.lua
 --   gnu_license_v3.txt
 
 -- NOTES:
