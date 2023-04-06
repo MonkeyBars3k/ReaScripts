@@ -1,13 +1,14 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.1.10
--- @changelog Fix undo block name
+-- @version 1.2
+-- @changelog Add track playback offset script, based on DP's original
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect tracks if child track(s) & select their direct parent folder track(s).lua
 --   [main] MB_Duplicate item under mouse cursor to top lane in same track at same position.lua
 --   [main] MB_Open item properties or subproject or MIDI Editor and zoom to content.lua
 --   [main] MB_Set all takes on selected items to same series of random colors, correllated by take number.lua
+--   [main] DP_Set track playback offset - MB_multitrack.lua
 --   gnu_license_v3.txt
 
 -- NOTES:
