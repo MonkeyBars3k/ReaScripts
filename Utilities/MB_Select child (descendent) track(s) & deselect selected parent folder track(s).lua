@@ -1,7 +1,7 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.2
--- @changelog Add track playback offset script, based on DP's original
+-- @version 1.2.1
+-- @changelog Bugfix DP_Set track playback offset - MB_multitrack: Reset value incorrect
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect tracks if child track(s) & select their direct parent folder track(s).lua

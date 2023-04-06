@@ -5,8 +5,8 @@
 -- Quickly alter playback time offset on selected track(s) without having to keep opening the track routing options.
 --
 -- ~For dev~
--- package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
--- require("mb-dev-functions")
+package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
+require("mb-dev-functions")
 
 
 local _lib_path = reaper.GetExtState("Lokasenna_GUI", "lib_path_v2")
@@ -157,9 +157,9 @@ end
 function GUI.elms.delay_slider:ondoubleclick()
 	reaper.Undo_BeginBlock()
 	GUI.Slider.ondoubleclick(self)
-	setTracksPlaybackDelay(0, true, true, true)
+	setTracksPlaybackDelay(_slider_range, true, true, true)
 
-	_current_delay = _slider_range
+	_current_delay = 0
 
 	reaper.Undo_EndBlock("Set track playback offset", _api_undo_states_flag_track_routing)
 end
