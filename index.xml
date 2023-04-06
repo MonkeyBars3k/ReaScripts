@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="b9fd54fe867443b0cdc725e26eda907d5c4c15c5">
+<index version="1" name="MonkeyBars-ReaScripts" commit="d837c345fc42fc93276fac7632b09ee1d3e2e198">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
@@ -1135,6 +1135,17 @@
         <source main="main" file="MB_Open item properties or subproject or MIDI Editor and zoom to content.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/0463953070d566673e90693712c459a6f3541165/Utilities/MB_Open%20item%20properties%20or%20subproject%20or%20MIDI%20Editor%20and%20zoom%20to%20content.lua</source>
         <source main="main" file="MB_Set all takes on selected items to same series of random colors, correllated by take number.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/0463953070d566673e90693712c459a6f3541165/Utilities/MB_Set%20all%20takes%20on%20selected%20items%20to%20same%20series%20of%20random%20colors,%20correllated%20by%20take%20number.lua</source>
         <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/0463953070d566673e90693712c459a6f3541165/Utilities/gnu_license_v3.txt</source>
+      </version>
+      <version name="1.2" author="MonkeyBars" time="2023-04-06T16:20:11Z">
+        <changelog><![CDATA[Add track playback offset script, based on DP's original]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/MB_Select%20child%20(descendent)%20track(s)%20&amp;%20deselect%20selected%20parent%20folder%20track(s).lua</source>
+        <source main="main" file="MB_Create new autoincremented folder and save project.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/MB_Create%20new%20autoincremented%20folder%20and%20save%20project.lua</source>
+        <source main="main" file="MB_Deselect tracks if child track(s) &amp; select their direct parent folder track(s).lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/MB_Deselect%20tracks%20if%20child%20track(s)%20&amp;%20select%20their%20direct%20parent%20folder%20track(s).lua</source>
+        <source main="main" file="MB_Duplicate item under mouse cursor to top lane in same track at same position.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/MB_Duplicate%20item%20under%20mouse%20cursor%20to%20top%20lane%20in%20same%20track%20at%20same%20position.lua</source>
+        <source main="main" file="MB_Open item properties or subproject or MIDI Editor and zoom to content.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/MB_Open%20item%20properties%20or%20subproject%20or%20MIDI%20Editor%20and%20zoom%20to%20content.lua</source>
+        <source main="main" file="MB_Set all takes on selected items to same series of random colors, correllated by take number.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/MB_Set%20all%20takes%20on%20selected%20items%20to%20same%20series%20of%20random%20colors,%20correllated%20by%20take%20number.lua</source>
+        <source main="main" file="DP_Set track playback offset - MB_multitrack.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/DP_Set%20track%20playback%20offset%20-%20MB_multitrack.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/d837c345fc42fc93276fac7632b09ee1d3e2e198/Utilities/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
