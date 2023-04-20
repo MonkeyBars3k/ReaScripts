@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="7e4ce00a27ed3cc61d074b92ff3ca6607fc74300">
+<index version="1" name="MonkeyBars-ReaScripts" commit="3dc80c0076413bc0b8e10983354831b58715e24a">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <metadata>
@@ -390,6 +390,23 @@
         <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/b9fd54fe867443b0cdc725e26eda907d5c4c15c5/Buss%20Driver/table_mute_off.png</source>
         <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/b9fd54fe867443b0cdc725e26eda907d5c4c15c5/Buss%20Driver/table_mute_on.png</source>
         <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/b9fd54fe867443b0cdc725e26eda907d5c4c15c5/Buss%20Driver/gnu_license_v3.txt</source>
+      </version>
+      <version name="2.0" author="MonkeyBars" time="2023-04-20T22:21:40Z">
+        <changelog><![CDATA[Add multichannel routing (https://github.com/MonkeyBars3k/ReaScripts/issues/300); Track list filter doesn't work right (https://github.com/MonkeyBars3k/ReaScripts/issues/351); Highlight selected track list with track color (https://github.com/MonkeyBars3k/ReaScripts/issues/353); Redisable action button on no target tracks selected; Add action + type to undo string (https://github.com/MonkeyBars3k/ReaScripts/issues/355); Disable incrementing for top values / All (https://github.com/MonkeyBars3k/ReaScripts/issues/357)]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/MB_Buss%20Driver%20-%20Routing%20Utility%20GUI%20Manager%20Tool%20-%20Batch%20add%20or%20remove%20sends%20or%20receives%20on%20selected%20tracks.lua</source>
+        <source file="rtk.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/rtk.lua</source>
+        <source file="serpent.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/serpent.lua</source>
+        <source file="mb-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/mb-dev-functions.lua</source>
+        <source file="bussdriver_logo_nobg.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/bussdriver_logo_nobg.png</source>
+        <source file="gen_midi_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/gen_midi_off.png</source>
+        <source file="gen_midi_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/gen_midi_on.png</source>
+        <source file="gen_mono_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/gen_mono_off.png</source>
+        <source file="gen_mono_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/gen_mono_on.png</source>
+        <source file="gen_phase_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/gen_phase_off.png</source>
+        <source file="gen_phase_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/gen_phase_on.png</source>
+        <source file="table_mute_off.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/table_mute_off.png</source>
+        <source file="table_mute_on.png">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/table_mute_on.png</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/3dc80c0076413bc0b8e10983354831b58715e24a/Buss%20Driver/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
