@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 2.0
--- @changelog Add multichannel routing (https://github.com/MonkeyBars3k/ReaScripts/issues/300); Track list filter doesn't work right (https://github.com/MonkeyBars3k/ReaScripts/issues/351); Highlight selected track list with track color (https://github.com/MonkeyBars3k/ReaScripts/issues/353); Redisable action button on no target tracks selected; Add action + type to undo string (https://github.com/MonkeyBars3k/ReaScripts/issues/355); Disable incrementing for top values / All (https://github.com/MonkeyBars3k/ReaScripts/issues/357)
+-- @version 2.01
+-- @changelog Destination multichannel API value is wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/358); Add user msg if no tracks selected on launch (https://github.com/MonkeyBars3k/ReaScripts/issues/359); Routing Settings window: Add close button (https://github.com/MonkeyBars3k/ReaScripts/issues/360); comment out dev include
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -34,7 +34,7 @@
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
 
 -- for dev only
-require("mb-dev-functions")
+-- require("mb-dev-functions")
 
 
 local rtk = require("rtk")
@@ -47,7 +47,7 @@ rtk.set_theme_overrides({
 
 
 
-local _api_current_project, _all_tracks, selected_tracks_count, _selected_tracks, _unselected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _api_msg_type_ok, _all_tracks_count_on_launch, _routing_settings_objs, _right_arrow, _default_routing_settings_values, _api_script_ext_name, _api_save_options_key_name, _logo_img_path, _reaper_max_track_channels, _api_stereo_channels_default, _api_stereo_channel_base, _api_mono_channel_base, _api_multichannel_base, _api_multichannel_addl, _api_midi_channels_max_value, _api_routing_param_src_track, _api_routing_param_dest_track, _api_track_channel_count, _api_track_icon, _api_track_num, _api_track_name, _api_routing_category_send, _api_routing_category_receive, _regex_digits_at_string_end, _regex_routing_midi_channel, _regex_routing_midi_bus, _enough_audio_channels_are_available, _routing_option_action_choice, _routing_option_type_choice, _configure_btn_rendered_height
+local _api_current_project, _all_tracks, selected_tracks_count, _selected_tracks, _unselected_tracks, _data_storage_track, _routing_options_objs, _api_routing_types, _api_all_routing_settings, _api_msg_type_ok, _all_tracks_count_on_launch, _routing_settings_objs, _right_arrow, _default_routing_settings_values, _script_brand, _api_script_ext_name, _api_save_options_key_name, _logo_img_path, _reaper_max_track_channels, _api_src_stereo_channels_default, _api_src_stereo_channel_base, _api_dest_channel_default, _api_mono_channel_base, _api_src_multichannel_base, _api_src_multichannel_addl, _api_midi_channels_max_value, _api_routing_param_src_track, _api_routing_param_dest_track, _api_track_channel_count, _api_track_icon, _api_track_num, _api_track_name, _api_routing_category_send, _api_routing_category_receive, _regex_digits_at_string_end, _regex_routing_midi_channel, _regex_routing_midi_bus, _enough_audio_channels_are_available, _routing_option_action_choice, _routing_option_type_choice, _configure_btn_rendered_height
 
 _api_current_project = 0
 _all_tracks =  nil
@@ -75,15 +75,17 @@ _default_routing_settings_values = {
   ["midi_src"] = "0/0",
   ["midi_dest"] = "0/0"
 }
+_script_brand = "MB_Buss Driver"
 _api_script_ext_name = "MB_Buss-Driver"
 _api_save_options_key_name = "save_options"
 _logo_img_path = "bussdriver_logo_nobg.png"
 _reaper_max_track_channels = 64
-_api_stereo_channels_default = 0
-_api_stereo_channel_base = 0
+_api_src_stereo_channels_default = 0
+_api_src_stereo_channel_base = 0
+_api_dest_channel_default = 0
 _api_mono_channel_base = 1024
-_api_multichannel_base = 2048
-_api_multichannel_addl = 1024
+_api_src_multichannel_base = 2048
+_api_src_multichannel_addl = 1024
 _api_midi_channels_max_value = 16
 _api_routing_param_src_track = "P_SRCTRACK"
 _api_routing_param_dest_track = "P_DESTTRACK"
@@ -207,7 +209,7 @@ end
 function getRoutingOptionsObjects()
 
   _routing_options_objs = {
-    ["window"] = rtk.Window{title = "MB_Buss Driver - Batch add or remove sends or receives on selected tracks", w = 0.4, maxh = rtk.Attribute.NIL},
+    ["window"] = rtk.Window{title = _script_brand .. " - Batch add or remove sends or receives on selected tracks", w = 0.4, maxh = rtk.Attribute.NIL},
     ["viewport"] = rtk.Viewport{halign = "center", bpadding = 5},
     ["brand"] = rtk.VBox{halign = "center", padding = "2 2 1", border = "1px #878787", bg = "#505050"},
     ["title"] = rtk.Heading{"Buss Driver", fontscale = "0.6"},
@@ -755,7 +757,7 @@ function initRoutingSettings()
   populateRoutingSettingsFormValues()
   populateRoutingSettingsPopup()
   setRoutingSettingsFormEventHandlers()
-  populateAudioDestChannelOptions()
+  populateAudioDestChannelDefaultOptions()
 end
 
 
@@ -768,6 +770,7 @@ function populateRoutingSettingsObjs()
   _routing_settings_objs = {
     ["popup"] = rtk.Popup{w = _routing_options_objs.window.w / 3, minw = 341, overlay = "#303030cc", padding = 0},
     ["content"] = rtk.VBox(),
+    ["close_btn"] = rtk.Button{"X", position = "absolute", z = 10, w = 14, h = 16, margin = "4 0 0 4", padding = 2, color = "#555555", halign = "center", fontscale = 0.7, textcolor = "#BBBBBB"},
     ["title"] = rtk.Heading{"Configure settings for routing to be added", w = 1, halign = "center", padding = 6, bg = "#777777", fontscale = 0.67},
     ["form"] = rtk.VBox{padding = "20 10 10"},
     ["row1"] = rtk.HBox(),
@@ -903,17 +906,17 @@ end
 
 
 function getAudioChannelSubmenuMultichannelSubsubmenuOptions(submenu_audio_channel_selected, multichannel_count_option_idx, multichannel_count_options)
-  local multichannel_choices_count, audio_channel_submenu_multichannel_subsubmenu_options, multichannel_option_val
+  local multichannel_choices_count, audio_channel_submenu_multichannel_subsubmenu_options, multichannel_option_id_val
 
   multichannel_choices_count = _reaper_max_track_channels - submenu_audio_channel_selected
   audio_channel_submenu_multichannel_subsubmenu_options = {}
 
   for i = 0, multichannel_choices_count do
-    multichannel_option_val = (_api_multichannel_addl * (submenu_audio_channel_selected / 2) ) + i
+    multichannel_option_id_val = (_api_src_multichannel_addl * (submenu_audio_channel_selected / 2) ) + i
 
     audio_channel_submenu_multichannel_subsubmenu_options[i+1] = {
       ["label"] = (i+1) .. "-" .. (i + submenu_audio_channel_selected),
-      ["id"] = tostring(multichannel_option_val),
+      ["id"] = tostring(multichannel_option_id_val),
       ["data__channel_count"] = submenu_audio_channel_selected
     }
 
@@ -1080,13 +1083,17 @@ function setRoutingSettingsValue(new_routing_settings_values, routing_setting_na
     routing_setting_field:attr("value", new_form_field_value)
 
   elseif this_field_is_type_selected then
-    routing_setting_field:attr("selected", new_form_field_value)
+    routing_setting_field:select(new_form_field_value)
   end
 end
 
 
 function setRoutingSettingsFormEventHandlers()
   local new_volume_value
+
+  _routing_settings_objs.close_btn.onclick = function(self)
+    _routing_settings_objs.popup:close()
+  end
 
   _routing_settings_objs.mute.onclick = function(self)
     toggleBtnState(self, "table_mute")
@@ -1218,39 +1225,32 @@ function toggleChannelDropdown(active_dropdown, none_value, affected_dropdown, a
     affected_incrementing_checkbox:show()
 
     if active_dropdown_is_audio then
-      populateAudioDestChannelOptions(true)
+      populateAudioDestChannelDefaultOptions(true)
     end
   end
 end
 
 
-function populateAudioDestChannelOptions(this_is_refresh)
-  local multichannel_choices_count, multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min, audio_dest_channel_all_options, new_dest_selected_idx
+function populateAudioDestChannelDefaultOptions(this_is_refresh)
+  local multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min, audio_dest_channel_all_options, new_dest_selected_idx
 
-  multichannel_choices_count, multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min = getAudioDestChannelInfo(this_is_refresh)
-  audio_dest_channel_all_options = createAudioDestChannelAllOptions(multichannel_choices_count, multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min)
+  multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min = getAudioDestChannelInfo(this_is_refresh)
+  audio_dest_channel_all_options = createAudioDestChannelAllOptions(multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min)
 
   _routing_settings_objs.audio_dest_channel:attr("menu", audio_dest_channel_all_options)
 
-  if src_selected_channel_count > 2 then
-    new_dest_selected_idx = (src_selected_channel_count / 2) * _api_multichannel_addl
+  new_dest_selected_idx = _api_dest_channel_default
+  new_dest_selected_idx = tostring(new_dest_selected_idx)
 
-  elseif src_selected_channel_count == 2 then
-    new_dest_selected_idx = 0
-
-  elseif src_selected_channel_count == 1 then
-    new_dest_selected_idx = _api_mono_channel_base
-  end
-
-  _routing_settings_objs.audio_dest_channel:attr("selected", tostring(new_dest_selected_idx))
+  _routing_settings_objs.audio_dest_channel:select(new_dest_selected_idx)
 end
 
 
 function getAudioDestChannelInfo(this_is_refresh)
-  local src_selected_channel_count, multichannel_is_selected, target_tracks_channel_count_min, multichannel_choices_count
+  local src_selected_channel_count, src_multichannel_is_selected, target_tracks_channel_count_min, multichannel_choices_count
 
   src_selected_channel_count = getSrcSelectedChannelCount()
-  multichannel_is_selected = src_selected_channel_count > 2
+  src_multichannel_is_selected = src_selected_channel_count > 2
 
   if this_is_refresh then
     target_tracks_channel_count_min = _reaper_max_track_channels
@@ -1259,14 +1259,14 @@ function getAudioDestChannelInfo(this_is_refresh)
     target_tracks_channel_count_min = getTargetTracksLeastChannelCount()
   end
 
-  if multichannel_is_selected then
+  if src_multichannel_is_selected then
     multichannel_choices_count = target_tracks_channel_count_min - src_selected_channel_count + 1
 
   else
     multichannel_choices_count = target_tracks_channel_count_min - 1
   end
 
-  return multichannel_choices_count, multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min
+  return multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min
 end
 
 
@@ -1276,7 +1276,7 @@ function getSrcSelectedChannelCount()
   src_selected_option = tonumber(_routing_settings_objs.audio_src_channel.selected_id)
 
   if not src_selected_option then 
-    src_selected_option = _api_stereo_channels_default
+    src_selected_option = _api_src_stereo_channels_default
   end
 
   src_channel_option_val = src_selected_option / _api_mono_channel_base
@@ -1322,17 +1322,11 @@ function getTargetTracksLeastChannelCount()
 end
 
 
-function createAudioDestChannelAllOptions(multichannel_choices_count, multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min)
+function createAudioDestChannelAllOptions(multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min)
   local audio_dest_channel_all_options, mono_option_idx, mono_option_val
 
-  if src_selected_channel_count == 1 then
-    audio_dest_channel_all_options = {}
-    multichannel_choices_count = 0
-
-  else
-    audio_dest_channel_all_options = createAudioDestStereoOrMultichannelChoices(multichannel_choices_count, multichannel_is_selected, src_selected_channel_count)
-    multichannel_choices_count = math.floor(multichannel_choices_count)
-  end
+  audio_dest_channel_all_options = createAudioDestStereoOrMultichannelChoices(multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count)
+  multichannel_choices_count = math.floor(multichannel_choices_count)
 
   for i = 0, target_tracks_channel_count_min-1 do
     mono_option_idx = multichannel_choices_count + i + 1
@@ -1349,18 +1343,18 @@ function createAudioDestChannelAllOptions(multichannel_choices_count, multichann
 end
 
 
-function createAudioDestStereoOrMultichannelChoices(multichannel_choices_count, multichannel_is_selected, src_selected_channel_count)
-  local audio_dest_channel_all_options, divider, audio_dest_multichannel_option_label, multichannel_option_val, audio_dest_multichannel_option_channel_count
+function createAudioDestStereoOrMultichannelChoices(multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count)
+  local audio_dest_channel_all_options, divider, audio_dest_multichannel_option_label, multichannel_option_id_val, audio_dest_multichannel_option_channel_count
 
   audio_dest_channel_all_options = {}
   divider = getAudioChannelChoiceDivider(src_selected_channel_count)
 
   for i = 0, multichannel_choices_count do
-    audio_dest_multichannel_option_label, multichannel_option_val, audio_dest_multichannel_option_channel_count = getMultichannelOrStereoOptionInfo(multichannel_is_selected, src_selected_channel_count, divider, i)
-
+    audio_dest_multichannel_option_label, multichannel_option_id_val, audio_dest_multichannel_option_channel_count = getMultichannelOrStereoOptionInfo(src_multichannel_is_selected, src_selected_channel_count, divider, i)
+    
     audio_dest_channel_all_options[i+1] = {
       ["label"] = audio_dest_multichannel_option_label,
-      ["id"] = tostring(multichannel_option_val),
+      ["id"] = tostring(multichannel_option_id_val),
       ["data__channel_count"] = audio_dest_multichannel_option_channel_count
     }
   end
@@ -1385,26 +1379,25 @@ function getAudioChannelChoiceDivider(src_selected_channel_count)
 end
 
 
-function getMultichannelOrStereoOptionInfo(multichannel_is_selected, src_selected_channel_count, divider, multichannel_choice_idx)
-  local stereo_is_selected, multichannel_lowest_in_option, multichannel_highest_in_option, multichannel_option_val, audio_dest_multichannel_option_label, audio_dest_multichannel_option_channel_count
+function getMultichannelOrStereoOptionInfo(src_multichannel_is_selected, src_selected_channel_count, divider, multichannel_choice_idx)
+  local mono_or_stereo_is_selected, multichannel_lowest_in_option, multichannel_highest_in_option, audio_dest_multichannel_option_label, multichannel_option_id_val, audio_dest_multichannel_option_channel_count
 
-  stereo_is_selected = not multichannel_is_selected
+  mono_or_stereo_is_selected = not src_multichannel_is_selected
   multichannel_lowest_in_option = multichannel_choice_idx + 1
 
-  if multichannel_is_selected then
+  if src_multichannel_is_selected then
     multichannel_highest_in_option = src_selected_channel_count + multichannel_choice_idx
-    multichannel_option_val = ( (src_selected_channel_count / 2) * _api_multichannel_addl) + multichannel_choice_idx
 
-  elseif stereo_is_selected then
+  elseif mono_or_stereo_is_selected then
     multichannel_highest_in_option = multichannel_choice_idx + 2
-    multichannel_option_val = multichannel_choice_idx
   end
 
   multichannel_highest_in_option = math.floor(multichannel_highest_in_option)
   audio_dest_multichannel_option_label = multichannel_lowest_in_option .. divider .. multichannel_highest_in_option
+  multichannel_option_id_val = multichannel_choice_idx
   audio_dest_multichannel_option_channel_count = multichannel_highest_in_option - multichannel_lowest_in_option + 1
 
-  return audio_dest_multichannel_option_label, multichannel_option_val, audio_dest_multichannel_option_channel_count
+  return audio_dest_multichannel_option_label, multichannel_option_id_val, audio_dest_multichannel_option_channel_count
 end
 
 
@@ -1499,6 +1492,7 @@ end
 
 
 function populateRoutingSettingsPopup()
+  _routing_settings_objs.content:add(_routing_settings_objs.close_btn)
   _routing_settings_objs.content:add(_routing_settings_objs.title)
   _routing_settings_objs.row1:add(_routing_settings_objs.volume_val)
   _routing_settings_objs.row1:add(_routing_settings_objs.pan_val)
@@ -1608,7 +1602,7 @@ function getUndoString()
     type_choice = "receive(s)"
   end
 
-  undo_string = "MB_Buss Driver: " .. action_choice .. " " .. type_choice
+  undo_string = _script_brand .. ": " .. action_choice .. " " .. type_choice
 
   return undo_string
 end
@@ -1905,40 +1899,14 @@ end
 
 
 function getAudioRoutingInfo(routing_setting_idx, routing_setting_value)
-  local routing_type, channel_count, addl_channels_above_count
+  local routing_type, channel_count, channel_count_type, addl_channels_above_count
 
-  routing_setting_value = tonumber(routing_setting_value)
   routing_type, channel_count = getAudioRoutingTypeAndChannelCount(routing_setting_idx)
-
-  if channel_count == 1 then
-    channel_count_type = "mono"
-
-    if routing_setting_value then
-      addl_channels_above_count = routing_setting_value - _api_mono_channel_base
-    end
-
-  elseif channel_count == 2 then
-    channel_count_type = "stereo"
-
-    if routing_setting_value then
-      addl_channels_above_count = routing_setting_value
-    end
-
-  elseif channel_count > 2 then
-    channel_count_type = "multichannel"
-
-    if routing_setting_value then
-      addl_channels_above_count = math.floor(routing_setting_value - (_api_multichannel_base + (_api_multichannel_addl * ((channel_count / 2) - 2))))
-    end
-  end
-
-  if not addl_channels_above_count then
-    addl_channels_above_count = 0
-  end
+  channel_count_type = getAudioRoutingChannelCountType(channel_count)
+  addl_channels_above_count = getAudioRoutingChannelsAboveCount(routing_setting_value, channel_count_type, channel_count, routing_type)
 
   return channel_count_type, routing_type, channel_count, addl_channels_above_count
 end
-
 
 
 function getAudioRoutingTypeAndChannelCount(routing_setting_idx)
@@ -1959,6 +1927,53 @@ function getAudioRoutingTypeAndChannelCount(routing_setting_idx)
   channel_count = math.floor(channel_count)
 
   return routing_type, channel_count
+end
+
+
+function getAudioRoutingChannelCountType(channel_count)
+  local channel_count_type
+
+  if channel_count == 1 then
+    channel_count_type = "mono"
+
+  elseif channel_count == 2 then
+    channel_count_type = "stereo"
+
+  elseif channel_count > 2 then
+    channel_count_type = "multichannel"
+  end
+
+  return channel_count_type
+end
+
+
+function getAudioRoutingChannelsAboveCount(routing_setting_value, channel_count_type, channel_count, routing_type)
+  local addl_channels_above_count, src_multichannel_addl_channels_above_count
+
+  routing_setting_value = tonumber(routing_setting_value)
+  addl_channels_above_count = 0
+
+  if routing_setting_value then
+
+    if channel_count_type == "mono" then
+      addl_channels_above_count = routing_setting_value - _api_mono_channel_base
+
+    elseif channel_count_type == "stereo" then
+      addl_channels_above_count = routing_setting_value
+
+    elseif channel_count_type == "multichannel" then
+
+      if routing_type == "src" then
+        src_multichannel_addl_channels_above_count = routing_setting_value - (_api_src_multichannel_base + (_api_src_multichannel_addl * ((channel_count / 2) - 2)))
+        addl_channels_above_count = math.floor(src_multichannel_addl_channels_above_count)
+
+      elseif routing_type == "dest" then
+        addl_channels_above_count = routing_setting_value
+      end
+    end
+  end
+
+  return addl_channels_above_count
 end
 
 
@@ -2000,7 +2015,7 @@ function getMoreAudioChannelsToIncrement(routing_setting_value, routing_setting_
       routing_setting_value = _reaper_max_track_channels - 2
 
     elseif channel_count_type == "multichannel" then
-      routing_setting_value = _api_multichannel_base + ( _api_multichannel_addl * ( (channel_count / 2) - 2) )
+      routing_setting_value = _api_src_multichannel_base + ( _api_src_multichannel_addl * ( (channel_count / 2) - 2) )
     end
 
     createRequiredAudioChannels(routing_setting_idx, routing_setting_value, src_track)
@@ -2020,7 +2035,7 @@ function getMaxTrackChannelsValue(channel_count_type, channel_count)
     max_track_channels_value = _reaper_max_track_channels
 
   elseif channel_count_type == "multichannel" then
-    max_track_channels_value = _api_multichannel_base + ( _api_multichannel_addl * (channel_count - 4) ) + _reaper_max_track_channels
+    max_track_channels_value = _api_src_multichannel_base + ( _api_src_multichannel_addl * (channel_count - 4) ) + _reaper_max_track_channels
   end
 
   return max_track_channels_value
@@ -2089,6 +2104,9 @@ function initBussDriver()
 
   if _selected_tracks_count > 0 then
     launchBussDriverDialog()
+
+  else
+    reaper.ShowMessageBox("Select one or more tracks you want to create routing to/from and launch Buss Driver again.", _script_brand .. ": No tracks are selected.", _api_msg_type_ok)
   end
 end
 
