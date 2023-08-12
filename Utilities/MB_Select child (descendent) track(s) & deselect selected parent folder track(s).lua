@@ -1,7 +1,7 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.2.2
--- @changelog Add dev functions to ReaPack just in case
+-- @version 1.2.3
+-- @changelog Fix multitrack selection
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Deselect tracks if child track(s) & select their direct parent folder track(s).lua
@@ -19,11 +19,13 @@
 
 reaper.Undo_BeginBlock()
 
-local selected_tracks_count, all_tracks_count, descendent_tracks, this_selected_track, this_track
+local _api_current_project, _user_selected_tracks_count, _all_tracks_count, _user_selected_tracks, _descendent_tracks, this_selected_track, this_track
 
-selected_tracks_count = reaper.CountSelectedTracks(0)
-all_tracks_count = reaper.GetNumTracks()
-descendent_tracks = {}
+_api_current_project = 0
+_user_selected_tracks_count = reaper.CountSelectedTracks(_api_current_project)
+_all_tracks_count = reaper.GetNumTracks()
+_user_selected_tracks = {}
+_descendent_tracks = {}
 
 
 function trackIsDescendent(current_track, selected_track)
@@ -36,6 +38,7 @@ function trackIsDescendent(current_track, selected_track)
     return true
   
   elseif parent_track then
+
     return trackIsDescendent(parent_track, selected_track)
 
   else
@@ -45,22 +48,26 @@ function trackIsDescendent(current_track, selected_track)
 end
 
 
-for i = 0, selected_tracks_count-1 do
-  this_selected_track = reaper.GetSelectedTrack(0, i)
+for i = 0, _user_selected_tracks_count-1 do
+  this_selected_track = reaper.GetSelectedTrack(_api_current_project, i)
   
-  for j = 0, all_tracks_count-1 do
-    this_track = reaper.GetTrack(0, j)
+  for j = 0, _all_tracks_count-1 do
+    this_track = reaper.GetTrack(_api_current_project, j)
 
     if trackIsDescendent(this_track, this_selected_track) then
-      table.insert(descendent_tracks, this_track)
+      table.insert(_descendent_tracks, this_track)
     end
   end
-  
-  reaper.SetTrackSelected(this_selected_track, false)
+
+  table.insert(_user_selected_tracks, this_selected_track)
 end
 
-for i = 1, #descendent_tracks do
-  reaper.SetTrackSelected(descendent_tracks[i], true)
+for i = 1, #_user_selected_tracks do
+  reaper.SetTrackSelected(_user_selected_tracks[i], false)
+end
+
+for i = 1, #_descendent_tracks do
+  reaper.SetTrackSelected(_descendent_tracks[i], true)
 end
 
 reaper.Undo_EndBlock("MB_Select child (descendent) track(s) & deselect selected parent folder track(s)", -1)
