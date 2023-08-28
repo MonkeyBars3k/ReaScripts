@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 2.01
--- @changelog Destination multichannel API value is wrong (https://github.com/MonkeyBars3k/ReaScripts/issues/358); Add user msg if no tracks selected on launch (https://github.com/MonkeyBars3k/ReaScripts/issues/359); Routing Settings window: Add close button (https://github.com/MonkeyBars3k/ReaScripts/issues/360); comment out dev include
+-- @version 2.2
+-- @changelog Make user message title more readable
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -1557,7 +1557,7 @@ function submitRoutingOptionChanges()
     reaper.Undo_EndBlock(undo_string, 1)
 
   elseif not _enough_audio_channels_are_available then
-    reaper.ShowMessageBox("Change your source track selection and/or routing settings and try again.", "You are trying to use more channels than the " .. _reaper_max_track_channels .. " Reaper makes available.", _api_msg_type_ok)
+    reaper.ShowMessageBox("You are trying to use more channels than the " .. _reaper_max_track_channels .. " Reaper makes available. Change your source track selection and/or routing settings and try again.", "Too many channels", _api_msg_type_ok)
 
   else
     reaper.ShowMessageBox("No routing is available to remove on the selected track(s).", "Buss Driver", _api_msg_type_ok)
