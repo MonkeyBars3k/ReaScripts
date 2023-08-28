@@ -241,7 +241,7 @@ function getTrackGroupsNums()
 			table.insert(unused_track_groups, i)
 		end
 	end
-logTable(unused_track_groups)
+
 	return unused_track_groups
 end
 
