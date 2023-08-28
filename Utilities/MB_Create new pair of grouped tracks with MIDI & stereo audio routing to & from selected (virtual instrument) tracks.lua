@@ -207,7 +207,7 @@ function getUsedTrackGroupNums(used_track_groups_bitwise)
 end
 
 
-function getTrackGroupsNums_AllUnused()
+function getTrackGroupsNums_IfAllUnused()
 	local unused_track_groups = {}
 
 	for i = 1, _max_track_groups_count do
