@@ -1,7 +1,7 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.4
--- @changelog Add edit highest project marker script
+-- @version 1.4.1
+-- @changelog Prevent UI updates during edit highest marker script run
 -- @provides [main] .
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Create new pair of grouped tracks with MIDI & stereo audio routing to & from selected (virtual instrument) tracks.lua

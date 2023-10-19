@@ -1,40 +1,48 @@
 -- @noindex
 
 reaper.Undo_BeginBlock()
+reaper.PreventUIRefresh(1)
 
--- Initialize variables
-local highest_marker_number = -1
-local marker_idx_to_edit = -1
-local first_marker_idx = -1
+local _highest_marker_number, _marker_idx_to_edit, _first_marker_idx, _first_marker_name, _first_marker_color, _cursor_pos, _num_markers, _num_regions, _command_id__edit_marker_near_cursor
 
--- Get the edit cursor position
-local cursor_pos = reaper.GetCursorPosition()
+_highest_marker_number = -1
+_marker_idx_to_edit = -1
+_first_marker_idx = -1
+_first_marker_name = ""
+_first_marker_color = 0
+_cursor_pos = reaper.GetCursorPosition()
+_num_markers, _num_regions = reaper.CountProjectMarkers(0)
+_command_id__edit_marker_near_cursor = 40614
 
--- Get the number of markers in the project
-local num_markers, num_regions = reaper.CountProjectMarkers(0)
+for i = 0, _num_markers + _num_regions - 1 do
+  local retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers(i)
+  
+  if not isrgn and math.abs(pos - _cursor_pos) < 1e-5 then
 
--- Loop through all markers to find the one with the highest number at the cursor position
-for i = 0, num_markers + num_regions - 1 do
-    local retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers(i)
-    if not isrgn then
-        if math.abs(pos - cursor_pos) < 1e-5 then  -- Compare positions considering float inaccuracies
-            if first_marker_idx == -1 then
-                first_marker_idx = i
-            end
-            if markrgnindexnumber > highest_marker_number then
-                highest_marker_number = markrgnindexnumber
-                marker_idx_to_edit = i
-            end
-        end
+    if _first_marker_idx == -1 then
+      _first_marker_idx, _first_marker_name, _first_marker_color = i, name, color
     end
+    
+    if markrgnindexnumber > _highest_marker_number then
+      _highest_marker_number, _marker_idx_to_edit = markrgnindexnumber, i
+    end
+  end
 end
 
--- Temporarily move the first marker, edit the second, then move the first marker back
-if marker_idx_to_edit ~= -1 and first_marker_idx ~= -1 and marker_idx_to_edit ~= first_marker_idx then
-    local _, _, pos, _, _, _, _ = reaper.EnumProjectMarkers(first_marker_idx)
-    reaper.DeleteProjectMarkerByIndex(0, first_marker_idx)
-    reaper.Main_OnCommand(40614, 0)  -- Marker: Edit marker near cursor
-    reaper.AddProjectMarker(0, false, pos, 0, "", -1)
+if _marker_idx_to_edit ~= -1 and _first_marker_idx ~= -1 and _marker_idx_to_edit ~= _first_marker_idx then
+  local _, _, pos = reaper.EnumProjectMarkers(_first_marker_idx)
+
+  reaper.DeleteProjectMarkerByIndex(0, _first_marker_idx)
+  reaper.Main_OnCommand(_command_id__edit_marker_near_cursor, 0)
+  
+  local new_idx, successful = reaper.AddProjectMarker(0, false, pos, 0, _first_marker_name, -1)
+  
+  if successful then
+    reaper.SetProjectMarkerByIndex(0, new_idx, false, pos, 0, new_idx, _first_marker_color)
+  end
 end
 
+
+reaper.UpdateTimeline()
+reaper.PreventUIRefresh(-1)
 reaper.Undo_EndBlock("MB_Edit project marker with highest index at position", -1)
