@@ -1,9 +1,10 @@
 -- @description MB_Utilities: Various utility scripts for Reaper
 -- @author MonkeyBars
--- @version 1.5
--- @changelog Add script for changing items' volume linearly
+-- @version 1.5.1
+-- @changelog Add field for earliest item in changing items' volume linearly; Add script for changing item's volume linearly with no inputs
 -- @provides [main] .
 --   [main] MB_Change selected items' volume linearly from earliest item volume to entered target volume.lua
+--   [main] MB_Change selected items' volume linearly from earliest to latest item volumes.lua
 --   [main] MB_Create new autoincremented folder and save project.lua
 --   [main] MB_Create new pair of grouped tracks with MIDI & stereo audio routing to & from selected (virtual instrument) tracks.lua
 --   [main] MB_Deselect tracks if child track(s) & select their direct parent folder track(s).lua
