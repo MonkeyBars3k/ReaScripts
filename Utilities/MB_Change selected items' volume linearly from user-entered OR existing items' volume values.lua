@@ -9,7 +9,7 @@ num_selected_items = reaper.CountSelectedMediaItems(0)
 
 if num_selected_items < 2 then return end
 
-retval, input_str = reaper.GetUserInputs("Set Volumes", 2, "Start Volume for First Item (dB):,Target Volume for Last Item (dB):", ",")
+retval, input_str = reaper.GetUserInputs("Set Volumes", 2, "Start Volume for First Item (dB):\r(optional, otherwise will use existing values),Target Volume for Last Item (dB):", ",")
 
 if not retval then return end
 
@@ -52,4 +52,4 @@ end
 
 reaper.UpdateTimeline()
 reaper.PreventUIRefresh(-1)
-reaper.Undo_EndBlock("MB_Change selected items' volume linearly from earliest item volume to entered target volume", -1)
+reaper.Undo_EndBlock("MB_Change selected items' volume linearly from user-entered OR existing items' volume values", -1)
