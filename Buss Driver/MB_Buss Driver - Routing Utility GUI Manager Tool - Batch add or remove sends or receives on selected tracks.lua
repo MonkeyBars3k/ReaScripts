@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 2.3
--- @changelog Fix crash creating routing with Audio > None
+-- @version 2.4.1
+-- @changelog Remove errant log call
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -1806,7 +1806,6 @@ function processRoutingSetting(routing_setting_idx, routing_settings_api_objs_co
 
   elseif is_audio_channel then
     this_user_routing_setting_value = processAudioRoutingSetting(routing_setting_idx, this_routing_obj_value, target_track_idx, src_track, dest_track)
-log(this_user_routing_setting_value)
 
   else
     this_user_routing_setting_value = this_routing_obj_value
