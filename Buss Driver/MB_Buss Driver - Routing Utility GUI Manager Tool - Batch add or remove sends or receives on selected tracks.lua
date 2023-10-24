@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 2.4.1
--- @changelog Remove errant log call
+-- @version 2.5
+-- @changelog Increase max channels to 128
 -- @about Remove or set & add multiple sends or receives to/from multiple tracks in one go
 -- @provides [main] .
 --  [nomain] rtk.lua
@@ -79,7 +79,7 @@ _script_brand = "MB_Buss Driver"
 _api_script_ext_name = "MB_Buss-Driver"
 _api_save_options_key_name = "save_options"
 _logo_img_path = "bussdriver_logo_nobg.png"
-_reaper_max_track_channels = 64
+_reaper_max_track_channels = 128
 _api_src_stereo_channels_default = 0
 _api_src_stereo_channel_base = 0
 _api_dest_channel_default = 0
