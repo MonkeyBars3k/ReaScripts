@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 2.6.1
--- @changelog Replace simple condition assignments with short-circuit evaluations
+-- @version 2.6.2
+-- @changelog Replace more simple condition assignments with short-circuit evaluations
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -198,7 +198,7 @@ end
 
 
 function toggleSaveOptions(initialize)
-  local current_save_options_setting, save_options_checkbox_value
+  local current_save_options_setting, save_options_checkbox_value, new_option_val
 
   if initialize == "initialize" then
     current_save_options_setting = storeRetrieveProjectData(_constant.brand.save_options_key_name)
@@ -209,13 +209,9 @@ function toggleSaveOptions(initialize)
 
   else
     save_options_checkbox_value = _state.routing.options_objs.save_options.value
+    new_option_val = save_options_checkbox_value and "true" or "false"
 
-    if save_options_checkbox_value then
-      storeRetrieveProjectData(_constant.brand.save_options_key_name, "true")
-
-    else
-      storeRetrieveProjectData(_constant.brand.save_options_key_name, "false")
-    end
+    storeRetrieveProjectData(_constant.brand.save_options_key_name, new_option_val)
   end
 end
 
@@ -1532,13 +1528,7 @@ function updateRoutingSettingsBtns(reset)
   for btn_name, btn_img_base in pairs(all_btn_img_filename_bases) do
     this_btn = _state.routing.settings_objs[btn_name]
     this_btn_value = this_btn.value
-
-    if reset == "reset" then
-      new_btn_img_base_state = "_off"
-
-    else
-      new_btn_img_base_state = this_btn_value == 1 and "_on" or "_off"
-    end
+    new_btn_img_base_state = (reset == "reset" or this_btn_value == 0) and "_off" or "_on"
 
     this_btn:attr("icon", btn_img_base .. new_btn_img_base_state)
   end
