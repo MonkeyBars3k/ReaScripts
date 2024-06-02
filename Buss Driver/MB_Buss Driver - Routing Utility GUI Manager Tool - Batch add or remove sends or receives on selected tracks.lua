@@ -1,7 +1,7 @@
 -- @description MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)
 -- @author MonkeyBars
--- @version 2.6
--- @changelog Update rtk; Refactor globals; Visible Routing Settings button states not updating with saved values; Settings applied to wrong send (https://github.com/MonkeyBars3k/ReaScripts/issues/369)
+-- @version 2.6.1
+-- @changelog Replace simple condition assignments with short-circuit evaluations
 -- @provides [main] .
 --  [nomain] rtk.lua
 --  [nomain] serpent.lua
@@ -1151,17 +1151,18 @@ end
 
 
 function setRoutingSettingsValue(new_routing_settings_values, routing_setting_name, this_field_is_type_value, routing_setting_field, this_field_is_type_selected)
-    local new_form_field_value
+  local new_form_field_value
 
-    new_form_field_value = new_routing_settings_values[routing_setting_name]
+  new_form_field_value = new_routing_settings_values[routing_setting_name]
 
-    if this_field_is_type_value then
-        routing_setting_field:attr("value", new_form_field_value)
-    elseif this_field_is_type_selected then
-        routing_setting_field:select(new_form_field_value)
-    end
+  if this_field_is_type_value then
+    routing_setting_field:attr("value", new_form_field_value)
+    
+  elseif this_field_is_type_selected then
+    routing_setting_field:select(new_form_field_value)
+  end
 
-    updateRoutingSettingsBtns()
+  updateRoutingSettingsBtns()
 end
 
 
@@ -1328,20 +1329,8 @@ function getAudioDestChannelInfo(this_is_refresh)
 
   src_selected_channel_count = getSrcSelectedChannelCount()
   src_multichannel_is_selected = src_selected_channel_count > 2
-
-  if this_is_refresh then
-    target_tracks_channel_count_min = _constant.reaper_max_track_channels
-
-  else
-    target_tracks_channel_count_min = getTargetTracksLeastChannelCount()
-  end
-
-  if src_multichannel_is_selected then
-    multichannel_choices_count = target_tracks_channel_count_min - src_selected_channel_count + 1
-
-  else
-    multichannel_choices_count = target_tracks_channel_count_min - 1
-  end
+  target_tracks_channel_count_min = this_is_refresh and _constant.reaper_max_track_channels or getTargetTracksLeastChannelCount()
+  multichannel_choices_count = src_multichannel_is_selected and target_tracks_channel_count_min - src_selected_channel_count + 1 or target_tracks_channel_count_min - 1
 
   return multichannel_choices_count, src_multichannel_is_selected, src_selected_channel_count, target_tracks_channel_count_min
 end
@@ -1444,13 +1433,7 @@ function getAudioChannelChoiceDivider(src_selected_channel_count)
   local this_is_stereo, divider
 
   this_is_stereo = src_selected_channel_count == 2
-
-  if this_is_stereo then
-    divider = "/"
-
-  else
-    divider = "-"
-  end
+  divider = this_is_stereo and "/" or "-"
 
   return divider
 end
@@ -1525,17 +1508,11 @@ function populateRoutingSettingsFormValues(reset)
   local new_routing_settings_values
 
   if _state.routing.settings_objs then
-
-    if _state.routing.settings_objs.all_values and reset ~= "reset" then
-      new_routing_settings_values = _state.routing.settings_objs.all_values
-
-    else
-      new_routing_settings_values = _constant.default_routing_settings_values
-    end
+    new_routing_settings_values = (_state.routing.settings_objs.all_values and reset ~= "reset") and _state.routing.settings_objs.all_values or _constant.default_routing_settings_values
     
     getSetRoutingSettingsValues("set", new_routing_settings_values)
 
-    if (reset == "reset") then
+    if reset == "reset" then
       updateRoutingSettingsBtns(reset)
     end
   end
@@ -1543,14 +1520,14 @@ end
 
 
 function updateRoutingSettingsBtns(reset)
-    local all_btn_img_filename_bases, this_btn, this_btn_value, new_btn_img_base_state
+  local all_btn_img_filename_bases, this_btn, this_btn_value, new_btn_img_base_state
 
-    all_btn_img_filename_bases = {
-      mute = "table_mute",
-      phase = "gen_phase",
-      mono_stereo = "gen_mono",
-      midi_velpan = "gen_midi"
-    }
+  all_btn_img_filename_bases = {
+    mute = "table_mute",
+    phase = "gen_phase",
+    mono_stereo = "gen_mono",
+    midi_velpan = "gen_midi"
+  }
 
   for btn_name, btn_img_base in pairs(all_btn_img_filename_bases) do
     this_btn = _state.routing.settings_objs[btn_name]
