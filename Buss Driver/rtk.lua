@@ -1,3 +1,5 @@
+-- @noindex
+
 -- This is generated code. See https://reapertoolkit.dev/ for more info.
 -- version: 1.4.0
 -- build: Mon Oct  9 17:47:09 UTC 2023
