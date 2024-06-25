@@ -1,7 +1,7 @@
 -- @description MB_Fold source media into imploded takes at item length – if multiple takes, explode active take to new track
 -- @author MonkeyBars
--- @version 1.1
--- @changelog Fix multiitem logic
+-- @version 1.1.1
+-- @changelog Fix filename (https://github.com/MonkeyBars3k/ReaScripts/issues/370)
 -- @provides [main] .
 --   [nomain] mb-dev-functions.lua
 --   gnu_license_v3.txt
@@ -9,7 +9,7 @@
 -- @about Fold Source main script
 
 
--- Copyright (C) MonkeyBars 2022
+-- Copyright (C) MonkeyBars 2024
 -- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 -- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
