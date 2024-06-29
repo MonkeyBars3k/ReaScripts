@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="MonkeyBars-ReaScripts" commit="c8dface40e9931e2da573237ca32e3b698ab2eb3">
+<index version="1" name="MonkeyBars-ReaScripts" commit="4f4c0f0be9cde67e9aa22e66b71271626a210db1">
   <category name="Buss Driver">
     <reapack name="MB_Buss Driver - Routing Utility GUI Manager Tool - Batch add or remove sends or receives on selected tracks.lua" type="script" desc="MB_Buss Driver - Batch add or remove send(s) or receive(s) on selected track(s)">
       <version name="1.0.2" author="MonkeyBars" time="2022-05-28T20:20:40Z">
@@ -555,7 +555,7 @@
     </reapack>
   </category>
   <category name="Fold Source">
-    <reapack name="MB_Fold source media into imploded takes at item length - if multiple takes, explode active take to new track.lua" type="script" desc="MB_Fold source media into imploded takes at item length – if multiple takes, explode active take to new track">
+    <reapack name="MB_Fold source media into imploded takes at item length - if multiple takes, explode active take to new track.lua" type="script" desc="MB_Fold source media into imploded takes at item length - if multiple takes, explode active take to new track">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -571,6 +571,12 @@
         <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/c8dface40e9931e2da573237ca32e3b698ab2eb3/Fold%20Source/MB_Fold%20source%20media%20into%20imploded%20takes%20at%20item%20length%20-%20if%20multiple%20takes,%20explode%20active%20take%20to%20new%20track.lua</source>
         <source file="mb-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/c8dface40e9931e2da573237ca32e3b698ab2eb3/Fold%20Source/mb-dev-functions.lua</source>
         <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/c8dface40e9931e2da573237ca32e3b698ab2eb3/Fold%20Source/gnu_license_v3.txt</source>
+      </version>
+      <version name="1.1.2" author="MonkeyBars" time="2024-06-29T18:27:25Z">
+        <changelog><![CDATA[Fix package]]></changelog>
+        <source main="main">https://github.com/MonkeyBars3k/ReaScripts/raw/4f4c0f0be9cde67e9aa22e66b71271626a210db1/Fold%20Source/MB_Fold%20source%20media%20into%20imploded%20takes%20at%20item%20length%20-%20if%20multiple%20takes,%20explode%20active%20take%20to%20new%20track.lua</source>
+        <source file="mb-dev-functions.lua">https://github.com/MonkeyBars3k/ReaScripts/raw/4f4c0f0be9cde67e9aa22e66b71271626a210db1/Fold%20Source/mb-dev-functions.lua</source>
+        <source file="gnu_license_v3.txt">https://github.com/MonkeyBars3k/ReaScripts/raw/4f4c0f0be9cde67e9aa22e66b71271626a210db1/Fold%20Source/gnu_license_v3.txt</source>
       </version>
     </reapack>
   </category>
