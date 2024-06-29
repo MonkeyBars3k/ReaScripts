@@ -1,7 +1,7 @@
--- @description MB_Fold source media into imploded takes at item length – if multiple takes, explode active take to new track
+-- @description MB_Fold source media into imploded takes at item length - if multiple takes, explode active take to new track
 -- @author MonkeyBars
--- @version 1.1.1
--- @changelog Fix filename (https://github.com/MonkeyBars3k/ReaScripts/issues/370)
+-- @version 1.1.2
+-- @changelog Fix package
 -- @provides [main] .
 --   [nomain] mb-dev-functions.lua
 --   gnu_license_v3.txt
