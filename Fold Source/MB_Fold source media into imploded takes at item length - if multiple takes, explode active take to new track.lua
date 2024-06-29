@@ -1,7 +1,7 @@
 -- @description MB_Fold source media into imploded takes at item length - if multiple takes, explode active take to new track
 -- @author MonkeyBars
--- @version 1.1.3
--- @changelog Fix globals
+-- @version 1.1.4
+-- @changelog More globals work
 -- @provides [main] .
 --   [nomain] mb-dev-functions.lua
 --   gnu_license_v3.txt
@@ -28,7 +28,6 @@
 
 reaper.Undo_BeginBlock()
 
-
 local _cmd = {
   deselect_all_items = 40289,
   set_item_bounds_to_source = 42228,
@@ -48,18 +47,22 @@ local _api = {
   all_take_info_values = {"D_STARTOFFS", "D_VOL", "D_PAN", "D_PANLAW", "D_PLAYRATE", "D_PITCH", "B_PPITCH", "I_CHANMODE", "I_PITCHMODE"}
 }
 
+local _state = {
+  selected_items = nil
+}
+
 
 
 function initFoldSource()
 
   if requiredLibsAreInstalled() == false then return end
 
-  _selected_items = getSetSelectedItems()
+  _state.selected_items = getSetSelectedItems()
   
   cleanItemSelection()
   extractSelectedTakes()
   foldSelectedItems()
-  getSetSelectedItems(_selected_items)
+  getSetSelectedItems(_state.selected_items)
 end
 
 
@@ -130,10 +133,10 @@ end
 function cleanItemSelection()
   local new_selected_items, this_selected_item, multiple_takes_are_present, newly_extracted_item
 
-  new_selected_items = copySimpleArray(_selected_items)
+  new_selected_items = copySimpleArray(_state.selected_items)
 
-  for i = 1, #_selected_items do
-    this_selected_item = _selected_items[i]
+  for i = 1, #_state.selected_items do
+    this_selected_item = _state.selected_items[i]
 
     getItemAndTakeValues(this_selected_item)
 
@@ -142,17 +145,17 @@ function cleanItemSelection()
     end
   end
 
-  _selected_items = getSetSelectedItems(new_selected_items)
+  _state.selected_items = getSetSelectedItems(new_selected_items)
 end
 
 
 function extractSelectedTakes()
   local this_selected_item, multiple_takes_are_present, newly_extracted_item, new_selected_items
 
-  new_selected_items = copySimpleArray(_selected_items)
+  new_selected_items = copySimpleArray(_state.selected_items)
 
-  for i = 1, #_selected_items do
-    this_selected_item = _selected_items[i]
+  for i = 1, #_state.selected_items do
+    this_selected_item = _state.selected_items[i]
 
     getItemAndTakeValues(this_selected_item)
     
@@ -165,7 +168,7 @@ function extractSelectedTakes()
     end
   end
 
-  _selected_items = getSetSelectedItems(new_selected_items)
+  _state.selected_items = getSetSelectedItems(new_selected_items)
 end
 
 
@@ -183,8 +186,8 @@ end
 function foldSelectedItems()
   local this_selected_item
 
-  for i = 1, #_selected_items do
-    this_selected_item = _selected_items[i]
+  for i = 1, #_state.selected_items do
+    this_selected_item = _state.selected_items[i]
 
     reaper.Main_OnCommand(_cmd.deselect_all_items, _api.command_flag)
     reaper.SetMediaItemSelected(this_selected_item, true)
