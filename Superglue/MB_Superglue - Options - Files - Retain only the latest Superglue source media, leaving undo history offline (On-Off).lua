@@ -2,6 +2,7 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("MB_Superglue-Utils")
 
-initDePool()
+local Superglue = require("MB_Superglue-Utils")
+
+Superglue.initOptionToggle("retain_only_last_glue_source")

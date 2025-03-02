@@ -1,32 +1,40 @@
 -- @noindex
 
-function updateSelectedItems()
+local _module_dev = {}
+
+
+function _module_dev.updateSelectedItems()
   local i
   for i = 0, reaper.CountSelectedMediaItems(0)-1 do
     reaper.UpdateItemInProject(reaper.GetMediaItem(0,i))
   end
 end
 
-function log(...)
+function _module_dev.log(...)
   local arg = {...}
-  local msg = "", i, v
+  local msg = ""
   for i,v in ipairs(arg) do
-    msg = msg..v..", "
+    msg = msg..tostring(v)
   end
   msg = msg.."\n"
   reaper.ShowConsoleMsg(msg)
 end
 
-function logV(name, val)
+function _module_dev.logV(name, val)
   val = val or ""
   reaper.ShowConsoleMsg(name.." = "..val.."\n")
 end
 
-function logStr(val)
+
+local log = _module_dev.log
+local logV = _module_dev.logV
+
+
+function _module_dev.logStr(val)
   reaper.ShowConsoleMsg(tostring(val)..", \n")
 end
 
-function logTable(t, name)
+function _module_dev.logTable(t, name)
   local k,v
   if name then
     log("Iterate through table " .. name .. ":")
@@ -36,7 +44,41 @@ function logTable(t, name)
   end
 end
 
-function logTableMediaItems(t, name)
+function _module_dev.logTableR(t, name, depth)
+  depth = depth or 0
+  local indentStr = string.rep("  ", depth)
+  
+  if name then
+    log(indentStr .. tostring(name) .. " = {")
+  end
+  
+  if type(t) ~= "table" or next(t) == nil then
+    log(indentStr .. "  " .. (type(t) ~= "table" and tostring(t) or "{}"))
+  else
+    for k, v in pairs(t) do
+      local keyStr = tostring(k)
+      if type(v) == "table" then
+        if next(v) == nil then
+          log(indentStr .. "  " .. keyStr .. " = {}")
+        else
+          log(indentStr .. "  " .. keyStr .. " = {")
+          logTableR(v, nil, depth + 1)
+          log(indentstr .. "  }")
+        end
+      else
+        local valueStr = v == nil and "nil" or tostring(v)
+        if valueStr == "" then valueStr = '""' end  -- Handle empty strings
+        log(indentStr .. "  " .. keyStr .. " = " .. valueStr)
+      end
+    end
+  end
+  
+  if name then
+    log(indentStr .. "}")
+  end
+end
+
+function _module_dev.logTableMediaItems(t, name)
   local k,v
   if name then
     log("Iterate through table " .. name .. ":")
@@ -50,7 +92,7 @@ end
 
 local DebugType = 0
 
-function Debug(message, value, spacesToAdd, forceMsgBox)
+function _module_dev.Debug(message, value, spacesToAdd, forceMsgBox)
   updateSelectedItems()
   refreshUI()
     if DebugType < 0 then return end
@@ -74,3 +116,33 @@ function Debug(message, value, spacesToAdd, forceMsgBox)
   updateSelectedItems()
   refreshUI()
 end
+
+
+
+function _module_dev.wrapWithLogging(module_table, module_name, config)
+  for func_name, func in pairs(module_table) do
+    if type(func) == "function" then
+      local full_name = module_name .. "." .. func_name
+      module_table[func_name] = function(...)
+        if config._test_logging_enabled and config._log_function_entry then
+          _module_dev.log(full_name .. " - Entry")
+        end
+
+        local result = {func(...)} -- Execute the original function
+
+        if config._test_logging_enabled and config._log_function_exit then
+          _module_dev.log(full_name .. " - Exit")
+        end
+
+        return table.unpack(result)
+      end
+    elseif type(func) == "table" then
+      -- Recursively wrap submodules
+      _module_dev.wrapWithLogging(func, module_name .. "." .. func_name, config)
+    end
+  end
+end
+
+
+
+return _module_dev

@@ -5,4 +5,4 @@ package.path = package.path .. ";" .. string.match(({reaper.get_action_context()
 
 local Superglue = require("MB_Superglue-Utils")
 
-Superglue.initOptionToggle("propagate_length_change_default")
+Superglue.initMainAction("DePool")

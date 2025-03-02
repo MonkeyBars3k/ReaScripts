@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
--- @version 1.845
--- @changelog Smart Action: Cancelling from off-screen warning throws undo string error (https://github.com/MonkeyBars3k/ReaScripts/issues/342)
+-- @version 2.00
+-- @changelog Enable Glue/Edit/Unglue on multiple tracks at once (https://github.com/MonkeyBars3k/ReaScripts/issues/11); Enable Editing/Ungluing multiple Superitems at once (https://github.com/MonkeyBars3k/ReaScripts/issues/15); Add script: Pool - Remove restored items from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/283); Add Option: Enable multi-item Edit/Unglue/Remove from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/343); Add option: Retain only the latest Superglue source media (undo history offline) (https://github.com/MonkeyBars3k/ReaScripts/issues/344); Reglue with Sibling DePool enabled throws error (https://github.com/MonkeyBars3k/ReaScripts/issues/345); Display item info: Support multiitem (https://github.com/MonkeyBars3k/ReaScripts/issues/348); Reglued child relative position to parent superitem position can't go negative (stuck at 0) (https://github.com/MonkeyBars3k/ReaScripts/issues/349); Replace simple condition assignments with short-circuit evaluations
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
@@ -42,6 +42,7 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("MB_Superglue-Utils")
 
-initSuperglue(false)
+local Superglue = require("MB_Superglue-Utils")
+
+Superglue.initMainAction("Glue")

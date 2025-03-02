@@ -2,6 +2,7 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("MB_Superglue-Utils")
 
-setAllSuperitemsColor()
+local Superglue = require("MB_Superglue-Utils")
+
+Superglue.initUtilityAction("Set All Superitems Color")

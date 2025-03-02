@@ -2,7 +2,7 @@
 
 
 package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
-require("MB_Superglue-Utils")
 
+local Superglue = require("MB_Superglue-Utils")
 
-logSuperglueProjectData()
+initUtilityAction("Log Superglue Project Data")
