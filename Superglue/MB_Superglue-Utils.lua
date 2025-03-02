@@ -1885,6 +1885,7 @@ function _module_multi.getPoolIdNestedDepths(pool_ids)
 end
 
 
+
 -- function _module_lanes.getTopLaneFromItems(items)
 --   -- Find the topmost lane among selected items
 --   if not _constant.support.fixed_lanes then return 0 end
@@ -2144,6 +2145,7 @@ function _module_lanes.applyLanePositionToItem(item, referenceLane)
   -- Force REAPER to update visuals
   reaper.UpdateArrange()
 end
+
 
 
 function _module_single.triggerSingleTrackSinglePoolGlue(items_to_glue, restored_items_pool_id)
@@ -5589,7 +5591,7 @@ function _module_edit.processEdit(superitem, pool_id, action)
   local restored_items = _module_common.restoreStoredItems(pool_id, active_track, superitem, nil, action, superitemLane)
 
   if _constant.support.fixed_lanes then
-    _module_lanes.restoreItemLaneOffsets(restored_items, true)
+    _module_lanes.restoreItemLaneOffsets(restored_items, true, pool_id)
     -- pass 'true' if you want to revert track mode to normal at the end
     -- or 'false' to leave it in fixed lanes
   end
@@ -5608,7 +5610,7 @@ function _module_edit.processUnglue(superitem, pool_id, action)
   local restored_items = _module_common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
 
   if _constant.support.fixed_lanes then
-    _module_lanes.restoreItemLaneOffsets(restored_items, true)
+    _module_lanes.restoreItemLaneOffsets(restored_items, true, pool_id)
   end
   
   _state.action.edit_or_unglue.restored_items = restored_items
