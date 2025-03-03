@@ -2026,58 +2026,45 @@ function _module_lanes.restoreItemLaneOffsets(items, revertTrackAfter, pool_id)
   local track = reaper.GetMediaItemTrack(items[1])
   if not track then return end
   
-  -- DO NOT modify lane count or track mode - preserve exactly as is
+  -- Ensure track is in fixed lanes mode
+  local currentMode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
+  if currentMode ~= 2 then
+    reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
+    reaper.UpdateArrange()
+  end
   
-  -- Get the exact Y position from storage - this is the key
+  -- Get track information
+  local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+  if laneCount <= 0 then laneCount = 3 end
+  
+  -- Get the exact Y position that was stored
   local baseYStr = _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos)
-  local baseY = tonumber(baseYStr)
+  local baseY = tonumber(baseYStr) or 0.33  -- Default to lane 1 if not found
   
-  if baseY then
-    for _, item in ipairs(items) do
-      local offsetStr = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
-      local offset = tonumber(offsetStr) or 0
-      
-      -- Get current lane height to calculate offset positions
-      local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
-      local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-      local laneHeight = trackHeight / math.max(1, laneCount)
-      
-      -- Calculate Y position by applying the lane offset directly to the base Y
-      local targetY = baseY + (offset * laneHeight)
-      
-      -- Apply position
-      reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
-      reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", targetY)
-    end
-  else
-    -- Fallback if we don't have the exact Y position
-    local topLaneStr = _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
-    local baseLane = tonumber(topLaneStr) or 0
+  -- Calculate the Y increment between lanes
+  local laneYIncrement = 1.0 / laneCount
+  
+  for _, item in ipairs(items) do
+    -- Get the stored lane offset
+    local offsetStr = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
+    local laneOffset = tonumber(offsetStr) or 0
     
-    -- Calculate lane heights based on current track
-    local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
-    local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-    local laneHeight = trackHeight / math.max(1, laneCount)
+    -- Calculate target Y
+    local targetY = baseY + (laneOffset * laneYIncrement)
     
-    for _, item in ipairs(items) do
-      local offsetStr = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
-      local offset = tonumber(offsetStr) or 0
-      
-      -- Calculate target lane
-      local targetLane = baseLane + offset
-      targetLane = math.min(targetLane, laneCount - 1)
-      targetLane = math.max(targetLane, 0)
-      
-      -- Convert lane to Y position
-      local targetY = targetLane * laneHeight
-      
-      -- Apply position
-      reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
-      reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", targetY)
+    -- Keep within bounds
+    targetY = math.min(targetY, 0.99)  -- Stay just under 1.0 to avoid the new lane row
+    
+    -- Apply position
+    reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
+    reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", targetY)
+    
+    if _test_logging_enabled then
+      _module_dev.log(string.format("Positioning item at Y=%.2f (baseY=%.2f, offset=%d, increment=%.2f)", 
+        targetY, baseY, laneOffset, laneYIncrement))
     end
   end
   
-  -- Force update
   reaper.UpdateArrange()
 end
 
@@ -4845,25 +4832,10 @@ function _module_common.restoreStoredItems(pool_id, active_track, superitem, thi
     end
   end
 
-  -- Handle fixed lanes if supported
   if _constant.support.fixed_lanes and #restored_items > 0 then
-    -- Get the exact Y value that was stored
-    local topLaneStr = _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
-    local baseYStr = _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos)
-    local baseY = tonumber(baseYStr)
-    
-    -- If we have a valid Y position, use it directly 
-    if baseY then
-      for _, item in ipairs(restored_items) do
-        -- Direct Y positioning is what REAPER uses to determine lanes
-        reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
-        reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", baseY)
-      end
-    end
-    
-    reaper.UpdateArrange()
+    _module_lanes.restoreItemLaneOffsets(restored_items, false, pool_id)
     _module_lanes.debugLaneInfo("AFTER RESTORE", restored_items, active_track, pool_id)
-  end
+end
 
   return restored_items, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 end
