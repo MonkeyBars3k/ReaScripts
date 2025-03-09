@@ -1,6 +1,6 @@
 -- @noindex
 
-local dev = {
+local Dev = {
 
   config = {
     test_logging_enabled = true,
@@ -9,90 +9,89 @@ local dev = {
   }
 }
 
+local _setup = require("modules.setup")
 
 
-function dev.updateSelectedItems()
-  local i
+
+function Dev.updateSelectedItems()
   for i = 0, reaper.CountSelectedMediaItems(0)-1 do
     reaper.UpdateItemInProject(reaper.GetMediaItem(0,i))
   end
 end
 
-function dev.log(...)
+function _log(...)
   local arg = {...}
   local msg = ""
-  for i,v in ipairs(arg) do
+  for _,v in ipairs(arg) do
     msg = msg..tostring(v)
   end
   msg = msg.."\n"
   reaper.ShowConsoleMsg(msg)
 end
 
-function dev.logV(name, val)
+function Dev.logV(name, val)
   val = val or ""
   reaper.ShowConsoleMsg(name.." = "..val.."\n")
 end
 
 
-local log = dev.log
-local logV = dev.logV
+local _log = Dev.log
+local _logV = Dev.logV
 
 
-function dev.logStr(val)
+function Dev.logStr(val)
   reaper.ShowConsoleMsg(tostring(val)..", \n")
 end
 
-function dev.logTable(t, name)
-  local k,v
+function Dev.logTable(t, name)
   if name then
-    log("Iterate through table " .. name .. ":")
+    _log("Iterate through table " .. name .. ":")
   end
   for k,v in pairs(t) do
-    logV(k,tostring(v))
+    _logV(k,tostring(v))
   end
 end
 
-function dev.logTableR(t, name, depth)
+function Dev.logTableR(t, name, depth)
   depth = depth or 0
   local indentStr = string.rep("  ", depth)
 
   if name then
-    log(indentStr .. tostring(name) .. " = {")
+    _log(indentStr .. tostring(name) .. " = {")
   end
 
   if type(t) ~= "table" or next(t) == nil then
-    log(indentStr .. "  " .. (type(t) ~= "table" and tostring(t) or "{}"))
+    _log(indentStr .. "  " .. (type(t) ~= "table" and tostring(t) or "{}"))
   else
     for k, v in pairs(t) do
       local keyStr = tostring(k)
       if type(v) == "table" then
         if next(v) == nil then
-          log(indentStr .. "  " .. keyStr .. " = {}")
+          _log(indentStr .. "  " .. keyStr .. " = {}")
         else
-          log(indentStr .. "  " .. keyStr .. " = {")
-          logTableR(v, nil, depth + 1)
-          log(indentstr .. "  }")
+          _log(indentStr .. "  " .. keyStr .. " = {")
+          Dev.logTableR(v, nil, depth + 1)
+          _log(indentStr .. "  }")
         end
       else
         local valueStr = v == nil and "nil" or tostring(v)
         if valueStr == "" then valueStr = '""' end  -- Handle empty strings
-        log(indentStr .. "  " .. keyStr .. " = " .. valueStr)
+        _log(indentStr .. "  " .. keyStr .. " = " .. valueStr)
       end
     end
   end
 
   if name then
-    log(indentStr .. "}")
+    _log(indentStr .. "}")
   end
 end
 
-function dev.logTableMediaItems(t, name)
-  local k,v
+function Dev.logTableMediaItems(t, name)
   if name then
-    log("Iterate through table " .. name .. ":")
+    _log("Iterate through table " .. name .. ":")
   end
   for k,v in pairs(t) do
-    logV(k,tostring(reaper.ValidatePtr(v, "MediaItem*")))
+    _logV(k,tostring(reaper.ValidatePtr(v, "MediaItem*")))
   end
 
 end
@@ -100,9 +99,10 @@ end
 
 local DebugType = 0
 
-function dev.Debug(message, value, spacesToAdd, forceMsgBox)
-  dev.updateSelectedItems()
-  init.refreshUI()
+function Dev.Debug(message, value, spacesToAdd, forceMsgBox)
+  local _init = _setup.load("init")
+  Dev.updateSelectedItems()
+  _init.refreshUI()
     if DebugType < 0 then return end
     local text = ""
     local a = tostring(message)
@@ -115,44 +115,54 @@ function dev.Debug(message, value, spacesToAdd, forceMsgBox)
     end
     local space = ""
     if spacesToAdd ~= nil and spacesToAdd > 0 then
-        for i=1, spacesToAdd do space = space .. "\n" end
+        for _, spacesToAdd do space = space .. "\n" end
     end
     text = space .. text
     if forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) end
     if DebugType == 0 then reaper.ShowConsoleMsg(text .. "\n") return
     elseif DebugType == 1 and not forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) return end
-  dev.updateSelectedItems()
-  init.refreshUI()
+  Dev.updateSelectedItems()
+  _init.refreshUI()
 end
 
 
 
-function dev.wrapWithLogging(module_table, module_name, config)
-  local init = require("modules.init")
+function Dev.logSuperglueProjectData()
+  local master_track, _constant, master_track_chunk
+
+  _constant = _setup.load("constant")
+  master_track = reaper.GetMasterTrack(_constant.api.current_project)
+  _, master_track_chunk = reaper.GetTrackStateChunk(master_track, "", false)
+
+  _log(master_track_chunk)
+end
+
+
+
+function Dev.wrapWithLogging(module_table, module_name, config)
 
   for func_name, func in pairs(module_table) do
     if type(func) == "function" then
       local full_name = module_name .. "." .. func_name
       module_table[func_name] = function(...)
         if config._test_logging_enabled and config._log_function_entry then
-          dev.log(full_name .. " - Entry")
+          _log(full_name .. " - Entry")
         end
 
         local result = {func(...)} -- Execute the original function
 
         if config._test_logging_enabled and config._log_function_exit then
-          dev.log(full_name .. " - Exit")
+          _log(full_name .. " - Exit")
         end
 
         return table.unpack(result)
       end
     elseif type(func) == "table" then
       -- Recursively wrap submodules
-      dev.wrapWithLogging(func, module_name .. "." .. func_name, config)
+      Dev.wrapWithLogging(func, module_name .. "." .. func_name, config)
     end
   end
 end
 
 
-
-return dev
+return Dev

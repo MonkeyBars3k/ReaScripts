@@ -41,8 +41,9 @@
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 
-package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
+local _, script_file = reaper.get_action_context()
+local script_dir = reaper.JS_ReaScript_GetPathToFolder(script_file)
 
-local Superglue = require("MB_Superglue-Utils")
+package.path = package.path .. ";" .. script_dir .. "/?.lua"
 
-Superglue.initMainAction("Glue")
+require("Superglue").init("main.Glue")

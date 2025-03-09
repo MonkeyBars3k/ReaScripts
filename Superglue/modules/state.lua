@@ -1,4 +1,6 @@
-local state = {
+-- @noindex
+
+local State = {
 
   user = {
     time_selection_before_action = {},
@@ -75,8 +77,8 @@ local state = {
   restored_items = {
     -- position_delta_near_project_start = 0,
     first_restored_item_last_glue_delta_to_parent = nil,
-    last_glue_stored_item_states = nil,
-    preglue_restored_item_states = nil,
+    last_glue_stored_item__states = nil,
+    preglue_restored_item__states = nil,
     unselected_contained_items = nil
   },
 
@@ -87,4 +89,4 @@ local state = {
 }
 
 
-return state
+return State

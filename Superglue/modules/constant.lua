@@ -1,4 +1,6 @@
-local constant = {
+-- @noindex
+
+local Constant = {
   position_start_of_project = 0,
   noninstance_label = "noninstance-",
 
@@ -154,11 +156,11 @@ local constant = {
   }
 }
 
-constant.brand.prefix.superitem_name = constant.brand.prefix.item_name .. constant.brand.separator
-constant.brand.prefix.superitem_name_default = constant.regex.string_start .. constant.brand.prefix.item_name .. constant.regex.superitem_name_iterator
+Constant.brand.prefix.superitem_name = Constant.brand.prefix.item_name .. Constant.brand.separator
+Constant.brand.prefix.superitem_name_default = Constant.regex.string_start .. Constant.brand.prefix.item_name .. Constant.regex.superitem_name_iterator
 
-constant.data = {
-  storage_track = reaper.GetMasterTrack(constant.api.current_project),
+Constant.data = {
+  storage_track = reaper.GetMasterTrack(Constant.api.current_project),
 
   key = {
 
@@ -232,7 +234,7 @@ constant.data = {
   }
 }
 
-constant.file = {
+Constant.file = {
 
   os = {
     separator = package.config:sub(1,1)
@@ -240,7 +242,7 @@ constant.file = {
 
   path = {
     script = string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$"),
-    proj_render = reaper.GetProjectPath(constant.api.current_project)
+    proj_render = reaper.GetProjectPath(Constant.api.current_project)
   },
 
   name = {
@@ -255,18 +257,18 @@ constant.file = {
   supported_media_types = "*.aif\0*.aiff\0*.avi\0*.bwf\0*.cda\0*.dat\0*.edl\0*.flac\0*.gif\0*.jpeg\0*.jpg\0*.kar\0*.lcf\0*.m4a\0*.m4v\0*.mid\0*.midi\0*.mkv\0*.mogg\0*.mov\0*.mp2\0*.mp3\0*.mp4\0*.mpeg\0*.mpg\0*.musicxml\0*.mxl\0*.ogg\0*.ogv\0*.opus\0*.png\0*.qt\0*.rcy\0*.rex\0*.rmi\0*.rpp\0*.rpp-prox\0*.rx2\0*.syx\0*.w64\0*.wav\0*.webm\0*.wma\0*.wmv\0*.wv\0*.xml\0\0"
 }
 
-constant.file.path.splitter = "([^%" .. constant.file.os.separator .. "]+)"
-constant.file.path.superitem_bg_img = constant.file.path.proj_render .. constant.file.os.separator .. constant.file.name.superitem_bg_img
-constant.file.path.restored_item_bg_img = constant.file.path.proj_render .. constant.file.os.separator .. constant.file.name.restored_item_bg_img
-constant.file.path.restored_instance_bg_img = constant.file.path.proj_render .. constant.file.os.separator .. constant.file.name.restored_instance_bg_img
+Constant.file.path.splitter = "([^%" .. Constant.file.os.separator .. "]+)"
+Constant.file.path.superitem_bg_img = Constant.file.path.proj_render .. Constant.file.os.separator .. Constant.file.name.superitem_bg_img
+Constant.file.path.restored_item_bg_img = Constant.file.path.proj_render .. Constant.file.os.separator .. Constant.file.name.restored_item_bg_img
+Constant.file.path.restored_instance_bg_img = Constant.file.path.proj_render .. Constant.file.os.separator .. Constant.file.name.restored_instance_bg_img
 
 
-constant.global_options = {
+Constant.global_options = {
 
   {
     name = "time_selection_sets_superitem_bounds_on_initial_glue",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.time_selection_sets_bounds_on_glue,
+    ext_state_key = Constant.data.key.options.toggle.time_selection_sets_bounds_on_glue,
     option_script_filename = "MB_Superglue - Options - Glue - Time selection determines Superitem bounds on initial glue (On-Off).lua",
     user_readable_text = "Glue: Time selection determines Superitem bounds on initial Superitem creation",
     default_value = "false"
@@ -275,7 +277,7 @@ constant.global_options = {
   {
     name = "auto_increase_channel_count_with_take_fx",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.auto_increase_channel_count,
+    ext_state_key = Constant.data.key.options.toggle.auto_increase_channel_count,
     option_script_filename = "MB_Superglue - Options - Glue - Auto-increase channel count with take FX (On-Off).lua",
     user_readable_text = "Glue: Auto-increase channel count with take FX",
     default_value = "false"
@@ -284,7 +286,7 @@ constant.global_options = {
   {
     name = "loop_source_sets_sizing_region_bounds_on_reglue",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue,
+    ext_state_key = Constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue,
     option_script_filename = "MB_Superglue - Options - Reglue - Looped source of Superitem determines Sizing Region bounds (On-Off).lua",
     user_readable_text = "Reglue: Looped source of Superitem determines Sizing Region bounds",
     default_value = "true"
@@ -293,7 +295,7 @@ constant.global_options = {
   {
     name = "depool_all_siblings_on_reglue",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.depool_all_siblings_on_reglue,
+    ext_state_key = Constant.data.key.options.toggle.depool_all_siblings_on_reglue,
     option_script_filename = "MB_Superglue - Options - Reglue - Remove Siblings from Edited Superitem's Pool, giving every Sibling its own new Pool (On-Off).lua",
     user_readable_text = "Reglue: Remove all sibling instances from pool (disable & undo pooling)",
     default_value = "false"
@@ -302,7 +304,7 @@ constant.global_options = {
   {
     name = "multiitem_editing",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.multiitem_editing,
+    ext_state_key = Constant.data.key.options.toggle.multiitem_editing,
     option_script_filename = "MB_Superglue - Options - Edit-Unglue-DePool - Enable multi-item Edit, Unglue, or DePool in single action (On-Off).lua",
     user_readable_text = "Edit/Unglue/DePool: Enable multi-item Edit, Unglue, and DePool in single action (Disable for v1.x Smart Action)",
     default_value = "true"
@@ -311,7 +313,7 @@ constant.global_options = {
   {
     name = "item_images",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.item_images,
+    ext_state_key = Constant.data.key.options.toggle.item_images,
     option_script_filename = "MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua",
     user_readable_text = "Display: Insert item background images on Superglue and Edit, overwriting item notes",
     default_value = "true"
@@ -320,7 +322,7 @@ constant.global_options = {
   {
     name = "new_superglue_random_color",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.new_superglue_random_color,
+    ext_state_key = Constant.data.key.options.toggle.new_superglue_random_color,
     option_script_filename = "MB_Superglue - Options - Display - Randomly color newly Superglued Superitem (On-Off).lua",
     user_readable_text = "Display: Set newly glued Superitems to random color",
     default_value = "true"
@@ -329,7 +331,7 @@ constant.global_options = {
   {
     name = "retain_only_last_glue_source",
     type = "checkbox",
-    ext_state_key = constant.data.key.options.toggle.retain_only_last_glue_source,
+    ext_state_key = Constant.data.key.options.toggle.retain_only_last_glue_source,
     option_script_filename = "MB_Superglue - Options - Files - Retain only the latest Superglue source media, leaving undo history offline (On-Off).lua",
     user_readable_text = "Files: Retain only the latest Superglue source media (leaving undo history offline)",
     default_value = "false"
@@ -338,7 +340,7 @@ constant.global_options = {
   {
     name = "maintain_source_position",
     type = "dropdown",
-    ext_state_key = constant.data.key.options.switch.maintain_source_position,
+    ext_state_key = Constant.data.key.options.switch.maintain_source_position,
     option_script_filename = "MB_Superglue - Options - Reglue - Audio source position of Siblings is maintained (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Audio source timeline location on Siblings is maintained",
 
@@ -354,7 +356,7 @@ constant.global_options = {
   {
     name = "propagate_position_change",
     type = "dropdown",
-    ext_state_key = constant.data.key.options.switch.propagate_position,
+    ext_state_key = Constant.data.key.options.switch.propagate_position,
     option_script_filename = "MB_Superglue - Options - Reglue - Position change of Edited Superitem's left edge propagates to Siblings (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Left edge position change of edited Superitem propagates to Siblings",
 
@@ -370,7 +372,7 @@ constant.global_options = {
   {
     name = "propagate_length_change",
     type = "dropdown",
-    ext_state_key = constant.data.key.options.switch.propagate_length,
+    ext_state_key = Constant.data.key.options.switch.propagate_length,
     option_script_filename = "MB_Superglue - Options - Reglue - Length change of Edited Superitem propagates to Siblings (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Length change of edited Superitem propagates to Siblings",
 
@@ -386,7 +388,7 @@ constant.global_options = {
   {
     name = "length_propagation_type",
     type = "dropdown",
-    ext_state_key = constant.data.key.options.switch.length_propagation_type,
+    ext_state_key = Constant.data.key.options.switch.length_propagation_type,
     option_script_filename = "MB_Superglue - Options - Reglue - Absolute or relative propagation length change on Siblings (still altered by playrate) (Absolute-Ask-Relative).lua",
     user_readable_text = "Reglue: Absolute or relative length propagation on Siblings (can still be altered by playrate option)",
 
@@ -402,7 +404,7 @@ constant.global_options = {
   {
     name = "playrate_affects_propagation",
     type = "dropdown",
-    ext_state_key = constant.data.key.options.switch.playrate_affects_propagation,
+    ext_state_key = Constant.data.key.options.switch.playrate_affects_propagation,
     option_script_filename = "MB_Superglue - Options - Reglue - Playrate of Siblings affects their length & position propagation values (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Sibling playrate affects Sibling length & position propagation by default",
 
@@ -417,4 +419,4 @@ constant.global_options = {
 }
 
 
-return constant
+return Constant

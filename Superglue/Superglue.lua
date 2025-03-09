@@ -1,7 +1,6 @@
 --@noindex
 
-
--- ==== SUPERGLUE SCRIPTS ARCHITECTURE NOTES ====
+-- ==== SUPERGLUE SCRIPTS CODE NOTES ====
 -- Superglue requires Reaper SWS plug-in extension v2.13.1.0+ (https://www.sws-extension.org/download/pre-release) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
 -- Superglue uses the great GUI library Reaper Toolkit (rtk). (https://reapertoolkit.dev/).
 -- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. (https://github.com/pkulchenko/serpent).
@@ -9,80 +8,95 @@
 -- Script data is also stored in media items' & takes' P_EXT.
 
 
-local script_path = string.match(({ reaper.get_action_context() })[2], "(.-)([^\\/]-%.?([^%.\\/]*))$")
-package.path = package.path .. ";" .. script_path .. "?.lua"
-package.path = package.path .. ";" .. script_path .. "lib/?.lua"
-package.path = package.path .. ";" .. script_path .. "modules/?.lua"
+local Superglue = {}
 
-local rtk = require("lib.rtk")
-local serpent = require("lib.serpent")
+local _setup, _common, _options, _init, _dev, _iteminfo
 
 
-local module_names = {"constant", "state", "util", "common", "data", "options", "init", "dev", "glue", "edit", "unglue", "depool", "lanes", "single", "multi", "iteminfo", "vi"}
-local modules = {}
 
-for _, name in ipairs(module_names) do
-  modules[name] = require("modules." .. name)
+function Superglue.init(action)
+  Superglue.setUp()
+  Superglue.routeAction(action)
 end
 
-local constant, state, util, common, data, options, init, dev, glue, edit, unglue, depool, lanes, single, multi, iteminfo, vi = table.unpack(modules, 1, #module_names)
+
+function Superglue.setUp()
+  local _setup = require("modules.setup")
+
+  _setup.bootstrap()
+end
 
 
-dev.wrapFunctionsInTestLogs = (function()
+function Superglue.routeAction(action)
+  local type, action = string.match(action_string, "(%w+)%.(.+)")
 
-  if not dev.config.test_logging_enabled then return end
+  if not type or not action then
+    reaper.ShowMessageBox("Invalid action string format. Expected 'type.action'", "Superglue Error", 0)
 
-  for _, name in ipairs(module_names) do
-    modules[name] = dev.wrapWithLogging(modules[name], name)
+    return
   end
-end)()
 
+  if type == "main" then
+    Superglue.initMainAction(action)
 
+  elseif type == "utility" then
+    Superglue.initUtilityAction(action)
 
-local Superglue = {}
+  elseif type == "option" then
+    Superglue.initOptionToggle(action)
+
+  else
+    reaper.ShowMessageBox("Unknown action type: " .. type, "Superglue Error", 0)
+  end
+end
 
 
 function Superglue.initMainAction(action)
-  local selected_item_count = init.setUpAction(action)
+  _init = _setup.load("init")
+
+  local selected_item_count = _init.setUpAction(action)
 
   if not selected_item_count then return end
 
   if action == "Glue" then
-    init.doGlueAction(selected_item_count, action)
+    _init.doGlueAction(selected_item_count, action)
 
   elseif action == "Edit" or action == "Unglue" then
-    init.doEditOrUnglueAction(selected_item_count, action)
+    _init.doEditOrUnglueAction(selected_item_count, action)
 
   elseif action == "DePool" then
-    init.doDePoolAction(selected_item_count, action)
+    _init.doDePoolAction(selected_item_count, action)
 
   elseif action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then
-    init.doSmartAction(selected_item_count, action)
+    _init.doSmartAction(selected_item_count, action)
   end
 end
 
 
 function Superglue.initUtilityAction(action)
+  _common, _options, _dev, _iteminfo = _setup.load("common, options, dev, iteminfo")
 
   if action == "Open Superglue Options Window" then
-    options.openOptionsWindow()
+    _options.openOptionsWindow()
 
   elseif action == "Open Superglue Item Info Window" then
-    iteminfo.openItemInfoWindow()
+    _iteminfo.openItemInfoWindow()
 
   elseif action == "Set All Superitems Color" then
-    common.setAllSuperitemsColor(action)
+    _common.setAllSuperitemsColor(action)
 
   elseif action == "Log Superglue Project Data" then
-    Superglue.logSuperglueProjectData()
+    _dev.logSuperglueProjectData()
   end
 end
 
 
 function Superglue.initOptionToggle(option_name)
+  _options = _setup.load("options")
+
   local active_option, current_val, new_val
 
-  active_option = options.getActiveOption(option_name)
+  active_option = _options.getActiveOption(option_name)
 
   if not active_option then return end
 
@@ -104,17 +118,7 @@ function Superglue.initOptionToggle(option_name)
     new_val = "always"
   end
 
-  options.updateOptionValue(active_option, new_val)
-end
-
-
-function Superglue.logSuperglueProjectData()
-  local master_track, retval, master_track_chunk
-
-  master_track = reaper.GetMasterTrack(constant.api.current_project)
-  retval, master_track_chunk = reaper.GetTrackStateChunk(master_track, "", false)
-
-  dev.log(master_track_chunk)
+  _options.updateOptionValue(active_option, new_val)
 end
 
 
