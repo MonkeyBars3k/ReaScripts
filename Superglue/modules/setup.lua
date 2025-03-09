@@ -5,9 +5,9 @@ local Setup = {}
 
 function Setup.bootstrap()
   local _, script_file = reaper.get_action_context()
-  local script_dir = reaper.JS_ReaScript_GetPathToFolder(script_file)
+  local script_dir = script_file:match("^(.*[/\\])")
 
-  package.path = package.path .. ";" .. script_dir .. "?.lua" .. ";" .. script_dir .. "modules/?.lua"
+  package.path = package.path .. ";" .. script_dir .. "lib/?.lua" .. ";" .. script_dir .. "modules/?.lua"
 
   package.preload["sg_paths"] = function()
     return {
