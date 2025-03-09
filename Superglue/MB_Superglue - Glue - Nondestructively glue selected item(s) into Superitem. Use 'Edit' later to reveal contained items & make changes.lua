@@ -1,7 +1,7 @@
 -- @description MB_Superglue: Reversible, nondestructive glue and nesting pooled audio for Reaper
 -- @author MonkeyBars
 -- @version 2.00
--- @changelog Enable Glue/Edit/Unglue on multiple tracks at once (https://github.com/MonkeyBars3k/ReaScripts/issues/11); Enable Editing/Ungluing multiple Superitems at once (https://github.com/MonkeyBars3k/ReaScripts/issues/15); Add script: Pool - Remove restored items from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/283); Add Option: Enable multi-item Edit/Unglue/Remove from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/343); Add option: Retain only the latest Superglue source media (undo history offline) (https://github.com/MonkeyBars3k/ReaScripts/issues/344); Reglue with Sibling DePool enabled throws error (https://github.com/MonkeyBars3k/ReaScripts/issues/345); Display item info: Support multiitem (https://github.com/MonkeyBars3k/ReaScripts/issues/348); Reglued child relative position to parent superitem position can't go negative (stuck at 0) (https://github.com/MonkeyBars3k/ReaScripts/issues/349); Replace simple condition assignments with short-circuit evaluations
+-- @changelog Enable Glue/Edit/Unglue on multiple tracks at once (https://github.com/MonkeyBars3k/ReaScripts/issues/11); Enable Editing/Ungluing multiple Superitems at once (https://github.com/MonkeyBars3k/ReaScripts/issues/15); Add script: Pool - Remove restored items from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/283); Add Option: Enable multi-item Edit/Unglue/Remove from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/343); Add option: Retain only the latest Superglue source media (undo history offline) (https://github.com/MonkeyBars3k/ReaScripts/issues/344); Reglue with Sibling DePool enabled throws error (https://github.com/MonkeyBars3k/ReaScripts/issues/345); Display item info: Support multiitem (https://github.com/MonkeyBars3k/ReaScripts/issues/348); Reglued child relative position to parent superitem position can't go negative (stuck at 0) (https://github.com/MonkeyBars3k/ReaScripts/issues/349); Replace simple condition assignments with short-circuit evaluations; Restored items placement wrong after DePool then Edit or Unglue (https://github.com/MonkeyBars3k/ReaScripts/issues/361); Display item info: Support multiitem (https://github.com/MonkeyBars3k/ReaScripts/issues/348); Remove Near Project Start submodule (https://github.com/MonkeyBars3k/ReaScripts/issues/376); Trying to Edit non-instance restored items throws Too many siblings error (https://github.com/MonkeyBars3k/ReaScripts/issues/375); New module system (https://github.com/MonkeyBars3k/ReaScripts/issues/379); Fixed Lanes support (https://github.com/MonkeyBars3k/ReaScripts/issues/364); Split up Remove script into 2 (https://github.com/MonkeyBars3k/ReaScripts/issues/377)
 -- @provides [main] .
 --   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
 --   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
@@ -23,19 +23,35 @@
 --   [main] MB_Superglue - Utility - Display selected Superglue item info - Pool no., No. of contained items, Parent Pool, etc.lua
 --   [main] MB_Superglue - Utility - Set all Superitems in project to one custom color.lua
 --   [nomain] MB_Superglue - Utility - Dump Superglue project data to log.lua
---   [nomain] MB_Superglue-Utils.lua
---   [nomain] serpent.lua
---   [nomain] rtk.lua
---   [nomain] mb-dev-functions.lua
---   sg-bg-restored.png
---   sg-bg-superitem.png
---   sg-bg-restoredinstance.png
+--   [nomain] Superglue.lua
+--   [nomain] lib/serpent.lua
+--   [nomain] lib/rtk.lua
+--   [nomain] modules/common.lua
+--   [nomain] modules/constant.lua
+--   [nomain] modules/data.lua
+--   [nomain] modules/depool.lua
+--   [nomain] modules/dev.lua
+--   [nomain] modules/edit.lua
+--   [nomain] modules/glue.lua
+--   [nomain] modules/init.lua
+--   [nomain] modules/iteminfo.lua
+--   [nomain] modules/lanes.lua
+--   [nomain] modules/multi.lua
+--   [nomain] modules/options.lua
+--   [nomain] modules/single.lua
+--   [nomain] modules/state.lua
+--   [nomain] modules/unglue.lua
+--   [nomain] modules/util.lua
+--   [nomain] modules/vi.lua
+--   assets/sg-bg-restored.png
+--   assets/sg-bg-restoredinstance.png
+--   assets/sg-bg-superitem.png
 --   gnu_license_v3.txt
 -- @link Superglue forum thread https://forum.cockos.com/showthread.php?p=2540818
 -- @about Main Glue script & package metadata for MB_Superglue
 
 
--- Copyright (C) MonkeyBars 2022
+-- Copyright (C) MonkeyBars 2025
 -- This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 -- This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 -- You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -44,6 +60,6 @@
 local _, script_file = reaper.get_action_context()
 local script_dir = script_file:match("^(.*[/\\])")
 
-package.path = package.path .. ";" .. script_dir .. "/?.lua"
+package.path = package.path .. ";" .. script_dir .. "?.lua"
 
 require("Superglue").init("main.Glue")

@@ -16,8 +16,7 @@ local _setup, _common, _options, _init, _dev, _iteminfo
 
 function Superglue.init(action)
   Superglue.setUp()
-  -- Superglue.routeAction(action)
-  reaper.ShowMessageBox("paths worked", "Superglue", 0)
+  Superglue.routeAction(action)
 end
 
 
