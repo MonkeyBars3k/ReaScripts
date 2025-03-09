@@ -1,7 +1,6 @@
 --@noindex
 
 -- ==== SUPERGLUE SCRIPTS CODE NOTES ====
--- Superglue requires Reaper SWS plug-in extension v2.13.1.0+ (https://www.sws-extension.org/download/pre-release) and js_ReaScript_API (https://github.com/ReaTeam/Extensions/raw/master/index.xml) to be installed in Reaper.
 -- Superglue uses the great GUI library Reaper Toolkit (rtk). (https://reapertoolkit.dev/).
 -- Superglue uses Serpent, a serialization library for LUA, for table-string and string-table conversion. (https://github.com/pkulchenko/serpent).
 -- Superglue uses Reaper's Master Track P_EXT to store project-wide script data because its changes are saved in Reaper's undo points, a feature that functions correctly since Reaper v6.43.
@@ -14,9 +13,9 @@ local _setup, _common, _options, _init, _dev, _iteminfo
 
 
 
-function Superglue.init(action)
+function Superglue.init(type_action)
   Superglue.setUp()
-  Superglue.routeAction(action)
+  Superglue.routeAction(type_action)
 end
 
 
@@ -27,8 +26,8 @@ function Superglue.setUp()
 end
 
 
-function Superglue.routeAction(action)
-  local type, action = string.match(action_string, "(%w+)%.(.+)")
+function Superglue.routeAction(type_action)
+  local type, action = string.match(type_action, "(%w+)%.(.+)")
 
   if not type or not action then
     reaper.ShowMessageBox("Invalid action string format. Expected 'type.action'", "Superglue Error", 0)
