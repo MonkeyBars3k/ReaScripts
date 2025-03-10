@@ -4,11 +4,10 @@ local Init = {}
 
 
 local _setup = require("modules.setup")
-local serpent, _common, _constant, _data, _file, _midi, _multi, _options, _state, _util = _setup.load("serpent, common, constant, data, file, midi, multi, options, state, util")
-local _dev = _setup.load("dev")
+local _common, _constant, _data, _file, _midi, _multi, _options, _state, _util = _setup.load("common, constant, data, file, midi, multi, options, state, util")
+-- local _dev = _setup.load("dev")
 
 function Init.injectDependencies(modules)
-  serpent = modules.serpent
   _common = modules.common
   _constant = modules.constant
   _data = modules.data
@@ -19,9 +18,9 @@ function Init.injectDependencies(modules)
   _state = modules.state
   _util = modules.util
 
-  _dev = modules.dev
+  -- _dev = modules.dev
 end
-
+--
 
 function Init.setUpAction(action)
   local selected_item_count
@@ -52,6 +51,8 @@ function Init.doPreSuperglueChecks(action)
   if not Init.itemsAreSelected(selected_item_count) then return false end
 
   if Init.requiredLibsAreInstalled() == false then return false end
+
+  Init.checkFixedLanesSupport()
 
   return selected_item_count
 end
@@ -107,14 +108,14 @@ function Init.requiredLibsAreInstalled()
 end
 
 
-Init.checkFixedLanesSupport = (function()
+function Init.checkFixedLanesSupport()
   local version = reaper.GetAppVersion()
   local major = tonumber(version:match("^(%d+)"))
 
   if major >= _constant.reaper.version.fixed_lanes then
     _constant.support.fixed_lanes = true
   end
-end)()
+end
 
 
 function Init.copySuperglueItemImagesToProject()
@@ -263,7 +264,7 @@ function Init.doSmartAction(selected_item_count, action)
 end
 
 
-function Init.getSelectedSiblings(selected_items, action)
+function Init.getSelectedSiblings(selected_items)
   local unique_instance_ids, selected_siblings, this_selected_item_instance_pool_id, this_selected_item_instance_pool_id_is_unique, this_unique_instance_pool_id, this_sibling_instance_id
 
   unique_instance_ids = {}
@@ -552,7 +553,7 @@ function Init.cleanUpAction(action, pool_ids)
   local undo_block_string, pool_ids_string
 
   undo_block_string = _constant.brand.name .. " " .. action
-  pool_ids_string = Init.getPoolIdsforUndoString(action, pool_ids)
+  pool_ids_string = Init.getPoolIdsforUndoString(pool_ids)
 
   if pool_ids_string then
     undo_block_string = undo_block_string .. " - Pool #" .. pool_ids_string
@@ -563,7 +564,7 @@ function Init.cleanUpAction(action, pool_ids)
 end
 
 
-function Init.getPoolIdsforUndoString(action, pool_ids_changed)
+function Init.getPoolIdsforUndoString(pool_ids_changed)
   local pool_ids_for_string
 
   pool_ids_for_string = {}

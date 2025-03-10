@@ -770,10 +770,10 @@ function Glue.setRegluePositionDeltas()
     {"position", "source_offset"}
   )
   _state.superitem.delta.position_during_glue = _state.superitem.params.fresh_glue.edited_pool.position - _state.superitem.params.preedit.edited_pool.position
-  _state.superitem.delta.position_during_glue = _common.round(_state.superitem.delta.position_during_glue, _constant.api.time_value_decimal_resolution)
+  _state.superitem.delta.position_during_glue = _util.round(_state.superitem.delta.position_during_glue, _constant.api.time_value_decimal_resolution)
   _state.superitem.reglue_position_change_affect_on_length = _state.superitem.params.fresh_glue.edited_pool.length - _state.superitem.params.preedit.edited_pool.length
   _state.superitem.delta.offset_since_last_glue = _state.superitem.params.fresh_glue.edited_pool.source_offset - _state.superitem.params.last_glue.edited_pool.source_offset
-  _state.superitem.delta.offset_since_last_glue = _common.round(_state.superitem.delta.offset_since_last_glue, _constant.api.time_value_decimal_resolution)
+  _state.superitem.delta.offset_since_last_glue = _util.round(_state.superitem.delta.offset_since_last_glue, _constant.api.time_value_decimal_resolution)
 
   if _state.superitem.delta.position_during_glue ~= 0 then
     _state.superitem.position_changed_since_last_glue = true

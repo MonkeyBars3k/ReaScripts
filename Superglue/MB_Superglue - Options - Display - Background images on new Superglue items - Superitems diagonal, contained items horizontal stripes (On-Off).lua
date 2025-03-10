@@ -1,8 +1,8 @@
 -- @noindex
 
+local _, script_file = reaper.get_action_context()
+local script_dir = script_file:match("^(.*[/\\])")
 
-package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
+package.path = package.path .. ";" .. script_dir .. "?.lua"
 
-local Superglue = require("MB_Superglue-Utils")
-
-Superglue.initOptionToggle("item_images")
+require("Superglue").init("option.item_images")

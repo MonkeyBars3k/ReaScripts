@@ -16,12 +16,12 @@ end
 
 
 
-Options.populateOptionsDefaults = (function()
+function Options.populateOptionsDefaults()
 
   for _, option in ipairs(_constant.global_options) do
-    _constant.data.key.Options.defaults[option.name] = option.default_value
+    _constant.data.key.options.defaults[option.name] = option.default_value
   end
-end)()
+end
 
 
 function Options.updateOptionValue(option, val)
@@ -38,23 +38,23 @@ function Options.updateOptionValue(option, val)
     reaper.RefreshToolbar2(_constant.api.command_section.main, option_toggle_script_command_id)
   end
 
-  reaper.SetExtState(_constant.data.key.Options.global_section, option.ext_state_key, val, _constant.api.extstate.persist_enabled)
+  reaper.SetExtState(_constant.data.key.options.global_section, option.ext_state_key, val, _constant.api.extstate.persist_enabled)
 end
 
 
-Options.setDefaultOptionValues = (function()
+function Options.setDefaultOptionValues()
   local this_option_ext_state_key, this_option_exists_in_extstate, this_option_is_not_set_in_extstate
 
   for i = 1, #_constant.global_options do
     this_option_ext_state_key = _constant.global_options[i].ext_state_key
-    this_option_exists_in_extstate = reaper.HasExtState(_constant.data.key.Options.global_section, this_option_ext_state_key)
+    this_option_exists_in_extstate = reaper.HasExtState(_constant.data.key.options.global_section, this_option_ext_state_key)
     this_option_is_not_set_in_extstate = not this_option_exists_in_extstate or this_option_exists_in_extstate == "nil"
 
     if this_option_is_not_set_in_extstate then
       Options.updateOptionValue(_constant.global_options[i], _constant.global_options[i].default_value)
     end
   end
-end)()
+end
 
 
 function Options.getActiveOption(option_name)
@@ -188,7 +188,7 @@ end
 function Options.getOptionCheckbox(option, option_form_save)
   local option_saved_value, checkbox_value, option_checkbox
 
-  option_saved_value = reaper.GetExtState(_constant.data.key.Options.global_section, option.ext_state_key)
+  option_saved_value = reaper.GetExtState(_constant.data.key.options.global_section, option.ext_state_key)
   checkbox_value = option_saved_value == "true" and true or false
   option_checkbox = rtk.CheckBox{option.user_readable_text, value = checkbox_value, margin = "10 0"}
   option_checkbox.onchange = function()
@@ -207,7 +207,7 @@ end
 function Options.getOptionDropdown(option, option_form_save)
   local option_saved_value, option_dropdown_box, dropdown_label, dropdown_control, dropdown_menu, this_option_value, this_option_value_menu_item
 
-  option_saved_value = reaper.GetExtState(_constant.data.key.Options.global_section, option.ext_state_key)
+  option_saved_value = reaper.GetExtState(_constant.data.key.options.global_section, option.ext_state_key)
   option_dropdown_box = rtk.HBox{spacing = 10}
   dropdown_label = rtk.Text{option.user_readable_text, margin = "15 0 5", wrap = "normal"}
   dropdown_control = rtk.OptionMenu{margin = "15 0 5"}
@@ -239,7 +239,7 @@ function Options.submitOptionChanges(all_option_controls, options_window)
 
   for i = 1, #_constant.global_options do
     this_option = _constant.global_options[i]
-    this_option_saved_value = reaper.GetExtState(_constant.data.key.Options.global_section, this_option.ext_state_key)
+    this_option_saved_value = reaper.GetExtState(_constant.data.key.options.global_section, this_option.ext_state_key)
 
     if this_option.type == "checkbox" then
       this_option_form_value = tostring(all_option_controls[this_option.name].value)
@@ -263,8 +263,8 @@ end
 
 function Options.resetDePoolAllSiblingsWarning(ext_state_key)
 
-  if ext_state_key == _constant.data.key.Options.toggle.depool_all_siblings_on_reglue then
-    reaper.SetExtState(_constant.data.key.Options.global_section, _constant.data.key.Options.toggle.depool_all_siblings_on_reglue_warning, "true", _constant.api.extstate.persist_enabled)
+  if ext_state_key == _constant.data.key.options.toggle.depool_all_siblings_on_reglue then
+    reaper.SetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.depool_all_siblings_on_reglue_warning, "true", _constant.api.extstate.persist_enabled)
   end
 end
 

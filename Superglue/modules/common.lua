@@ -3,21 +3,27 @@
 local Common = {}
 
 
-
 local _setup = require("modules.setup")
-local serpent, _constant, _data, _file, _glue, _init, _lanes, _state, _util = _setup.load("serpent, constant, data, file, glue, init, lanes, state, util")
-local _dev = _setup.load("dev")
+local serpent, _constant, _data, _glue, _init, _lanes, _state, _util
+-- local _dev = _setup.load("dev")
+
+-- TRY ADDING THIS TO EVERY MODULE.
+_setup.registerModule("common", Common)
+
+
+serpent, _constant, _data, _glue, _init, _lanes, _state, _util = _setup.load("serpent, constant, data, glue, init, lanes, state, util")
+
 
 function Common.injectDependencies(modules)
   serpent = modules.serpent
   _constant = modules.constant
   _data = modules.data
-  _file = modules.file
   _glue = modules.glue
   _init = modules.init
   _lanes = modules.lanes
   _state = modules.state
   _util = modules.util
+
   _dev = modules.dev
 end
 
@@ -105,6 +111,21 @@ function Common.getSetItemName(item, new_name, add_or_remove)
 end
 
 
+function Common.getBoundsFromItems(items)
+  local last_item_position, last_item_length, items_params
+
+  last_item_position = reaper.GetMediaItemInfo_Value(items[#items], _constant.api.item.key.position, "", false)
+  last_item_length = reaper.GetMediaItemInfo_Value(items[#items], _constant.api.item.key.length, "", false)
+  items_params = {
+    position = reaper.GetMediaItemInfo_Value(items[1], _constant.api.item.key.position, "", false),
+    end_point = last_item_position + last_item_length
+  }
+  items_params.length = items_params.end_point - items_params.position
+
+  return items_params
+end
+
+
 function Common.getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_delete)
   local get_or_delete, set, region_idx, retval, all_markers_count, all_regions_count, retval, sizing_region_params, sizing_region_guid, all_regions_in_proj_have_been_iterated
 
@@ -186,11 +207,11 @@ function Common.addRemoveItemImage(item, type_or_remove)
 
     if add then
       if type == "superitem" then
-        img_path = _file.path.superitem_bg_img
+        img_path = _constant.file.path.superitem_bg_img
       elseif type == "restored" then
-        img_path = _file.path.restored_item_bg_img
+        img_path = _constant.file.path.restored_item_bg_img
       elseif type == "restored_instance" then
-        img_path = _file.path.restored_instance_bg_img
+        img_path = _constant.file.path.restored_instance_bg_img
       end
     elseif remove then
       img_path = ""
@@ -208,9 +229,9 @@ function Common.getImagePathForType(type_or_remove)
   if type_or_remove == false then return "" end
 
   local paths = {
-    superitem = _file.path.superitem_bg_img,
-    restored = _file.path.restored_item_bg_img,
-    restored_instance = _file.path.restored_instance_bg_img
+    superitem = _constant.file.path.superitem_bg_img,
+    restored = _constant.file.path.restored_item_bg_img,
+    restored_instance = _constant.file.path.restored_instance_bg_img
   }
 
   return paths[type_or_remove] or ""
@@ -227,7 +248,7 @@ end
 
 
 function Common.handleOfflineTake(item, context)
-  local active_take, active_src, active_take_is_online, src_filepath, src_exists, src_filename, src_filepath_in_project_folder, user_response, retval, user_chosen_file
+  local active_take, active_src, active_take_is_online, src_filepath, src_exists, src_filename, src_filepath_in_project_folder, user_response, user_chosen_file
 
   active_take = reaper.GetActiveTake(item)
   active_src = reaper.GetMediaItemTake_Source(active_take)
@@ -239,7 +260,7 @@ function Common.handleOfflineTake(item, context)
 
     if not src_exists then
       src_filename = _util.getFileNameFromPath(src_filepath)
-      src_filepath_in_project_folder = _file.path.proj_render .. _file.os.separator .. src_filename
+      src_filepath_in_project_folder = _constant.file.path.proj_render .. _constant.file.os.separator .. src_filename
       src_exists = _util.fileExists(src_filepath_in_project_folder)
 
       if src_exists then
@@ -249,7 +270,7 @@ function Common.handleOfflineTake(item, context)
         user_response = reaper.ShowMessageBox(_constant.brand.name .. " can't find a media source. Choose a new source file for the offline " .. context .. " item. Press OK to continue, or Cancel to leave it offline.", "Offline take selected", _constant.api.msg.type.ok_cancel)
 
         if user_response == _constant.api.msg.response.ok then
-          retval, user_chosen_file = reaper.JS_Dialog_BrowseForOpenFiles("Choose a new source file for the offline item.", _file.path.proj_render, src_filename, _file.supported_media_types, false)
+          _, user_chosen_file = reaper.JS_Dialog_BrowseForOpenFiles("Choose a new source file for the offline item.", _constant.file.path.proj_render, src_filename, _constant.file.supported_media_types, false)
 
           reaper.BR_SetTakeSourceFromFile2(active_take, user_chosen_file, true, true)
         end
@@ -435,7 +456,7 @@ function Common.getSetWipeItemAudioSrc(item, src_or_wipe)
     src = Common.getSetWipeItemAudioSrc(item)
 
     os.remove(src)
-    os.remove(src .. _file.name.peak_data_extension)
+    os.remove(src .. _constant.file.name.peak_data_extension)
   end
 end
 

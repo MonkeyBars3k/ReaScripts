@@ -9,8 +9,7 @@
 
 local Superglue = {}
 
-local _setup, _common, _options, _init, _dev, _iteminfo
-
+local _setup, _common, _constant, _dev, _init, _iteminfo, _options
 
 
 function Superglue.init(type_action)
@@ -23,11 +22,16 @@ function Superglue.setUp()
   _setup = require("modules.setup")
 
   _setup.bootstrap()
+
+  _common, _constant, _dev, _init, _iteminfo, _options = _setup.load("common, constant, dev, init, iteminfo, options")
+
+  _options.populateOptionsDefaults()
 end
 
 
 function Superglue.injectDependencies(modules)
   _common = modules.common
+  _constant = modules.constant
   _dev = modules.dev
   _init = modules.init
   _iteminfo = modules.iteminfo
@@ -108,7 +112,7 @@ function Superglue.initOptionToggle(option_name)
 
   if not active_option then return end
 
-  current_val = reaper.GetExtState(constant.data.key.options.global_section, active_option.ext_state_key)
+  current_val = reaper.GetExtState(_constant.data.key.options.global_section, active_option.ext_state_key)
 
   if current_val == "false" then
     new_val = "true"

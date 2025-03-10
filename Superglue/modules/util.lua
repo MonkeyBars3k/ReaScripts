@@ -4,15 +4,14 @@ local Util = {}
 
 
 local _setup = require("modules.setup")
-local _common, _constant, _file = _setup.load("common, constant, file")
-local _dev = _setup.load("dev")
+local _common, _constant = _setup.load("common, constant")
+-- local _dev = _setup.load("dev")
 
 function Util.injectDependencies(modules)
   _common = modules.common
   _constant = modules.constant
-  _file = modules.file
 
-  _dev = modules.dev
+  -- _dev = modules.dev
 end
 
 
@@ -82,13 +81,13 @@ function Util.numberizeAndRoundElements(tables, elems)
   for i = 1, #tables do
     this_table = tables[i]
     for j = 1, #elems do
-      this_table[elems[j]] = _common.round(tonumber(this_table[elems[j]]),_constant.api.time_value_decimal_resolution)
+      this_table[elems[j]] = Util.round(tonumber(this_table[elems[j]]),_constant.api.time_value_decimal_resolution)
     end
   end
   return table.unpack(tables)
 end
 
-function _common.round(num, precision)
+function Util.round(num, precision)
    return math.floor(num*(10^precision)+0.5) / 10^precision
 end
 

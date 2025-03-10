@@ -152,7 +152,7 @@ function Iteminfo.getSiblingPositions(pool_id)
       retval, this_active_take_name = reaper.GetSetMediaItemTakeInfo_String(this_active_take, _constant.api.take.key.name, "", false)
       this_instance_position_time = reaper.GetMediaItemInfo_Value(this_item, _constant.api.item.key.position)
       measures, beats_since_new_bar = Iteminfo.convertSecondsToMusicTime(this_instance_position_time)
-      sibling_locations_text = sibling_locations_text .. _constant.unicode.no_break_space.._constant.unicode.no_break_space .. this_sibling_num .. ":  " .. this_active_take_name .. " – " .. measures .. "." .. beats_since_new_bar .. " / " .. _common.round(this_instance_position_time, 3) .. "s" .. "\r\n"
+      sibling_locations_text = sibling_locations_text .. _constant.unicode.no_break_space.._constant.unicode.no_break_space .. this_sibling_num .. ":  " .. this_active_take_name .. " – " .. measures .. "." .. beats_since_new_bar .. " / " .. _util.round(this_instance_position_time, 3) .. "s" .. "\r\n"
       this_sibling_num = this_sibling_num + 1
     end
   end
@@ -171,7 +171,7 @@ function Iteminfo.convertSecondsToMusicTime(duration_in_seconds)
   retval, measures, cml, fullbeats = reaper.TimeMap2_timeToBeats(_constant.api.current_project, duration_in_seconds)
   beats_since_new_bar = fullbeats % measures
 
-  return measures, _common.round(beats_since_new_bar, 3)
+  return measures, _util.round(beats_since_new_bar, 3)
 end
 
 

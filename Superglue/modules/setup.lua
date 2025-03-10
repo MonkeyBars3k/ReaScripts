@@ -1,6 +1,35 @@
 -- @noindex
 
-local Setup = {}
+local Setup = {
+  modules = {},
+  module_names = {},
+  modules_registry = {},
+
+  internal_modules = {
+    "common",
+    "constant",
+    "data",
+    "depool",
+    "dev",
+    "edit",
+    "glue",
+    "init",
+    "iteminfo",
+    "lanes",
+    "multi",
+    "options",
+    "reglue",
+    "single",
+    "state",
+    "util",
+    "vi"
+  },
+
+  external_libs = {
+    rtk = "lib.rtk",
+    serpent = "lib.serpent"
+  }
+}
 
 
 function Setup.bootstrap()
@@ -50,36 +79,6 @@ function Setup.returnPaths(script_dir)
 end
 
 
--- place these outside for later usage in other functions for dev purposes if needed
-local internal_modules = {
-  "common",
-  "constant",
-  "data",
-  "depool",
-  "dev",
-  "edit",
-  "glue",
-  "init",
-  "iteminfo",
-  "lanes",
-  "multi",
-  "options",
-  "reglue",
-  "single",
-  "state",
-  "util",
-  "vi"
-}
-
-local external_libs = {
-  rtk = "lib.rtk",
-  serpent = "lib.serpent"
-}
-
-local modules = {}
-local module_names = {}
-
-
 function Setup.load(module_string)
   Setup.parseModuleNames(module_string)
   Setup.loadModules()
@@ -90,38 +89,52 @@ end
 
 
 function Setup.parseModuleNames(module_string)
+  Setup.module_names = {} -- Clear previous names
   local module_name_pattern = "([^,%s]+)"
 
   for name in string.gmatch(module_string, module_name_pattern) do
-    table.insert(module_names, name)
+    table.insert(Setup.module_names, name)
   end
+end
+
+
+function Setup.registerModule(name, module)
+  Setup.modules_registry[name] = module
+
+  return module
 end
 
 
 function Setup.loadModules()
 
-  for _, name in ipairs(module_names) do
+  for _, name in ipairs(Setup.module_names) do
 
-    if external_libs[name] then
-      modules[name] = require(external_libs[name])
-
+    if Setup.modules_registry[name] then
+      -- Module was already registered, use existing reference
+      Setup.modules[name] = Setup.modules_registry[name]
     else
-      local is_valid = false
 
-      for _, mod_name in ipairs(internal_modules) do
-
-        if name == mod_name then
-          is_valid = true
-
-          break
-        end
-      end
-
-      if is_valid then
-        modules[name] = require("modules." .. name)
+      if Setup.external_libs[name] then
+        Setup.modules[name] = require(Setup.external_libs[name])
 
       else
-        error("Unknown module: " .. name)
+        local is_valid = false
+
+        for _, mod_name in ipairs(Setup.internal_modules) do
+
+          if name == mod_name then
+            is_valid = true
+
+            break
+          end
+        end
+
+        if is_valid then
+          Setup.modules[name] = require("modules." .. name)
+
+        else
+          error("Unknown module: " .. name)
+        end
       end
     end
   end
@@ -130,10 +143,10 @@ end
 
 function Setup.injectDependencies()
 
-  for _, module in pairs(modules) do
+  for _, module in pairs(Setup.modules) do
 
     if type(module.injectDependencies) == "function" then
-      module.injectDependencies(modules)
+      module.injectDependencies(Setup.modules)
     end
   end
 end
@@ -142,8 +155,8 @@ end
 function Setup.orderModules()
   local ordered_modules = {}
 
-  for i, name in ipairs(module_names) do
-    ordered_modules[i] = modules[name]
+  for i, name in ipairs(Setup.module_names) do
+    ordered_modules[i] = Setup.modules[name]
   end
 
   return table.unpack(ordered_modules)
