@@ -2,14 +2,23 @@
 
 local Options = {}
 
+
 local _setup = require("modules.setup")
 local rtk, _constant = _setup.load("rtk, constant")
+-- local _dev = _setup.load("dev")
+
+function Options.injectDependencies(modules)
+  rtk = modules.rtk
+  _constant = modules.constant
+
+  -- _dev = modules.dev
+end
 
 
 
-Options.populateOptionsDefaults() = (function()
+Options.populateOptionsDefaults = (function()
 
-  for _, option in ipairs(_constant.global_Options) do
+  for _, option in ipairs(_constant.global_options) do
     _constant.data.key.Options.defaults[option.name] = option.default_value
   end
 end)()
@@ -36,13 +45,13 @@ end
 Options.setDefaultOptionValues = (function()
   local this_option_ext_state_key, this_option_exists_in_extstate, this_option_is_not_set_in_extstate
 
-  for i = 1, #_constant.global_Options do
-    this_option_ext_state_key = _constant.global_Options[i].ext_state_key
+  for i = 1, #_constant.global_options do
+    this_option_ext_state_key = _constant.global_options[i].ext_state_key
     this_option_exists_in_extstate = reaper.HasExtState(_constant.data.key.Options.global_section, this_option_ext_state_key)
     this_option_is_not_set_in_extstate = not this_option_exists_in_extstate or this_option_exists_in_extstate == "nil"
 
     if this_option_is_not_set_in_extstate then
-      Options.updateOptionValue(_constant.global_Options[i], _constant.global_Options[i].default_value)
+      Options.updateOptionValue(_constant.global_options[i], _constant.global_options[i].default_value)
     end
   end
 end)()
@@ -51,16 +60,16 @@ end)()
 function Options.getActiveOption(option_name)
   local active_option_idx, active_option
 
-  for i = 1, #_constant.global_Options do
+  for i = 1, #_constant.global_options do
 
-    if _constant.global_Options[i].name == option_name then
+    if _constant.global_options[i].name == option_name then
       active_option_idx = i
 
       break
     end
   end
 
-  active_option = _constant.global_Options[active_option_idx]
+  active_option = _constant.global_options[active_option_idx]
 
   return active_option
 end
@@ -123,8 +132,8 @@ function Options.populateOptionControls(option_window_widgets)
 
   all_option_controls = {}
 
-  for i = 1, #_constant.global_Options do
-    this_option = _constant.global_Options[i]
+  for i = 1, #_constant.global_options do
+    this_option = _constant.global_options[i]
     this_option_name = this_option.name
 
     if this_option.type == "checkbox" then
@@ -165,7 +174,7 @@ end
 
 
 function Options.populateOptionsWindow(option_window_widgets)
-  local content_padding_adjustment, options_window_content_height
+  -- local content_padding_adjustment, options_window_content_height
 
   option_window_widgets.options_window_content:add(option_window_widgets.option_form_buttons)
   option_window_widgets.options_window_content:add(option_window_widgets.option_footer)
@@ -228,8 +237,8 @@ end
 function Options.submitOptionChanges(all_option_controls, options_window)
   local this_option, this_option_saved_value, this_option_form_value, dropdown, option_has_changed
 
-  for i = 1, #_constant.global_Options do
-    this_option = _constant.global_Options[i]
+  for i = 1, #_constant.global_options do
+    this_option = _constant.global_options[i]
     this_option_saved_value = reaper.GetExtState(_constant.data.key.Options.global_section, this_option.ext_state_key)
 
     if this_option.type == "checkbox" then
@@ -258,6 +267,7 @@ function Options.resetDePoolAllSiblingsWarning(ext_state_key)
     reaper.SetExtState(_constant.data.key.Options.global_section, _constant.data.key.Options.toggle.depool_all_siblings_on_reglue_warning, "true", _constant.api.extstate.persist_enabled)
   end
 end
+
 
 
 return Options

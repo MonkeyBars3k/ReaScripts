@@ -20,9 +20,18 @@ end
 
 
 function Superglue.setUp()
-  local _setup = require("modules.setup")
+  _setup = require("modules.setup")
 
   _setup.bootstrap()
+end
+
+
+function Superglue.injectDependencies(modules)
+  _common = modules.common
+  _dev = modules.dev
+  _init = modules.init
+  _iteminfo = modules.iteminfo
+  _options = modules.options
 end
 
 

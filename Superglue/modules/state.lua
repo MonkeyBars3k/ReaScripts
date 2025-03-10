@@ -48,7 +48,8 @@ local State = {
 
     delta = {
       position_during_glue = 0,
-      offset_since_last_glue = 0
+      offset_since_last_glue = 0,
+      source_position_adjustment = 0
     },
 
     params = {
