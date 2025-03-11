@@ -2,8 +2,14 @@
 
 local Iteminfo = {}
 
-local _setup = require("modules.setup")
-local rtk, serpent, _constant, _common, _data, _init, _util = _setup.load("rtk, serpent, constant, common, data, init, util")
+
+local rtk = require("lib.rtk")
+local serpent = require("lib.serpent")
+local _constant = require("modules.constant")
+local _common = require("modules.common")
+local _data = require("modules.data")
+local _init = require("modules.init")
+local _util = require("modules.util")
 
 
 
@@ -197,3 +203,7 @@ function Iteminfo.populateItemInfoWindow(all_selected_items_window_data)
   item_info_window:add(item_info_viewport)
   item_info_window:open{align = "center"}
 end
+
+
+
+return Iteminfo

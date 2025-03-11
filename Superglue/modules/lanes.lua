@@ -3,17 +3,16 @@
 local Lanes = {}
 
 
-local _setup = require("modules.setup")
-local _common, _constant, _data = _setup.load("common, constant, data")
-local _dev = _setup.load("dev")
+local _module_utils = require("module-utils")
 
-function Lanes.injectDependencies(modules)
-  _common = modules.common
-  _constant = modules.constant
-  _data = modules.data
+-- local _common = require("modules.common")
+local _constant = require("modules.constant")
+local _data = require("modules.data")
 
-  _dev = modules.dev
-end
+local _dev = require("modules.dev")
+
+local function _common() return _module_utils.lazyRequire("common") end
+
 
 
 function Lanes.getLaneYPosition(laneNum, item)
@@ -319,7 +318,7 @@ function Lanes.debugLaneInfo(label, items, track, pool_id)
   if items then
     for i, item in ipairs(items) do
       if reaper.ValidatePtr(item, "MediaItem*") then
-        local name = _common.getSetItemName(item) or "unnamed"
+        local name = _common().getSetItemName(item) or "unnamed"
         local fixedLane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
         local freeY = reaper.GetMediaItemInfo_Value(item, "F_FREEMODE_Y")
         local freeMode = reaper.GetMediaItemInfo_Value(item, "B_FREEMODE")

@@ -3,23 +3,21 @@
 local Multi = {}
 
 
-local _setup = require("modules.setup")
-local serpent, _common, _constant, _data, _init, _overglue, _single, _state, _util = _setup.load("serpent, common, constant, data, init, overglue, single, state, util")
-local _dev = _setup.load("dev")
+local _module_utils = require("module-utils")
 
-function Multi.injectDependencies(modules)
-  serpent = modules.serpent
-  _common = modules.common
-  _constant = modules.constant
-  _data = modules.data
-  _init = modules.init
-  _overglue = modules.overglue
-  _single = modules.single
-  _state = modules.state
-  _util = modules.util
+local serpent = require("lib.serpent")
+local _common = require("modules.common")
+local _constant = require("modules.constant")
+local _data = require("modules.data")
+-- local _init = require("modules.init")
+local _overglue = require("modules.overglue")
+-- local _single = require("modules.single")
+local _state = require("modules.state")
+local _util = require("modules.util")
 
-  _dev = modules.dev
-end
+local function _init() return _module_utils.lazyRequire("init") end
+local function _single() return _module_utils.lazyRequire("single") end
+
 
 
 function Multi.setUpMultiTrackActions(selected_items, action)
@@ -108,14 +106,14 @@ function Multi.iterateTracksWithSelectedItems(all_tracks_with_user_selected_item
       Multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_selected_items_track)
 
     elseif action == "Edit" or action == "Unglue" then
-      _single.doSingleTrackEditOrUnglue(user_selected_items_on_this_track, action)
+      _single().doSingleTrackEditOrUnglue(user_selected_items_on_this_track, action)
 
     elseif action == "DePool" then
-      _single.doSingleTrackDePool(user_selected_items_on_this_track, this_user_selected_items_track, action)
+      _single().doSingleTrackDePool(user_selected_items_on_this_track, this_user_selected_items_track, action)
 
     elseif action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then
 
-      if not _single.doSingleTrackSmartAction(user_selected_items_on_this_track, this_user_selected_items_track, action) then return false end
+      if not _single().doSingleTrackSmartAction(user_selected_items_on_this_track, this_user_selected_items_track, action) then return false end
     end
   end
 
@@ -138,7 +136,7 @@ function Multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_se
   else
     restored_items_pool_id = _init.getFirstParentPoolIdFromSelectedItems(user_selected_items_on_this_track)
 
-    _single.triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track, restored_items_pool_id)
+    _single().triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track, restored_items_pool_id)
   end
 end
 
@@ -149,7 +147,7 @@ function Multi.doSingleTrackMultiitemGlue(user_selected_items_on_this_track)
   _state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor, pool_ids_by_depth = Multi.getPoolIdsFromItems(user_selected_items_on_this_track, "parent", "descendant to ancestor")
 
   if not _state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor then
-    _single.triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track)
+    _single().triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track)
 
   else
     Multi.handleSingleTrackMultiPoolGlue(user_selected_items_on_this_track, pool_ids_by_depth)
@@ -277,7 +275,7 @@ function Multi.handleSingleTrackMultiPoolGlue(user_selected_items_on_this_track,
   this_is_overglue = #_state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor > 1
 
   if this_is_single_reglue then
-    superitem = _single.triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track, _state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor[1])
+    superitem = _single().triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track, _state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor[1])
     selected_items_on_this_track__post_glue = {superitem}
 
   elseif this_is_overglue then

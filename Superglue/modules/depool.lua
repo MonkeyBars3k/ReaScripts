@@ -3,19 +3,14 @@
 local Depool = {}
 
 
-local _setup = require("modules.setup")
-local _common, _constant, _data, _edit, _glue, _state = _setup.load("common, constant, data, edit, glue, state")
-local _dev = _setup.load("dev")
+local _common = require("modules.common")
+local _constant = require("modules.constant")
+local _data = require("modules.data")
+local _edit = require("modules.edit")
+local _state = require("modules.state")
+-- local _glue = require("modules.glue")
 
-function Depool.injectDependencies(modules)
-  _common = modules.common
-  _constant = modules.constant
-  _data = modules.data
-  _edit = modules.edit
-  _glue = modules.glue
-  _state = modules.state
-  _dev = modules.dev
-end
+local function _glue() return _module_utils.lazyRequire("glue") end
 
 
 
@@ -44,29 +39,29 @@ end
 
 
 function Depool.refreshCurrentPoolStoredItemsPostDePool()
-local this_restored_item_exists, all_items_count, this_item, this_item_parent_pool_id, this_item_belongs_to_current_pool
+  local this_restored_item_exists, all_items_count, this_item, this_item_parent_pool_id, this_item_belongs_to_current_pool
 
-for i = 1, #_state.superitem.params.fresh_glue.current_pool.restored_items do
- this_restored_item_exists = reaper.ValidatePtr(_state.superitem.params.fresh_glue.current_pool.restored_items[i], _constant.api.datatype.mediaitem)
+  for i = 1, #_state.superitem.params.fresh_glue().current_pool.restored_items do
+  this_restored_item_exists = reaper.ValidatePtr(_state.superitem.params.fresh_glue().current_pool.restored_items[i], _constant.api.datatype.mediaitem)
 
- if not this_restored_item_exists then
-   _state.superitem.params.fresh_glue.current_pool.restored_items = {}
-   all_items_count = reaper.CountMediaItems(_constant.api.current_project)
+  if not this_restored_item_exists then
+    _state.superitem.params.fresh_glue().current_pool.restored_items = {}
+    all_items_count = reaper.CountMediaItems(_constant.api.current_project)
 
-   for j = 0, all_items_count-1 do
-     this_item = reaper.GetMediaItem(_constant.api.current_project, j)
-     this_item_parent_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id)
-     this_item_parent_pool_id = tonumber(this_item_parent_pool_id)
-     this_item_belongs_to_current_pool = this_item_parent_pool_id == _state.superitem.params.fresh_glue.current_pool.pool_id
+    for j = 0, all_items_count-1 do
+      this_item = reaper.GetMediaItem(_constant.api.current_project, j)
+      this_item_parent_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id)
+      this_item_parent_pool_id = tonumber(this_item_parent_pool_id)
+      this_item_belongs_to_current_pool = this_item_parent_pool_id == _state.superitem.params.fresh_glue().current_pool.pool_id
 
-     if this_item_belongs_to_current_pool then
-       table.insert(_state.superitem.params.fresh_glue.current_pool.restored_items, this_item)
-     end
-   end
+      if this_item_belongs_to_current_pool then
+        table.insert(_state.superitem.params.fresh_glue().current_pool.restored_items, this_item)
+      end
+    end
 
-   break
- end
-end
+    break
+  end
+  end
 end
 
 
@@ -78,7 +73,7 @@ function Depool.processSiblingDePool(sibling)
   _state.action.glue.current_track = reaper.BR_GetMediaTrackByGUID(_constant.api.current_project, sibling_params.track_guid)
   pool_id, restored_items = _edit.processUnglue(sibling, sibling_params.pool_id, action)
   contained_item_states = _data.prepareAndGetItemStates(restored_items, sibling_params.pool_id)
-  superitem = _glue.handleGlue(restored_items, nil, nil, sibling_params, false)
+  superitem = _glue().handleGlue(restored_items, nil, nil, sibling_params, false)
   new_pool_id = Depool.handleDePoolPostGlue(superitem, sibling_state, sibling_params)
 
   _data.storeItemStates(new_pool_id, contained_item_states)

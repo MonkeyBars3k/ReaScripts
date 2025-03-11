@@ -3,14 +3,7 @@
 local Vi = {}
 
 
-local _setup = require("modules.setup")
-local _constant = _setup.load("constant")
--- local _dev = _setup.load("dev")
-
-function Vi.injectDependencies(modules)
-  _constant = modules.constant
-  -- _dev = modules.dev
-end
+local _constant = require("modules.constant")
 
 
 

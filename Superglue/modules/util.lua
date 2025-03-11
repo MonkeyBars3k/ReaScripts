@@ -3,16 +3,8 @@
 local Util = {}
 
 
-local _setup = require("modules.setup")
-local _common, _constant = _setup.load("common, constant")
--- local _dev = _setup.load("dev")
+local _constant = require("modules.constant")
 
-function Util.injectDependencies(modules)
-  _common = modules.common
-  _constant = modules.constant
-
-  -- _dev = modules.dev
-end
 
 
 function Util.copyFile(old_path, new_path)

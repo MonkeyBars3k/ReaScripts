@@ -3,29 +3,20 @@
 local Common = {}
 
 
-local _setup = require("modules.setup")
-local serpent, _constant, _data, _glue, _init, _lanes, _state, _util
--- local _dev = _setup.load("dev")
+local _module_utils = require("module-utils")
 
--- TRY ADDING THIS TO EVERY MODULE.
-_setup.registerModule("common", Common)
+local serpent = require("lib.serpent")
+local _constant = require("modules.constant")
+local _state = require("modules.state")
+local _util = require("modules.util")
 
+-- local _dev = require("modules.dev")
 
-serpent, _constant, _data, _glue, _init, _lanes, _state, _util = _setup.load("serpent, constant, data, glue, init, lanes, state, util")
+local function _data() return _module_utils.lazyRequire("data") end
+local function _glue() return _module_utils.lazyRequire("glue") end
+local function _init() return _module_utils.lazyRequire("init") end
+local function _lanes() return _module_utils.lazyRequire("lanes") end
 
-
-function Common.injectDependencies(modules)
-  serpent = modules.serpent
-  _constant = modules.constant
-  _data = modules.data
-  _glue = modules.glue
-  _init = modules.init
-  _lanes = modules.lanes
-  _state = modules.state
-  _util = modules.util
-
-  _dev = modules.dev
-end
 
 
 function Common.getSuperglueItemTypes(items, requested_types)
@@ -35,8 +26,8 @@ function Common.getSuperglueItemTypes(items, requested_types)
 
   for i = 1, #items do
     this_item = items[i]
-    superitem_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
-    restored_item_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id)
+    superitem_pool_id = _data().storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
+    restored_item_pool_id = _data().storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id)
     item_types_data.superitem.is = superitem_pool_id and superitem_pool_id ~= ""
     item_types_data.restored.is = restored_item_pool_id and restored_item_pool_id ~= ""
     item_types_data.nonsuperitem.is = not item_types_data.superitem.is
@@ -137,7 +128,7 @@ function Common.getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_dele
   repeat
 
     if get_or_delete then
-      retval, sizing_region_params = _glue.getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
+      retval, sizing_region_params = _glue().getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
 
       if sizing_region_params then
 
@@ -146,7 +137,7 @@ function Common.getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_dele
 
     elseif set then
       sizing_region_params = params_or_delete
-      retval, sizing_region_guid = _glue.addSizingRegion(sizing_region_guid_or_pool_id, sizing_region_params, region_idx)
+      retval, sizing_region_guid = _glue().addSizingRegion(sizing_region_guid_or_pool_id, sizing_region_params, region_idx)
 
       if sizing_region_guid then
 
@@ -283,9 +274,9 @@ end
 function Common.dePoolRestoredItem(item)
   local item_instance_pool_id, item_is_instance, item_type
 
-  _data.storeRetrieveItemData(item, _constant.data.key.suffix.pool.parent_id, "")
+  _data().storeRetrieveItemData(item, _constant.data.key.suffix.pool.parent_id, "")
 
-  item_instance_pool_id = _data.storeRetrieveItemData(item, _constant.data.key.suffix.pool.instance_id)
+  item_instance_pool_id = _data().storeRetrieveItemData(item, _constant.data.key.suffix.pool.instance_id)
   item_is_instance = item_instance_pool_id and item_instance_pool_id ~= ""
   item_type = item_is_instance and "superitem" or false
 
@@ -303,7 +294,7 @@ end
 function Common.checkSizingRegionExists(pool_id, selected_items)
   local retval, all_pool_ids_with_active_sizing_regions, sizing_region_guid, region_idx, this_region_guid, sizing_region_user_result
 
-  retval, all_pool_ids_with_active_sizing_regions = _data.storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
+  retval, all_pool_ids_with_active_sizing_regions = _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
   retval, all_pool_ids_with_active_sizing_regions = serpent.load(all_pool_ids_with_active_sizing_regions)
   sizing_region_guid = all_pool_ids_with_active_sizing_regions[pool_id]
 
@@ -465,7 +456,7 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
   local stored_item_states_table, restored_items, _unglued_pool_preunglue_params, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 
   if _constant.support.fixed_lanes then
-    _lanes.debugLaneInfo("RESTORE START", nil, active_track, pool_id)
+    _lanes().debugLaneInfo("RESTORE START", nil, active_track, pool_id)
 
     -- Make sure track is in fixed lanes mode for consistent lane calculations
     local currentMode = reaper.GetMediaTrackInfo_Value(active_track, "I_FOLDERCOMPACT")
@@ -475,15 +466,15 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
     end
   end
 
-  stored_item_states_table = _data.getStoredItemStatesTable(pool_id, action)
+  stored_item_states_table = _data().getStoredItemStatesTable(pool_id, action)
   restored_items = {}
 
-  _data.defineStoredItemsParams(pool_id)
+  _data().defineStoredItemsParams(pool_id)
 
   -- Create all items first without lane positioning
   for item_guid, stored_item_state in pairs(stored_item_states_table) do
     if stored_item_state then
-      _unglued_pool_preunglue_params = _data.getSetItemParams(superitem)
+      _unglued_pool_preunglue_params = _data().getSetItemParams(superitem)
       local restored_item = Common.handleRestoredItem(superitem, active_track, stored_item_state, {}, this_is_ancestor_superitem_update, action)
       table.insert(restored_items, restored_item)
     end
@@ -495,8 +486,8 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
       _dev.log("Calling restoreItemLaneOffsets for " .. #restored_items .. " items")
     end
 
-    _lanes.restoreItemLaneOffsets(restored_items, false, pool_id)
-    _lanes.debugLaneInfo("AFTER RESTORE", restored_items, active_track, pool_id)
+    _lanes().restoreItemLaneOffsets(restored_items, false, pool_id)
+    _lanes().debugLaneInfo("AFTER RESTORE", restored_items, active_track, pool_id)
   end
 
   return restored_items, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
@@ -507,7 +498,7 @@ function Common.handleRestoredItem(superitem, active_track, stored_item_state, r
   local restored_item, restored_instance_pool_id, restored_item_negative_position_delta, this_is_first_edit_after_auto_depool, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 
   restored_item = Common.restoreItem(active_track, stored_item_state, this_is_ancestor_superitem_update)
-  restored_instance_pool_id = _data.storeRetrieveItemData(restored_item, _constant.data.key.suffix.pool.instance_id)
+  restored_instance_pool_id = _data().storeRetrieveItemData(restored_item, _constant.data.key.suffix.pool.instance_id)
 
   Common.handleOfflineTake(restored_item, "restored")
   reaper.SetMediaItemSelected(restored_item, true)
@@ -518,7 +509,7 @@ function Common.handleRestoredItem(superitem, active_track, stored_item_state, r
   end
 
   if action == "Unglue" or action == "DePool" then
-    _data.storeRetrieveItemData(restored_item, _constant.data.key.suffix.pool.parent_id, "")
+    _data().storeRetrieveItemData(restored_item, _constant.data.key.suffix.pool.parent_id, "")
   end
 
   return restored_item, restored_instances_near_project_start, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
@@ -559,7 +550,7 @@ function Common.restoreItem(track, state, this_is_ancestor_superitem_update)
   local restored_item = reaper.AddMediaItemToTrack(track)
 
   if state then
-    _data.getSetItemStateChunk(restored_item, state)
+    _data().getSetItemStateChunk(restored_item, state)
   end
 
   if not this_is_ancestor_superitem_update then
@@ -576,7 +567,7 @@ function Common.restoreOriginalMidiTake(item)
   item_takes_count = reaper.GetMediaItemNumTakes(item)
 
   if item_takes_count > 0 then
-    preglue_active_midi_take_guid = _data.storeRetrieveItemData(item, _constant.data.key.suffix.preglue.active_take_guid)
+    preglue_active_midi_take_guid = _data().storeRetrieveItemData(item, _constant.data.key.suffix.preglue.active_take_guid)
     preglue_active_midi_take = reaper.SNM_GetMediaItemTakeByGUID(_constant.api.current_project, preglue_active_midi_take_guid)
 
     if preglue_active_midi_take then
@@ -590,7 +581,7 @@ function Common.restoreOriginalMidiTake(item)
 
       reaper.NF_DeleteTakeFromItem(item, rendered_audio_take_num)
       reaper.SetActiveTake(preglue_active_midi_take)
-      _glue.cleanNullTakes(item)
+      _glue().cleanNullTakes(item)
     end
   end
 end
@@ -599,7 +590,7 @@ end
 function Common.adjustRestoredItem(superitem, restored_item, action)
   local restored_item_params, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled, adjusted_restored_item_position_is_before_project_start, restored_item_negative_position
 
-  restored_item_params = _data.getSetItemParams(restored_item)
+  restored_item_params = _data().getSetItemParams(restored_item)
   restored_item_params.position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, restored_item_params, action)
   adjusted_restored_item_position_is_before_project_start = restored_item_params.position < 0
 
@@ -620,10 +611,10 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
 
   if action == "Edit" or action == "Unglue" or action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then
     superitem_loop_starts_in_later_half = _unglued_pool_preunglue_params.source_offset > (superitem_source_length / 2)
-    this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _state.superitem.params.post_glue.edited_pool.position - _unglued_pool_preunglue_params.source_offset
+    this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _state.superitem.params.post_glue().edited_pool.position - _unglued_pool_preunglue_params.source_offset
 
     if _state.superitem.this_previously_depooled_superitem_has_not_been_edited ~= "true" then
-      this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + _state.superitem.params.post_glue.edited_pool.source_offset
+      this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + _state.superitem.params.post_glue().edited_pool.source_offset
     end
 
     if looped_source_sets_sizing_region__enabled == "true" and superitem_loop_is_enabled and superitem_loop_starts_in_later_half then
@@ -631,7 +622,7 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
     end
 
   elseif action == "DePool" then
-    this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _state.superitem.params.post_glue.edited_pool.position + _state.superitem.params.post_glue.edited_pool.source_offset
+    this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _state.superitem.params.post_glue().edited_pool.position + _state.superitem.params.post_glue().edited_pool.source_offset
   end
 
   restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_glue_superitem_instance
@@ -710,13 +701,13 @@ function Common.setAllSuperitemsColor(action)
   pool_ids = {}
 
   if retval ~= 0 then
-    _init.prepareAction("color")
+    _init().prepareAction("color")
 
     all_items_count = reaper.CountMediaItems(_constant.api.current_project)
 
     for i = 0, all_items_count-1 do
       this_item = reaper.GetMediaItem(_constant.api.current_project, i)
-      this_item_instance_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
+      this_item_instance_pool_id = _data().storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
 
       if this_item_instance_pool_id and this_item_instance_pool_id ~= "" then
         reaper.SetMediaItemInfo_Value(this_item, _constant.api.item.key.color, color|0x1000000)
@@ -724,7 +715,7 @@ function Common.setAllSuperitemsColor(action)
       end
     end
 
-    _init.cleanUpAction(action, pool_ids)
+    _init().cleanUpAction(action, pool_ids)
   end
 end
 

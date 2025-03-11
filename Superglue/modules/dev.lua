@@ -1,7 +1,6 @@
 -- @noindex
 
 local Dev = {
-
   config = {
     test_logging_enabled = true,
     log_function_entry = false,
@@ -9,17 +8,16 @@ local Dev = {
   }
 }
 
-local _setup = require("modules.setup")
-
 
 
 function Dev.updateSelectedItems()
+
   for i = 0, reaper.CountSelectedMediaItems(0)-1 do
     reaper.UpdateItemInProject(reaper.GetMediaItem(0,i))
   end
 end
 
-function _log(...)
+function Dev.log(...)
   local arg = {...}
   local msg = ""
   for _,v in ipairs(arg) do
@@ -93,51 +91,42 @@ function Dev.logTableMediaItems(t, name)
   for k,v in pairs(t) do
     _logV(k,tostring(reaper.ValidatePtr(v, "MediaItem*")))
   end
-
 end
 
-
-local DebugType = 0
-
-function Dev.Debug(message, value, spacesToAdd, forceMsgBox)
-  local _init = _setup.load("init")
-  Dev.updateSelectedItems()
-  _init.refreshUI()
-    if DebugType < 0 then return end
-    local text = ""
-    local a = tostring(message)
-    local b = tostring(value)
-    if message ~= nil then text = a end
-    if value ~= nil then
-      if value ~= "" then text = text .. " = " .. b
-      elseif value == "" then text = text .. b
-      end
-    end
-    local space = ""
-    if spacesToAdd ~= nil and spacesToAdd > 0 then
-        for _, spacesToAdd do space = space .. "\n" end
-    end
-    text = space .. text
-    if forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) end
-    if DebugType == 0 then reaper.ShowConsoleMsg(text .. "\n") return
-    elseif DebugType == 1 and not forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) return end
-  Dev.updateSelectedItems()
-  _init.refreshUI()
-end
-
-
+-- protected namespace right?
+-- function Dev.debug(message, value, spacesToAdd, forceMsgBox)
+--   local _init = _setup.load("init")
+--   local debugType = 0
+--   Dev.updateSelectedItems()
+--   _init.refreshUI()
+--   if debugType < 0 then return end
+--   local text = ""
+--   local a = tostring(message)
+--   local b = tostring(value)
+--   if message ~= nil then text = a end
+--   if value ~= nil then
+--     if value ~= "" then text = text .. " = " .. b
+--     elseif value == "" then text = text .. b
+--     end
+--   end
+--   local space = (spacesToAdd and spacesToAdd > 0) and string.rep("\n", spacesToAdd) or ""
+--   text = space .. text
+--   if forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) end
+--   if debugType == 0 then reaper.ShowConsoleMsg(text .. "\n") return
+--   elseif debugType == 1 and not forceMsgBox then reaper.ShowMessageBox(text, "DEBUG", 0) return end
+--   Dev.updateSelectedItems()
+--   _init.refreshUI()
+-- end
 
 function Dev.logSuperglueProjectData()
   local master_track, _constant, master_track_chunk
 
-  _constant = _setup.load("constant")
+  _constant = require("modules.constant")
   master_track = reaper.GetMasterTrack(_constant.api.current_project)
   _, master_track_chunk = reaper.GetTrackStateChunk(master_track, "", false)
 
   _log(master_track_chunk)
 end
-
-
 
 function Dev.wrapWithLogging(module_table, module_name, config)
 
@@ -163,6 +152,7 @@ function Dev.wrapWithLogging(module_table, module_name, config)
     end
   end
 end
+
 
 
 return Dev

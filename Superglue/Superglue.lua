@@ -9,33 +9,76 @@
 
 local Superglue = {}
 
-local _setup, _common, _constant, _dev, _init, _iteminfo, _options
+local _common, _constant, _dev, _init, _iteminfo, _options
 
 
 function Superglue.init(type_action)
-  Superglue.setUp()
+  Superglue.bootstrap()
+  Superglue.loadDependencies()
+  Superglue.initDependencies()
   Superglue.routeAction(type_action)
 end
 
 
-function Superglue.setUp()
-  _setup = require("modules.setup")
-
-  _setup.bootstrap()
-
-  _common, _constant, _dev, _init, _iteminfo, _options = _setup.load("common, constant, dev, init, iteminfo, options")
-
-  _options.populateOptionsDefaults()
+function Superglue.loadDependencies()
+  _common = require("modules.common")
+  _constant = require("modules.constant")
+  _dev = require("modules.dev")
+  _init = require("modules.init")
+  _iteminfo = require("modules.iteminfo")
+  _options = require("modules.options")
 end
 
 
-function Superglue.injectDependencies(modules)
-  _common = modules.common
-  _constant = modules.constant
-  _dev = modules.dev
-  _init = modules.init
-  _iteminfo = modules.iteminfo
-  _options = modules.options
+function Superglue.bootstrap()
+  local script_dir = Superglue.getScriptPath()
+
+  Superglue.setPackageVals(script_dir)
+
+  return script_dir
+end
+
+
+function Superglue.getScriptPath()
+  local _, script_file = reaper.get_action_context()
+  local script_dir = Superglue.extractDirectoryPath(script_file)
+
+  return script_dir
+end
+
+
+function Superglue.extractDirectoryPath(filePath)
+  local directory = filePath:match("^(.*[/\\])")
+
+  return directory
+end
+
+
+function Superglue.setPackageVals(script_dir)
+  local libPath = script_dir .. "lib/?.lua"
+  local modulesPath = script_dir .. "modules/?.lua"
+
+  package.path = package.path .. ";" .. libPath  .. ";" .. modulesPath
+  package.preload["sg_paths"] = Superglue.returnPaths(script_dir)
+end
+
+
+function Superglue.returnPaths(script_dir)
+
+  return {
+    script_dir = script_dir,
+
+    join = function(...)
+      local parts = {...}
+
+      return table.concat(parts, "/")
+    end
+  }
+end
+
+
+function Superglue.initDependencies()
+  _options.populateOptionsDefaults()
 end
 
 
@@ -49,13 +92,13 @@ function Superglue.routeAction(type_action)
   end
 
   if type == "main" then
-    Superglue.initMainAction(action)
+    Superglue.routeMainAction(action)
 
   elseif type == "utility" then
-    Superglue.initUtilityAction(action)
+    Superglue.routeUtilityAction(action)
 
   elseif type == "option" then
-    Superglue.initOptionToggle(action)
+    Superglue.routeOptionToggle(action)
 
   else
     reaper.ShowMessageBox("Unknown action type: " .. type, "Superglue Error", 0)
@@ -63,9 +106,7 @@ function Superglue.routeAction(type_action)
 end
 
 
-function Superglue.initMainAction(action)
-  _init = _setup.load("init")
-
+function Superglue.routeMainAction(action)
   local selected_item_count = _init.setUpAction(action)
 
   if not selected_item_count then return end
@@ -85,7 +126,7 @@ function Superglue.initMainAction(action)
 end
 
 
-function Superglue.initUtilityAction(action)
+function Superglue.routeUtilityAction(action)
   _common, _options, _dev, _iteminfo = _setup.load("common, options, dev, iteminfo")
 
   if action == "Open Superglue Options Window" then
@@ -103,7 +144,7 @@ function Superglue.initUtilityAction(action)
 end
 
 
-function Superglue.initOptionToggle(option_name)
+function Superglue.routeOptionToggle(option_name)
   _options = _setup.load("options")
 
   local active_option, current_val, new_val

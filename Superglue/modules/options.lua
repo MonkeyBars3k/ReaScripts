@@ -3,16 +3,8 @@
 local Options = {}
 
 
-local _setup = require("modules.setup")
-local rtk, _constant = _setup.load("rtk, constant")
--- local _dev = _setup.load("dev")
-
-function Options.injectDependencies(modules)
-  rtk = modules.rtk
-  _constant = modules.constant
-
-  -- _dev = modules.dev
-end
+local rtk = require("lib.rtk")
+local _constant = require("modules.constant")
 
 
 

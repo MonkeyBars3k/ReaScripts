@@ -3,24 +3,22 @@
 local Init = {}
 
 
-local _setup = require("modules.setup")
-local _common, _constant, _data, _file, _midi, _multi, _options, _state, _util = _setup.load("common, constant, data, file, midi, multi, options, state, util")
--- local _dev = _setup.load("dev")
+local _module_utils = require("module-utils")
 
-function Init.injectDependencies(modules)
-  _common = modules.common
-  _constant = modules.constant
-  _data = modules.data
-  _file = modules.file
-  _midi = modules.midi
-  _multi = modules.multi
-  _options = modules.options
-  _state = modules.state
-  _util = modules.util
+-- local _common = require("modules.common")
+local _constant = require("modules.constant")
+local _data = require("modules.data")
+-- local _midi = require("modules.midi")
+-- local _multi = require("modules.multi")
+local _options = require("modules.options")
+local _state = require("modules.state")
+local _util = require("modules.util")
 
-  -- _dev = modules.dev
-end
---
+local function _common() return _module_utils.lazyRequire("common") end
+local function _midi() return _module_utils.lazyRequire("midi") end
+local function _multi() return _module_utils.lazyRequire("multi") end
+
+
 
 function Init.setUpAction(action)
   local selected_item_count
@@ -65,10 +63,10 @@ function Init.renderPathIsValid()
   win_platform_regex = "^Win"
   is_win = string.match(platform, win_platform_regex)
   win_absolute_path_regex = "^%u%:\\"
-  is_win_absolute_path = string.match(_file.path.proj_render, win_absolute_path_regex)
+  is_win_absolute_path = string.match(_constant.file.path.proj_render, win_absolute_path_regex)
   is_win_local_path = is_win and not is_win_absolute_path
   nix_absolute_path_regex = "^/"
-  is_nix_absolute_path = string.match(_file.path.proj_render, nix_absolute_path_regex)
+  is_nix_absolute_path = string.match(_constant.file.path.proj_render, nix_absolute_path_regex)
   is_other_local_path = not is_win and not is_nix_absolute_path
 
   if is_win_local_path or is_other_local_path then
@@ -122,15 +120,15 @@ function Init.copySuperglueItemImagesToProject()
   local project_images_paths, script_image_paths
 
   project_images_paths = {
-    superitem_bg = _file.path.superitem_bg_img,
-    restored_item_bg = _file.path.restored_item_bg_img,
-    restored_instance_bg = _file.path.restored_instance_bg_img
+    superitem_bg = _constant.file.path.superitem_bg_img,
+    restored_item_bg = _constant.file.path.restored_item_bg_img,
+    restored_instance_bg = _constant.file.path.restored_instance_bg_img
   }
 
   script_image_paths = {
-    superitem_bg = _file.path.script .. _file.name.superitem_bg_img,
-    restored_item_bg = _file.path.script .. _file.name.restored_item_bg_img,
-    restored_instance_bg = _file.path.script .. _file.name.restored_instance_bg_img
+    superitem_bg = _constant.file.path.script .. _constant.file.name.superitem_bg_img,
+    restored_item_bg = _constant.file.path.script .. _constant.file.name.restored_item_bg_img,
+    restored_instance_bg = _constant.file.path.script .. _constant.file.name.restored_instance_bg_img
   }
 
   for image_name, image_path in pairs(project_images_paths) do
@@ -172,7 +170,7 @@ end
 function Init.completeGlueOrDePool(selected_items, action)
   local pool_ids_changed
 
-  if not _multi.setUpMultiTrackActions(selected_items, action) then return end
+  if not _multi().setUpMultiTrackActions(selected_items, action) then return end
 
   if action == "Glue" then
     pool_ids_changed = _state.action.glue.changed_pool_ids
@@ -183,7 +181,7 @@ function Init.completeGlueOrDePool(selected_items, action)
 
   _state.action.glue.all_glued_superitems = Init.removeItemsAbsentFromProjectFromArray(_state.action.glue.all_glued_superitems)
 
-  _common.selectDeselectItems(_state.action.glue.all_glued_superitems, true)
+  _common().selectDeselectItems(_state.action.glue.all_glued_superitems, true)
   Init.cleanUpAction(action, pool_ids_changed)
 end
 
@@ -208,7 +206,7 @@ function Init.doEditOrUnglueAction(selected_item_count, action)
   if selected_item_count == 0 then return end
 
   local selected_items = Init.getSelectedItems(selected_item_count)
-  local selected_item_groups = _common.getSuperglueItemTypes(selected_items, {"superitem"})
+  local selected_item_groups = _common().getSuperglueItemTypes(selected_items, {"superitem"})
   local superitems = selected_item_groups.superitem.items
 
   if #superitems == 0 then
@@ -225,7 +223,7 @@ function Init.doEditOrUnglueAction(selected_item_count, action)
 
   if not selected_items then return end
 
-  if not _multi.setUpMultiTrackActions(selected_items, action) then return end
+  if not _multi().setUpMultiTrackActions(selected_items, action) then return end
 
   if Init.checkItemsOffscreen(_state.action.edit_or_unglue.restored_items, "restored") == true then return end
 
@@ -254,7 +252,7 @@ function Init.doSmartAction(selected_item_count, action)
 
   if Init.superitemSelectionIsInvalid(selected_items, action) then return end
 
-  if not _multi.setUpMultiTrackActions(selected_items, action) then return end
+  if not _multi().setUpMultiTrackActions(selected_items, action) then return end
 
   for i = 1, #_state.action.glue.changed_pool_ids do
     table.insert(_state.action.edit.changed_pool_ids, _state.action.glue.changed_pool_ids[i])
@@ -332,7 +330,7 @@ function Init.handleSelectedSiblings(selected_items, selected_siblings, action)
         end
       end
 
-      _common.selectDeselectItems(selected_siblings, false)
+      _common().selectDeselectItems(selected_siblings, false)
 
       return selected_items_without_siblings
 
@@ -473,7 +471,7 @@ end
 function Init.superitemSelectionIsInvalid(selected_items, action)
   local selected_item_groups, superitems, restored_items, siblings_are_selected, recursive_superitem_is_being_glued
 
-  selected_item_groups = _common.getSuperglueItemTypes(selected_items, {"superitem", "restored"})
+  selected_item_groups = _common().getSuperglueItemTypes(selected_items, {"superitem", "restored"})
   superitems = selected_item_groups.superitem.items
   restored_items = selected_item_groups.restored.items
   recursive_superitem_is_being_glued = Init.recursiveSuperitemIsBeingGlued(superitems, restored_items) == true
@@ -616,7 +614,7 @@ end
 function Init.calculateSmartAction(user_selected_items_on_this_track)
   local selected_item_groups, parent_instances_count, no_parent_instances_are_selected, single_parent_instance_is_selected, parent_instances_are_selected, multiple_parent_instances_are_selected, nonsuperitems_count, no_nonsuperitems_are_selected, nonsuperitems_are_selected, child_instances_count, no_child_instances_are_selected, single_child_instance_is_selected, user_wants_to_edit_or_unglue, user_must_glue_or_abort, user_wants_to_glue
 
-  selected_item_groups = _common.getSuperglueItemTypes(user_selected_items_on_this_track, {"nonsuperitem", "child_instance", "parent_instance"})
+  selected_item_groups = _common().getSuperglueItemTypes(user_selected_items_on_this_track, {"nonsuperitem", "child_instance", "parent_instance"})
   parent_instances_count = #selected_item_groups.parent_instance.items
   no_parent_instances_are_selected = parent_instances_count == 0
   single_parent_instance_is_selected = parent_instances_count == 1

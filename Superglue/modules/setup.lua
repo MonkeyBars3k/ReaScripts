@@ -1,34 +1,36 @@
 -- @noindex
 
 local Setup = {
-  modules = {},
-  module_names = {},
-  modules_registry = {},
+  -- modules = {},
+  -- module_names = {},
+  -- modules_registry = {},
 
-  internal_modules = {
-    "common",
-    "constant",
-    "data",
-    "depool",
-    "dev",
-    "edit",
-    "glue",
-    "init",
-    "iteminfo",
-    "lanes",
-    "multi",
-    "options",
-    "reglue",
-    "single",
-    "state",
-    "util",
-    "vi"
-  },
+  -- internal_modules = {
+  --   "common",
+  --   "constant",
+  --   "data",
+  --   "depool",
+  --   "dev",
+  --   "edit",
+  --   "glue",
+  --   "init",
+  --   "iteminfo",
+  --   "lanes",
+  --   "midi",
+  --   "multi",
+  --   "options",
+  --   "overglue",
+  --   "reglue",
+  --   "single",
+  --   "state",
+  --   "util",
+  --   "vi"
+  -- },
 
-  external_libs = {
-    rtk = "lib.rtk",
-    serpent = "lib.serpent"
-  }
+  -- external_libs = {
+  --   rtk = "lib.rtk",
+  --   serpent = "lib.serpent"
+  -- }
 }
 
 
@@ -79,88 +81,137 @@ function Setup.returnPaths(script_dir)
 end
 
 
-function Setup.load(module_string)
-  Setup.parseModuleNames(module_string)
-  Setup.loadModules()
-  Setup.injectDependencies()
+-- function Setup.loadModules(moduleString)
+--   local moduleNames = {}
+--   for name in string.gmatch(moduleString, "([^,%s]+)") do
+--     table.insert(moduleNames, name)
+--   end
 
-  return Setup.orderModules()
-end
+--   local loadedModules = {}
+--   for _, name in ipairs(moduleNames) do
+--     loadedModules[#loadedModules+1] = require("modules." .. name)
+--   end
 
-
-function Setup.parseModuleNames(module_string)
-  Setup.module_names = {} -- Clear previous names
-  local module_name_pattern = "([^,%s]+)"
-
-  for name in string.gmatch(module_string, module_name_pattern) do
-    table.insert(Setup.module_names, name)
-  end
-end
+--   return table.unpack(loadedModules)
+-- end
 
 
-function Setup.registerModule(name, module)
-  Setup.modules_registry[name] = module
+-- function Setup.initializeModules(modules, initOrder)
 
-  return module
-end
+--   for _, name in ipairs(initOrder) do
 
-
-function Setup.loadModules()
-
-  for _, name in ipairs(Setup.module_names) do
-
-    if Setup.modules_registry[name] then
-      -- Module was already registered, use existing reference
-      Setup.modules[name] = Setup.modules_registry[name]
-    else
-
-      if Setup.external_libs[name] then
-        Setup.modules[name] = require(Setup.external_libs[name])
-
-      else
-        local is_valid = false
-
-        for _, mod_name in ipairs(Setup.internal_modules) do
-
-          if name == mod_name then
-            is_valid = true
-
-            break
-          end
-        end
-
-        if is_valid then
-          Setup.modules[name] = require("modules." .. name)
-
-        else
-          error("Unknown module: " .. name)
-        end
-      end
-    end
-  end
-end
+--     if modules[name].initialize then
+--       modules[name].initialize()
+--     end
+--   end
+-- end
 
 
-function Setup.injectDependencies()
+-- function Setup.registerModule(name, module)
+--   Setup.modules_registry[name] = module
 
-  for _, module in pairs(Setup.modules) do
-
-    if type(module.injectDependencies) == "function" then
-      module.injectDependencies(Setup.modules)
-    end
-  end
-end
+--   return module
+-- end
 
 
-function Setup.orderModules()
-  local ordered_modules = {}
+-- function Setup.load(module_string)
+--   Setup.parseModuleNames(module_string)
+--   Setup.loadModules()
+--   Setup.injectDependencies()
 
-  for i, name in ipairs(Setup.module_names) do
-    ordered_modules[i] = Setup.modules[name]
-  end
+--   return Setup.orderModules()
+-- end
 
-  return table.unpack(ordered_modules)
-end
+
+-- function Setup.parseModuleNames(module_string)
+--   Setup.module_names = {} -- Clear previous names
+--   local module_name_pattern = "([^,%s]+)"
+
+--   for name in string.gmatch(module_string, module_name_pattern) do
+--     table.insert(Setup.module_names, name)
+--   end
+-- end
+
+
+-- function Setup.loadModules()
+
+--   for _, name in ipairs(Setup.module_names) do
+
+
+-- local isPreregistered = Setup.modules_registry and Setup.modules_registry[name]
+
+-- -- Record module load attempt
+-- local entry = string.format("Loading module: %s %s",
+--   name,
+--   isPreregistered and "(pre-registered)" or ""
+-- )
+-- Setup.loadLog = {}
+-- table.insert(Setup.loadLog, entry)
+-- reaper.ShowConsoleMsg(entry .. "\n")
+
+
+
+--     if Setup.modules_registry[name] then
+--       -- Module was already registered, use existing reference
+--       Setup.modules[name] = Setup.modules_registry[name]
+
+--     else
+
+--       if Setup.external_libs[name] then
+--         Setup.modules[name] = require(Setup.external_libs[name])
+
+--       else
+--         local is_valid = false
+
+--         for _, mod_name in ipairs(Setup.internal_modules) do
+
+--           if name == mod_name then
+--             is_valid = true
+
+--             break
+--           end
+--         end
+
+--         if is_valid then
+--           Setup.modules[name] = require("modules." .. name)
+
+--         else
+--           error("Unknown module: " .. name)
+--         end
+--       end
+--     end
+--   end
+-- end
+
+
+-- function Setup.injectDependencies()
+
+-- -- for name, mod in pairs(Setup.modules) do
+-- --   reaper.ShowConsoleMsg("Module: " .. name .. " Type: " .. type(mod) .. "\n")
+-- --   if type(mod) == "boolean" then
+-- --     reaper.ShowConsoleMsg("Boolean module found: " .. name .. " = " .. tostring(mod) .. "\n")
+-- --   end
+-- -- end
+
+--   for _, module in pairs(Setup.modules) do
+
+--     if type(module.injectDependencies) == "function" then
+--       module.injectDependencies(Setup.modules)
+--     end
+--   end
+-- end
+
+
+-- function Setup.orderModules()
+--   local ordered_modules = {}
+
+--   for i, name in ipairs(Setup.module_names) do
+--     ordered_modules[i] = Setup.modules[name]
+--     reaper.ShowConsoleMsg("Module at position " .. i .. ": " .. name .. " is " .. (Setup.modules[name] and "loaded" or "NIL") .. "\n")
+--   end
+
+--   return table.unpack(ordered_modules)
+-- end
 
 
 -- can't self-execute at this point; explore other architecture

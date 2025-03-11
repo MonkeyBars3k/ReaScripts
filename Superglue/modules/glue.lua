@@ -3,24 +3,21 @@
 local Glue = {}
 
 
-local _setup = require("modules.setup")
-local serpent, _common, _constant, _data, _depool, _file, _init, _lanes, _state, _util = _setup.load("serpent, common, constant, data, depool, file, init, lanes, state, util")
-local _dev = _setup.load("dev")
+local _module_utils = require("module-utils")
 
-function Glue.injectDependencies(modules)
-  serpent = modules.serpent
-  _common = modules.common
-  _constant = modules.constant
-  _data = modules.data
-  _depool = modules.depool
-  _file = modules.file
-  _init = modules.init
-  _lanes = modules.lanes
-  _state = modules.state
-  _util = modules.util
+local serpent = require("lib.serpent")
+-- local _common = require("modules.common")
+local _constant = require("modules.constant")
+-- local _data = require("modules.data")
+local _depool = require("modules.depool")
+local _init = require("modules.init")
+local _lanes = require("modules.lanes")
+local _state = require("modules.state")
+local _util = require("modules.util")
 
-  _dev = modules.dev
-end
+local function _common() return _module_utils.lazyRequire("common") end
+local function _data() return _module_utils.lazyRequire("data") end
+
 
 
 function Glue.handleGlue(selected_items, pool_id, sizing_region_guid, depool_superitem_params, this_is_ancestor_superitem_update)
@@ -28,7 +25,7 @@ function Glue.handleGlue(selected_items, pool_id, sizing_region_guid, depool_sup
 
   this_is_depool = depool_superitem_params ~= nil
   first_selected_item = selected_items[1]
-  first_selected_item_name = _common.getSetItemName(first_selected_item)
+  first_selected_item_name = _common().getSetItemName(first_selected_item)
 
   pool_id, sizing_params, this_is_reglue = Glue.setUpGlue(depool_superitem_params, this_is_ancestor_superitem_update, pool_id, sizing_region_guid, selected_items)
 
@@ -61,7 +58,7 @@ function Glue.setUpGlue(depool_superitem_params, this_is_ancestor_superitem_upda
   this_is_reglue = pool_id ~= nil
 
 
--- DO DESELECTION *ONLY* ON THIS TRACK IF THIS GLUE IS MULTITRACK?? IF SO, EXPAND _common.selectDeselectItems() TO SUPPORT TRACK ARGUMENT AND CALL THAT INSTEAD
+-- DO DESELECTION *ONLY* ON THIS TRACK IF THIS GLUE IS MULTITRACK?? IF SO, EXPAND _common().selectDeselectItems() TO SUPPORT TRACK ARGUMENT AND CALL THAT INSTEAD
   reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
 
   if this_is_new_glue then
@@ -76,7 +73,7 @@ function Glue.setUpGlue(depool_superitem_params, this_is_ancestor_superitem_upda
 
 
 -- THIS LINE CAUSES SIBLING DEPOOLED SUPERITEM POSITION TO GO WEIRD – TEST FURTHER -- IS THIS STILL THE CASE??
-      _state.restored_items.preglue_restored_item_states = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_item_states)
+      _state.restored_items.preglue_restored_item_states = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_item_states)
 
 
     -- end
@@ -89,10 +86,10 @@ end
 function Glue.handlePoolId()
   local retval, last_pool_id, new_pool_id
 
-  retval, last_pool_id = _data.storeRetrieveProjectData(_constant.data.key.suffix.pool.last_id)
+  retval, last_pool_id = _data().storeRetrieveProjectData(_constant.data.key.suffix.pool.last_id)
   new_pool_id = Glue.incrementPoolId(last_pool_id)
 
-  _data.storeRetrieveProjectData(_constant.data.key.suffix.pool.last_id, new_pool_id)
+  _data().storeRetrieveProjectData(_constant.data.key.suffix.pool.last_id, new_pool_id)
 
   return new_pool_id
 end
@@ -129,7 +126,7 @@ function Glue.handleNewGlueSizing(selected_items, this_is_depool, pool_id, depoo
     }
 
   elseif global_option_time_selection_sets_bounds_enabled == "false" then
-    sizing_params = _common.getBoundsFromItems(selected_items)
+    sizing_params = _common().getBoundsFromItems(selected_items)
   end
 
   if this_is_depool then
@@ -146,14 +143,14 @@ end
 function Glue.setUpGlueWithDePool(pool_id, depool_superitem_params)
   local sizing_params
 
-  _state.restored_items.last_glue_stored_item_states = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_item_states)
+  _state.restored_items.last_glue_stored_item_states = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_item_states)
   sizing_params = {
     position = depool_superitem_params.position,
     end_point = depool_superitem_params.end_point
   }
   sizing_params.length = sizing_params.end_point - sizing_params.position
 
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.last_glue.contained_item_states, _state.restored_items.last_glue_stored_item_states)
+  _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.last_glue.contained_item_states, _state.restored_items.last_glue_stored_item_states)
   Glue.instantiateDummySizingItem(sizing_params)
 
   return sizing_params
@@ -177,7 +174,7 @@ function Glue.getReglueSizing(pool_id, sizing_region_guid, selected_items, this_
   local user_selected_instance_is_being_reglued, sizing_params
 
   user_selected_instance_is_being_reglued = not this_is_ancestor_superitem_update
-  _state.superitem.pool_parent_last_glue_length = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_length)
+  _state.superitem.pool_parent_last_glue_length = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_length)
   _state.superitem.pool_parent_last_glue_length = tonumber(_state.superitem.pool_parent_last_glue_length)
 
   if user_selected_instance_is_being_reglued then
@@ -194,12 +191,12 @@ end
 function Glue.setUpUserSelectedInstanceReglueSizing(sizing_region_guid, pool_id)
   local sizing_params, is_active_superitem_reglue
 
-  sizing_params = _common.getSetSizingRegion(sizing_region_guid)
+  sizing_params = _common().getSetSizingRegion(sizing_region_guid)
   is_active_superitem_reglue = sizing_params
 
   if is_active_superitem_reglue then
     Glue.instantiateDummySizingItem(sizing_params)
-    _common.getSetSizingRegion(sizing_region_guid, "delete")
+    _common().getSetSizingRegion(sizing_region_guid, "delete")
     Glue.handleSizingRegionPoolData(nil, pool_id, "delete")
   end
 
@@ -271,7 +268,7 @@ end
 function Glue.handleSizingRegionPoolData(region_idx, pool_id, delete)
   local all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions, sizing_region_api__key, sizing_region_guid
 
-  all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions = _data.storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
+  all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions = _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
 
   if delete == "delete" then
 
@@ -280,7 +277,7 @@ function Glue.handleSizingRegionPoolData(region_idx, pool_id, delete)
       all_pool_ids_with_active_sizing_regions[pool_id] = nil
       all_pool_ids_with_active_sizing_regions = serpent.dump(all_pool_ids_with_active_sizing_regions)
 
-      _data.storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions, all_pool_ids_with_active_sizing_regions)
+      _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions, all_pool_ids_with_active_sizing_regions)
     end
 
   else
@@ -299,7 +296,7 @@ function Glue.handleSizingRegionPoolData(region_idx, pool_id, delete)
 
     all_pool_ids_with_active_sizing_regions = serpent.dump(all_pool_ids_with_active_sizing_regions)
 
-    _data.storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions, all_pool_ids_with_active_sizing_regions)
+    _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions, all_pool_ids_with_active_sizing_regions)
 
     return retval, sizing_region_guid
   end
@@ -309,7 +306,7 @@ end
 function Glue.setUpParentReglueSizing(pool_id, selected_items)
   local pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_end_point, sizing_params
 
-  pool_parent_last_glue_position = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_position)
+  pool_parent_last_glue_position = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_position)
   pool_parent_last_glue_position = tonumber(pool_parent_last_glue_position)
   pool_parent_last_glue_end_point = pool_parent_last_glue_position + _state.superitem.pool_parent_last_glue_length
   sizing_params = {
@@ -333,9 +330,9 @@ function Glue.handlePreglueItems(selected_items, pool_id, sizing_params, this_is
   end
 
   -- Get states before storing them
-  selected_item_states, selected_items_pool_params = _data.prepareAndGetItemStates(selected_items, pool_id)
-  _data.storeItemStates(pool_id, selected_item_states)
-  _common.selectDeselectItems(selected_items, true)
+  selected_item_states, selected_items_pool_params = _data().prepareAndGetItemStates(selected_items, pool_id)
+  _data().storeItemStates(pool_id, selected_item_states)
+  _common().selectDeselectItems(selected_items, true)
 
   return selected_items_pool_params
 end
@@ -351,7 +348,7 @@ function Glue.setPreglueItemsData(preglue_items, pool_id, sizing_params, this_is
     this_item = preglue_items[i]
     this_item_position = reaper.GetMediaItemInfo_Value(this_item, _constant.api.item.key.position)
 
-    _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id, pool_id)
+    _data().storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id, pool_id)
 
     if i == 1 or this_item_position < first_item_position then
       first_item_position = this_item_position
@@ -367,7 +364,7 @@ function Glue.setPreglueItemsData(preglue_items, pool_id, sizing_params, this_is
   --   first_child_position_delta_to_parent = first_item_position - sizing_params.position
   -- end
 
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.superitem.first_child_delta_to_superitem_position, first_child_position_delta_to_parent)
+  _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.superitem.first_child_delta_to_superitem_position, first_child_position_delta_to_parent)
 end
 
 
@@ -384,26 +381,26 @@ function Glue.convertMidiItemToAudio(item)
       active_take = reaper.GetActiveTake(item)
       retval, active_take_guid = reaper.GetSetMediaItemTakeInfo_String(active_take, _constant.api.take.key.guid, "", false)
 
-      _data.storeRetrieveItemData(item, _constant.data.key.suffix.preglue.active_take_guid, active_take_guid)
+      _data().storeRetrieveItemData(item, _constant.data.key.suffix.preglue.active_take_guid, active_take_guid)
       reaper.SetMediaItemSelected(item, true)
       reaper.Main_OnCommand(_constant.cmd.apply_track_take_fx_to_items, _constant.api.cmd_flag)
       reaper.SetMediaItemSelected(item, false)
       Glue.cleanNullTakes(item)
 
     else
-      _data.storeRetrieveItemData(item, _constant.data.key.suffix.preglue.active_take_guid, "")
+      _data().storeRetrieveItemData(item, _constant.data.key.suffix.preglue.active_take_guid, "")
     end
   end
 end
 
 
 function Glue.cleanNullTakes(item, force)
-  local item_state = _data.getSetItemStateChunk(item)
+  local item_state = _data().getSetItemStateChunk(item)
 
   if string.find(item_state, _constant.api.take.null_takes_val) or force then
     item_state = string.gsub(item_state, _constant.api.take.null_takes_val, "")
 
-    _data.getSetItemStateChunk(item, item_state)
+    _data().getSetItemStateChunk(item, item_state)
   end
 end
 
@@ -439,14 +436,14 @@ function Glue.handlePostGlue(selected_items, pool_id, first_selected_item_name, 
   -- Position superitem in topmost lane
   -- Position superitem in topmost lane
   if _constant.support.fixed_lanes then
-    local topLaneStr = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
+    local topLaneStr = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
     local topLane = tonumber(topLaneStr) or 0
 
-    local topYPosStr = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos)
+    local topYPosStr = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos)
     local exactYPos = topYPosStr and tonumber(topYPosStr)
 
     -- Get the original lane count
-    local originalLaneCountStr = _data.storeRetrievePoolData(pool_id, "original_lane_count")
+    local originalLaneCountStr = _data().storeRetrievePoolData(pool_id, "original_lane_count")
     local originalLaneCount = tonumber(originalLaneCountStr) or 0
 
     -- Get track information
@@ -489,7 +486,7 @@ _lanes.debugLaneInfo("AFTER GLUE", {superitem}, reaper.GetMediaItemTrack(superit
   end
 
   if not this_is_reglue then
-    _common.addRemoveItemImage(superitem, "superitem")
+    _common().addRemoveItemImage(superitem, "superitem")
   end
 end
 
@@ -528,14 +525,14 @@ function Glue.handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, s
 
   Glue.setSuperitemParams(superitem, superitem_active_take, sizing_params, this_is_reglue)
 
-  superitem_params = _data.getSetItemParams(superitem)
+  superitem_params = _data().getSetItemParams(superitem)
 
   if this_is_fresh_glue then
     Glue.renameSuperitemSource(superitem, pool_id)
-    _common.setSuperitemColor()
+    _common().setSuperitemColor()
 
   elseif this_is_reglue then
-    _common.handleOfflineTake(superitem, "reglued")
+    _common().handleOfflineTake(superitem, "reglued")
   end
 
   if not _state.superitem.active_instance_length_has_changed then
@@ -602,11 +599,11 @@ function Glue.getSuperitemActiveTakeInfo(superitem, pool_id)
   superitem_active_take_source = reaper.GetMediaItemTake_Source(superitem_active_take)
   superitem_active_take_source_filepath = reaper.GetMediaSourceFileName(superitem_active_take_source)
 
-  for i in string.gmatch(superitem_active_take_source_filepath, _file.path.splitter) do
+  for i in string.gmatch(superitem_active_take_source_filepath, _constant.file.path.splitter) do
     superitem_active_take_source_filename = i
   end
 
-  superitem_source_new_filepath = project_path .. _file.os.separator .. _constant.brand.prefix.item_name .. _file.name.custom_separator .. _constant.data.key.prefix.pool .. pool_id .. _file.name.custom_separator .. superitem_active_take_source_filename
+  superitem_source_new_filepath = project_path .. _constant.file.os.separator .. _constant.brand.prefix.item_name .. _constant.file.name.custom_separator .. _constant.data.key.prefix.pool .. pool_id .. _constant.file.name.custom_separator .. superitem_active_take_source_filename
 
   return superitem_active_take, superitem_active_take_source_filepath, superitem_source_new_filepath
 end
@@ -623,12 +620,12 @@ end
 
 
 function Glue.handleSuperitemPostGlueData(pool_id, superitem, superitem_params, superitem_active_take)
-  _data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.postglue, superitem)
-  _data.storeRetrieveItemData(superitem, _constant.data.key.suffix.pool.instance_id, pool_id)
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_position, superitem_params.position)
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_length, superitem_params.length)
-  _data.storeRetrievePoolData(pool_id, _constant.actionstep.freshly_depooled_superitem_flag, "false")
-  _common.refreshActiveTakeFlag(superitem, superitem_active_take, pool_id)
+  _data().storeRetrieveSuperitemParams(pool_id, _constant.actionstep.postglue, superitem)
+  _data().storeRetrieveItemData(superitem, _constant.data.key.suffix.pool.instance_id, pool_id)
+  _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_position, superitem_params.position)
+  _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_length, superitem_params.length)
+  _data().storeRetrievePoolData(pool_id, _constant.actionstep.freshly_depooled_superitem_flag, "false")
+  _common().refreshActiveTakeFlag(superitem, superitem_active_take, pool_id)
 end
 
 
@@ -641,7 +638,7 @@ function Glue.handleDescendantPoolReferences(pool_id, contained_items_pool_param
     this_selected_item_is_superitem = not string.find(this_contained_item_instance_pool_id, _constant.noninstance_label)
 
     if this_selected_item_is_superitem then
-      this_child_pool_descendant_pool_ids = _data.storeRetrievePoolData(this_contained_item_instance_pool_id, _constant.data.key.suffix.pool.descendant_ids)
+      this_child_pool_descendant_pool_ids = _data().storeRetrievePoolData(this_contained_item_instance_pool_id, _constant.data.key.suffix.pool.descendant_ids)
 
       table.insert(this_pool_descendants, this_contained_item_instance_pool_id)
 
@@ -654,7 +651,7 @@ function Glue.handleDescendantPoolReferences(pool_id, contained_items_pool_param
   this_pool_descendants = _util.deduplicateTable(this_pool_descendants)
   this_pool_descendants_string = serpent.dump(this_pool_descendants)
 
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.descendant_ids, this_pool_descendants_string)
+  _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.descendant_ids, this_pool_descendants_string)
 end
 
 
@@ -675,7 +672,7 @@ function Glue.storeParentPoolReferencesInChildPool(preglue_child_instance_pool_i
   local parent_pool_ids_data_key_label, retval, parent_pool_ids_referenced_in_child_pool, this_parent_pool_id, this_parent_pool_id_is_referenced_in_child_pool
 
   parent_pool_ids_data_key_label = _constant.data.key.prefix.pool .. preglue_child_instance_pool_id .. _constant.data.key.suffix.pool.parent_ids_data
-  retval, parent_pool_ids_referenced_in_child_pool = _data.storeRetrieveProjectData(parent_pool_ids_data_key_label)
+  retval, parent_pool_ids_referenced_in_child_pool = _data().storeRetrieveProjectData(parent_pool_ids_data_key_label)
 
   if retval == false then
     parent_pool_ids_referenced_in_child_pool = {}
@@ -699,7 +696,7 @@ function Glue.storeParentPoolReferencesInChildPool(preglue_child_instance_pool_i
 
     parent_pool_ids_referenced_in_child_pool = serpent.dump(parent_pool_ids_referenced_in_child_pool)
 
-    _data.storeRetrieveProjectData(parent_pool_ids_data_key_label, parent_pool_ids_referenced_in_child_pool)
+    _data().storeRetrieveProjectData(parent_pool_ids_data_key_label, parent_pool_ids_referenced_in_child_pool)
   end
 end
 
@@ -724,13 +721,13 @@ end
 function Glue.handleReglue(selected_items, restored_items_pool_id)
   local sizing_region_guid, superitem, superitem_params
 
-  sizing_region_guid = _common.checkSizingRegionExists(restored_items_pool_id, selected_items)
+  sizing_region_guid = _common().checkSizingRegionExists(restored_items_pool_id, selected_items)
 
   if not sizing_region_guid then return false end
 
-  _data.cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
+  _data().cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
 
-  _state.superitem.params.last_glue.edited_pool = _data.storeRetrieveSuperitemParams(restored_items_pool_id, _constant.actionstep.postglue)
+  _state.superitem.params.last_glue.edited_pool = _data().storeRetrieveSuperitemParams(restored_items_pool_id, _constant.actionstep.postglue)
   superitem = Glue.handleGlue(selected_items, restored_items_pool_id, sizing_region_guid, nil, nil)
   superitem, superitem_params = Glue.handleReglueSuperitemParams(superitem, restored_items_pool_id)
 
@@ -748,16 +745,16 @@ end
 function Glue.handleReglueSuperitemParams(superitem, restored_items_pool_id)
   local superitem_params, global_option_toggle_retain_only_last_glue_source_enabled
 
-  superitem_params = _data.getSetItemParams(superitem)
-  superitem_params.updated_src = _common.getSetWipeItemAudioSrc(superitem)
+  superitem_params = _data().getSetItemParams(superitem)
+  superitem_params.updated_src = _common().getSetWipeItemAudioSrc(superitem)
   superitem_params.pool_id = restored_items_pool_id
-  superitem = _data.restoreSuperitemState(superitem, superitem_params)
+  superitem = _data().restoreSuperitemState(superitem, superitem_params)
   _state.superitem.params.fresh_glue.edited_pool = superitem_params
-  _state.superitem.params.preedit.edited_pool = _data.storeRetrieveSuperitemParams(_state.superitem.params.fresh_glue.edited_pool.pool_id, _constant.actionstep.preedit)
+  _state.superitem.params.preedit.edited_pool = _data().storeRetrieveSuperitemParams(_state.superitem.params.fresh_glue.edited_pool.pool_id, _constant.actionstep.preedit)
   global_option_toggle_retain_only_last_glue_source_enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.retain_only_last_glue_source)
 
   if global_option_toggle_retain_only_last_glue_source_enabled == "true" then
-    _common.getSetWipeItemAudioSrc(superitem, "wipe")
+    _common().getSetWipeItemAudioSrc(superitem, "wipe")
   end
 
   return superitem, superitem_params
@@ -900,7 +897,7 @@ function Glue.handleTakeStretchMarkers(instance_active_take, position_adjustment
   stretch_markers_count = reaper.GetTakeNumStretchMarkers(instance_active_take)
 
   if stretch_markers_count > 0 then
-    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
+    _state.propagation.user_wants_option.source_position = _common().getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
 
     if _state.propagation.user_wants_option.source_position then
       marker_position_adjustment = position_adjustment_delta
@@ -945,7 +942,7 @@ function Glue.reglueAncestors(pool_id, superitem, descendant_nesting_depth_of_ac
   local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, this_parent_pool_id, parent_pool_is_present_in_overglue_pools
 
   parent_pool_ids_data_key_label = _constant.data.key.prefix.pool .. pool_id .. _constant.data.key.suffix.pool.parent_ids_data
-  retval, parent_pool_ids = _data.storeRetrieveProjectData(parent_pool_ids_data_key_label)
+  retval, parent_pool_ids = _data().storeRetrieveProjectData(parent_pool_ids_data_key_label)
   parent_pool_ids_data_found_for_active_pool = retval == true
 
   if not descendant_nesting_depth_of_active_parent then
@@ -1011,11 +1008,11 @@ function Glue.getFirstPoolInstanceParams(pool_id)
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(_constant.api.current_project, i)
-    this_item_instance_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
+    this_item_instance_pool_id = _data().storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
     this_item_instance_pool_id = tonumber(this_item_instance_pool_id)
 
     if this_item_instance_pool_id == pool_id then
-      parent_instance_params = _data.getSetItemParams(this_item)
+      parent_instance_params = _data().getSetItemParams(this_item)
 
       return parent_instance_params
     end
@@ -1038,7 +1035,7 @@ function Glue.checkParentPoolIsAncestorInProject(this_parent_pool_id)
       return true
     end
 
-    this_pool_descendant_pool_ids = _data.storeRetrievePoolData(this_pool, _constant.data.key.suffix.pool.descendant_ids)
+    this_pool_descendant_pool_ids = _data().storeRetrievePoolData(this_pool, _constant.data.key.suffix.pool.descendant_ids)
     _, this_pool_descendant_pool_ids = serpent.load(this_pool_descendant_pool_ids)
 
     if this_pool_descendant_pool_ids then
@@ -1068,7 +1065,7 @@ function Glue.getAllPoolIdsInProject()
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(_constant.api.current_project, i)
-    this_item_instance_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
+    this_item_instance_pool_id = _data().storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.instance_id)
 
     if this_item_instance_pool_id and this_item_instance_pool_id ~= "" then
       table.insert(all_pool_ids_in_project, this_item_instance_pool_id)
@@ -1080,7 +1077,7 @@ end
 
 
 function Glue.deletePoolDescendantsData(pool_id)
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.descendant_ids, "")
+  _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.descendant_ids, "")
 end
 
 
@@ -1098,7 +1095,7 @@ function Glue.setUpAncestorReglues(parent_instance_params, parent_pool_id, desce
   reaper.GetSetMediaTrackInfo_String(parent_edit_temp_track, _constant.api.track.key.name, parent_edit_temp_track__name, _constant.api.set_value)
   reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
 
-  restored_items = _common.restoreStoredItems(parent_pool_id, parent_edit_temp_track, superitem, true, nil)
+  restored_items = _common().restoreStoredItems(parent_pool_id, parent_edit_temp_track, superitem, true, nil)
   parent_instance_params.track = parent_edit_temp_track
   parent_instance_params.restored_items = restored_items
   _state.superitem.params.ancestor_pools[parent_pool_id] = parent_instance_params
@@ -1119,7 +1116,7 @@ function Glue.propagateChangesToSuperitems(active_superitem, sizing_region_guid)
     _state.superitem.params.fresh_glue.current_pool = ancestor_pools_params_sorted_by_ascending_nesting_depth[i]
     this_ancestor_pool_id = tostring(_state.superitem.params.fresh_glue.current_pool.pool_id)
     _state.restored_items.delta.position_delta_near_project_start = ancestor_pools_near_project_start[this_ancestor_pool_id]
-    _state.superitem.params.preedit.current_pool = _data.storeRetrieveSuperitemParams(this_ancestor_pool_id, _constant.actionstep.preedit)
+    _state.superitem.params.preedit.current_pool = _data().storeRetrieveSuperitemParams(this_ancestor_pool_id, _constant.actionstep.preedit)
     ancestor_pool_is_present_in_overglue_pools = _util.isPresentInArray(this_ancestor_pool_id, _state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor)
 
     if _state.restored_items.delta.position_delta_near_project_start then
@@ -1165,7 +1162,7 @@ end
 function Glue.getSuperitemChangedByReglue(item, active_superitem, this_is_ancestor_superitem_update)
   local item_instance_pool_id, item_is_instance, fresh_glue_params, item_is_active_pool_instance, instance_current_src, this_instance_needs_update
 
-  item_instance_pool_id = _data.storeRetrieveItemData(item, _constant.data.key.suffix.pool.instance_id)
+  item_instance_pool_id = _data().storeRetrieveItemData(item, _constant.data.key.suffix.pool.instance_id)
   item_is_instance = item_instance_pool_id and item_instance_pool_id ~= ""
   fresh_glue_params = this_is_ancestor_superitem_update and _state.superitem.params.fresh_glue.current_pool or _state.superitem.params.fresh_glue.edited_pool
 
@@ -1186,7 +1183,7 @@ function Glue.getSuperitemChangedByReglue(item, active_superitem, this_is_ancest
     item_is_active_pool_instance = item_instance_pool_id == fresh_glue_params.instance_pool_id
 
     if item_is_active_pool_instance then
-      instance_current_src = _common.getSetWipeItemAudioSrc(item)
+      instance_current_src = _common().getSetWipeItemAudioSrc(item)
       this_instance_needs_update = instance_current_src ~= fresh_glue_params.updated_src and item ~= active_superitem
 
       if this_instance_needs_update then
@@ -1210,12 +1207,12 @@ function Glue.updateSuperitemChangedByReglue(active_pool_instance, item, ancesto
     current_pool_updated_src = _state.superitem.params.fresh_glue.edited_pool.updated_src
   end
 
-  _common.getSetWipeItemAudioSrc(active_pool_instance, current_pool_updated_src)
+  _common().getSetWipeItemAudioSrc(active_pool_instance, current_pool_updated_src)
 
   attempted_negative_instance_position = Glue.adjustSuperitemChangedByReglue(active_pool_instance, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
 
   if attempted_negative_instance_position ~= 0 then
-    instance_parent_pool_id = _data.storeRetrieveItemData(item, _constant.data.key.suffix.pool.parent_id)
+    instance_parent_pool_id = _data().storeRetrieveItemData(item, _constant.data.key.suffix.pool.parent_id)
     ancestor_pools_near_project_start[instance_parent_pool_id] = attempted_negative_instance_position
   end
 
@@ -1227,7 +1224,7 @@ function Glue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superite
   local this_is_sibling_instance_update, this_instance_parent_pool_id, this_instance_is_child, instance_active_take, instance_current_src_offset, instance_playrate, instance_would_get_adjusted_before_project_start
 
   this_is_sibling_instance_update = not this_is_ancestor_superitem_update
-  this_instance_parent_pool_id = _data.storeRetrieveItemData(instance, _constant.data.key.suffix.pool.parent_id)
+  this_instance_parent_pool_id = _data().storeRetrieveItemData(instance, _constant.data.key.suffix.pool.parent_id)
   this_instance_is_child = this_instance_parent_pool_id and this_instance_parent_pool_id ~= ""
   instance_active_take = reaper.GetActiveTake(instance)
   instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.src_offset, "", false)
@@ -1268,10 +1265,10 @@ end
 
 
 function Glue.getSuperitemPropagationOptionChoices()
-  _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
+  _state.propagation.user_wants_option.playrate_toggle = _common().getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
 
   if _state.superitem.position_changed_since_last_glue then
-    _state.propagation.user_wants_option.position = _common.getUserPropagationChoice("position", _constant.data.key.options.defaults.propagate_position)
+    _state.propagation.user_wants_option.position = _common().getUserPropagationChoice("position", _constant.data.key.options.defaults.propagate_position)
 
     -- Lane propagation follows position propagation behavior
     if _constant.support.fixed_lanes then
@@ -1280,7 +1277,7 @@ function Glue.getSuperitemPropagationOptionChoices()
   end
 
   if _state.superitem.offset_changed_since_last_glue then
-    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
+    _state.propagation.user_wants_option.source_position = _common().getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
   end
 end
 
@@ -1297,7 +1294,7 @@ if _state.propagation.user_wants_option.position then
     reaper.SetMediaItemPosition(instance, instance_adjusted_position, _constant.api.dont_refresh_ui)
 
     if _state.propagation.user_wants_option.source_position == nil then
-      _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
+      _state.propagation.user_wants_option.source_position = _common().getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
     end
 
     if _state.propagation.user_wants_option.source_position then
@@ -1362,11 +1359,11 @@ function Glue.adjustSuperitemLength(instance, instance_playrate, this_instance_i
   local instance_current_length, instance_length_adjustment_delta, user_wants_relative_length_propagation, instance_adjusted_length
 
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
-  _state.propagation.user_wants_option.length = _common.getUserPropagationChoice("length", _constant.data.key.options.defaults.propagate_length)
+  _state.propagation.user_wants_option.length = _common().getUserPropagationChoice("length", _constant.data.key.options.defaults.propagate_length)
 
   if _state.propagation.user_wants_option.length then
-    _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
-    _state.propagation.user_wants_option.absolute_length_propagation = _common.getUserPropagationChoice("absolute_length_propagation", _constant.data.key.options.defaults.length_propagation_type)
+    _state.propagation.user_wants_option.playrate_toggle = _common().getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
+    _state.propagation.user_wants_option.absolute_length_propagation = _common().getUserPropagationChoice("absolute_length_propagation", _constant.data.key.options.defaults.length_propagation_type)
     user_wants_relative_length_propagation = not _state.propagation.user_wants_option.absolute_length_propagation
 
     if _state.propagation.user_wants_option.absolute_length_propagation then
@@ -1412,15 +1409,15 @@ function Glue.reglueAncestor(sizing_region_guid)
 
   reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
   _depool.refreshCurrentPoolStoredItemsPostDePool()
-  _common.selectDeselectItems(_state.superitem.params.fresh_glue.current_pool.restored_items, true)
+  _common().selectDeselectItems(_state.superitem.params.fresh_glue.current_pool.restored_items, true)
 
   this_is_ancestor_superitem_update = true
   selected_items = _init.getSelectedItems(#_state.superitem.params.fresh_glue.current_pool.restored_items)
   this_is_direct_parent_instance_update = Glue.isThisDirectParentInstanceUpdate(selected_items)
   ancestor_instance = Glue.handleGlue(selected_items, _state.superitem.params.fresh_glue.current_pool.pool_id, sizing_region_guid, nil, this_is_ancestor_superitem_update)
   ancestor_active_track = _state.superitem.params.fresh_glue.current_pool.track
-  _state.superitem.params.fresh_glue.current_pool = _data.getSetItemParams(ancestor_instance)
-  _state.superitem.params.fresh_glue.current_pool.updated_src = _common.getSetWipeItemAudioSrc(ancestor_instance)
+  _state.superitem.params.fresh_glue.current_pool = _data().getSetItemParams(ancestor_instance)
+  _state.superitem.params.fresh_glue.current_pool.updated_src = _common().getSetWipeItemAudioSrc(ancestor_instance)
 
   reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
   Glue.handleSuperitemsChangedByReglue(ancestor_instance, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
@@ -1433,7 +1430,7 @@ function Glue.isThisDirectParentInstanceUpdate(selected_items)
 
   for i = 1, #selected_items do
     this_selected_item = selected_items[i]
-    this_selected_item_params = _data.getSetItemParams(this_selected_item)
+    this_selected_item_params = _data().getSetItemParams(this_selected_item)
     this_selected_instance_pool_id = this_selected_item_params.instance_pool_id
 
     if this_selected_instance_pool_id == _state.superitem.params.fresh_glue.edited_pool.pool_id then

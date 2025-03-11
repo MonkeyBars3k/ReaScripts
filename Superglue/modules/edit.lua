@@ -3,19 +3,12 @@
 local Edit = {}
 
 
-local _setup = require("modules.setup")
-local _common, _constant, _data, _glue, _state = _setup.load("common, constant, data, glue, state")
-local _dev = _setup.load("dev")
+local _common = require("modules.common")
+local _constant = require("modules.constant")
+local _data = require("modules.data")
+local _state = require("modules.state")
 
-function Edit.injectDependencies(modules)
-  _common = modules.common
-  _constant = modules.constant
-  _data = modules.data
-  _glue = modules.glue
-  _state = modules.state
-
-  _dev = modules.dev
-end
+local _dev = require("modules.dev")
 
 
 
@@ -113,7 +106,8 @@ function Edit.validateRestoredItemPositions(superitem, pool_id, action)
 
   local position_delta = superitem_params.position - post_glue_params.position
 
-  for item_guid, stored_item_state in pairs(stored_item_states) do
+  for stored_item_state in pairs(stored_item_states) do
+
     if stored_item_state then
       local temp_track = reaper.GetTrack(0, 0)
       local temp_item = reaper.AddMediaItemToTrack(temp_track)

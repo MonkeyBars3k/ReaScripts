@@ -3,24 +3,20 @@
 local Single = {}
 
 
-local _setup = require("modules.setup")
-local _common, _constant, _data, _depool, _edit, _glue, _multi, _init, _single, _state = _setup.load("common, constant, data, depool, edit, glue, multi, init, single, state")
-local _dev = _setup.load("dev")
+local _module_utils = require("module-utils")
 
-function Single.injectDependencies(modules)
-  _common = modules.common
-  _constant = modules.constant
-  _data = modules.data
-  _depool = modules.depool
-  _edit = modules.edit
-  _glue = modules.glue
-  _multi = modules.multi
-  _init = modules.init
-  _single = modules.single
-  _state = modules.state
+local _common = require("modules.common")
+local _constant = require("modules.constant")
+local _data = require("modules.data")
+local _depool = require("modules.depool")
+local _edit = require("modules.edit")
+local _glue = require("modules.glue")
+local _init = require("modules.init")
+-- local _multi = require("modules.multi")
+local _state = require("modules.state")
 
-  _dev = modules.dev
-end
+local function _multi() return _module_utils.lazyRequire("multi") end
+
 
 
 function Single.triggerSingleTrackSinglePoolGlue(items_to_glue, restored_items_pool_id)
@@ -193,7 +189,7 @@ function Single.handleMultitakeSuperitem(superitem_takes_count)
       return "cancel"
     end
 
-    Single.explodeSuperitem(superitem, superitem_active_take, user_response_explode_in_order)
+    Single.explodeSuperitem(superitem--[[, superitem_active_take, user_response_explode_in_order]])
 
   elseif user_wants_to_explode_superitem_takes == _constant.api.msg.response.cancel then
 
@@ -218,23 +214,23 @@ function Single.checkSuperitemTakesAreValid()
 end
 
 
-function Single.explodeSuperitem(superitem, superitem_active_take, user_response_explode_in_order)
-  local user_wants_to_explode_in_order, superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, i, offline_takes_msg__shown
+-- function Single.explodeSuperitem(superitem, superitem_active_take, user_response_explode_in_order)
+--   local user_wants_to_explode_in_order, superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values, i, offline_takes_msg__shown
 
-  superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values = Single.explodeSuperitem(superitem)
+--   superitem_takes_count, superitem_params, duplicated_item_target_take_num, item_data_values = Single.explodeSuperitem(superitem)
 
-  if user_response_explode_in_order == _constant.api.msg.response.yes then
-    user_wants_to_explode_in_order = true
-  end
+--   if user_response_explode_in_order == _constant.api.msg.response.yes then
+--     user_wants_to_explode_in_order = true
+--   end
 
-  for i = 0, superitem_takes_count-2 do
-    duplicated_item_target_take_num, offline_takes_msg__shown = Single.explodeSuperitemTakes(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg__shown)
-  end
+--   for i = 0, superitem_takes_count-2 do
+--     duplicated_item_target_take_num, offline_takes_msg__shown = Single.explodeSuperitemTakes(i, superitem, user_wants_to_explode_in_order, superitem_params, duplicated_item_target_take_num, item_data_values, offline_takes_msg__shown)
+--   end
 
-  reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
-  reaper.SetMediaItemSelected(superitem, true)
-  reaper.Main_OnCommand(_constant.cmd.crop_selected_items_to_active_takes, _constant.api.cmd_flag)
-end
+--   reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
+--   reaper.SetMediaItemSelected(superitem, true)
+--   reaper.Main_OnCommand(_constant.cmd.crop_selected_items_to_active_takes, _constant.api.cmd_flag)
+-- end
 
 
 function Single.explodeSuperitem(superitem)
@@ -293,30 +289,30 @@ function Single.explodeSuperitemTakes(i, superitem, user_wants_to_explode_in_ord
 end
 
 
-function Single.handleDuplicatedItemTargetTake(i, this_duplicated_item, duplicated_item_target_take_num, superitem_params, offline_takes_msg__shown)
-  local this_duplicated_item_new_active_take, targeted_take_is_offline
+-- function Single.handleDuplicatedItemTargetTake(i, this_duplicated_item, duplicated_item_target_take_num, superitem_params, offline_takes_msg__shown)
+--   local this_duplicated_item_new_active_take, targeted_take_is_offline
 
-  duplicated_item_target_take_num = duplicated_item_target_take_num + i
+--   duplicated_item_target_take_num = duplicated_item_target_take_num + i
 
-  if duplicated_item_target_take_num == superitem_params.superglue_active_take_num then
-    duplicated_item_target_take_num = duplicated_item_target_take_num + 1
-  end
+--   if duplicated_item_target_take_num == superitem_params.superglue_active_take_num then
+--     duplicated_item_target_take_num = duplicated_item_target_take_num + 1
+--   end
 
-  this_duplicated_item_new_active_take = reaper.GetTake(this_duplicated_item, duplicated_item_target_take_num)
-  targeted_take_is_offline = not this_duplicated_item_new_active_take
+--   this_duplicated_item_new_active_take = reaper.GetTake(this_duplicated_item, duplicated_item_target_take_num)
+--   targeted_take_is_offline = not this_duplicated_item_new_active_take
 
-  if not targeted_take_is_offline then
-    reaper.SetActiveTake(this_duplicated_item_new_active_take)
-    reaper.Main_OnCommand(_constant.cmd.crop_selected_items_to_active_takes, _constant.api.cmd_flag)
+--   if not targeted_take_is_offline then
+--     reaper.SetActiveTake(this_duplicated_item_new_active_take)
+--     reaper.Main_OnCommand(_constant.cmd.crop_selected_items_to_active_takes, _constant.api.cmd_flag)
 
-  elseif not offline_takes_msg__shown then
-    _init.throwOfflineTakeWarning(true)
+--   elseif not offline_takes_msg__shown then
+--     _init.throwOfflineTakeWarning(true)
 
-    offline_takes_msg__shown = true
-  end
+--     offline_takes_msg__shown = true
+--   end
 
-  return duplicated_item_target_take_num, this_duplicated_item_new_active_take, offline_takes_msg__shown
-end
+--   return duplicated_item_target_take_num, this_duplicated_item_new_active_take, offline_takes_msg__shown
+-- end
 
 
 function Single.handleDuplicatedItemTargetTake(item)
