@@ -5,11 +5,8 @@ local Init = {}
 
 local _module_utils = require("module-utils")
 
--- local _common = require("modules.common")
 local _constant = require("modules.constant")
 local _data = require("modules.data")
--- local _midi = require("modules.midi")
--- local _multi = require("modules.multi")
 local _options = require("modules.options")
 local _state = require("modules.state")
 local _util = require("modules.util")

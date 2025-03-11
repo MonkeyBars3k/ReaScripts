@@ -5,7 +5,6 @@ local Midi = {}
 
 local _module_utils = require("module-utils")
 
--- local _init = require("modules.init")
 local _vi = require("modules.vi")
 
 local function _init() return _module_utils.lazyRequire("init") end

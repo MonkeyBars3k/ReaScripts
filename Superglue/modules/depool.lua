@@ -2,13 +2,13 @@
 
 local Depool = {}
 
+local _module_utils = require("module-utils")
 
 local _common = require("modules.common")
 local _constant = require("modules.constant")
 local _data = require("modules.data")
 local _edit = require("modules.edit")
 local _state = require("modules.state")
--- local _glue = require("modules.glue")
 
 local function _glue() return _module_utils.lazyRequire("glue") end
 

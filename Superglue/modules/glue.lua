@@ -6,9 +6,7 @@ local Glue = {}
 local _module_utils = require("module-utils")
 
 local serpent = require("lib.serpent")
--- local _common = require("modules.common")
 local _constant = require("modules.constant")
--- local _data = require("modules.data")
 local _depool = require("modules.depool")
 local _init = require("modules.init")
 local _lanes = require("modules.lanes")
