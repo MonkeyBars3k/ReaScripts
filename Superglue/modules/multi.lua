@@ -5,6 +5,7 @@ local Multi = {}
 
 local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _overglue, _state, _util, _module_utils, _init, _single
 
+-- local _dev = require("modules.dev")
 
 loadDependencies = (function()
   serpent = require("lib.serpent")
@@ -14,7 +15,6 @@ loadDependencies = (function()
   _overglue = require("modules.overglue")
   _state = require("modules.state")
   _util = require("modules.util")
-  -- local _dev = require("modules.dev")
 
   _module_utils = require("module-utils")
 end)()

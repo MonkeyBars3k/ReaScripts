@@ -4,12 +4,12 @@ local Data = {}
 
 local loadDependencies, loadCircularDependencies, serpent, _constant, _state, _module_utils, _common, _glue
 
+-- local _dev = require("modules.dev")
 
 loadDependencies = (function()
   serpent = require("lib.serpent")
   _constant = require("modules.constant")
   _state = require("modules.state")
-  -- local _dev = require("modules.dev")
 
   _module_utils = require("module-utils")
 end)()

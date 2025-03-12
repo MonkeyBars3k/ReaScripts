@@ -71,6 +71,10 @@ local State = {
       preedit = {
         edited_pool = nil,
         current_pool = nil
+      },
+
+      preunglue = {
+        unglued_pool = nil
       }
     }
   },

@@ -3,6 +3,8 @@
 local Common = {}
 
 
+local _dev = require("modules.dev")
+
 local loadDependencies, loadCircularDependencies, serpent, _constant, _state, _util, _module_utils, _data, _glue, _init, _lanes
 
 
@@ -11,7 +13,6 @@ loadDependencies = (function()
   _constant = require("modules.constant")
   _state = require("modules.state")
   _util = require("modules.util")
-  -- local _dev = require("modules.dev")
 
   _module_utils = require("module-utils")
 end)()
@@ -460,7 +461,7 @@ end
 
 
 function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_ancestor_superitem_update, action, superitemLane)
-  local stored_item_states_table, restored_items, _unglued_pool_preunglue_params, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
+  local stored_item_states_table, restored_items, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 
   if _constant.support.fixed_lanes then
     _lanes().debugLaneInfo("RESTORE START", nil, active_track, pool_id)
@@ -481,7 +482,7 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
   -- Create all items first without lane positioning
   for item_guid, stored_item_state in pairs(stored_item_states_table) do
     if stored_item_state then
-      _unglued_pool_preunglue_params = _data().getSetItemParams(superitem)
+      _state.superitem.params.preunglue.unglued_pool = _data().getSetItemParams(superitem)
       local restored_item = Common.handleRestoredItem(superitem, active_track, stored_item_state, {}, this_is_ancestor_superitem_update, action)
       table.insert(restored_items, restored_item)
     end
@@ -489,7 +490,7 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
 
   -- CRITICAL: Apply lane positioning only AFTER all items are created and ONLY ONCE
   if _constant.support.fixed_lanes and #restored_items > 0 then
-    if _dev.constant._test_logging_enabled then
+    if _dev.config.test_logging_enabled then
       _dev.log("Calling restoreItemLaneOffsets for " .. #restored_items .. " items")
     end
 
@@ -617,11 +618,11 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
   superitem_source_length = reaper.GetMediaSourceLength(superitem_source)
 
   if action == "Edit" or action == "Unglue" or action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then
-    superitem_loop_starts_in_later_half = _unglued_pool_preunglue_params.source_offset > (superitem_source_length / 2)
-    this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _state.superitem.params.post_glue().edited_pool.position - _unglued_pool_preunglue_params.source_offset
+    superitem_loop_starts_in_later_half = _state.superitem.params.preunglue.unglued_pool.source_offset > (superitem_source_length / 2)
+    this_item_position_delta_to_last_glue_superitem_instance = _state.superitem.params.preunglue.unglued_pool.position - _state.superitem.params.post_glue.edited_pool.position - _state.superitem.params.preunglue.unglued_pool.source_offset
 
     if _state.superitem.this_previously_depooled_superitem_has_not_been_edited ~= "true" then
-      this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + _state.superitem.params.post_glue().edited_pool.source_offset
+      this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + _state.superitem.params.post_glue.edited_pool.source_offset
     end
 
     if looped_source_sets_sizing_region__enabled == "true" and superitem_loop_is_enabled and superitem_loop_starts_in_later_half then
@@ -629,7 +630,7 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
     end
 
   elseif action == "DePool" then
-    this_item_position_delta_to_last_glue_superitem_instance = _unglued_pool_preunglue_params.position - _state.superitem.params.post_glue().edited_pool.position + _state.superitem.params.post_glue().edited_pool.source_offset
+    this_item_position_delta_to_last_glue_superitem_instance = _state.superitem.params.preunglue.unglued_pool.position - _state.superitem.params.post_glue.edited_pool.position + _state.superitem.params.post_glue.edited_pool.source_offset
   end
 
   restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_glue_superitem_instance

@@ -4,6 +4,7 @@ local Init = {}
 
 local loadDependencies, loadCircularDependencies, _constant, _data, _options, _state, _util, _module_utils, _common, _midi, _multi
 
+-- local _dev = require("modules.dev")
 
 loadDependencies = (function()
   _constant = require("modules.constant")
@@ -11,7 +12,6 @@ loadDependencies = (function()
   _options = require("modules.options")
   _state = require("modules.state")
   _util = require("modules.util")
-  -- local _dev = require("modules.dev")
 
   _module_utils = require("module-utils")
 end)()

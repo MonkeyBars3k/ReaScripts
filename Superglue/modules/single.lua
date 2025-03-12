@@ -5,6 +5,7 @@ local Single = {}
 
 local loadDependencies, loadCircularDependencies, _common, _constant, _data, _depool, _edit, _glue, _init, _state, _module_utils, _multi
 
+-- local _dev = require("modules.dev")
 
 loadDependencies = (function()
   _common = require("modules.common")
@@ -15,7 +16,6 @@ loadDependencies = (function()
   _glue = require("modules.glue")
   _init = require("modules.init")
   _state = require("modules.state")
-  -- local _dev = require("modules.dev")
 
   _module_utils = require("module-utils")
 end)()

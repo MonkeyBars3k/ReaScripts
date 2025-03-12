@@ -5,10 +5,10 @@ local Midi = {}
 
 local loadDependencies, loadCircularDependencies, _vi, _module_utils, _init
 
+-- local _dev = require("modules.dev")
 
 loadDependencies = (function()
   _vi = require("modules.vi")
-  -- local _dev = require("modules.dev")
 
   _module_utils = require("module-utils")
 end)()
