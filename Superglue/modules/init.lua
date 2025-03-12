@@ -2,18 +2,26 @@
 
 local Init = {}
 
+local loadDependencies, loadCircularDependencies, _constant, _data, _options, _state, _util, _module_utils, _common, _midi, _multi
 
-local _module_utils = require("module-utils")
 
-local _constant = require("modules.constant")
-local _data = require("modules.data")
-local _options = require("modules.options")
-local _state = require("modules.state")
-local _util = require("modules.util")
+loadDependencies = (function()
+  _constant = require("modules.constant")
+  _data = require("modules.data")
+  _options = require("modules.options")
+  _state = require("modules.state")
+  _util = require("modules.util")
+  -- local _dev = require("modules.dev")
 
-local function _common() return _module_utils.lazyRequire("common") end
-local function _midi() return _module_utils.lazyRequire("midi") end
-local function _multi() return _module_utils.lazyRequire("multi") end
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _common = function() return _module_utils.lazyRequire("common") end
+  _midi = function() return _module_utils.lazyRequire("midi") end
+  _multi = function() return _module_utils.lazyRequire("multi") end
+end)()
 
 
 

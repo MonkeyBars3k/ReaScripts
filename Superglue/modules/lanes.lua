@@ -3,14 +3,21 @@
 local Lanes = {}
 
 
-local _module_utils = require("module-utils")
+local loadDependencies, loadCircularDependencies, _constant, _data, _dev, _module_utils, _common
 
-local _constant = require("modules.constant")
-local _data = require("modules.data")
 
-local _dev = require("modules.dev")
+loadDependencies = (function()
+  _constant = require("modules.constant")
+  _data = require("modules.data")
+  _dev = require("modules.dev")
 
-local function _common() return _module_utils.lazyRequire("common") end
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _common = function() return _module_utils.lazyRequire("common") end
+end)()
 
 
 

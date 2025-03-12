@@ -3,11 +3,21 @@
 local Midi = {}
 
 
-local _module_utils = require("module-utils")
+local loadDependencies, loadCircularDependencies, _vi, _module_utils, _init
 
-local _vi = require("modules.vi")
 
-local function _init() return _module_utils.lazyRequire("init") end
+loadDependencies = (function()
+  _vi = require("modules.vi")
+  -- local _dev = require("modules.dev")
+
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _init = function() return _module_utils.lazyRequire("init") end
+end)()
+
 
 
 function Midi.pureMidiItemIsSelected(selected_items)

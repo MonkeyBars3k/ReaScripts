@@ -2,15 +2,23 @@
 
 local Data = {}
 
+local loadDependencies, loadCircularDependencies, serpent, _constant, _state, _module_utils, _common, _glue
 
-local _module_utils = require("module-utils")
 
-local serpent = require("lib.serpent")
-local _constant = require("modules.constant")
-local _state = require("modules.state")
+loadDependencies = (function()
+  serpent = require("lib.serpent")
+  _constant = require("modules.constant")
+  _state = require("modules.state")
+  -- local _dev = require("modules.dev")
 
-local function _common() return _module_utils.lazyRequire("common") end
-local function _glue() return _module_utils.lazyRequire("glue") end
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _common = function() return _module_utils.lazyRequire("common") end
+  _glue = function() return _module_utils.lazyRequire("glue") end
+end)()
 
 
 

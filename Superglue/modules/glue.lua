@@ -3,18 +3,27 @@
 local Glue = {}
 
 
-local _module_utils = require("module-utils")
+local loadDependencies, loadCircularDependencies, serpent, _constant, _depool, _init, _lanes, _state, _util, _module_utils, _common, _data
 
-local serpent = require("lib.serpent")
-local _constant = require("modules.constant")
-local _depool = require("modules.depool")
-local _init = require("modules.init")
-local _lanes = require("modules.lanes")
-local _state = require("modules.state")
-local _util = require("modules.util")
 
-local function _common() return _module_utils.lazyRequire("common") end
-local function _data() return _module_utils.lazyRequire("data") end
+loadDependencies = (function()
+  serpent = require("lib.serpent")
+  _constant = require("modules.constant")
+  _depool = require("modules.depool")
+  _init = require("modules.init")
+  _lanes = require("modules.lanes")
+  _state = require("modules.state")
+  _util = require("modules.util")
+  -- local _dev = require("modules.dev")
+
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _common = function() return _module_utils.lazyRequire("common") end
+  _data = function() return _module_utils.lazyRequire("data") end
+end)()
 
 
 

@@ -3,18 +3,27 @@
 local Single = {}
 
 
-local _module_utils = require("module-utils")
+local loadDependencies, loadCircularDependencies, _common, _constant, _data, _depool, _edit, _glue, _init, _state, _module_utils, _multi
 
-local _common = require("modules.common")
-local _constant = require("modules.constant")
-local _data = require("modules.data")
-local _depool = require("modules.depool")
-local _edit = require("modules.edit")
-local _glue = require("modules.glue")
-local _init = require("modules.init")
-local _state = require("modules.state")
 
-local function _multi() return _module_utils.lazyRequire("multi") end
+loadDependencies = (function()
+  _common = require("modules.common")
+  _constant = require("modules.constant")
+  _data = require("modules.data")
+  _depool = require("modules.depool")
+  _edit = require("modules.edit")
+  _glue = require("modules.glue")
+  _init = require("modules.init")
+  _state = require("modules.state")
+  -- local _dev = require("modules.dev")
+
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _multi = function() return _module_utils.lazyRequire("multi") end
+end)()
 
 
 

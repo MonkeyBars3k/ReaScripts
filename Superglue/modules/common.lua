@@ -3,19 +3,26 @@
 local Common = {}
 
 
-local _module_utils = require("module-utils")
+local loadDependencies, loadCircularDependencies, serpent, _constant, _state, _util, _module_utils, _data, _glue, _init, _lanes
 
-local serpent = require("lib.serpent")
-local _constant = require("modules.constant")
-local _state = require("modules.state")
-local _util = require("modules.util")
 
--- local _dev = require("modules.dev")
+loadDependencies = (function()
+  serpent = require("lib.serpent")
+  _constant = require("modules.constant")
+  _state = require("modules.state")
+  _util = require("modules.util")
+  -- local _dev = require("modules.dev")
 
-local function _data() return _module_utils.lazyRequire("data") end
-local function _glue() return _module_utils.lazyRequire("glue") end
-local function _init() return _module_utils.lazyRequire("init") end
-local function _lanes() return _module_utils.lazyRequire("lanes") end
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _data = function() return _module_utils.lazyRequire("data") end
+  _glue = function() return _module_utils.lazyRequire("glue") end
+  _init = function() return _module_utils.lazyRequire("init") end
+  _lanes = function() return _module_utils.lazyRequire("lanes") end
+end)()
 
 
 

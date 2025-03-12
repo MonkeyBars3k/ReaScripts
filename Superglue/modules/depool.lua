@@ -2,15 +2,23 @@
 
 local Depool = {}
 
-local _module_utils = require("module-utils")
+local loadDependencies, loadCircularDependencies, _common, _constant, _data, _edit, _state, _module_utils, _glue
 
-local _common = require("modules.common")
-local _constant = require("modules.constant")
-local _data = require("modules.data")
-local _edit = require("modules.edit")
-local _state = require("modules.state")
 
-local function _glue() return _module_utils.lazyRequire("glue") end
+loadDependencies = (function()
+  _common = require("modules.common")
+  _constant = require("modules.constant")
+  _data = require("modules.data")
+  _edit = require("modules.edit")
+  _state = require("modules.state")
+
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _glue = function() return _module_utils.lazyRequire("glue") end
+end)()
 
 
 
