@@ -2,7 +2,7 @@
 
 local Init = {}
 
-local loadDependencies, loadCircularDependencies, _constant, _data, _options, _state, _util, _module_utils, _common, _midi, _multi
+local loadDependencies, loadCircularDependencies, _constant, _data,  _options, _state, _util, _module_utils, _common, _midi, _multi
 
 -- local _dev = require("modules.dev")
 
@@ -451,7 +451,7 @@ end
 function Init.selectedItemsAreInvalid(selected_items, action_text)
 
   if Init.superitemSelectionIsInvalid(selected_items, action_text) or
-    _midi.pureMidiItemIsSelected(selected_items) then
+  _midi().pureMidiItemIsSelected(selected_items) then
 
       return true
   end

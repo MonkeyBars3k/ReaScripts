@@ -128,20 +128,20 @@ function Multi.iterateTracksWithSelectedItems(all_tracks_with_user_selected_item
 end
 
 
--- removed a call at end to select glued items because such is already getting called in _init.completeGlueOrDePool()
+-- removed a call at end to select glued items because such is already getting called in _init().completeGlueOrDePool()
 function Multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_selected_items_track)
   local global_option_toggle_multiitem_editing_enabled, restored_items_pool_id
 
   _state.action.glue.current_track = this_user_selected_items_track
   global_option_toggle_multiitem_editing_enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.multiitem_editing)
 
-  _init.copySuperglueItemImagesToProject()
+  _init().copySuperglueItemImagesToProject()
 
   if global_option_toggle_multiitem_editing_enabled == "true" then
     Multi.doSingleTrackMultiitemGlue(user_selected_items_on_this_track)
 
   else
-    restored_items_pool_id = _init.getFirstParentPoolIdFromSelectedItems(user_selected_items_on_this_track)
+    restored_items_pool_id = _init().getFirstParentPoolIdFromSelectedItems(user_selected_items_on_this_track)
 
     _single().triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track, restored_items_pool_id)
   end

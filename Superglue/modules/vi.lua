@@ -3,7 +3,12 @@
 local Vi = {}
 
 
-local _constant = require("modules.constant")
+local loadDependencies, _constant
+
+
+loadDependencies = (function()
+  _constant = require("modules.constant")
+end)()
 
 
 

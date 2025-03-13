@@ -3,8 +3,13 @@
 local Options = {}
 
 
-local rtk = require("lib.rtk")
-local _constant = require("modules.constant")
+local loadDependencies, rtk, _constant
+
+
+loadDependencies = (function()
+  rtk = require("lib.rtk")
+  _constant = require("modules.constant")
+end)()
 
 
 

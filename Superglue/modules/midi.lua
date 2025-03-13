@@ -51,7 +51,7 @@ function Midi.midiItemIsSelected(item)
   active_take = reaper.GetActiveTake(item)
 
   if not active_take then
-    _init.throwOfflineTakeWarning(false, true)
+    _init().throwOfflineTakeWarning(false, true)
 
     return "abort"
   end

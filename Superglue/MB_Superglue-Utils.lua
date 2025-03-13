@@ -239,7 +239,7 @@ local _constant = {
       prefix = "SG: Pool #",
       suffix = " – DO NOT DELETE – Use to set Superitem edges"
     },
-    
+
     color = reaper.ColorToNative(255, 255, 255)|0x1000000,
     first_display_num = 0
   },
@@ -400,7 +400,7 @@ _constant.global_options = {
     ext_state_key = _constant.data.key.options.switch.maintain_source_position,
     option_script_filename = "MB_Superglue - Options - Reglue - Audio source position of Siblings is maintained (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Audio source timeline location on Siblings is maintained",
-    
+
     values = {
       {"always", "Maintain source location"},
       {"ask", "Ask"},
@@ -416,13 +416,13 @@ _constant.global_options = {
     ext_state_key = _constant.data.key.options.switch.propagate_position,
     option_script_filename = "MB_Superglue - Options - Reglue - Position change of Edited Superitem's left edge propagates to Siblings (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Left edge position change of edited Superitem propagates to Siblings",
-    
+
     values = {
       {"always", "Always propagate position"},
       {"ask", "Ask"},
       {"no", "Don't propagate position"}
     },
-    
+
     default_value = "ask"
   },
 
@@ -432,13 +432,13 @@ _constant.global_options = {
     ext_state_key = _constant.data.key.options.switch.propagate_length,
     option_script_filename = "MB_Superglue - Options - Reglue - Length change of Edited Superitem propagates to Siblings (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Length change of edited Superitem propagates to Siblings",
-    
+
     values = {
       {"always", "Always propagate length"},
       {"ask", "Ask"},
       {"no", "Don't propagate length"}
     },
-    
+
     default_value = "always"
   },
 
@@ -448,13 +448,13 @@ _constant.global_options = {
     ext_state_key = _constant.data.key.options.switch.length_propagation_type,
     option_script_filename = "MB_Superglue - Options - Reglue - Absolute or relative propagation length change on Siblings (still altered by playrate) (Absolute-Ask-Relative).lua",
     user_readable_text = "Reglue: Absolute or relative length propagation on Siblings (can still be altered by playrate option)",
-    
+
     values = {
       {"always", "Absolute length propagation"},
       {"ask", "Ask"},
       {"no", "Relative length propagation"}
     },
-    
+
     default_value = "no"
   },
 
@@ -464,13 +464,13 @@ _constant.global_options = {
     ext_state_key = _constant.data.key.options.switch.playrate_affects_propagation,
     option_script_filename = "MB_Superglue - Options - Reglue - Playrate of Siblings affects their length & position propagation values (Enable-Ask-Disable).lua",
     user_readable_text = "Reglue: Sibling playrate affects Sibling length & position propagation by default",
-    
+
     values = {
       {"always", "Playrate always affects propagation"},
       {"ask", "Ask"},
       {"no", "Playrate doesn't affect propagation"}
     },
-    
+
     default_value = "always"
   }
 }
@@ -508,7 +508,7 @@ local _state = {
 
   pool = {
     active_glue_pool_id = nil,
-    
+
     parent_pool_ids_on_this_track = {
       descendant_to_ancestor = nil
     }
@@ -569,7 +569,7 @@ local _state = {
 
 
 -- UNUSED?
--- _src_offset_default_value = 0 
+-- _src_offset_default_value = 0
 -- _playrate_default_value = 1.0
 
 
@@ -853,7 +853,7 @@ function _module_options.getOptionDropdown(option, option_form_save)
   dropdown_control.onchange = function()
     _module_options.activateOptionSubmitButton(option_form_save)
   end
-  
+
   option_dropdown_box:add(dropdown_control)
   option_dropdown_box:add(dropdown_label)
 
@@ -1145,7 +1145,7 @@ function _module_init.setUpAction(action)
   if selected_item_count == false then return end
 
   _module_init.prepareAction(action)
-  
+
   selected_item_count = reaper.CountSelectedMediaItems(_api.current_project)
 
   if _module_init.itemsAreSelected(selected_item_count) == false then return false end
@@ -1183,10 +1183,10 @@ function _module_init.renderPathIsValid()
   nix_absolute_path_regex = "^/"
   is_nix_absolute_path = string.match(_file.path.proj_render, nix_absolute_path_regex)
   is_other_local_path = not is_win and not is_nix_absolute_path
-  
+
   if is_win_local_path or is_other_local_path then
     reaper.ShowMessageBox(_brand.name .. " needs a valid file render path. Set an absolute path in Project Settings > Media > Path or save your new project and try again.", "No file render path", _api.msg.type.ok)
-    
+
     return false
 
   else
@@ -1215,7 +1215,7 @@ function _module_init.requiredLibsAreInstalled()
 
   if not sws_version then
     reaper.ShowMessageBox(_brand.name .. " requires the SWS plugin extension to work. Please install SWS from https://standingwaterstudios.com/ and try again.", "SWS not installed", _api.msg.type.ok)
-    
+
     return false
   end
 end
@@ -1224,7 +1224,7 @@ end
 _module_init.checkFixedLanesSupport = (function()
   local version = reaper.GetAppVersion()
   local major = tonumber(version:match("^(%d+)"))
-  
+
   if major >= _constant.reaper.version.fixed_lanes then
     _constant.support.fixed_lanes = true
   end
@@ -1306,12 +1306,12 @@ function _module_init.removeItemsAbsentFromProjectFromArray(array)
   local presentItems = {}
 
   for _, item in ipairs(array) do
-    
+
     if reaper.ValidatePtr2(_api.current_project, item, _api.datatype.mediaitem) then
       table.insert(presentItems, item)
     end
   end
-  
+
   return presentItems
 end
 
@@ -1352,20 +1352,20 @@ function _module_init.doDePoolAction(selected_item_count, action)
   selected_items = _module_init.getSelectedItems(selected_item_count)
   _state.action.glue.all_glued_superitems = {}
   _state.action.depool.new_pool_ids = {}
-  
+
   _module_init.completeGlueOrDePool(selected_items, action)
 end
 
 
 function _module_init.doSmartAction(selected_item_count, action)
   local selected_items, pool_id
-  
+
   selected_items = _module_init.getSelectedItems(selected_item_count)
   _state.action.glue.all_glued_superitems = {}
   _state.action.glue.changed_pool_ids = {}
   _state.action.edit.changed_pool_ids = {}
 
-  if _module_init.superitemSelectionIsInvalid(selected_items, edit_or_unglue) then return end
+  if _module_init.superitemSelectionIsInvalid(selected_items, action) then return end
 
   if not _module_multi.setUpMultiTrackActions(selected_items, action) then return end
 
@@ -1471,7 +1471,7 @@ function _module_init.checkItemsOffscreen(items, item_type)
       this_selected_item_is_before_arrange_view, this_selected_item_is_after_arrange_view, offscreen_msg__text_start, offscreen_msg__text_end = _module_init.getOffscreenItemParams(this_item)
 
       if this_selected_item_is_before_arrange_view or this_selected_item_is_after_arrange_view then
-      
+
         if item_type == "selected" then
           offscreen_msg__text = _brand.name .. ": " .. offscreen_msg__text_start .. item_type .. offscreen_msg__text_end
           items_offscreen_response = reaper.ShowMessageBox(offscreen_msg__text .. " Select OK to continue with the items selected or Cancel to abort.", "Items selected offscreen", _api.msg.type.ok_cancel)
@@ -1562,7 +1562,7 @@ function _module_init.selectedItemsAreInvalid(selected_items, action_text)
 
   if _module_init.superitemSelectionIsInvalid(selected_items, action_text) or
     _module_midi.pureMidiItemIsSelected(selected_items) then
-      
+
       return true
   end
 end
@@ -1572,7 +1572,7 @@ function _module_init.getSelectedItems(selected_item_count)
   local selected_items, this_item
 
   selected_items = {}
-  
+
   for i = 0, selected_item_count-1 do
     this_item = reaper.GetSelectedMediaItem(_api.current_project, i)
 
@@ -1600,7 +1600,7 @@ end
 
 --   pool_contained_item_states_key_label = _constant.data.key.prefix.pool .. restored_items_pool_id .. _constant.data.key.suffix.pool.contained_item_states
 --   retval, last_glue_stored_item_states_string = _module_data.storeRetrieveProjectData(pool_contained_item_states_key_label)
-    
+
 --   if retval then
 --     retval, last_glue_stored_item_states_table = serpent.load(last_glue_stored_item_states_string)
 
@@ -1650,8 +1650,8 @@ function _module_multi.setUpMultiTrackActions(selected_items, action)
     local this_item_track = reaper.GetMediaItemTrack(this_item)
     local prev_item = selected_items[item_idx - 1]
     local prev_item_track = prev_item and reaper.GetMediaItemTrack(prev_item)
-    
-    item_is_on_different_track_than_previous = this_item_track and prev_item_track and 
+
+    item_is_on_different_track_than_previous = this_item_track and prev_item_track and
                                              this_item_track ~= prev_item_track
 
     if item_is_on_different_track_than_previous then
@@ -1723,14 +1723,14 @@ function _module_multi.iterateTracksWithSelectedItems(all_tracks_with_user_selec
     if action == "Glue" then
       _module_multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_selected_items_track)
 
-    elseif action == "Edit" or action == "Unglue" then   
+    elseif action == "Edit" or action == "Unglue" then
       _module_single.doSingleTrackEditOrUnglue(user_selected_items_on_this_track, action)
 
     elseif action == "DePool" then
       _module_single.doSingleTrackDePool(user_selected_items_on_this_track, this_user_selected_items_track, action)
 
     elseif action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then
-      
+
       if not _module_single.doSingleTrackSmartAction(user_selected_items_on_this_track, this_user_selected_items_track, action) then return false end
     end
   end
@@ -1830,7 +1830,7 @@ function _module_multi.getPoolIdsFromItems(items, type, sort_order)
       pool_ids_from_items = _module_util.deduplicateTable(pool_ids_from_items)
       pool_ids_by_depth = _module_multi.getPoolIdNestedDepths(pool_ids_from_items)
       pool_ids__descendant_to_ancestor = {}
-      
+
       for this_pool_id, depth in pairs(pool_ids_by_depth) do
         table.insert(pool_ids__descendant_to_ancestor, this_pool_id)
       end
@@ -1856,10 +1856,10 @@ function _module_multi.getPoolIdNestedDepths(pool_ids)
   end
 
   depth_has_changed = true
-  
+
   while depth_has_changed do
     depth_has_changed = false
-    
+
     for i = 1, #pool_ids do
       this_pool_id = pool_ids[i]
       this_pool_id__descendant_pool_ids = _module_data.storeRetrievePoolData(this_pool_id, _constant.data.key.suffix.pool.descendant_ids)
@@ -1869,9 +1869,9 @@ function _module_multi.getPoolIdNestedDepths(pool_ids)
 
         for j = 1, #this_pool_id__descendant_pool_ids do
           this_descendant_pool_id = this_pool_id__descendant_pool_ids[j]
-    
+
           if pool_ids_by_depth[this_descendant_pool_id] ~= nil then
-    
+
             if pool_ids_by_depth[this_descendant_pool_id] < pool_ids_by_depth[this_pool_id] + 1 then
               depth_has_changed = true
               pool_ids_by_depth[this_descendant_pool_id] = pool_ids_by_depth[this_pool_id] + 1
@@ -1890,7 +1890,7 @@ end
 -- function _module_lanes.getTopLaneFromItems(items)
 --   -- Find the topmost lane among selected items
 --   if not _constant.support.fixed_lanes then return 0 end
-  
+
 --   local topLane = 999999
 --   for i = 1, #items do
 --     local itemLane = reaper.GetMediaItemInfo_Value(items[i], "I_FIXEDLANE")
@@ -1902,13 +1902,13 @@ end
 
 -- function _module_lanes.storeTopLaneFromItems(items, pool_id)
 --   if not _constant.support.fixed_lanes then return end
-  
+
 --   local topLane = 999
 --   for i = 1, #items do
 --     local itemLane = reaper.GetMediaItemInfo_Value(items[i], "I_FIXEDLANE")
 --     if itemLane < topLane then topLane = itemLane end
 --   end
-  
+
 --   -- Store the top lane with the pool data
 --   _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane, tostring(topLane))
 --   return topLane
@@ -1921,7 +1921,7 @@ function _module_lanes.getLaneYPosition(laneNum, item)
   local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
   local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
   if laneCount <= 0 then laneCount = 1 end
-  
+
   local laneHeight = trackHeight / laneCount
   return laneNum * laneHeight
 end
@@ -1930,7 +1930,7 @@ end
 -- function _module_lanes.storeItemLaneOffset(item, referenceLane)
 --   -- Store lane as offset relative to reference lane
 --   if not _constant.support.fixed_lanes then return end
-  
+
 --   local itemLane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
 --   local relativeLane = itemLane - referenceLane
 --   _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset, tostring(relativeLane))
@@ -1965,21 +1965,21 @@ function _module_lanes.storeItemLaneOffsets(items, pool_id)
 
   -- Get the track
   local track = reaper.GetMediaItemTrack(items[1])
-  
+
   -- Save current track settings
   local originalMode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
   local originalLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-  
+
   -- Make sure track is in fixed lanes mode for accurate lane detection
   if originalMode ~= 2 then
     reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
     reaper.UpdateArrange()
   end
-  
+
   -- Find the topmost lane item (lowest lane number)
   local topLane = 255
   local topLaneItem = nil
-  
+
   for _, item in ipairs(items) do
     local itemLane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
     if itemLane < topLane and itemLane < 100 then -- Avoid invalid values
@@ -1987,37 +1987,37 @@ function _module_lanes.storeItemLaneOffsets(items, pool_id)
       topLaneItem = item
     end
   end
-  
+
   -- Default to lane 0 if we couldn't find a valid lane
-  if topLane == 255 then 
+  if topLane == 255 then
     topLane = 0
     topLaneItem = items[1] -- Just use the first item if no valid lane found
   end
-  
+
   -- Store the top lane number
   _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane, tostring(topLane))
-  
+
   -- Get and store the exact Y position of the top lane item
   local itemY = reaper.GetMediaItemInfo_Value(topLaneItem, "F_FREEMODE_Y")
   _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos, tostring(itemY))
-  
+
   -- Also store the original lane count
   _module_data.storeRetrievePoolData(pool_id, "original_lane_count", tostring(originalLaneCount))
-  
+
   -- Store lane offsets relative to top lane
   for _, item in ipairs(items) do
     local itemLane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
     local offset = 0
-    
+
     -- Only calculate offset if lane is valid
     if itemLane < 100 then
       offset = itemLane - topLane
     end
-    
+
     -- Store the offset
     _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset, tostring(offset))
   end
-  
+
   -- Restore original track mode if needed
   if originalMode ~= 2 then
     reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", originalMode)
@@ -2031,48 +2031,48 @@ function _module_lanes.restoreItemLaneOffsets(items, revertTrackAfter, pool_id)
 
   local track = reaper.GetMediaItemTrack(items[1])
   if not track then return end
-  
+
   -- Get the superitem's Y position at edit time
   local editYStr = _module_data.storeRetrievePoolData(pool_id, "edit_superitem_y")
   if not editYStr or editYStr == "" then
     _module_dev.log("ERROR: No edit_superitem_y found for pool " .. pool_id)
     return
   end
-  
+
   local editY = tonumber(editYStr)
   local editLaneStr = _module_data.storeRetrievePoolData(pool_id, "edit_superitem_lane")
   local editLane = tonumber(editLaneStr) or 0
-  
+
   -- Get the current track settings
   local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-  
+
   if _test_logging_enabled then
     _module_dev.log("RESTORE: Using editY=" .. editY .. ", editLane=" .. editLane .. ", currentLaneCount=" .. currentLaneCount)
   end
-  
+
   -- Find maximum lane offset to calculate required lanes
   local maxLaneOffset = 0
   for _, item in ipairs(items) do
     local offsetStr = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
     local offset = tonumber(offsetStr) or 0
     maxLaneOffset = math.max(maxLaneOffset, offset)
-    
+
     if _test_logging_enabled then
       _module_dev.log("Item offset: " .. offset .. ", max so far: " .. maxLaneOffset)
     end
   end
-  
+
   -- Calculate required lanes and ensure we have enough
   -- Add +1 to account for 0-based indexing in lanes (need lanes 0-10 for 11 total lanes)
   local requiredLaneCount = editLane + maxLaneOffset + 1
-  
+
   if _test_logging_enabled then
     _module_dev.log("Required lane count: " .. requiredLaneCount)
   end
-  
+
   -- Ensure track is in fixed lanes mode
   reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
-  
+
   -- Increase lane count if needed - IMPORTANT: We need to add 1 for the right number of lanes
   if requiredLaneCount > currentLaneCount then
     local newLaneCount = requiredLaneCount
@@ -2081,34 +2081,34 @@ function _module_lanes.restoreItemLaneOffsets(items, revertTrackAfter, pool_id)
     end
     reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", newLaneCount)
     reaper.UpdateArrange()
-    
+
     -- Update variable after potentially changing it
     currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
   end
-  
+
   -- Position each item according to its offset
   for _, item in ipairs(items) do
     local offsetStr = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
     local offset = tonumber(offsetStr) or 0
-    
+
     -- Calculate target lane and Y position
     local targetLane = editLane + offset
-    
+
     -- Make sure we use the actual current lane count for Y calculation
     local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
     local targetY = targetLane / currentLaneCount
-    
+
     if _test_logging_enabled then
       _module_dev.log("Setting item with offset " .. offset .. " to lane " .. targetLane .. " (Y=" .. targetY .. ")")
     end
-    
+
     -- Set item positioning
     reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
     reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", targetY)
   end
-  
+
   reaper.UpdateArrange()
-  
+
   if _test_logging_enabled then
     _module_dev.log("Lane restoration complete")
   end
@@ -2120,17 +2120,17 @@ function _module_lanes.enableFixedLanesTemporarily(track, minLaneCount)
 
   local old_mode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
   local old_laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-  
+
   -- Force track into fixed lanes mode
   reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
-  
+
   -- Set a reasonable lane count (3-5 is safe)
   local newCount = minLaneCount or 3
   newCount = math.max(3, math.min(newCount, 10)) -- Between 3 and 10
   reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", newCount)
-  
+
   reaper.UpdateArrange()
-  
+
   return {
     track = track,
     old_mode = old_mode,
@@ -2144,10 +2144,10 @@ function _module_lanes.restoreTrackMode(settings)
 
   -- Always restore the original mode, regardless of what it was
   reaper.SetMediaTrackInfo_Value(settings.track, "I_FOLDERCOMPACT", settings.old_mode)
-  
+
   -- Put back the old lane count
   reaper.SetMediaTrackInfo_Value(settings.track, "I_NUMFIXEDLANES", settings.old_laneCount)
-  
+
   -- Put back the old freemode setting
   reaper.SetMediaTrackInfo_Value(settings.track, "B_FREEMODE", settings.old_freeMode)
 
@@ -2157,48 +2157,48 @@ end
 
 function _module_lanes.applyLanePositionToItem(item, referenceLane)
   if not _constant.support.fixed_lanes then return end
-  
+
   local laneOffsetStr = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
   local laneOffset = tonumber(laneOffsetStr) or 0
-  
+
   -- Sanity check - don't allow extremely large offsets
   laneOffset = math.min(laneOffset, 20)  -- Cap at 20 lanes difference max
   local targetLane = referenceLane + laneOffset
-  
+
   -- Get track info
   local track = reaper.GetMediaItemTrack(item)
   local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
-  
+
   -- Ensure track is in fixed lane mode
   local trackMode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
   if trackMode ~= 2 then
     reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
   end
-  
+
   -- Ensure a reasonable lane count with a hard maximum
   local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
   local neededLaneCount = math.min(targetLane + 1, 20)  -- +1 because lanes are zero-based, cap at 20
-  
+
   if currentLaneCount < neededLaneCount then
     reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", neededLaneCount)
   end
-  
+
   -- Calculate Y position with sanity checks
   local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
   local laneHeight = trackHeight / math.max(1, laneCount)
-  
+
   -- Ensure target lane is within valid range
   targetLane = math.min(targetLane, laneCount - 1)
   targetLane = math.max(targetLane, 0)
-  
+
   local yPosition = targetLane * laneHeight
-  
+
   -- Set the item to free positioning mode
   reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
-  
+
   -- Set Y position - this is what actually controls the lane
   reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", yPosition)
-  
+
   -- Force REAPER to update visuals
   reaper.UpdateArrange()
 end
@@ -2206,47 +2206,47 @@ end
 
 function _module_lanes.fixItemLanePositions(items, track, desiredLane)
   if not _constant.support.fixed_lanes or #items == 0 then return end
-  
+
   -- Get current lane count
   local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-  
+
   -- Default to lane 0 if not specified (lane indexing appears to be 0-based)
   desiredLane = desiredLane or 0
   desiredLane = math.max(0, math.min(desiredLane, currentLaneCount - 1)) -- Keep in safe range
-  
+
   -- Force track to fixed lanes mode
   reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
-  
+
   -- Calculate lane height
   local trackH = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
   local laneHeight = trackH / math.max(1, currentLaneCount)
-  
+
   -- Position all items in the specified lane
   for _, item in ipairs(items) do
     reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
     reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", desiredLane * laneHeight)
   end
-  
+
   reaper.UpdateArrange()
 end
 
 
 function _module_lanes.debugLaneInfo(label, items, track, pool_id)
   _module_dev.log("==== LANE DEBUG: " .. label .. " ====")
-  
+
   -- Track info
   local trackMode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
   local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
   local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
   local trackFreeMode = reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE")
-  
-  _module_dev.log(string.format("TRACK - Mode: %d, Lanes: %d, Height: %d, FreeMode: %d", 
+
+  _module_dev.log(string.format("TRACK - Mode: %d, Lanes: %d, Height: %d, FreeMode: %d",
     trackMode, laneCount, trackHeight, trackFreeMode))
-  
+
   -- Pool info
   local topLaneStr = _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
   _module_dev.log("Pool #" .. pool_id .. " top lane: " .. (topLaneStr or "nil"))
-  
+
   -- Items info
   if items then
     for i, item in ipairs(items) do
@@ -2256,7 +2256,7 @@ function _module_lanes.debugLaneInfo(label, items, track, pool_id)
         local freeY = reaper.GetMediaItemInfo_Value(item, "F_FREEMODE_Y")
         local freeMode = reaper.GetMediaItemInfo_Value(item, "B_FREEMODE")
         local offsetStr = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
-        
+
         _module_dev.log(string.format(
           "Item %d: %s - Lane: %d, FreeY: %.2f, FreeMode: %d, Offset: %s",
           i, name, fixedLane, freeY, freeMode, offsetStr or "nil"
@@ -2264,7 +2264,7 @@ function _module_lanes.debugLaneInfo(label, items, track, pool_id)
       end
     end
   end
-  
+
   _module_dev.log("==============================")
 end
 
@@ -2315,7 +2315,7 @@ function _module_overglue.doOverglue(user_selected_items_on_this_track, pool_ids
     local all_pools = {}
     local outermost_pools = {}
     local non_outermost_pools = {}
-    
+
     for pool_id, depth in pairs(pool_ids_by_depth) do
         all_pools[pool_id] = true
         if depth == 0 then
@@ -2345,11 +2345,11 @@ function _module_overglue.doOverglue(user_selected_items_on_this_track, pool_ids
         retval, sizing_regions = serpent.load(sizing_regions)
         local sizing_region_guid = sizing_regions[pool_id]
         local pool_params = _module_common.getSetSizingRegion(sizing_region_guid)
-        
+
         if pool_params then
             local pool_center = pool_params.position + (pool_params.end_point - pool_params.position) / 2
             local min_distance = math.huge
-            
+
             for _, item in ipairs(all_nonrestored_items) do
                 local item_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
                 local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
@@ -2357,7 +2357,7 @@ function _module_overglue.doOverglue(user_selected_items_on_this_track, pool_ids
                 local distance = math.abs(pool_center - item_center)
                 min_distance = math.min(min_distance, distance)
             end
-            
+
             pool_distances[pool_id] = min_distance
         end
     end
@@ -2382,12 +2382,12 @@ function _module_overglue.doOverglue(user_selected_items_on_this_track, pool_ids
     local selected_items_on_this_track__post_glue = {}
     _state.action.glue.overglued_superitems = {}
 
-    for _, pool_id in ipairs(processing_order) do            
+    for _, pool_id in ipairs(processing_order) do
         _state.pool.active_glue_pool_id = pool_id
 
         local is_outermost = pool_ids_by_depth[pool_id] == 0
         local restored_items = _module_overglue.getRestoredItems(user_selected_items_on_this_track, pool_id)
-        local nonrestored_items__with_params = is_outermost 
+        local nonrestored_items__with_params = is_outermost
             and _module_overglue.getNonRestoredItemsWithParams(all_nonrestored_items)
             or _module_overglue.getNonRestoredItemsWithParams({})
 
@@ -2397,7 +2397,7 @@ function _module_overglue.doOverglue(user_selected_items_on_this_track, pool_ids
         local all_items_to_glue = _module_overglue.getItemsToOverglue(nearest_nonrestored_items, restored_items)
 
         local superitem = _module_single.triggerSingleTrackSinglePoolGlue(all_items_to_glue, pool_id)
-        
+
         if superitem then
             _state.action.glue.overglued_superitems[pool_id] = {
                 superitem = superitem,
@@ -2406,8 +2406,8 @@ function _module_overglue.doOverglue(user_selected_items_on_this_track, pool_ids
             }
 
             selected_items_on_this_track__post_glue = _module_overglue.getSelectedItems_PostGlue(
-                selected_items_on_this_track__post_glue, 
-                user_selected_items_on_this_track, 
+                selected_items_on_this_track__post_glue,
+                user_selected_items_on_this_track,
                 superitem
             )
         end
@@ -2433,18 +2433,18 @@ function _module_overglue.getRestoredItems(user_selected_items_on_this_track, re
 
     -- Check if we have any descendant info before trying to parse it
     local descendant_data = _module_data.storeRetrievePoolData(requested_parent_pool_id, _constant.data.key.suffix.pool.descendant_ids)
-    
+
     if descendant_data and descendant_data ~= "" then
         local retval, descendant_pool_ids = serpent.load(descendant_data)
-        
+
         if retval and descendant_pool_ids and type(descendant_pool_ids) == "table" then
             for _, descendant_pool_id in ipairs(descendant_pool_ids) do
-                
+
                 -- Check for overglued superitem
-                if _state.action.glue.overglued_superitems and 
+                if _state.action.glue.overglued_superitems and
                    _state.action.glue.overglued_superitems[descendant_pool_id] then
                     local superitem_data = _state.action.glue.overglued_superitems[descendant_pool_id]
-                    
+
                     if superitem_data.superitem and superitem_data.processed then
                         table.insert(restored_items, superitem_data.superitem)
                     end
@@ -2473,7 +2473,7 @@ end
 
 function _module_overglue.getNonRestoredItemsWithParams(nonrestored_items)
     local nonrestored_items__with_params = {}
-    
+
     for i = 1, #nonrestored_items do
         local this_item = nonrestored_items[i]
 
@@ -2481,19 +2481,19 @@ function _module_overglue.getNonRestoredItemsWithParams(nonrestored_items)
             nonrestored_items__with_params[this_item] = _module_data.getSetItemParams(this_item)
         end
     end
-    
+
     return nonrestored_items__with_params
 end
 
 
 function _module_overglue.getOutermostAncestorPoolsWithParams(outermost_ancestor_pools, restored_items_with_this_parent_pool_id)
     local outermost_ancestor_pools__with_params = {}
-    
+
     for _, this_outermost_ancestor_pool_id in ipairs(outermost_ancestor_pools) do
         local retval, all_pool_ids_with_active_sizing_regions = _module_data.storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
         retval, all_pool_ids_with_active_sizing_regions = serpent.load(all_pool_ids_with_active_sizing_regions)
         local sizing_region_guid = all_pool_ids_with_active_sizing_regions[this_outermost_ancestor_pool_id]
-        
+
         if sizing_region_guid then
             local sizing_params = _module_common.getSetSizingRegion(sizing_region_guid)
             if sizing_params then
@@ -2501,7 +2501,7 @@ function _module_overglue.getOutermostAncestorPoolsWithParams(outermost_ancestor
             end
         end
     end
-    
+
     return outermost_ancestor_pools__with_params
 end
 
@@ -2509,43 +2509,43 @@ end
 function _module_overglue.populateNonRestoredItemsDurationsData(outermost_ancestor_pools__with_params, nonrestored_items__with_params)
     local pool_item_distances = {}
     local closest_pools = {}
-    
+
     for pool_id, pool_params in pairs(outermost_ancestor_pools__with_params) do
         pool_item_distances[pool_id] = {}
     end
-    
+
     for item, item_params in pairs(nonrestored_items__with_params) do
         if reaper.ValidatePtr(item, "MediaItem*") then
             local item_position = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
             local item_length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
             local item_center = item_position + (item_length / 2)
-            
+
             for pool_id, pool_params in pairs(outermost_ancestor_pools__with_params) do
                 local pool_position = pool_params.position
                 local pool_length = pool_params.end_point - pool_params.position
                 local pool_center = pool_position + (pool_length / 2)
                 local distance = math.abs(pool_center - item_center)
-                
+
                 pool_item_distances[pool_id][item] = distance
-                
-                if not closest_pools[item] or 
+
+                if not closest_pools[item] or
                    distance < pool_item_distances[closest_pools[item]][item] then
                     closest_pools[item] = pool_id
                 end
             end
         end
     end
-    
+
     -- Build final assignment structure
     local outermost_ancestor_pools__nearest_nonrestored_items = {}
-    
+
     for item, closest_pool_id in pairs(closest_pools) do
-        outermost_ancestor_pools__nearest_nonrestored_items[closest_pool_id] = 
+        outermost_ancestor_pools__nearest_nonrestored_items[closest_pool_id] =
             outermost_ancestor_pools__nearest_nonrestored_items[closest_pool_id] or {}
 
         table.insert(outermost_ancestor_pools__nearest_nonrestored_items[closest_pool_id], item)
     end
-    
+
     return pool_item_distances, outermost_ancestor_pools__nearest_nonrestored_items
 end
 
@@ -2600,13 +2600,13 @@ function _module_overglue.checkNonRestoredItemOverlapConditions(this_nonrestored
 
   elseif item_overlaps_both_sides then
     _module_overglue.processNonRestoredItemOverlapCondition("overlaps_both_sides", this_nonrestored_item, this_outermost_ancestor_pool_id__relation__nonrestored_items_bounds__outermost_ancestor_bounds, nonrestored_items_with_both_sides_overlap)
-  
+
   elseif item_overlaps_pool_position then
     _module_overglue.processNonRestoredItemOverlapCondition("overlaps_pool_position", this_nonrestored_item, this_outermost_ancestor_pool_id__relation__nonrestored_items_bounds__outermost_ancestor_bounds, nonrestored_items_with_partial_overlap, item_overlap_with_pool_start)
-  
+
   elseif item_overlaps_pool_end_point then
     _module_overglue.processNonRestoredItemOverlapCondition("overlaps_pool_end_point", this_nonrestored_item, this_outermost_ancestor_pool_id__relation__nonrestored_items_bounds__outermost_ancestor_bounds, nonrestored_items_with_partial_overlap, item_overlap_with_pool_end)
-  
+
   else
     _module_overglue.processNonRestoredItemOverlapCondition("non_overlapping", this_nonrestored_item, this_outermost_ancestor_pool_id__relation__nonrestored_items_bounds__outermost_ancestor_bounds, nonrestored_items_non_overlapping)
   end
@@ -2659,47 +2659,47 @@ end
 
 function _module_overglue.assignNonRestoredItemsToPoolsBasedOnMaxOverlap(item_pool_assignments)
     local outermost_ancestor_pools__nearest_nonrestored_items = {}
-    
+
     for nonrestored_item, pool_overlaps in pairs(item_pool_assignments) do
         if reaper.ValidatePtr(nonrestored_item, "MediaItem*") then
             local max_overlap = -math.huge
             local assigned_pool = nil
-            
+
             for pool_id, overlap_amount in pairs(pool_overlaps) do
-                
+
                 if overlap_amount > max_overlap then
                     max_overlap = overlap_amount
                     assigned_pool = pool_id
                 end
             end
-            
+
             if assigned_pool then
                 outermost_ancestor_pools__nearest_nonrestored_items[assigned_pool] = outermost_ancestor_pools__nearest_nonrestored_items[assigned_pool] or {}
                 table.insert(outermost_ancestor_pools__nearest_nonrestored_items[assigned_pool], nonrestored_item)
             end
         end
     end
-    
+
     return outermost_ancestor_pools__nearest_nonrestored_items
 end
 
 
 function _module_overglue.calculateAllNonRestoredItemPoolOverlaps(relation__nonrestored_items_bounds__outermost_ancestor_bounds)
   local item_pool_assignments = {}
-  
+
   for this_outermost_ancestor_pool_id, this_outermost_ancestor_pool__params in pairs(relation__nonrestored_items_bounds__outermost_ancestor_bounds) do
 
     for this_nonrestored_item, this_nonrestored_item__params in pairs(this_outermost_ancestor_pool__params) do
-    
+
       if type(this_nonrestored_item__params) ~= "table" then goto continue end
-      
+
       item_pool_assignments[this_nonrestored_item] = item_pool_assignments[this_nonrestored_item] or {}
       item_pool_assignments[this_nonrestored_item][this_outermost_ancestor_pool_id] = _module_overglue.calculateNonRestoredItemPoolOverlap(this_nonrestored_item__params)
-      
+
       ::continue::
     end
   end
-  
+
   return item_pool_assignments
 end
 
@@ -2748,7 +2748,7 @@ end
 
 function _module_overglue.getItemsToOverglue(outermost_ancestor_pools__nearest_nonrestored_items, restored_items_with_this_parent_pool_id)
     local all_items_to_overglue = {}
-    
+
     -- Add restored items first
     if restored_items_with_this_parent_pool_id then
         for _, item in ipairs(restored_items_with_this_parent_pool_id) do
@@ -2757,7 +2757,7 @@ function _module_overglue.getItemsToOverglue(outermost_ancestor_pools__nearest_n
             end
         end
     end
-    
+
     -- Add nonrestored items for this pool
     if outermost_ancestor_pools__nearest_nonrestored_items then
         for pool_id, items in pairs(outermost_ancestor_pools__nearest_nonrestored_items) do
@@ -2770,7 +2770,7 @@ function _module_overglue.getItemsToOverglue(outermost_ancestor_pools__nearest_n
             end
         end
     end
-    
+
     return all_items_to_overglue
 end
 
@@ -2846,7 +2846,7 @@ function _module_single.doSingleTrackEditOrUnglue(user_selected_items_on_this_tr
   for i = 1, #superitems do
     local this_superitem = superitems[i]
     local this_pool_id = _module_data.storeRetrieveItemData(this_superitem, _constant.data.key.suffix.pool.instance_id)
-    
+
     local other_instance_being_edited = _module_single.otherInstanceIsOpen(this_pool_id)
     if other_instance_being_edited then
       _module_single.handleOtherInstanceBeingEdited(other_instance_being_edited, this_pool_id, action)
@@ -2897,7 +2897,7 @@ function _module_single.doSingleTrackDePool(user_selected_items_on_this_track, t
     this_superitem_params.pool_id = _module_edit.processUnglue(this_superitem, this_superitem_instance_pool_id, action)
     superitem = _module_glue.handleGlue(_state.action.edit_or_unglue.restored_items, nil, nil, this_superitem_params, false)
     new_pool_id = _module_depool.handleDePoolPostGlue(superitem, this_superitem_state, this_superitem_params)
-    
+
     table.insert(_state.action.glue.all_glued_superitems, superitem)
     table.insert(_state.action.depool.new_pool_ids, new_pool_id)
   end
@@ -2937,7 +2937,7 @@ function _module_single.doSingleTrackSmartAction(user_selected_items_on_this_tra
       _module_init.setResetUsersItemSelection(false)
 
       return false
-    
+
     else
       _module_multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_selected_items_track, action)
       _module_common.selectDeselectItems(_state.action.glue.all_glued_superitems, true)
@@ -2953,7 +2953,7 @@ end
 
 
 -- function detectSiblingsOpenForEditing(restored_items)
---   local siblings_are_selected, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id 
+--   local siblings_are_selected, this_restored_item, this_restored_item_parent_pool_id, this_is_2nd_or_later_restored_item_with_pool_id, this_item_belongs_to_different_pool_than_active_edit, last_restored_item_parent_pool_id
 
 --   siblings_are_selected = false
 
@@ -2991,7 +2991,7 @@ function _module_init.recursiveSuperitemIsBeingGlued(superitems, restored_items)
       this_restored_item = restored_items[j]
       this_restored_item_parent_pool_id = _module_data.storeRetrieveItemData(this_restored_item, _constant.data.key.suffix.pool.parent_id)
       this_restored_item_is_from_same_pool_as_selected_superitem = this_superitem_instance_pool_id == this_restored_item_parent_pool_id
-      
+
       if this_restored_item_is_from_same_pool_as_selected_superitem then
         reaper.ShowMessageBox(_brand.name .. " can't glue a Superitem to an instance from the same pool being Edited – that could destroy the universe! Change the items selected and try again.", "Recursive Superitem warning", _api.msg.type.ok)
         _module_init.setResetUsersItemSelection(false)
@@ -3101,7 +3101,7 @@ function _module_common.getSuperglueItemTypes(items, requested_types)
 
     for j = 1, #requested_types do
       this_requested_item_type = requested_types[j]
-      
+
       if item_types_data[this_requested_item_type].is then
         table.insert(item_types_data[this_requested_item_type].items, this_item)
       end
@@ -3210,7 +3210,7 @@ function _module_midi.midiItemIsSelected(item)
     return true
 
   else
-    
+
     return false
   end
 end
@@ -3235,7 +3235,7 @@ function _module_vi.virtualInstrumentIsInactive(item, item_take)
 
       return true
     end
-  
+
   elseif not track_has_virtual_instrument and not take_virtual_instrument_is_enabled then
     reaper.ShowMessageBox(_brand.name .. " can't glue pure MIDI without a virtual instrument. Add/enable a virtual instrument to render audio into the superitem or try a different item selection.", "Pure MIDI selected", _api.msg.type.ok)
 
@@ -3273,11 +3273,11 @@ function _module_glue.handleGlue(selected_items, pool_id, sizing_region_guid, de
     local this_is_depool = depool_superitem_params ~= nil
     local first_selected_item = selected_items[1]
     local first_selected_item_name = _module_common.getSetItemName(first_selected_item)
-    
+
     pool_id, sizing_params, this_is_reglue = _module_glue.setUpGlue(depool_superitem_params, this_is_ancestor_superitem_update, pool_id, sizing_region_guid, selected_items)
-    
+
     local selected_items_pool_params = _module_glue.handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
-    
+
     local items_to_glue = reaper.CountSelectedMediaItems(0)
     for i = 0, items_to_glue-1 do
         local item = reaper.GetSelectedMediaItem(0, i)
@@ -3330,7 +3330,7 @@ end
 
 function _module_glue.handlePoolId()
   local retval, last_pool_id, new_pool_id
-  
+
   retval, last_pool_id = _module_data.storeRetrieveProjectData(_constant.data.key.suffix.pool.last_id)
   new_pool_id = _module_glue.incrementPoolId(last_pool_id)
 
@@ -3421,11 +3421,11 @@ function _module_glue.instantiateDummySizingItem(sizing_params)
   local dummy_sizing_item = reaper.AddMediaItemToTrack(
     _state.action.glue.current_track
   )
-  
+
   reaper.SetMediaItemPosition(dummy_sizing_item, sizing_params.position, _api.dont_refresh_ui)
   reaper.SetMediaItemLength(dummy_sizing_item, sizing_params.length, _api.dont_refresh_ui)
   reaper.SetMediaItemSelected(dummy_sizing_item, true)
-  
+
   return dummy_sizing_item
 end
 
@@ -3466,7 +3466,7 @@ end
 
 function _module_common.getSetSizingRegion(sizing_region_guid_or_pool_id, params_or_delete)
   local get_or_delete, set, region_idx, retval, all_markers_count, all_regions_count, retval, sizing_region_params, sizing_region_guid, all_regions_in_proj_have_been_iterated
- 
+
   get_or_delete = not params_or_delete or params_or_delete == "delete"
   set = params_or_delete and params_or_delete ~= "delete"
   region_idx = 0
@@ -3494,13 +3494,13 @@ function _module_common.getSetSizingRegion(sizing_region_guid_or_pool_id, params
 
     region_idx = region_idx + 1
     all_regions_in_proj_have_been_iterated = region_idx > all_regions_count
-  
+
   until retval == 0 or all_regions_in_proj_have_been_iterated
 end
 
 
 function _module_glue.getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-  local get, delete, sizing_region_guid, sizing_region_api__key, stored_guid_retval, this_region_guid, this_region_belongs_to_active_pool, sizing_region_params, retval, is_region 
+  local get, delete, sizing_region_guid, sizing_region_api__key, stored_guid_retval, this_region_guid, this_region_belongs_to_active_pool, sizing_region_params, retval, is_region
 
   get = not params_or_delete
   delete = params_or_delete == "delete"
@@ -3551,7 +3551,7 @@ function _module_glue.addSizingRegion(sizing_region_guid_or_pool_id, params_or_d
 
     if this_region_is_active then
       local guid_result, new_guid = _module_glue.handleSizingRegionPoolData(region_idx, pool_id)
-      
+
       return guid_result, new_guid
     end
   end
@@ -3623,7 +3623,7 @@ function _module_glue.handlePreglueItems(selected_items, pool_id, sizing_params,
   if _constant.support.fixed_lanes then
     _module_lanes.storeItemLaneOffsets(selected_items, pool_id)
   end
-  
+
   -- Get states before storing them
   selected_item_states, selected_items_pool_params = _module_data.prepareAndGetItemStates(selected_items, pool_id)
   _module_data.storeItemStates(pool_id, selected_item_states)
@@ -3702,7 +3702,7 @@ function _module_glue.convertMidiItemToAudio(item)
     active_take = reaper.GetActiveTake(item)
     this_take_is_midi = active_take and reaper.TakeIsMIDI(active_take)
 
-    if this_take_is_midi then      
+    if this_take_is_midi then
       active_take = reaper.GetActiveTake(item)
       retval, active_take_guid = reaper.GetSetMediaItemTakeInfo_String(active_take, _api.take.key.guid, "", false)
 
@@ -3734,11 +3734,11 @@ function _module_data.getSetItemStateChunk(item, state)
   local get = not state
   local set = state
   local retval
-  
+
   if get then
     retval, state = reaper.GetItemStateChunk(item, "", true)
     return state
-    
+
   elseif set then
     reaper.SetItemStateChunk(item, state, true)
   end
@@ -3747,7 +3747,7 @@ end
 
 function _module_data.storeItemStates(pool_id, item_states_table)
   item_states_table = serpent.dump(item_states_table)
-  
+
   _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_item_states, item_states_table)
 end
 
@@ -3758,7 +3758,7 @@ function _module_common.selectDeselectItems(items, select_deselect)
   for i = 1, #items do
     this_item = items[i]
 
-    if this_item then 
+    if this_item then
       reaper.SetMediaItemSelected(this_item, select_deselect)
     end
   end
@@ -3832,34 +3832,34 @@ function _module_glue.handlePostGlue(selected_items, pool_id, first_selected_ite
 
   _module_glue.handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, sizing_params, this_is_reglue)
   _module_glue.handleDescendantPoolReferences(pool_id, selected_items_pool_params)
-  
+
   -- Position superitem in topmost lane
   -- Position superitem in topmost lane
   if _constant.support.fixed_lanes then
     local topLaneStr = _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
     local topLane = tonumber(topLaneStr) or 0
-    
+
     local topYPosStr = _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos)
     local exactYPos = topYPosStr and tonumber(topYPosStr)
-    
+
     -- Get the original lane count
     local originalLaneCountStr = _module_data.storeRetrievePoolData(pool_id, "original_lane_count")
     local originalLaneCount = tonumber(originalLaneCountStr) or 0
-    
+
     -- Get track information
     local track = reaper.GetMediaItemTrack(superitem)
-    
+
     -- Ensure track is in fixed lanes mode
     reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
-    
+
     -- Restore original lane count if it was stored and is reasonable
     if originalLaneCount > 0 then
         reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", originalLaneCount)
     end
-    
+
     -- Set free positioning mode
     reaper.SetMediaItemInfo_Value(superitem, "B_FREEMODE", 1)
-    
+
     -- Use exact Y position if available, otherwise calculate
     if exactYPos then
         reaper.SetMediaItemInfo_Value(superitem, "F_FREEMODE_Y", exactYPos)
@@ -3869,11 +3869,11 @@ function _module_glue.handlePostGlue(selected_items, pool_id, first_selected_ite
         local laneHeight = trackHeight / math.max(1, laneCount)
         reaper.SetMediaItemInfo_Value(superitem, "F_FREEMODE_Y", topLane * laneHeight)
     end
-    
+
     reaper.UpdateArrange()
-    
+
     if _test_logging_enabled then
-      _module_dev.log("Lane positioning - Lane: " .. topLane .. ", Y: " .. 
+      _module_dev.log("Lane positioning - Lane: " .. topLane .. ", Y: " ..
         (exactYPos or "(calculated)"))
     end
 
@@ -3899,7 +3899,7 @@ function _module_glue.handleAddtionalItemCountLabel(selected_items, pool_id, fir
   other_selected_items_count = selected_item_count - 1
   is_nested_superitem_name = string.find(first_selected_item_name, _brand.prefix.superitem_name_default)
   has_nested_item_name = string.find(first_selected_item_name, _regex.nested_item_default_name)
-  
+
   if multiple_user_items_are_selected then
     item_name_addl_count_str = " +" .. other_selected_items_count ..  " more"
 
@@ -4072,13 +4072,13 @@ end
 
 function _module_common.getImagePathForType(type_or_remove)
   if type_or_remove == false then return "" end
-  
+
   local paths = {
     superitem = _file.path.superitem_bg_img,
     restored = _file.path.restored_item_bg_img,
     restored_instance = _file.path.restored_instance_bg_img
   }
-  
+
   return paths[type_or_remove] or ""
 end
 
@@ -4241,7 +4241,7 @@ function _module_glue.deleteUnselectedContainedItems()
     for i = 1, #_state.restored_items.unselected_contained_items do
       this_contained_item_outside = _state.restored_items.unselected_contained_items[i]
       this_contained_item_track = reaper.GetMediaItem_Track(this_contained_item_outside)
-      
+
       reaper.DeleteTrackMediaItem(this_contained_item_track, this_contained_item_outside)
     end
   end
@@ -4284,7 +4284,7 @@ function _module_data.cleanUnselectedRestoredItemsFromPool(pool_id)
     this_item_is_selected = reaper.IsMediaItemSelected(this_item)
 
     if not this_item_is_selected then
-      
+
       this_item_parent_pool_id = _module_data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id)
 
       if this_item_parent_pool_id == pool_id then
@@ -4346,7 +4346,7 @@ function _module_common.checkSizingRegionExists(pool_id, selected_items)
 
     repeat
       retval, this_region_guid = reaper.GetSetProjectInfo_String(_api.current_project, _api.regionmarker.guid_key_prefix .. region_idx, "", false)
-      
+
       if retval and this_region_guid == sizing_region_guid then
         return this_region_guid
       end
@@ -4515,7 +4515,7 @@ end
 
 function _module_glue.setRegluePositionDeltas()
   _state.superitem.params.fresh_glue.edited_pool, _state.superitem.params.preedit.edited_pool, _state.superitem.params.last_glue.edited_pool = _module_util.numberizeAndRoundElements(
-    {_state.superitem.params.fresh_glue.edited_pool, _state.superitem.params.preedit.edited_pool, _state.superitem.params.last_glue.edited_pool}, 
+    {_state.superitem.params.fresh_glue.edited_pool, _state.superitem.params.preedit.edited_pool, _state.superitem.params.last_glue.edited_pool},
     {"position", "source_offset"}
   )
   _state.superitem.delta.position_during_glue = _state.superitem.params.fresh_glue.edited_pool.position - _state.superitem.params.preedit.edited_pool.position
@@ -4577,7 +4577,7 @@ function _module_glue.getDeltasForTakeMarkersAndEnvelopes(adjustment_near_projec
   if adjustment_near_project_start then
 
     if instance_position == 0 then
-      envelope_point_position_adjustment_delta = 0 
+      envelope_point_position_adjustment_delta = 0
       take_marker_position_adjustment_delta = adjustment_near_project_start - instance_current_src_offset
 
     else
@@ -4592,7 +4592,7 @@ end
 
 function _module_glue.adjustTakeEnvelopes(instance_active_take, position_adjustment_delta)
   local take_envelopes_count, this_take_envelope, envelope_points_count, j, retval, this_envelope_point_position, adjusted_envelope_point_position
-  
+
   take_envelopes_count = reaper.CountTakeEnvelopes(instance_active_take)
 
   if take_envelopes_count > 0 then
@@ -4631,7 +4631,7 @@ function _module_glue.adjustTakeMarkers(instance_active_take, position_adjustmen
 
     repeat
       retval = reaper.DeleteTakeMarker(instance_active_take, 0)
-    
+
     until retval == false
 
     for i = 1, #all_take_markers do
@@ -4804,7 +4804,7 @@ function _module_glue.checkParentPoolIsAncestorInProject(this_parent_pool_id)
   end
 
   _module_glue.deletePoolDescendantsData(this_parent_pool_id)
-   
+
   return false
 end
 
@@ -4862,7 +4862,7 @@ function _module_common.restoreStoredItems(pool_id, active_track, superitem, thi
 
   if _constant.support.fixed_lanes then
     _module_lanes.debugLaneInfo("RESTORE START", nil, active_track, pool_id)
-    
+
     -- Make sure track is in fixed lanes mode for consistent lane calculations
     local currentMode = reaper.GetMediaTrackInfo_Value(active_track, "I_FOLDERCOMPACT")
     if currentMode ~= 2 then
@@ -4873,7 +4873,7 @@ function _module_common.restoreStoredItems(pool_id, active_track, superitem, thi
 
   stored_item_states_table = _module_data.getStoredItemStatesTable(pool_id, action)
   restored_items = {}
-  
+
   _module_data.defineStoredItemsParams(pool_id)
 
   -- Create all items first without lane positioning
@@ -4890,7 +4890,7 @@ function _module_common.restoreStoredItems(pool_id, active_track, superitem, thi
     if _test_logging_enabled then
       _module_dev.log("Calling restoreItemLaneOffsets for " .. #restored_items .. " items")
     end
-    
+
     _module_lanes.restoreItemLaneOffsets(restored_items, false, pool_id)
     _module_lanes.debugLaneInfo("AFTER RESTORE", restored_items, active_track, pool_id)
   end
@@ -4996,15 +4996,15 @@ end
 
 function _module_common.restoreItem(track, state, this_is_ancestor_superitem_update)
   local restored_item = reaper.AddMediaItemToTrack(track)
-  
+
   if state then
     _module_data.getSetItemStateChunk(restored_item, state)
   end
-  
+
   if not this_is_ancestor_superitem_update then
     _module_common.restoreOriginalMidiTake(restored_item)
   end
-  
+
   return restored_item
 end
 
@@ -5013,7 +5013,7 @@ function _module_common.restoreOriginalMidiTake(item)
   local item_takes_count, preglue_active_midi_take_guid, preglue_active_midi_take, rendered_audio_take, rendered_audio_take_num, global_option_toggle_retain_only_last_glue_source_enabled
 
   item_takes_count = reaper.GetMediaItemNumTakes(item)
-  
+
   if item_takes_count > 0 then
     preglue_active_midi_take_guid = _module_data.storeRetrieveItemData(item, _constant.data.key.suffix.preglue.active_take_guid)
     preglue_active_midi_take = reaper.SNM_GetMediaItemTakeByGUID(_api.current_project, preglue_active_midi_take_guid)
@@ -5122,7 +5122,7 @@ function _module_glue.handleSuperitemsChangedByReglue(active_superitem, this_is_
 
       if global_option_toggle_depool_all_siblings_on_reglue == "true" and not this_is_ancestor_superitem_update then
         global_option_toggle_depool_all_siblings_on_reglue = _module_depool.handleDePoolSibling(this_active_pool_instance)
-      
+
       elseif global_option_toggle_depool_all_siblings_on_reglue == "false" then
         ancestor_pools_near_project_start = _module_glue.updateSuperitemChangedByReglue(this_active_pool_instance, this_item, ancestor_pools_near_project_start, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
       end
@@ -5155,7 +5155,7 @@ function _module_glue.getSuperitemChangedByReglue(item, active_superitem, this_i
     end
 
     item_is_active_pool_instance = item_instance_pool_id == fresh_glue_params.instance_pool_id
-    
+
     if item_is_active_pool_instance then
       instance_current_src = _module_common.getSetWipeItemAudioSrc(item)
       this_instance_needs_update = instance_current_src ~= fresh_glue_params.updated_src and item ~= active_superitem
@@ -5179,7 +5179,7 @@ function _module_depool.handleDePoolSibling(active_pool_sibling)
 
     if _state.user.wants_to_depool_all_siblings == _api.msg.response.no then
       reaper.SetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.depool_all_siblings_on_reglue, "false", _api.extstate.persist_enabled)
-      
+
       return "false"
 
     elseif _state.user.wants_to_depool_all_siblings == _api.msg.response.yes then
@@ -5233,7 +5233,7 @@ function _module_glue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_
   if this_is_sibling_instance_update then
     instance_would_get_adjusted_before_project_start = _module_glue.adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_playrate)
     _module_glue.adjustSuperitemLength(instance, instance_playrate, this_instance_is_child)
-    
+
     -- Propagate lane position to siblings
     if _constant.support.fixed_lanes and _state.propagation.user_wants_option.lane then
       local editedSuperitem = reaper.BR_GetMediaItemByGUID(_api.current_project, _state.superitem.params.fresh_glue.edited_pool.item_guid)
@@ -5241,11 +5241,11 @@ function _module_glue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_
         local editedSuperitemLane = reaper.GetMediaItemInfo_Value(editedSuperitem, "I_FIXEDLANE")
         local instanceLane = reaper.GetMediaItemInfo_Value(instance, "I_FIXEDLANE")
         local laneOffset = instanceLane - editedSuperitemLane
-        
+
         -- Get the edited superitem's new lane
         local freshEditedSuperitemLane = reaper.GetMediaItemInfo_Value(_state.superitem.params.fresh_glue.edited_pool.superitem, "I_FIXEDLANE")
         local targetLane = freshEditedSuperitemLane + laneOffset
-        
+
         -- Apply lane position
         local laneY = _module_lanes.getLaneYPosition(targetLane)
         reaper.SetMediaItemInfo_Value(instance, "F_FREEMODE_Y", laneY)
@@ -5253,8 +5253,8 @@ function _module_glue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_
     end
   end
 
-  if (this_is_sibling_instance_update or this_is_direct_parent_instance_update) and 
-    _state.propagation.user_wants_option.source_position and 
+  if (this_is_sibling_instance_update or this_is_direct_parent_instance_update) and
+    _state.propagation.user_wants_option.source_position and
     not instance_would_get_adjusted_before_project_start then
 
     _module_glue.adjustSuperitemSourceOffset(instance, instance_active_take, instance_current_src_offset, this_is_direct_parent_instance_update, this_is_sibling_instance_update)
@@ -5264,10 +5264,10 @@ end
 
 function _module_glue.getSuperitemPropagationOptionChoices()
   _state.propagation.user_wants_option.playrate_toggle = _module_common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
-  
+
   if _state.superitem.position_changed_since_last_glue then
     _state.propagation.user_wants_option.position = _module_common.getUserPropagationChoice("position", _constant.data.key.options.defaults.propagate_position)
-    
+
     -- Lane propagation follows position propagation behavior
     if _constant.support.fixed_lanes then
       _state.propagation.user_wants_option.lane = _state.propagation.user_wants_option.position
@@ -5420,7 +5420,7 @@ function _module_glue.adjustSuperitemLength(instance, instance_playrate, this_in
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _api.item.key.length)
   _state.propagation.user_wants_option.length = _module_common.getUserPropagationChoice("length", _constant.data.key.options.defaults.propagate_length)
 
-  if _state.propagation.user_wants_option.length then  
+  if _state.propagation.user_wants_option.length then
     _state.propagation.user_wants_option.playrate_toggle = _module_common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
     _state.propagation.user_wants_option.absolute_length_propagation = _module_common.getUserPropagationChoice("absolute_length_propagation", _constant.data.key.options.defaults.length_propagation_type)
     user_wants_relative_length_propagation = not _state.propagation.user_wants_option.absolute_length_propagation
@@ -5701,7 +5701,7 @@ function _module_single.handleDuplicatedItemTargetTake(item)
 
   if superglue_name_prefix then
     new_take_name = string.gsub(active_take_name, _brand.prefix.superitem_name_default, "")
-    
+
     _module_common.getSetItemName(item, new_take_name)
   end
 end
@@ -5732,25 +5732,25 @@ function _module_edit.processEdit(superitem, pool_id, action)
     -- Get superitem's current Y position
     local superitemY = reaper.GetMediaItemInfo_Value(superitem, "F_FREEMODE_Y")
     _module_data.storeRetrievePoolData(pool_id, "edit_superitem_y", tostring(superitemY))
-    
+
     local currentLaneCount = reaper.GetMediaTrackInfo_Value(active_track, "I_NUMFIXEDLANES")
     -- Use rounding instead of flooring for more accurate lane calculation
     local currentLane = math.floor(superitemY * currentLaneCount + 0.5)
     _module_data.storeRetrievePoolData(pool_id, "edit_superitem_lane", tostring(currentLane))
-    
+
     if _test_logging_enabled then
       _module_dev.log("EDIT: Stored superitem Y=" .. superitemY .. ", lane=" .. currentLane .. ", laneCount=" .. currentLaneCount)
     end
   end
-  
+
   _module_data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.preedit, superitem)
   _module_data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.preglue.superitem_state, superitem_state)
-  
+
   local restored_items = _module_common.restoreStoredItems(pool_id, active_track, superitem, nil, action, nil)
-  
+
   local sizing_region_guid = _module_edit.createSizingRegionFromSuperitem(superitem, pool_id)
   _state.action.edit_or_unglue.restored_items = restored_items
-  
+
   reaper.DeleteTrackMediaItem(active_track, superitem)
   _module_edit.updateRestoredItemsData(restored_items, pool_id)
 end
@@ -5764,29 +5764,29 @@ function _module_edit.processUnglue(superitem, pool_id, action)
     -- Store superitem's current Y position and lane (like in processEdit)
     local superitemY = reaper.GetMediaItemInfo_Value(superitem, "F_FREEMODE_Y")
     _module_data.storeRetrievePoolData(pool_id, "edit_superitem_y", tostring(superitemY))
-    
+
     local currentLaneCount = reaper.GetMediaTrackInfo_Value(active_track, "I_NUMFIXEDLANES")
     -- Use rounding instead of flooring for more accurate lane calculation
     local currentLane = math.floor(superitemY * currentLaneCount + 0.5)
     _module_data.storeRetrievePoolData(pool_id, "edit_superitem_lane", tostring(currentLane))
-    
+
     if _test_logging_enabled then
       _module_dev.log("UNGLUE: Stored superitem Y=" .. superitemY .. ", lane=" .. currentLane .. ", laneCount=" .. currentLaneCount)
     end
-    
+
     -- Get the original lane count
     local originalLaneCountStr = _module_data.storeRetrievePoolData(pool_id, "original_lane_count")
     local originalLaneCount = tonumber(originalLaneCountStr) or currentLaneCount -- Default to current count if not stored
-    
+
     -- Force track to fixed lanes mode
     reaper.SetMediaTrackInfo_Value(active_track, "I_FOLDERCOMPACT", 2)
     reaper.SetMediaTrackInfo_Value(active_track, "I_NUMFIXEDLANES", originalLaneCount)
     reaper.UpdateArrange()
   end
-  
+
   local restored_items = _module_common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
   _state.action.edit_or_unglue.restored_items = restored_items
-  
+
   reaper.DeleteTrackMediaItem(active_track, superitem)
   return pool_id, restored_items
 end
@@ -5796,11 +5796,11 @@ function _module_edit.validateRestoredItemPositions(superitem, pool_id, action)
   local stored_item_states = _module_data.getStoredItemStatesTable(pool_id, action)
   local superitem_params = _module_data.getSetItemParams(superitem)
   local post_glue_params = _module_data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.postglue)
-  
+
   if not post_glue_params then return true end
-  
+
   local position_delta = superitem_params.position - post_glue_params.position
-  
+
   for item_guid, stored_item_state in pairs(stored_item_states) do
     if stored_item_state then
       local temp_track = reaper.GetTrack(0, 0)
@@ -5808,16 +5808,16 @@ function _module_edit.validateRestoredItemPositions(superitem, pool_id, action)
       _module_data.getSetItemStateChunk(temp_item, stored_item_state)
       local stored_position = reaper.GetMediaItemInfo_Value(temp_item, _api.item.key.position)
       reaper.DeleteTrackMediaItem(temp_track, temp_item)
-      
+
       local adjusted_position = stored_position + position_delta
-      
+
       if adjusted_position < 0 then
         reaper.ShowMessageBox("This operation cannot be completed because one or more items would be placed before the start of the project.", "Cannot Edit/Unglue", _api.msg.type.ok)
         return false
       end
     end
   end
-  
+
   return true
 end
 
@@ -5832,7 +5832,7 @@ function _module_edit.createSizingRegionFromSuperitem(superitem, pool_id, looped
   end
 
   sizing_region_guid = _module_common.getSetSizingRegion(pool_id, superitem_params)
-  
+
   return sizing_region_guid
 end
 
@@ -5876,9 +5876,9 @@ function _module_init.getSmartAction(user_selected_items_on_this_track)
       return false
     end
   end
-  
+
   smart_action = _module_init.calculateSmartAction(user_selected_items_on_this_track)
-  
+
   return smart_action
 end
 
@@ -5900,18 +5900,18 @@ function _module_init.calculateSmartAction(user_selected_items_on_this_track)
   single_child_instance_is_selected = child_instances_count == 1
   user_wants_to_edit_or_unglue = single_parent_instance_is_selected and no_nonsuperitems_are_selected and no_child_instances_are_selected
   user_must_glue_or_abort = parent_instances_are_selected and single_child_instance_is_selected
-  user_wants_to_glue = (multiple_parent_instances_are_selected and no_nonsuperitems_are_selected and no_child_instances_are_selected) or 
-    (nonsuperitems_are_selected and no_child_instances_are_selected) or 
+  user_wants_to_glue = (multiple_parent_instances_are_selected and no_nonsuperitems_are_selected and no_child_instances_are_selected) or
+    (nonsuperitems_are_selected and no_child_instances_are_selected) or
     (no_parent_instances_are_selected and single_child_instance_is_selected)
 
   if user_wants_to_edit_or_unglue then
 
     return "edit_or_unglue"
-  
+
   elseif user_must_glue_or_abort then
 
     return "glue/abort"
-  
+
   elseif user_wants_to_glue then
 
     return "glue"
@@ -5936,22 +5936,22 @@ end
 
 function _module_depool.setUpDePool(target_item)
     local target_item_params, target_item_state, target_item_instance_pool_id
-    
+
     target_item_params = _module_data.getSetItemParams(target_item)
     target_item_params.pool_id = _module_data.storeRetrieveItemData(target_item, _constant.data.key.suffix.pool.instance_id)
-    
+
     -- Get original pool's position
     local original_pool_position = _module_data.storeRetrievePoolData(target_item_params.pool_id, _constant.data.key.suffix.pool.parent_position)
     original_pool_position = tonumber(original_pool_position)
-    
+
     -- Store movement direction relative to original
     local movement_direction = target_item_params.position < original_pool_position and "earlier" or "later"
     _module_data.storeRetrievePoolData(target_item_params.pool_id, "depool_movement_direction", movement_direction)
-    
+
     target_item_state = _module_data.getSetItemStateChunk(target_item)
     target_item_instance_pool_id = target_item_params.pool_id
     _state.restored_items.first_restored_item_last_glue_delta_to_parent = _module_data.storeRetrievePoolData(target_item_instance_pool_id, _constant.data.key.suffix.superitem.first_child_delta_to_superitem_position)
-    
+
     return target_item_params, target_item_state, target_item_instance_pool_id
 end
 
@@ -6026,7 +6026,7 @@ function _module_util.copyFile(old_path, new_path)
   end
   while true do
     local block = old_file:read(2^13)
-    if not block then 
+    if not block then
       old_file_sz = old_file:seek( "end" )
       break
     end

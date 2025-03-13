@@ -5,7 +5,7 @@ local Glue = {}
 
 local loadDependencies, loadCircularDependencies, serpent, _constant, _depool, _init, _lanes, _state, _util, _module_utils, _common, _data
 
--- local _dev = require("modules.dev")
+local _dev = require("modules.dev")
 
 loadDependencies = (function()
   serpent = require("lib.serpent")

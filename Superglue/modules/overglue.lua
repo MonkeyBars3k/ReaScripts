@@ -3,12 +3,17 @@
 local Overglue = {}
 
 
-local serpent = require("lib.serpent")
-local _common = require("modules.common")
-local _constant = require("modules.constant")
-local _data = require("modules.data")
-local _single = require("modules.single")
-local _state = require("modules.state")
+local loadDependencies, serpent, _common, _constant, _data, _single, _state
+
+
+loadDependencies = (function()
+  serpent = require("lib.serpent")
+  _common = require("modules.common")
+  _constant = require("modules.constant")
+  _data = require("modules.data")
+  _single = require("modules.single")
+  _state = require("modules.state")
+end)()
 
 
 
