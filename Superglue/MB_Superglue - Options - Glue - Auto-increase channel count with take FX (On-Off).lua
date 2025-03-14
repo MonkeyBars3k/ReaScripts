@@ -5,4 +5,4 @@ package.path = package.path .. ";" .. string.match(({reaper.get_action_context()
 
 local Superglue = require("MB_Superglue-Utils")
 
-Superglue.initOptionToggle("auto_increase_channel_count_with_take_fx")
+require("Superglue").init("option."auto_increase_channel_count_with_take_fx")

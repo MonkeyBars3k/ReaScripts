@@ -611,6 +611,16 @@ end
 function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, restored_item_params, action)
   local looped_source_sets_sizing_region__enabled, this_item_position_delta_to_last_glue_superitem_instance, superitem_loop_is_enabled, superitem_active_take, superitem_source, superitem_source_length, superitem_loop_starts_in_later_half, restored_item_altered_position
 
+  -- Log state values that affect calculation
+  _dev.log("RESTORE: item_params.position = " .. restored_item_params.position)
+  _dev.log("RESTORE: preunglue.position = " .. _state.superitem.params.preunglue.unglued_pool.position)
+  _dev.log("RESTORE: post_glue.position = " .. _state.superitem.params.post_glue.edited_pool.position)
+  _dev.log("RESTORE: preunglue.source_offset = " .. _state.superitem.params.preunglue.unglued_pool.source_offset)
+
+  if _state.superitem.params.post_glue.edited_pool.source_offset then
+    _dev.log("RESTORE: post_glue.source_offset = " .. _state.superitem.params.post_glue.edited_pool.source_offset)
+  end
+
   looped_source_sets_sizing_region__enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue)
   superitem_loop_is_enabled = reaper.GetMediaItemInfo_Value(superitem, _constant.api.item.key.loop_src) == _constant.api.timeline.loop_enabled
   superitem_active_take = reaper.GetActiveTake(superitem)
@@ -628,12 +638,14 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
     if looped_source_sets_sizing_region__enabled == "true" and superitem_loop_is_enabled and superitem_loop_starts_in_later_half then
       this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + superitem_source_length
     end
-
   elseif action == "DePool" then
     this_item_position_delta_to_last_glue_superitem_instance = _state.superitem.params.preunglue.unglued_pool.position - _state.superitem.params.post_glue.edited_pool.position + _state.superitem.params.post_glue.edited_pool.source_offset
   end
 
   restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_glue_superitem_instance
+
+  _dev.log("RESTORE: actual position_delta = " .. this_item_position_delta_to_last_glue_superitem_instance)
+  _dev.log("RESTORE: final position = " .. restored_item_altered_position)
 
   return restored_item_altered_position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 end

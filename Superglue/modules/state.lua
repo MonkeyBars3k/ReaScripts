@@ -11,7 +11,9 @@ local State = {
   action = {
 
     edit_or_unglue = {
-      restored_items = nil
+      restored_items = nil,
+      validated_items = nil,
+      validated_track = nil
     },
 
     edit = {

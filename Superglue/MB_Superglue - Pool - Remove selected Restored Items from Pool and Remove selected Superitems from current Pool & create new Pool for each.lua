@@ -1,8 +1,9 @@
 -- @noindex
 
 
-package.path = package.path .. ";" .. string.match(({reaper.get_action_context()})[2], "(.-)([^\\/]-%.?([^%.\\/]*))$") .. "?.lua"
+local _, script_file = reaper.get_action_context()
+local script_dir = script_file:match("^(.*[/\\])")
 
-local Superglue = require("MB_Superglue-Utils")
+package.path = package.path .. ";" .. script_dir .. "?.lua"
 
-Superglue.initMainAction("DePool")
+require("Superglue").init("main.DePool")

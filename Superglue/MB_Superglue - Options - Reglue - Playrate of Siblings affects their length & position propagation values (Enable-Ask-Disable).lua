@@ -5,4 +5,4 @@ package.path = package.path .. ";" .. string.match(({reaper.get_action_context()
 
 local Superglue = require("MB_Superglue-Utils")
 
-Superglue.initOptionToggle("playrate_affects_propagation_by_default")
+require("Superglue").init("option."playrate_affects_propagation_by_default")
