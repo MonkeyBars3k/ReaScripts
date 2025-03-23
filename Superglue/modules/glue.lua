@@ -332,7 +332,7 @@ end
 function Glue.handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
   local selected_item_states, selected_items_pool_params
 
-  _lanes.storeItemLaneDeltas(selected_items)
+  _lanes.storeItemLaneDeltas(selected_items, pool_id)
 
   selected_item_states, selected_items_pool_params = _data().prepareAndGetItemStates(selected_items, pool_id)
 
@@ -1194,7 +1194,7 @@ function Glue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superite
     instance_would_get_adjusted_before_project_start = Glue.adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_playrate)
     Glue.adjustSuperitemLength(instance, instance_playrate, this_instance_is_child)
 
-    -- Propagate lane position to siblings
+    -- Propagate lane position to siblings -- WHY??
     if _constant.support.fixed_lanes and _state.propagation.user_wants_option.lane then
       -- local editedSuperitem = reaper.BR_GetMediaItemByGUID(_constant.api.current_project, _state.superitem.params.fresh_glue.edited_pool.item_guid)
       -- if editedSuperitem then

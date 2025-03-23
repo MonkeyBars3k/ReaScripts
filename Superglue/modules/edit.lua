@@ -17,7 +17,7 @@ end)()
 
 
 function Edit.handleEditOrUnglue(superitem, pool_id, action)
-
+  -- THIS IS FALSEY WHICH IS INCORRECT...?
   if not Edit.validateRestoredItemPositions(superitem, pool_id, action) then
 
     return false
@@ -146,12 +146,13 @@ function Edit.validateRestoredItemPositions(superitem, pool_id, action)
   _state.action.edit_or_unglue.validated_track = temp_track
 
   -- Use Common.restoreStoredItems to restore the items and check for negative positions
-  local restored_items, _, _ = _common.restoreStoredItems(pool_id, temp_track, superitem, nil, action, nil)
+  local restored_items, _, _ = _common.restoreStoredItems(pool_id, temp_track, superitem, nil, action, "validate")
 
   -- Check for negative positions
   local anyNegativePositions = false
   for i = 1, #restored_items do
     local position = reaper.GetMediaItemInfo_Value(restored_items[i], "D_POSITION")
+
     if position < 0 then
       anyNegativePositions = true
       break

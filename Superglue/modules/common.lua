@@ -467,20 +467,17 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
   restored_items = {}
 
   _data().defineStoredItemsParams(pool_id)
+  _lanes().addRequiredLanesToTrack(active_track, pool_id)
 
-  -- COLLECT SUPERITEM LANES DATA HERE?
+  for _, stored_item_state in pairs(stored_item_states_table) do
 
-  -- Create all items first without lane positioning -- WHY DO THAT??
-  for item_guid, stored_item_state in pairs(stored_item_states_table) do
     if stored_item_state then
       _state.superitem.params.preunglue.unglued_pool = _data().getSetItemParams(superitem)
       local restored_item = Common.handleRestoredItem(superitem, active_track, stored_item_state, {}, this_is_ancestor_superitem_update, action)
+
       table.insert(restored_items, restored_item)
     end
   end
-
-  -- THIS IS DEFINITELY TOO LATE SINCE THE SUPERITEM ALREADY NO LONGER EXISTS (RIGHT?)
-  _lanes().restoreItemLaneDeltas(restored_items, superitem, active_track)
 
   return restored_items, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 end
@@ -497,7 +494,7 @@ function Common.handleRestoredItem(superitem, active_track, stored_item_state, r
   Common.handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
   if not this_is_ancestor_superitem_update then
-    restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.adjustRestoredItem(superitem, restored_item, action)
+    restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.adjustRestoredItem(superitem, restored_item, active_track, action)
   end
 
   if action == "Unglue" or action == "DePool" then
@@ -579,13 +576,14 @@ function Common.restoreOriginalMidiTake(item)
 end
 
 
-function Common.adjustRestoredItem(superitem, restored_item, action)
+function Common.adjustRestoredItem(superitem, restored_item, active_track, action)
   local restored_item_params, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 
   restored_item_params = _data().getSetItemParams(restored_item)
   restored_item_params.position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, restored_item_params, action)
 
   reaper.SetMediaItemPosition(restored_item, restored_item_params.position, _constant.api.dont_refresh_ui)
+   _lanes().restoreItemLaneDelta(restored_item, superitem, active_track)
 
   return restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 end

@@ -114,7 +114,8 @@ local Constant = {
         position = "D_POSITION",
         length = "D_LENGTH",
         -- notes = "P_NOTES", -- UNUSED
-        color = "I_CUSTOMCOLOR"
+        color = "I_CUSTOMCOLOR",
+        lane_num = "I_FIXEDLANE"
       }
     },
 
@@ -162,6 +163,8 @@ local Constant = {
 Constant.brand.prefix.superitem_name = Constant.brand.prefix.item_name .. Constant.brand.separator
 Constant.brand.prefix.superitem_name_default = Constant.regex.string_start .. Constant.brand.prefix.item_name .. Constant.regex.superitem_name_iterator
 
+
+-- Data values must never change, since Superglue data stored in users' projects would be orphaned
 Constant.data = {
   storage_track = reaper.GetMasterTrack(Constant.api.current_project),
 
@@ -214,7 +217,8 @@ Constant.data = {
         parent_id = "parent-pool-id",
         last_id = "last-pool-id",
         parent_ids_data = ":parent-pool-ids",
-        descendant_ids = ":descendant-pool-ids"
+        descendant_ids = ":descendant-pool-ids",
+        contained_items_max_lane_delta = ":contained-items-lane-delta"
       },
 
       item = {

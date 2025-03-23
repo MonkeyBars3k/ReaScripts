@@ -44,7 +44,7 @@ end
 
 
 function Data.storeRetrievePoolData(pool_id, key_suffix, new_value)
-  local is_store, is_retrieve, key, retval, stored_value
+  local is_store, is_retrieve, key, stored_value
 
   is_store = new_value
   is_retrieve = not new_value
@@ -54,7 +54,7 @@ function Data.storeRetrievePoolData(pool_id, key_suffix, new_value)
     Data.storeRetrieveProjectData(key, new_value)
 
   elseif is_retrieve then
-    retval, stored_value = Data.storeRetrieveProjectData(key)
+    _, stored_value = Data.storeRetrieveProjectData(key)
   end
 
   return stored_value

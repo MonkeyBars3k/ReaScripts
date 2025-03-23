@@ -5,7 +5,7 @@ local Single = {}
 
 local loadDependencies, loadCircularDependencies, _common, _constant, _data, _depool, _edit, _glue, _init, _state, _module_utils, _multi
 
--- local _dev = require("modules.dev")
+local _dev = require("modules.dev")
 
 loadDependencies = (function()
   _common = require("modules.common")
@@ -49,6 +49,7 @@ end
 
 
 function Single.doSingleTrackEditOrUnglue(user_selected_items_on_this_track, action)
+
   local superitems = Single.setUpSingleTrackEditOrUnglueOrDePool(user_selected_items_on_this_track)
 
   for i = 1, #superitems do
