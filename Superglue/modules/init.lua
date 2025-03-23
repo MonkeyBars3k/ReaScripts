@@ -152,7 +152,11 @@ function Init.prepareAction(action)
   reaper.PreventUIRefresh(api_undo_flag_track_configurations)
 
   if action == "Glue" or string.find(action, "Smart") then
-    Init.setResetUsersItemSelection(true)
+    Init.setResetUsersItemSelection("set")
+  end
+
+  if _constant.support.fixed_lanes then
+    Init.saveRecallUsersTrackSelection("save")
   end
 end
 
@@ -407,8 +411,8 @@ end
 function Init.setResetUsersItemSelection(set_reset)
   local set, reset, selected_items_count, this_selected_item
 
-  set = set_reset
-  reset = not set_reset
+  set = set_reset == "set"
+  reset = set_reset == "reset"
 
   if set then
     _state.user.item_selection = {}
@@ -425,6 +429,31 @@ function Init.setResetUsersItemSelection(set_reset)
 
     for i = 1, #_state.user.item_selection do
       reaper.SetMediaItemSelected(_state.user.item_selection[i], true)
+    end
+  end
+end
+
+
+function Init.saveRecallUsersTrackSelection(save_recall)
+  local save, recall, selected_tracks_count, this_selected_track
+
+  save = save_recall == "save"
+  recall = save_recall == "recall"
+
+  if save then
+    _state.user.track_selection = {}
+    selected_tracks_count = reaper.CountSelectedTracks(_constant.api.current_project)
+
+    for i = 0, selected_tracks_count-1 do
+      this_selected_track = reaper.GetSelectedTrack(_constant.api.current_project, i)
+      table.insert(_state.user.track_selection, this_selected_track)
+    end
+
+  elseif recall then
+    reaper.Main_OnCommand(_constant.cmd.deselect_all_tracks, _constant.api.cmd_flag)
+
+    for i = 1, #_state.user.track_selection do
+      reaper.SetTrackSelected(_state.user.track_selection[i], true)
     end
   end
 end
@@ -505,7 +534,7 @@ function Init.recursiveSuperitemIsBeingGlued(superitems, restored_items)
 
       if this_restored_item_is_from_same_pool_as_selected_superitem then
         reaper.ShowMessageBox(_constant.brand.name .. " can't glue a Superitem to an instance from the same pool being Edited – that could destroy the universe! Change the items selected and try again.", "Recursive Superitem warning", _constant.api.msg.type.ok)
-        Init.setResetUsersItemSelection(false)
+        Init.setResetUsersItemSelection("reset")
 
         return true
       end
@@ -560,6 +589,10 @@ function Init.cleanUpAction(action, pool_ids)
 
   if pool_ids_string then
     undo_block_string = undo_block_string .. " - Pool #" .. pool_ids_string
+  end
+
+  if _constant.support.fixed_lanes then
+    Init.saveRecallUsersTrackSelection("recall")
   end
 
   Init.refreshUI()

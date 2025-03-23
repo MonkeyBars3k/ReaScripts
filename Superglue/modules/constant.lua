@@ -100,7 +100,8 @@ local Constant = {
       no_defaults = false,
 
       key = {
-        name = "P_NAME"
+        name = "P_NAME",
+        num_fixed_lanes = "I_NUMFIXEDLANES"
       }
     },
 
@@ -142,6 +143,8 @@ local Constant = {
     set_item_to_one_random_color = 40706,
     duplicate_selected_items = 41295,
     crop_selected_items_to_active_takes = 40131,
+    add_lane_to_track = 42647,
+    deselect_all_tracks = 40297,
     scroll_to_selected_item = reaper.NamedCommandLookup("_S&M_SCROLL_ITEM")
   },
 
@@ -211,13 +214,11 @@ Constant.data = {
         parent_id = "parent-pool-id",
         last_id = "last-pool-id",
         parent_ids_data = ":parent-pool-ids",
-        descendant_ids = ":descendant-pool-ids",
-        top_lane = ":top-lane",
-        top_lane_y_pos = ":top-lane-y-pos"
+        descendant_ids = ":descendant-pool-ids"
       },
 
       item = {
-        lane_offset = ":lane-offset"
+          lane_delta = ":item-lane-delta"
       },
 
       preglue = {

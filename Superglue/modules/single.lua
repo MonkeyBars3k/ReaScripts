@@ -142,7 +142,7 @@ function Single.doSingleTrackSmartAction(user_selected_items_on_this_track, this
     glue_abort_dialog = reaper.ShowMessageBox("You have selected both Superitem(s) and restored item(s) from an edited Superitem. Are you sure you want to Superglue them?", "Mixed " .. _constant.brand.name .. "items selected", _constant.api.msg.type.ok_cancel)
 
     if glue_abort_dialog == _constant.api.msg.response.cancel then
-      _init.setResetUsersItemSelection(false)
+      _init.setResetUsersItemSelection("reset")
 
       return false
 

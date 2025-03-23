@@ -5,6 +5,7 @@ local State = {
   user = {
     time_selection_before_action = {},
     item_selection = nil,
+    track_selection = nil,
     wants_to_depool_all_siblings = nil
   },
 

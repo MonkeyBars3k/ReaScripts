@@ -37,21 +37,6 @@ function Edit.processEdit(superitem, pool_id, action)
   local active_track = reaper.BR_GetMediaTrackByGUID(_constant.api.current_project, superitem_preedit_params.track_guid)
   local superitem_state = _data.getSetItemStateChunk(superitem)
 
-  if _constant.support.fixed_lanes then
-    -- Get superitem's current Y position
-    local superitemY = reaper.GetMediaItemInfo_Value(superitem, "F_FREEMODE_Y")
-    _data.storeRetrievePoolData(pool_id, "edit_superitem_y", tostring(superitemY))
-
-    local currentLaneCount = reaper.GetMediaTrackInfo_Value(active_track, "I_NUMFIXEDLANES")
-    -- Use rounding instead of flooring for more accurate lane calculation
-    local currentLane = math.floor(superitemY * currentLaneCount + 0.5)
-    _data.storeRetrievePoolData(pool_id, "edit_superitem_lane", tostring(currentLane))
-
-    if _dev.config.test_logging_enabled then
-      _dev.log("EDIT: Stored superitem Y=" .. superitemY .. ", lane=" .. currentLane .. ", laneCount=" .. currentLaneCount)
-    end
-  end
-
   _data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.preedit, superitem)
   _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.preglue.superitem_state, superitem_state)
 
@@ -61,6 +46,7 @@ function Edit.processEdit(superitem, pool_id, action)
   if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
     -- Transfer items from temp track to actual track
     restored_items = {}
+
     for i = 1, #_state.action.edit_or_unglue.validated_items do
       local item = _state.action.edit_or_unglue.validated_items[i]
       local item_state = _data.getSetItemStateChunk(item)
@@ -76,6 +62,7 @@ function Edit.processEdit(superitem, pool_id, action)
       reaper.DeleteTrack(_state.action.edit_or_unglue.validated_track)
       _state.action.edit_or_unglue.validated_track = nil
     end
+
   else
     -- Fallback to normal restoration if validation wasn't done
     restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action, nil)
@@ -95,31 +82,6 @@ end
 function Edit.processUnglue(superitem, pool_id, action)
   local superitem_preedit_params = _data.getSetItemParams(superitem)
   local active_track = reaper.BR_GetMediaTrackByGUID(_constant.api.current_project, superitem_preedit_params.track_guid)
-
-  if _constant.support.fixed_lanes then
-    -- Store superitem's current Y position and lane (like in processEdit)
-    local superitemY = reaper.GetMediaItemInfo_Value(superitem, "F_FREEMODE_Y")
-    _data.storeRetrievePoolData(pool_id, "edit_superitem_y", tostring(superitemY))
-
-    local currentLaneCount = reaper.GetMediaTrackInfo_Value(active_track, "I_NUMFIXEDLANES")
-    -- Use rounding instead of flooring for more accurate lane calculation
-    local currentLane = math.floor(superitemY * currentLaneCount + 0.5)
-    _data.storeRetrievePoolData(pool_id, "edit_superitem_lane", tostring(currentLane))
-
-    if _dev.config.test_logging_enabled then
-      _dev.log("UNGLUE: Stored superitem Y=" .. superitemY .. ", lane=" .. currentLane .. ", laneCount=" .. currentLaneCount)
-    end
-
-    -- Get the original lane count
-    local originalLaneCountStr = _data.storeRetrievePoolData(pool_id, "original_lane_count")
-    local originalLaneCount = tonumber(originalLaneCountStr) or currentLaneCount -- Default to current count if not stored
-
-    -- Force track to fixed lanes mode
-    reaper.SetMediaTrackInfo_Value(active_track, "I_FOLDERCOMPACT", 2)
-    reaper.SetMediaTrackInfo_Value(active_track, "I_NUMFIXEDLANES", originalLaneCount)
-    reaper.UpdateArrange()
-  end
-
   local restored_items
 
   -- Reuse validated items if available

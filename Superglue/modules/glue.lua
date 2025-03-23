@@ -45,9 +45,9 @@ function Glue.handleGlue(selected_items, pool_id, sizing_region_guid, depool_sup
   --   local item = reaper.GetSelectedMediaItem(0, i)
   -- end
 
-if _constant.support.fixed_lanes then
-  _lanes.debugLaneInfo("BEFORE GLUE", selected_items, reaper.GetMediaItemTrack(selected_items[1]), pool_id)
-end
+-- if _constant.support.fixed_lanes then
+--   _lanes.debugLaneInfo("BEFORE GLUE", selected_items, reaper.GetMediaItemTrack(selected_items[1]), pool_id)
+-- end
 
   local superitem = Glue.glueSelectedItemsIntoSuperitem()
 
@@ -332,12 +332,10 @@ end
 function Glue.handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
   local selected_item_states, selected_items_pool_params
 
-  if _constant.support.fixed_lanes then
-    _lanes.storeItemLaneOffsets(selected_items, pool_id)
-  end
+  _lanes.storeItemLaneDeltas(selected_items)
 
-  -- Get states before storing them
   selected_item_states, selected_items_pool_params = _data().prepareAndGetItemStates(selected_items, pool_id)
+
   _data().storeItemStates(pool_id, selected_item_states)
   _common().selectDeselectItems(selected_items, true)
 
@@ -439,53 +437,6 @@ function Glue.handlePostGlue(selected_items, pool_id, first_selected_item_name, 
 
   Glue.handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, sizing_params, this_is_reglue)
   Glue.handleDescendantPoolReferences(pool_id, selected_items_pool_params)
-
-  -- Position superitem in topmost lane
-  -- Position superitem in topmost lane
-  if _constant.support.fixed_lanes then
-    local topLaneStr = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
-    local topLane = tonumber(topLaneStr) or 0
-
-    local topYPosStr = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos)
-    local exactYPos = topYPosStr and tonumber(topYPosStr)
-
-    -- Get the original lane count
-    local originalLaneCountStr = _data().storeRetrievePoolData(pool_id, "original_lane_count")
-    local originalLaneCount = tonumber(originalLaneCountStr) or 0
-
-    -- Get track information
-    local track = reaper.GetMediaItemTrack(superitem)
-
-    -- Ensure track is in fixed lanes mode
-    reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
-
-    -- Restore original lane count if it was stored and is reasonable
-    if originalLaneCount > 0 then
-        reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", originalLaneCount)
-    end
-
-    -- Set free positioning mode
-    reaper.SetMediaItemInfo_Value(superitem, "B_FREEMODE", 1)
-
-    -- Use exact Y position if available, otherwise calculate
-    if exactYPos then
-        reaper.SetMediaItemInfo_Value(superitem, "F_FREEMODE_Y", exactYPos)
-    else
-        local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
-        local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-        local laneHeight = trackHeight / math.max(1, laneCount)
-        reaper.SetMediaItemInfo_Value(superitem, "F_FREEMODE_Y", topLane * laneHeight)
-    end
-
-    reaper.UpdateArrange()
-
-    if _dev.config.test_logging_enabled then
-      _dev.log("Lane positioning - Lane: " .. topLane .. ", Y: " ..
-        (exactYPos or "(calculated)"))
-    end
-
-_lanes.debugLaneInfo("AFTER GLUE", {superitem}, reaper.GetMediaItemTrack(superitem), pool_id)
-  end
 
   if not this_is_ancestor_superitem_update then
     Glue.handleParentPoolReferencesInChildPools(pool_id, selected_items_pool_params)
@@ -1245,20 +1196,20 @@ function Glue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superite
 
     -- Propagate lane position to siblings
     if _constant.support.fixed_lanes and _state.propagation.user_wants_option.lane then
-      local editedSuperitem = reaper.BR_GetMediaItemByGUID(_constant.api.current_project, _state.superitem.params.fresh_glue.edited_pool.item_guid)
-      if editedSuperitem then
-        local editedSuperitemLane = reaper.GetMediaItemInfo_Value(editedSuperitem, "I_FIXEDLANE")
-        local instanceLane = reaper.GetMediaItemInfo_Value(instance, "I_FIXEDLANE")
-        local laneOffset = instanceLane - editedSuperitemLane
+      -- local editedSuperitem = reaper.BR_GetMediaItemByGUID(_constant.api.current_project, _state.superitem.params.fresh_glue.edited_pool.item_guid)
+      -- if editedSuperitem then
+      --   local editedSuperitemLane = reaper.GetMediaItemInfo_Value(editedSuperitem, "I_FIXEDLANE")
+      --   local instanceLane = reaper.GetMediaItemInfo_Value(instance, "I_FIXEDLANE")
+      --   local laneDelta = instanceLane - editedSuperitemLane
 
-        -- Get the edited superitem's new lane
-        local freshEditedSuperitemLane = reaper.GetMediaItemInfo_Value(_state.superitem.params.fresh_glue.edited_pool.superitem, "I_FIXEDLANE")
-        local targetLane = freshEditedSuperitemLane + laneOffset
+      --   -- Get the edited superitem's new lane
+      --   local freshEditedSuperitemLane = reaper.GetMediaItemInfo_Value(_state.superitem.params.fresh_glue.edited_pool.superitem, "I_FIXEDLANE")
+      --   local targetLane = freshEditedSuperitemLane + laneDelta
 
-        -- Apply lane position
-        local laneY = _lanes.getLaneYPosition(targetLane)
-        reaper.SetMediaItemInfo_Value(instance, "F_FREEMODE_Y", laneY)
-      end
+      --   -- Apply lane position - THIS SHOULD BE ABSTRACTED IN THE LANES MODULE
+      --   local laneY = _lanes.getLaneYPosition(targetLane)
+      --   reaper.SetMediaItemInfo_Value(instance, "F_FREEMODE_Y", laneY)
+      -- end
     end
   end
 

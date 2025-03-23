@@ -460,26 +460,17 @@ function Common.getSetWipeItemAudioSrc(item, src_or_wipe)
 end
 
 
-function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_ancestor_superitem_update, action, superitemLane)
+function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_ancestor_superitem_update, action)
   local stored_item_states_table, restored_items, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
-
-  if _constant.support.fixed_lanes then
-    _lanes().debugLaneInfo("RESTORE START", nil, active_track, pool_id)
-
-    -- Make sure track is in fixed lanes mode for consistent lane calculations
-    local currentMode = reaper.GetMediaTrackInfo_Value(active_track, "I_FOLDERCOMPACT")
-    if currentMode ~= 2 then
-      reaper.SetMediaTrackInfo_Value(active_track, "I_FOLDERCOMPACT", 2)
-      reaper.UpdateArrange()
-    end
-  end
 
   stored_item_states_table = _data().getStoredItemStatesTable(pool_id, action)
   restored_items = {}
 
   _data().defineStoredItemsParams(pool_id)
 
-  -- Create all items first without lane positioning
+  -- COLLECT SUPERITEM LANES DATA HERE?
+
+  -- Create all items first without lane positioning -- WHY DO THAT??
   for item_guid, stored_item_state in pairs(stored_item_states_table) do
     if stored_item_state then
       _state.superitem.params.preunglue.unglued_pool = _data().getSetItemParams(superitem)
@@ -488,15 +479,8 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
     end
   end
 
-  -- CRITICAL: Apply lane positioning only AFTER all items are created and ONLY ONCE
-  if _constant.support.fixed_lanes and #restored_items > 0 then
-    if _dev.config.test_logging_enabled then
-      _dev.log("Calling restoreItemLaneOffsets for " .. #restored_items .. " items")
-    end
-
-    _lanes().restoreItemLaneOffsets(restored_items, false, pool_id)
-    _lanes().debugLaneInfo("AFTER RESTORE", restored_items, active_track, pool_id)
-  end
+  -- THIS IS DEFINITELY TOO LATE SINCE THE SUPERITEM ALREADY NO LONGER EXISTS (RIGHT?)
+  _lanes().restoreItemLaneDeltas(restored_items, superitem, active_track)
 
   return restored_items, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 end
@@ -596,11 +580,10 @@ end
 
 
 function Common.adjustRestoredItem(superitem, restored_item, action)
-  local restored_item_params, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled, adjusted_restored_item_position_is_before_project_start, restored_item_negative_position
+  local restored_item_params, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 
   restored_item_params = _data().getSetItemParams(restored_item)
   restored_item_params.position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, restored_item_params, action)
-  adjusted_restored_item_position_is_before_project_start = restored_item_params.position < 0
 
   reaper.SetMediaItemPosition(restored_item, restored_item_params.position, _constant.api.dont_refresh_ui)
 
@@ -612,14 +595,14 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
   local looped_source_sets_sizing_region__enabled, this_item_position_delta_to_last_glue_superitem_instance, superitem_loop_is_enabled, superitem_active_take, superitem_source, superitem_source_length, superitem_loop_starts_in_later_half, restored_item_altered_position
 
   -- Log state values that affect calculation
-  _dev.log("RESTORE: item_params.position = " .. restored_item_params.position)
-  _dev.log("RESTORE: preunglue.position = " .. _state.superitem.params.preunglue.unglued_pool.position)
-  _dev.log("RESTORE: post_glue.position = " .. _state.superitem.params.post_glue.edited_pool.position)
-  _dev.log("RESTORE: preunglue.source_offset = " .. _state.superitem.params.preunglue.unglued_pool.source_offset)
+  -- _dev.log("RESTORE: item_params.position = " .. restored_item_params.position)
+  -- _dev.log("RESTORE: preunglue.position = " .. _state.superitem.params.preunglue.unglued_pool.position)
+  -- _dev.log("RESTORE: post_glue.position = " .. _state.superitem.params.post_glue.edited_pool.position)
+  -- _dev.log("RESTORE: preunglue.source_offset = " .. _state.superitem.params.preunglue.unglued_pool.source_offset)
 
-  if _state.superitem.params.post_glue.edited_pool.source_offset then
-    _dev.log("RESTORE: post_glue.source_offset = " .. _state.superitem.params.post_glue.edited_pool.source_offset)
-  end
+  -- if _state.superitem.params.post_glue.edited_pool.source_offset then
+  --   _dev.log("RESTORE: post_glue.source_offset = " .. _state.superitem.params.post_glue.edited_pool.source_offset)
+  -- end
 
   looped_source_sets_sizing_region__enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue)
   superitem_loop_is_enabled = reaper.GetMediaItemInfo_Value(superitem, _constant.api.item.key.loop_src) == _constant.api.timeline.loop_enabled
@@ -644,8 +627,8 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
 
   restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_glue_superitem_instance
 
-  _dev.log("RESTORE: actual position_delta = " .. this_item_position_delta_to_last_glue_superitem_instance)
-  _dev.log("RESTORE: final position = " .. restored_item_altered_position)
+  -- _dev.log("RESTORE: actual position_delta = " .. this_item_position_delta_to_last_glue_superitem_instance)
+  -- _dev.log("RESTORE: final position = " .. restored_item_altered_position)
 
   return restored_item_altered_position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 end

@@ -25,7 +25,7 @@ function Lanes.getLaneYPosition(laneNum, item)
   -- Calculate Y position based on track's actual height and lane count
   local track = reaper.GetMediaItemTrack(item)
   local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
-  local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+  local laneCount = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
   if laneCount <= 0 then laneCount = 1 end
 
   local laneHeight = trackHeight / laneCount
@@ -33,158 +33,122 @@ function Lanes.getLaneYPosition(laneNum, item)
 end
 
 
-function Lanes.storeItemLaneOffsets(items, pool_id)
-  if not _constant.support.fixed_lanes or #items == 0 then return end
+function Lanes.storeItemLaneDeltas(items)
 
-  -- Get the track
-  local track = reaper.GetMediaItemTrack(items[1])
+  if not _constant.support.fixed_lanes then return end
 
-  -- Save current track settings
-  local originalMode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
-  local originalLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+  local top_lane, item_lane, delta
 
-  -- Make sure track is in fixed lanes mode for accurate lane detection
-  if originalMode ~= 2 then
-    reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
-    reaper.UpdateArrange()
-  end
-
-  -- Find the topmost lane item (lowest lane number)
-  local topLane = 255
-  local topLaneItem = nil
+  top_lane = 0
 
   for _, item in ipairs(items) do
-    local itemLane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
-    if itemLane < topLane and itemLane < 100 then -- Avoid invalid values
-      topLane = itemLane
-      topLaneItem = item
+    item_lane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
+
+    if item_lane < top_lane then
+      top_lane = item_lane
     end
   end
 
-  -- Default to lane 0 if we couldn't find a valid lane
-  if topLane == 255 then
-    topLane = 0
-    topLaneItem = items[1] -- Just use the first item if no valid lane found
-  end
-
-  -- Store the top lane number
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane, tostring(topLane))
-
-  -- Get and store the exact Y position of the top lane item
-  local itemY = reaper.GetMediaItemInfo_Value(topLaneItem, "F_FREEMODE_Y")
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane_y_pos, tostring(itemY))
-
-  -- Also store the original lane count
-  _data.storeRetrievePoolData(pool_id, "original_lane_count", tostring(originalLaneCount))
-
-  -- Store lane offsets relative to top lane
   for _, item in ipairs(items) do
-    local itemLane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
-    local offset = 0
+    item_lane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
+    delta = item_lane - top_lane
 
-    -- Only calculate offset if lane is valid
-    if itemLane < 100 then
-      offset = itemLane - topLane
-    end
-
-    -- Store the offset
-    _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset, tostring(offset))
-  end
-
-  -- Restore original track mode if needed
-  if originalMode ~= 2 then
-    reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", originalMode)
-    reaper.UpdateArrange()
+    _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_delta, tostring(delta))
   end
 end
 
 
-function Lanes.restoreItemLaneOffsets(items, revertTrackAfter, pool_id)
-  if not _constant.support.fixed_lanes or #items == 0 then return end
+function Lanes.validateAndGetTrack(items)
+    if not _constant.support.fixed_lanes then
+        _dev.log("Lane support disabled")
+        return nil
+    end
 
-  local track = reaper.GetMediaItemTrack(items[1])
-  if not track then return end
+    if #items == 0 then
+        _dev.log("No items to restore")
+        return nil
+    end
 
-  -- Get the superitem's Y position at edit time
-  local editYStr = _data.storeRetrievePoolData(pool_id, "edit_superitem_y")
-  if not editYStr or editYStr == "" then
-    _dev.log("ERROR: No edit_superitem_y found for pool " .. pool_id)
-    return
-  end
+    local track = reaper.GetMediaItemTrack(items[1])
 
-  local editY = tonumber(editYStr)
-  local editLaneStr = _data.storeRetrievePoolData(pool_id, "edit_superitem_lane")
-  local editLane = tonumber(editLaneStr) or 0
+    if not track then
+        _dev.log("Could not find track for items")
+        return nil
+    end
 
-  -- Get the current track settings
-  local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+    _dev.log("Track validation successful")
+    return track
+end
 
-  if _dev.config.test_logging_enabled then
-    _dev.log("RESTORE: Using editY=" .. editY .. ", editLane=" .. editLane .. ", currentLaneCount=" .. currentLaneCount)
-  end
 
-  -- Find maximum lane offset to calculate required lanes
-  local maxLaneOffset = 0
-  for _, item in ipairs(items) do
-    local offsetStr = _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
-    local offset = tonumber(offsetStr) or 0
-    maxLaneOffset = math.max(maxLaneOffset, offset)
+function Lanes.calculateMaxLaneDelta(items)
+    local max_lane_delta, delta
 
-    if _dev.config.test_logging_enabled then
-      _dev.log("Item offset: " .. offset .. ", max so far: " .. maxLaneOffset)
+    max_lane_delta = 0
+
+    for i, item in ipairs(items) do
+        delta = _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_delta)
+        delta = tonumber(delta) or 0
+        max_lane_delta = math.max(max_lane_delta, delta)
+    end
+
+    return max_lane_delta
+end
+
+
+function Lanes.addRequiredLanesToTrack(track, total_lanes_needed)
+  local num_current_lanes, num_lanes_needed, num_lanes_after_added
+
+  reaper.SetOnlyTrackSelected(track)
+
+  num_current_lanes = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
+_dev.log("num_current_lanes: " .. num_current_lanes)
+  if total_lanes_needed > num_current_lanes then
+
+    num_lanes_needed = total_lanes_needed - num_current_lanes
+
+    for i = 1, num_lanes_needed do
+      reaper.Main_OnCommand(_constant.cmd.add_lane_to_track, _constant.api.cmd_flag)
     end
   end
 
-  -- Calculate required lanes and ensure we have enough
-  -- Add +1 to account for 0-based indexing in lanes (need lanes 0-10 for 11 total lanes)
-  local requiredLaneCount = editLane + maxLaneOffset + 1
+  num_lanes_after_added = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
+_dev.log("num_lanes_after_added: " .. num_lanes_after_added)
+  return num_lanes_after_added
+end
 
-  if _dev.config.test_logging_enabled then
-    _dev.log("Required lane count: " .. requiredLaneCount)
-  end
 
-  -- Ensure track is in fixed lanes mode
-  reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
+function Lanes.positionItemsInLanes(items, top_lane, num_track_lanes)
+  _dev.log("Positioning " .. #items .. " items with edit lane: " .. top_lane .. ", lane count: " .. num_track_lanes)
 
-  -- Increase lane count if needed - IMPORTANT: We need to add 1 for the right number of lanes
-  if requiredLaneCount > currentLaneCount then
-    local newLaneCount = requiredLaneCount
-    if _dev.config.test_logging_enabled then
-      _dev.log("Increasing lane count from " .. currentLaneCount .. " to " .. newLaneCount)
-    end
-    reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", newLaneCount)
-    reaper.UpdateArrange()
+  for i, item in ipairs(items) do
+    local lane_delta = _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_delta)
+    lane_delta = tonumber(lane_delta) or 0
 
-    -- Update variable after potentially changing it
-    currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-  end
+    local targetLane = top_lane + lane_delta
+    local targetY = targetLane / num_track_lanes
 
-  -- Position each item according to its offset
-  for _, item in ipairs(items) do
-    local offsetStr = _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
-    local offset = tonumber(offsetStr) or 0
-
-    -- Calculate target lane and Y position
-    local targetLane = editLane + offset
-
-    -- Make sure we use the actual current lane count for Y calculation
-    local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-    local targetY = targetLane / currentLaneCount
-
-    if _dev.config.test_logging_enabled then
-      _dev.log("Setting item with offset " .. offset .. " to lane " .. targetLane .. " (Y=" .. targetY .. ")")
-    end
-
-    -- Set item positioning
-    reaper.SetMediaItemInfo_Value(item, "B_FREEMODE", 1)
     reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", targetY)
   end
+end
 
-  reaper.UpdateArrange()
 
-  if _dev.config.test_logging_enabled then
-    _dev.log("Lane restoration complete")
-  end
+function Lanes.restoreItemLaneDeltas(items, superitem, track)
+
+    if not _constant.support.fixed_lanes then return end
+
+    _dev.log("--- LANE RESTORATION START ---")
+
+    local top_lane = reaper.GetMediaItemInfo_Value(superitem, "I_FIXEDLANE")
+    local max_lane_delta = Lanes.calculateMaxLaneDelta(items)
+    local total_lanes_needed = top_lane + max_lane_delta + 1
+    _dev.log("top_lane: " .. top_lane .. " max_lane_delta: " .. max_lane_delta .. " total_lanes_needed: " .. total_lanes_needed)
+
+    local num_track_lanes = Lanes.addRequiredLanesToTrack(track, total_lanes_needed)
+
+    Lanes.positionItemsInLanes(items, top_lane, num_track_lanes)
+
+    _dev.log("--- LANE RESTORATION COMPLETE ---")
 end
 
 
@@ -192,7 +156,7 @@ function Lanes.enableFixedLanesTemporarily(track, minLaneCount)
   if not track then return nil end
 
   local old_mode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
-  local old_laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+  local old_laneCount = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
 
   -- Force track into fixed lanes mode
   reaper.SetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT", 2)
@@ -200,7 +164,7 @@ function Lanes.enableFixedLanesTemporarily(track, minLaneCount)
   -- Set a reasonable lane count (3-5 is safe)
   local newCount = minLaneCount or 3
   newCount = math.max(3, math.min(newCount, 10)) -- Between 3 and 10
-  reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", newCount)
+  reaper.SetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes, newCount)
 
   reaper.UpdateArrange()
 
@@ -219,7 +183,7 @@ function Lanes.restoreTrackMode(settings)
   reaper.SetMediaTrackInfo_Value(settings.track, "I_FOLDERCOMPACT", settings.old_mode)
 
   -- Put back the old lane count
-  reaper.SetMediaTrackInfo_Value(settings.track, "I_NUMFIXEDLANES", settings.old_laneCount)
+  reaper.SetMediaTrackInfo_Value(settings.track, _constant.api.track.key.num_fixed_lanes, settings.old_laneCount)
 
   -- Put back the old freemode setting
   reaper.SetMediaTrackInfo_Value(settings.track, "B_FREEMODE", settings.old_freeMode)
@@ -231,12 +195,12 @@ end
 function Lanes.applyLanePositionToItem(item, referenceLane)
   if not _constant.support.fixed_lanes then return end
 
-  local laneOffsetStr = _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
-  local laneOffset = tonumber(laneOffsetStr) or 0
+  local laneDeltaStr = _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
+  local laneDelta = tonumber(laneDeltaStr) or 0
 
   -- Sanity check - don't allow extremely large offsets
-  laneOffset = math.min(laneOffset, 20)  -- Cap at 20 lanes difference max
-  local targetLane = referenceLane + laneOffset
+  laneDelta = math.min(laneDelta, 20)  -- Cap at 20 lanes difference max
+  local targetLane = referenceLane + laneDelta
 
   -- Get track info
   local track = reaper.GetMediaItemTrack(item)
@@ -249,15 +213,15 @@ function Lanes.applyLanePositionToItem(item, referenceLane)
   end
 
   -- Ensure a reasonable lane count with a hard maximum
-  local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+  local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
   local neededLaneCount = math.min(targetLane + 1, 20)  -- +1 because lanes are zero-based, cap at 20
 
   if currentLaneCount < neededLaneCount then
-    reaper.SetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES", neededLaneCount)
+    reaper.SetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes, neededLaneCount)
   end
 
   -- Calculate Y position with sanity checks
-  local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+  local laneCount = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
   local laneHeight = trackHeight / math.max(1, laneCount)
 
   -- Ensure target lane is within valid range
@@ -281,7 +245,7 @@ function Lanes.fixItemLanePositions(items, track, desiredLane)
   if not _constant.support.fixed_lanes or #items == 0 then return end
 
   -- Get current lane count
-  local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
+  local currentLaneCount = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
 
   -- Default to lane 0 if not specified (lane indexing appears to be 0-based)
   desiredLane = desiredLane or 0
@@ -301,44 +265,6 @@ function Lanes.fixItemLanePositions(items, track, desiredLane)
   end
 
   reaper.UpdateArrange()
-end
-
-
-function Lanes.debugLaneInfo(label, items, track, pool_id)
-  _dev.log("==== LANE DEBUG: " .. label .. " ====")
-
-  -- Track info
-  local trackMode = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
-  local laneCount = reaper.GetMediaTrackInfo_Value(track, "I_NUMFIXEDLANES")
-  local trackHeight = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
-  local trackFreeMode = reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE")
-
-  _dev.log(string.format("TRACK - Mode: %d, Lanes: %d, Height: %d, FreeMode: %d",
-    trackMode, laneCount, trackHeight, trackFreeMode))
-
-  -- Pool info
-  local topLaneStr = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.top_lane)
-  _dev.log("Pool #" .. pool_id .. " top lane: " .. (topLaneStr or "nil"))
-
-  -- Items info
-  if items then
-    for i, item in ipairs(items) do
-      if reaper.ValidatePtr(item, "MediaItem*") then
-        local name = _common().getSetItemName(item) or "unnamed"
-        local fixedLane = reaper.GetMediaItemInfo_Value(item, "I_FIXEDLANE")
-        local freeY = reaper.GetMediaItemInfo_Value(item, "F_FREEMODE_Y")
-        local freeMode = reaper.GetMediaItemInfo_Value(item, "B_FREEMODE")
-        local offsetStr = _data.storeRetrieveItemData(item, _constant.data.key.suffix.item.lane_offset)
-
-        _dev.log(string.format(
-          "Item %d: %s - Lane: %d, FreeY: %.2f, FreeMode: %d, Offset: %s",
-          i, name, fixedLane, freeY, freeMode, offsetStr or "nil"
-        ))
-      end
-    end
-  end
-
-  _dev.log("==============================")
 end
 
 

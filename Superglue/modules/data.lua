@@ -62,14 +62,14 @@ end
 
 
 function Data.storeRetrieveItemData(item, key_suffix, val)
-  local retrieve, store, data_param_key, retval
+  local retrieve, store, data_param_key
 
   retrieve = not val
   store = val
   data_param_key = _constant.api.data_key .. _constant.brand.prefix.global .. key_suffix
 
   if retrieve then
-    retval, val = reaper.GetSetMediaItemInfo_String(item, data_param_key, "", false)
+    _, val = reaper.GetSetMediaItemInfo_String(item, data_param_key, "", false)
 
     return val
 
