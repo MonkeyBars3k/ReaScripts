@@ -97,17 +97,19 @@ function Lanes.calculateMaxLaneDelta(item)
 end
 
 
-function Lanes.addRequiredLanesToTrack(track, pool_id)
-  local contained_items_max_lane_delta, num_current_lanes, num_new_lanes_required, num_lanes_after_added
+function Lanes.addRequiredLanesToTrack(pool_id, track, superitem)
+  local contained_items_max_lane_delta, num_current_lanes, superitem_lane_num, num_total_lanes_required, num_new_lanes_required, num_lanes_after_added
 
   reaper.SetOnlyTrackSelected(track)
 
   contained_items_max_lane_delta = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_items_max_lane_delta)
   contained_items_max_lane_delta = tonumber(contained_items_max_lane_delta)
   num_current_lanes = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
+  superitem_lane_num = reaper.GetMediaItemInfo_Value(superitem, "I_FIXEDLANE")
+  num_total_lanes_required = contained_items_max_lane_delta + superitem_lane_num + 1
 
-  if contained_items_max_lane_delta > num_current_lanes then
-    num_new_lanes_required = contained_items_max_lane_delta - num_current_lanes + 1
+  if num_total_lanes_required > num_current_lanes then
+    num_new_lanes_required = contained_items_max_lane_delta - num_current_lanes + superitem_lane_num + 1
 
     for i = 1, num_new_lanes_required do
       reaper.Main_OnCommand(_constant.cmd.add_lane_to_track, _constant.api.cmd_flag)
@@ -115,6 +117,9 @@ function Lanes.addRequiredLanesToTrack(track, pool_id)
   end
 
   num_lanes_after_added = reaper.GetMediaTrackInfo_Value(track, _constant.api.track.key.num_fixed_lanes)
+
+num_new_lanes_required = num_new_lanes_required or 0
+_dev.log("contained_items_max_lane_delta: " .. contained_items_max_lane_delta .. ", num_current_lanes: " .. num_current_lanes .. ", superitem_lane_num: " .. superitem_lane_num .. ", num_new_lanes_required: " .. num_new_lanes_required .. ", num_lanes_after_added: " .. num_lanes_after_added)
 
   return num_lanes_after_added
 end

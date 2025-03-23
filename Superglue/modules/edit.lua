@@ -3,7 +3,7 @@
 local Edit = {}
 
 
-local loadDependencies, _common, _constant, _data, _state
+local loadDependencies, _common, _constant, _data, _lanes, _state
 
 local _dev = require("modules.dev")
 
@@ -11,6 +11,7 @@ loadDependencies = (function()
   _common = require("modules.common")
   _constant = require("modules.constant")
   _data = require("modules.data")
+  _lanes = require("modules.lanes")
   _state = require("modules.state")
 end)()
 
@@ -44,6 +45,8 @@ function Edit.processEdit(superitem, pool_id, action)
 
   -- Reuse validated items if available
   if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
+    _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
+
     -- Transfer items from temp track to actual track
     restored_items = {}
 

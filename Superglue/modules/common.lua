@@ -467,7 +467,7 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
   restored_items = {}
 
   _data().defineStoredItemsParams(pool_id)
-  _lanes().addRequiredLanesToTrack(active_track, pool_id)
+  _lanes().addRequiredLanesToTrack(pool_id, active_track, superitem)
 
   for _, stored_item_state in pairs(stored_item_states_table) do
 
