@@ -33,91 +33,86 @@ function Edit.handleEditOrUnglue(superitem, pool_id, action)
 end
 
 
-function Edit.processEdit(superitem, pool_id, action)
+-- Helper: Get track for superitem operations
+function Edit.getTrackForSuperitem(superitem, pool_id)
   local superitem_preedit_params = _data.getSetItemParams(superitem)
   local active_track = reaper.BR_GetMediaTrackByGUID(_constant.api.current_project, superitem_preedit_params.track_guid)
+
+  -- Add lanes to track for both Edit and Unglue operations
+  _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
+
+  return active_track, superitem_preedit_params
+end
+
+-- Helper: Process validated or restored items
+function Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, action)
+  local restored_items
+
+  -- Reuse validated items if available
+  if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
+    restored_items = Edit.transferValidatedItems(active_track, pool_id, superitem)
+  else
+    restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
+  end
+
+  return restored_items
+end
+
+-- Helper: Transfer validated items to actual track
+function Edit.transferValidatedItems(active_track, pool_id, superitem)
+  local restored_items = {}
+
+  for i = 1, #_state.action.edit_or_unglue.validated_items do
+    local item = _state.action.edit_or_unglue.validated_items[i]
+    local item_state = _data.getSetItemStateChunk(item)
+
+    local new_item = reaper.AddMediaItemToTrack(active_track)
+    _data.getSetItemStateChunk(new_item, item_state)
+
+    table.insert(restored_items, new_item)
+  end
+
+  Edit.updateRestoredItemsData(restored_items, pool_id, superitem, active_track)
+
+  -- Clean up the temp track
+  if _state.action.edit_or_unglue.validated_track then
+    reaper.DeleteTrack(_state.action.edit_or_unglue.validated_track)
+    _state.action.edit_or_unglue.validated_track = nil
+  end
+
+  return restored_items
+end
+
+-- Helper: Clean up superitem and validation state
+function Edit.cleanupSuperitemAndValidation(active_track, superitem)
+  reaper.DeleteTrackMediaItem(active_track, superitem)
+  _state.action.edit_or_unglue.validated_items = nil
+end
+
+-- Main Edit function (now refactored)
+function Edit.processEdit(superitem, pool_id, action)
+  local active_track, superitem_preedit_params = Edit.getTrackForSuperitem(superitem, pool_id)
   local superitem_state = _data.getSetItemStateChunk(superitem)
 
   _data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.preedit, superitem)
   _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.preglue.superitem_state, superitem_state)
-  _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
 
-  local restored_items
-
-  -- Reuse validated items if available
-  if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
-    -- Transfer items from temp track to actual track
-    restored_items = {}
-
-    for i = 1, #_state.action.edit_or_unglue.validated_items do
-      local item = _state.action.edit_or_unglue.validated_items[i]
-      local item_state = _data.getSetItemStateChunk(item)
-
-      local new_item = reaper.AddMediaItemToTrack(active_track)
-      _data.getSetItemStateChunk(new_item, item_state)
-
-      table.insert(restored_items, new_item)
-    end
-
-    Edit.updateRestoredItemsData(restored_items, pool_id, superitem, active_track)
-
-    -- Clean up the temp track
-    if _state.action.edit_or_unglue.validated_track then
-      reaper.DeleteTrack(_state.action.edit_or_unglue.validated_track)
-      _state.action.edit_or_unglue.validated_track = nil
-    end
-
-  else
-    -- Fallback to normal restoration if validation wasn't done
-    restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
-  end
+  local restored_items = Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, action)
+  _state.action.edit_or_unglue.restored_items = restored_items
 
   local sizing_region_guid = Edit.createSizingRegionFromSuperitem(superitem, pool_id)
-  _state.action.edit_or_unglue.restored_items = restored_items
 
-  reaper.DeleteTrackMediaItem(active_track, superitem)
-
-  -- Clear validation state
-  _state.action.edit_or_unglue.validated_items = nil
+  Edit.cleanupSuperitemAndValidation(active_track, superitem)
 end
 
-
+-- Main Unglue function (now refactored)
 function Edit.processUnglue(superitem, pool_id, action)
-  local superitem_preedit_params = _data.getSetItemParams(superitem)
-  local active_track = reaper.BR_GetMediaTrackByGUID(_constant.api.current_project, superitem_preedit_params.track_guid)
-  local restored_items
+  local active_track = Edit.getTrackForSuperitem(superitem, pool_id)
 
-  -- Reuse validated items if available
-  if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
-    -- Transfer items from temp track to actual track
-    restored_items = {}
-    for i = 1, #_state.action.edit_or_unglue.validated_items do
-      local item = _state.action.edit_or_unglue.validated_items[i]
-      local item_state = _data.getSetItemStateChunk(item)
-
-      local new_item = reaper.AddMediaItemToTrack(active_track)
-      _data.getSetItemStateChunk(new_item, item_state)
-
-      table.insert(restored_items, new_item)
-    end
-
-    -- Clean up the temp track
-    if _state.action.edit_or_unglue.validated_track then
-      reaper.DeleteTrack(_state.action.edit_or_unglue.validated_track)
-      _state.action.edit_or_unglue.validated_track = nil
-    end
-  else
-    -- Fallback to normal restoration if validation wasn't done
-    _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
-    restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
-  end
-
+  local restored_items = Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, action)
   _state.action.edit_or_unglue.restored_items = restored_items
 
-  reaper.DeleteTrackMediaItem(active_track, superitem)
-
-  -- Clear validation state
-  _state.action.edit_or_unglue.validated_items = nil
+  Edit.cleanupSuperitemAndValidation(active_track, superitem)
 
   return pool_id, restored_items
 end
