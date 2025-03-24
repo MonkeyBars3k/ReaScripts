@@ -222,7 +222,7 @@ Constant.data = {
       },
 
       item = {
-          lane_delta = ":item-lane-delta"
+        lane_delta = ":item-lane-delta"
       },
 
       preglue = {

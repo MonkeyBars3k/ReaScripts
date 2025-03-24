@@ -568,19 +568,6 @@ function Init.throwOfflineTakeWarning(recommend_undo, is_restored_item)
 end
 
 
--- function Init.exclusiveSelectItem(item)
-
---   if item then
---     reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
---     reaper.SetMediaItemSelected(item, true)
-
---   else
-
---     return false
---   end
--- end
-
-
 function Init.cleanUpAction(action, pool_ids)
   local undo_block_string, pool_ids_string
 

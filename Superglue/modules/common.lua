@@ -467,7 +467,6 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
   restored_items = {}
 
   _data().defineStoredItemsParams(pool_id)
-  _lanes().addRequiredLanesToTrack(pool_id, active_track, superitem)
 
   for _, stored_item_state in pairs(stored_item_states_table) do
 
@@ -719,6 +718,19 @@ function Common.setAllSuperitemsColor(action)
     _init().cleanUpAction(action, pool_ids)
   end
 end
+
+
+-- function Common.exclusiveSelectItem(item)
+
+--   if item then
+--     reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
+--     reaper.SetMediaItemSelected(item, true)
+
+--   else
+
+--     return false
+--   end
+-- end
 
 
 

@@ -18,7 +18,7 @@ end)()
 
 
 function Edit.handleEditOrUnglue(superitem, pool_id, action)
-  -- THIS IS FALSEY WHICH IS INCORRECT...?
+
   if not Edit.validateRestoredItemPositions(superitem, pool_id, action) then
 
     return false
@@ -40,13 +40,12 @@ function Edit.processEdit(superitem, pool_id, action)
 
   _data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.preedit, superitem)
   _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.preglue.superitem_state, superitem_state)
+  _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
 
   local restored_items
 
   -- Reuse validated items if available
   if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
-    _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
-
     -- Transfer items from temp track to actual track
     restored_items = {}
 
@@ -60,6 +59,8 @@ function Edit.processEdit(superitem, pool_id, action)
       table.insert(restored_items, new_item)
     end
 
+    Edit.updateRestoredItemsData(restored_items, pool_id, superitem, active_track)
+
     -- Clean up the temp track
     if _state.action.edit_or_unglue.validated_track then
       reaper.DeleteTrack(_state.action.edit_or_unglue.validated_track)
@@ -68,14 +69,13 @@ function Edit.processEdit(superitem, pool_id, action)
 
   else
     -- Fallback to normal restoration if validation wasn't done
-    restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action, nil)
+    restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
   end
 
   local sizing_region_guid = Edit.createSizingRegionFromSuperitem(superitem, pool_id)
   _state.action.edit_or_unglue.restored_items = restored_items
 
   reaper.DeleteTrackMediaItem(active_track, superitem)
-  Edit.updateRestoredItemsData(restored_items, pool_id)
 
   -- Clear validation state
   _state.action.edit_or_unglue.validated_items = nil
@@ -108,6 +108,7 @@ function Edit.processUnglue(superitem, pool_id, action)
     end
   else
     -- Fallback to normal restoration if validation wasn't done
+    _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
     restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
   end
 
@@ -123,10 +124,11 @@ end
 
 
 function Edit.validateRestoredItemPositions(superitem, pool_id, action)
-  local superitem_params = _data.getSetItemParams(superitem)
   local post_glue_params = _data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.postglue)
 
   if not post_glue_params then return true end
+
+  local superitem_params = _data.getSetItemParams(superitem)
 
   -- Clear any previous stored items from validation
   _state.action.edit_or_unglue.validated_items = {}
@@ -138,18 +140,32 @@ function Edit.validateRestoredItemPositions(superitem, pool_id, action)
   _state.superitem.params.post_glue = _state.superitem.params.post_glue or {}
   _state.superitem.params.post_glue.edited_pool = post_glue_params
 
-  -- Create a hidden temporary track for validation
-  local temp_track_idx = reaper.CountTracks(0)
-  reaper.InsertTrackAtIndex(temp_track_idx, false)
-  local temp_track = reaper.GetTrack(0, temp_track_idx)
-  reaper.SetMediaTrackInfo_Value(temp_track, "B_SHOWINTCP", 0)
-  reaper.SetMediaTrackInfo_Value(temp_track, "B_SHOWINMIXER", 0)
+  -- Create a dummy track for validation
+  local dummy_track_idx = reaper.CountTracks(0)
+  reaper.InsertTrackAtIndex(dummy_track_idx, false)
+  local dummy_track = reaper.GetTrack(0, dummy_track_idx)
+
+  -- make num lanes same as orig track
+  local active_track = reaper.GetMediaItem_Track(superitem)
+  local num_lanes_in_active_track = reaper.GetMediaTrackInfo_Value(active_track, _constant.api.track.key.num_fixed_lanes)
+  local num_lanes_in_dummy_track = 1 -- replace with constant
+
+  if num_lanes_in_active_track > num_lanes_in_dummy_track then
+    local num_new_lanes_required = num_lanes_in_active_track - num_lanes_in_dummy_track
+
+    reaper.SetOnlyTrackSelected(dummy_track)
+
+    for i = 1, num_new_lanes_required do
+      reaper.Main_OnCommand(_constant.cmd.add_lane_to_track, _constant.api.cmd_flag)
+    end
+  end
 
   -- Store the temp track in state
-  _state.action.edit_or_unglue.validated_track = temp_track
+  _state.action.edit_or_unglue.validated_track = dummy_track
 
   -- Use Common.restoreStoredItems to restore the items and check for negative positions
-  local restored_items, _, _ = _common.restoreStoredItems(pool_id, temp_track, superitem, nil, action, "validate")
+  _lanes.addRequiredLanesToTrack(pool_id, dummy_track, superitem)
+  local restored_items, _, _ = _common.restoreStoredItems(pool_id, dummy_track, superitem, nil, action)
 
   -- Check for negative positions
   local anyNegativePositions = false
@@ -165,20 +181,23 @@ function Edit.validateRestoredItemPositions(superitem, pool_id, action)
   if anyNegativePositions then
     -- Clean up temporary items and track if validation fails
     for i = 1, #restored_items do
-      reaper.DeleteTrackMediaItem(temp_track, restored_items[i])
+      reaper.DeleteTrackMediaItem(dummy_track, restored_items[i])
     end
-    reaper.DeleteTrack(temp_track)
+
+    reaper.DeleteTrack(dummy_track)
 
     reaper.ShowMessageBox(
       "This operation cannot be completed because one or more items would be placed before the start of the project.",
       "Cannot Edit/Unglue",
       _constant.api.msg.type.ok
     )
+
     return false
   end
 
   -- Store the valid restored items in state for reuse
   _state.action.edit_or_unglue.validated_items = restored_items
+
   return true
 end
 
@@ -210,13 +229,17 @@ function Edit.getSuperitemLoopLength(superitem, superitem_params)
 end
 
 
-function Edit.updateRestoredItemsData(restored_items, pool_id)
-  local this_restored_item
+function Edit.updateRestoredItemsData(restored_items, pool_id, superitem, track)
 
   for i = 1, #restored_items do
-    this_restored_item = restored_items[i]
+    local this_restored_item = restored_items[i]
 
     _data.storeRetrieveItemData(this_restored_item, _constant.data.key.suffix.pool.parent_id, pool_id)
+
+    if _constant.support.fixed_lanes then
+      _lanes.restoreItemLaneDelta(this_restored_item, superitem, track)
+      reaper.UpdateItemLanes(0)
+    end
   end
 end
 
