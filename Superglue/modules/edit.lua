@@ -33,24 +33,23 @@ function Edit.handleEditOrUnglue(superitem, pool_id, action)
 end
 
 
--- Helper: Get track for superitem operations
 function Edit.getTrackForSuperitem(superitem, pool_id)
   local superitem_preedit_params = _data.getSetItemParams(superitem)
   local active_track = reaper.BR_GetMediaTrackByGUID(_constant.api.current_project, superitem_preedit_params.track_guid)
+  _state.action.edit_or_unglue.track_freemode = reaper.GetMediaTrackInfo_Value(active_track, _constant.api.track.key.freemode)
 
-  -- Add lanes to track for both Edit and Unglue operations
   _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
 
   return active_track, superitem_preedit_params
 end
 
--- Helper: Process validated or restored items
+
 function Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, action)
   local restored_items
 
-  -- Reuse validated items if available
   if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
     restored_items = Edit.transferValidatedItems(active_track, pool_id, superitem)
+
   else
     restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
   end
@@ -58,38 +57,42 @@ function Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, 
   return restored_items
 end
 
--- Helper: Transfer validated items to actual track
+
 function Edit.transferValidatedItems(active_track, pool_id, superitem)
   local restored_items = {}
 
   for i = 1, #_state.action.edit_or_unglue.validated_items do
     local item = _state.action.edit_or_unglue.validated_items[i]
     local item_state = _data.getSetItemStateChunk(item)
-
     local new_item = reaper.AddMediaItemToTrack(active_track)
-    _data.getSetItemStateChunk(new_item, item_state)
 
+    _data.getSetItemStateChunk(new_item, item_state)
     table.insert(restored_items, new_item)
   end
 
   Edit.updateRestoredItemsData(restored_items, pool_id, superitem, active_track)
 
-  -- Clean up the temp track
   if _state.action.edit_or_unglue.validated_track then
     reaper.DeleteTrack(_state.action.edit_or_unglue.validated_track)
+
     _state.action.edit_or_unglue.validated_track = nil
   end
 
   return restored_items
 end
 
--- Helper: Clean up superitem and validation state
-function Edit.cleanupSuperitemAndValidation(active_track, superitem)
-  reaper.DeleteTrackMediaItem(active_track, superitem)
+
+function Edit.cleanUpValidation(active_track, superitem)
   _state.action.edit_or_unglue.validated_items = nil
+  _state.action.edit_or_unglue.validated_track = nil
 end
 
--- Main Edit function (now refactored)
+
+function Edit.deleteSuperitem(active_track, superitem)
+  reaper.DeleteTrackMediaItem(active_track, superitem)
+end
+
+
 function Edit.processEdit(superitem, pool_id, action)
   local active_track, superitem_preedit_params = Edit.getTrackForSuperitem(superitem, pool_id)
   local superitem_state = _data.getSetItemStateChunk(superitem)
@@ -100,19 +103,20 @@ function Edit.processEdit(superitem, pool_id, action)
   local restored_items = Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, action)
   _state.action.edit_or_unglue.restored_items = restored_items
 
-  local sizing_region_guid = Edit.createSizingRegionFromSuperitem(superitem, pool_id)
-
-  Edit.cleanupSuperitemAndValidation(active_track, superitem)
+  Edit.createSizingRegionFromSuperitem(superitem, pool_id)
+  Edit.cleanUpValidation()
+  Edit.deleteSuperitem(active_track, superitem)
 end
 
--- Main Unglue function (now refactored)
+
 function Edit.processUnglue(superitem, pool_id, action)
   local active_track = Edit.getTrackForSuperitem(superitem, pool_id)
 
   local restored_items = Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, action)
   _state.action.edit_or_unglue.restored_items = restored_items
 
-  Edit.cleanupSuperitemAndValidation(active_track, superitem)
+  Edit.cleanUpValidation()
+  Edit.deleteSuperitem(active_track, superitem)
 
   return pool_id, restored_items
 end
@@ -233,8 +237,12 @@ function Edit.updateRestoredItemsData(restored_items, pool_id, superitem, track)
 
     if _constant.support.fixed_lanes then
       _lanes.restoreItemLaneDelta(this_restored_item, superitem, track)
-      reaper.UpdateItemLanes(0)
     end
+  end
+
+  if _constant.support.fixed_lanes then
+    reaper.SetMediaTrackInfo_Value(track, _constant.api.track.key.freemode, _state.action.edit_or_unglue.track_freemode)
+    reaper.UpdateItemLanes(0)
   end
 end
 

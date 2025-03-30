@@ -33,21 +33,8 @@ function Glue.handleGlue(selected_items, pool_id, sizing_region_guid, depool_sup
   this_is_depool = depool_superitem_params ~= nil
   first_selected_item = selected_items[1]
   first_selected_item_name = _common().getSetItemName(first_selected_item)
-
   pool_id, sizing_params, this_is_reglue = Glue.setUpGlue(depool_superitem_params, this_is_ancestor_superitem_update, pool_id, sizing_region_guid, selected_items)
-
   selected_items_pool_params = Glue.handlePreglueItems(selected_items, pool_id, sizing_params, this_is_reglue, this_is_depool)
-
-  items_to_glue = reaper.CountSelectedMediaItems(0)
-
-  -- why is this here?
-  -- for i = 0, items_to_glue-1 do
-  --   local item = reaper.GetSelectedMediaItem(0, i)
-  -- end
-
--- if _constant.support.fixed_lanes then
---   _lanes.debugLaneInfo("BEFORE GLUE", selected_items, reaper.GetMediaItemTrack(selected_items[1]), pool_id)
--- end
 
   local superitem = Glue.glueSelectedItemsIntoSuperitem()
 
@@ -80,7 +67,7 @@ function Glue.setUpGlue(depool_superitem_params, this_is_ancestor_superitem_upda
 
 
 -- THIS LINE CAUSES SIBLING DEPOOLED SUPERITEM POSITION TO GO WEIRD – TEST FURTHER -- IS THIS STILL THE CASE??
-      _state.restored_items.preglue_restored_item_states = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_item_states)
+    _state.restored_items.preglue_restored_item_states = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.contained_item_states)
 
 
     -- end
@@ -686,6 +673,7 @@ function Glue.handleReglue(selected_items, restored_items_pool_id)
   _data().cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
 
   _state.superitem.params.last_glue.edited_pool = _data().storeRetrieveSuperitemParams(restored_items_pool_id, _constant.actionstep.postglue)
+
   superitem = Glue.handleGlue(selected_items, restored_items_pool_id, sizing_region_guid, nil, nil)
   superitem, superitem_params = Glue.handleReglueSuperitemParams(superitem, restored_items_pool_id)
 

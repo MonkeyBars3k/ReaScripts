@@ -304,6 +304,10 @@ function Common.checkSizingRegionExists(pool_id, selected_items)
 
   retval, all_pool_ids_with_active_sizing_regions = _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
   retval, all_pool_ids_with_active_sizing_regions = serpent.load(all_pool_ids_with_active_sizing_regions)
+
+-- THIS IS RETURNING NIL AND SHOULDN'T!
+_dev.log(tostring(all_pool_ids_with_active_sizing_regions[pool_id]))
+
   sizing_region_guid = all_pool_ids_with_active_sizing_regions[pool_id]
 
   if sizing_region_guid and sizing_region_guid ~= "" then

@@ -100,6 +100,7 @@ local Constant = {
       no_defaults = false,
 
       key = {
+        freemode = "I_FREEMODE",
         name = "P_NAME",
         num_fixed_lanes = "I_NUMFIXEDLANES"
       }

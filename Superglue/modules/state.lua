@@ -14,7 +14,8 @@ local State = {
     edit_or_unglue = {
       restored_items = nil,
       validated_items = nil,
-      validated_track = nil
+      validated_track = nil,
+      track_freemode = nil
     },
 
     edit = {
