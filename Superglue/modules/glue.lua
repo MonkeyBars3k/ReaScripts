@@ -3,7 +3,7 @@
 local Glue = {}
 
 
-local loadDependencies, loadCircularDependencies, serpent, _constant, _depool, _init, _lanes, _state, _util, _module_utils, _common, _data
+local loadDependencies, loadCircularDependencies, serpent, _constant, _depool, _init, _lanes, _sizing, _state, _util, _module_utils, _common, _data
 
 local _dev = require("modules.dev")
 
@@ -13,6 +13,7 @@ loadDependencies = (function()
   _depool = require("modules.depool")
   _init = require("modules.init")
   _lanes = require("modules.lanes")
+  _sizing = require("modules.sizing")
   _state = require("modules.state")
   _util = require("modules.util")
 
@@ -28,7 +29,7 @@ end)()
 
 
 function Glue.handleGlue(selected_items, pool_id, sizing_region_guid, depool_superitem_params, this_is_ancestor_superitem_update)
-  local this_is_depool, first_selected_item, first_selected_item_name, pool_id, sizing_params, this_is_reglue, selected_items_pool_params, items_to_glue
+  local this_is_depool, first_selected_item, first_selected_item_name, sizing_params, this_is_reglue, selected_items_pool_params, items_to_glue
 
   this_is_depool = depool_superitem_params ~= nil
   first_selected_item = selected_items[1]
@@ -57,10 +58,11 @@ function Glue.setUpGlue(depool_superitem_params, this_is_ancestor_superitem_upda
 
   if this_is_new_glue then
     pool_id = Glue.handlePoolId()
-    sizing_params = Glue.handleNewGlueSizing(selected_items, this_is_depool, pool_id, depool_superitem_params)
+    sizing_params = _sizing.handleNewGlueSizing(selected_items, this_is_depool, pool_id, depool_superitem_params)
 
   elseif this_is_reglue then
-    sizing_params = Glue.getReglueSizing(pool_id, sizing_region_guid, selected_items, this_is_ancestor_superitem_update)
+    sizing_params = _sizing.getReglueSizing(pool_id, sizing_region_guid, selected_items, this_is_ancestor_superitem_update)
+
     -- global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.depool_all_siblings_on_reglue)
 
     -- if global_option_toggle_depool_all_siblings_on_reglue == "true" then
@@ -120,14 +122,14 @@ function Glue.handleNewGlueSizing(selected_items, this_is_depool, pool_id, depoo
     }
 
   elseif global_option_time_selection_sets_bounds_enabled == "false" then
-    sizing_params = _common().getBoundsFromItems(selected_items)
+    sizing_params = _sizing.getBoundsFromItems(selected_items)
   end
 
   if this_is_depool then
     sizing_params = Glue.setUpGlueWithDePool(pool_id, depool_superitem_params)
 
   else
-    Glue.instantiateDummySizingItem(sizing_params)
+    _sizing.instantiateDummySizingItem(sizing_params)
   end
 
   return sizing_params
@@ -145,172 +147,7 @@ function Glue.setUpGlueWithDePool(pool_id, depool_superitem_params)
   sizing_params.length = sizing_params.end_point - sizing_params.position
 
   _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.last_glue.contained_item_states, _state.restored_items.last_glue_stored_item_states)
-  Glue.instantiateDummySizingItem(sizing_params)
-
-  return sizing_params
-end
-
-
-function Glue.instantiateDummySizingItem(sizing_params)
-  local dummy_sizing_item = reaper.AddMediaItemToTrack(
-    _state.action.glue.current_track
-  )
-
-  reaper.SetMediaItemPosition(dummy_sizing_item, sizing_params.position, _constant.api.dont_refresh_ui)
-  reaper.SetMediaItemLength(dummy_sizing_item, sizing_params.length, _constant.api.dont_refresh_ui)
-  reaper.SetMediaItemSelected(dummy_sizing_item, true)
-
-  return dummy_sizing_item
-end
-
-
-function Glue.getReglueSizing(pool_id, sizing_region_guid, selected_items, this_is_ancestor_superitem_update)
-  local user_selected_instance_is_being_reglued, sizing_params
-
-  user_selected_instance_is_being_reglued = not this_is_ancestor_superitem_update
-  _state.superitem.pool_parent_last_glue_length = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_length)
-  _state.superitem.pool_parent_last_glue_length = tonumber(_state.superitem.pool_parent_last_glue_length)
-
-  if user_selected_instance_is_being_reglued then
-    sizing_params = Glue.setUpUserSelectedInstanceReglueSizing(sizing_region_guid, pool_id)
-
-  elseif this_is_ancestor_superitem_update then
-    sizing_params = Glue.setUpParentReglueSizing(pool_id, selected_items)
-  end
-
-  return sizing_params
-end
-
-
-function Glue.setUpUserSelectedInstanceReglueSizing(sizing_region_guid, pool_id)
-  local sizing_params, is_active_superitem_reglue
-
-  sizing_params = _common().getSetSizingRegion(sizing_region_guid)
-  is_active_superitem_reglue = sizing_params
-
-  if is_active_superitem_reglue then
-    Glue.instantiateDummySizingItem(sizing_params)
-    _common().getSetSizingRegion(sizing_region_guid, "delete")
-    Glue.handleSizingRegionPoolData(nil, pool_id, "delete")
-  end
-
-  return sizing_params
-end
-
-
-function Glue.getParamsFrom_OrDelete_SizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-  local get, delete, sizing_region_guid, sizing_region_api__key, this_region_guid, this_region_belongs_to_active_pool, sizing_region_params, retval, is_region
-
-  get = not params_or_delete
-  delete = params_or_delete == "delete"
-  sizing_region_guid = sizing_region_guid_or_pool_id
-  sizing_region_api__key = _constant.api.regionmarker.guid_key_prefix .. region_idx
-  _, this_region_guid = reaper.GetSetProjectInfo_String(_constant.api.current_project, sizing_region_api__key, "", false)
-  this_region_belongs_to_active_pool = this_region_guid == sizing_region_guid
-
-  if this_region_belongs_to_active_pool then
-
-    if get then
-      sizing_region_params = {
-        idx = region_idx
-      }
-      retval, is_region, sizing_region_params.position, sizing_region_params.end_point = reaper.EnumProjectMarkers3(_constant.api.current_project, region_idx)
-      sizing_region_params.length = sizing_region_params.end_point - sizing_region_params.position
-
-      return retval, sizing_region_params
-
-    elseif delete then
-      reaper.DeleteProjectMarkerByIndex(_constant.api.current_project, region_idx, true)
-
-      retval = 0
-
-      return retval
-    end
-
-  else
-    retval = nil
-
-    return retval
-  end
-end
-
-
-function Glue.addSizingRegion(sizing_region_guid_or_pool_id, params_or_delete, region_idx)
-  local params, pool_id, sizing_region_name, sizing_region_label_num, retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num, this_region_is_active
-
-  params = params_or_delete
-  params.end_point = params.position + params.length
-  pool_id = sizing_region_guid_or_pool_id
-  sizing_region_name = _constant.sizingregion.label.prefix .. pool_id .. _constant.sizingregion.label.suffix
-  sizing_region_label_num = reaper.AddProjectMarker2(_constant.api.current_project, true, params.position, params.end_point, sizing_region_name, _constant.sizingregion.first_display_num, _constant.sizingregion.color)
-  retval, is_region, this_region_position, this_region_end_point, this_region_name, this_region_label_num = reaper.EnumProjectMarkers3(_constant.api.current_project, region_idx)
-
-  if is_region then
-    this_region_is_active = this_region_label_num == sizing_region_label_num
-
-    if this_region_is_active then
-      local guid_result, new_guid = Glue.handleSizingRegionPoolData(region_idx, pool_id)
-
-      return guid_result, new_guid
-    end
-  end
-
-  return retval
-end
-
-
-function Glue.handleSizingRegionPoolData(region_idx, pool_id, delete)
-  local all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions, sizing_region_api__key, sizing_region_guid
-
-  all_pool_ids_with_active_sizing_regions_retval, all_pool_ids_with_active_sizing_regions = _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
-
-  if delete == "delete" then
-
-    if all_pool_ids_with_active_sizing_regions then
-      _, all_pool_ids_with_active_sizing_regions = serpent.load(all_pool_ids_with_active_sizing_regions)
-      all_pool_ids_with_active_sizing_regions[pool_id] = nil
-      all_pool_ids_with_active_sizing_regions = serpent.dump(all_pool_ids_with_active_sizing_regions)
-
-      _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions, all_pool_ids_with_active_sizing_regions)
-    end
-
-  else
-    sizing_region_api__key = _constant.api.regionmarker.guid_key_prefix .. region_idx
-    _, sizing_region_guid = reaper.GetSetProjectInfo_String(_constant.api.current_project, sizing_region_api__key, "", false)
-
-    if all_pool_ids_with_active_sizing_regions_retval then
-      _, all_pool_ids_with_active_sizing_regions = serpent.load(all_pool_ids_with_active_sizing_regions)
-      all_pool_ids_with_active_sizing_regions[pool_id] = sizing_region_guid
-
-    else
-      all_pool_ids_with_active_sizing_regions = {
-        [pool_id] = sizing_region_guid
-      }
-    end
-
-    all_pool_ids_with_active_sizing_regions = serpent.dump(all_pool_ids_with_active_sizing_regions)
-
-    _data().storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions, all_pool_ids_with_active_sizing_regions)
-
-    return retval, sizing_region_guid
-  end
-end
-
-
-function Glue.setUpParentReglueSizing(pool_id, selected_items)
-  local pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_end_point, sizing_params
-
-  pool_parent_last_glue_position = _data().storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_position)
-  pool_parent_last_glue_position = tonumber(pool_parent_last_glue_position)
-  pool_parent_last_glue_end_point = pool_parent_last_glue_position + _state.superitem.pool_parent_last_glue_length
-  sizing_params = {
-    position = pool_parent_last_glue_position - _state.restored_items.delta.position_delta_near_project_start,
-    length = _state.superitem.pool_parent_last_glue_length - _state.restored_items.delta.position_delta_near_project_start,
-    end_point = pool_parent_last_glue_end_point - _state.restored_items.delta.position_delta_near_project_start
-  }
-
--- THIS PROBABLY NEEDS TO BE REENABLED (CASE: RESTORED ITEMS SMALLER THAN SIZING PARAMS ON EITHER/BOTH SIDES) BUT MUST BE SELECTED AT THE RIGHT TIME BEFORE GLUE. CURRENTLY THERE IS NO SELECTION SO IT REMAINS AFTER GLUE
-  -- Glue.instantiateDummySizingItem(sizing_params)
+  _sizing.instantiateDummySizingItem(sizing_params)
 
   return sizing_params
 end
@@ -666,7 +503,7 @@ end
 function Glue.handleReglue(selected_items, restored_items_pool_id)
   local sizing_region_guid, superitem, superitem_params
 
-  sizing_region_guid = _common().checkSizingRegionExists(restored_items_pool_id, selected_items)
+  sizing_region_guid = _sizing.checkSizingRegionExists(restored_items_pool_id, selected_items)
 
   if not sizing_region_guid then return false end
 

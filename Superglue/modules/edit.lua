@@ -3,7 +3,7 @@
 local Edit = {}
 
 
-local loadDependencies, _common, _constant, _data, _lanes, _state
+local loadDependencies, _common, _constant, _data, _lanes, _sizing, _state
 
 local _dev = require("modules.dev")
 
@@ -12,6 +12,7 @@ loadDependencies = (function()
   _constant = require("modules.constant")
   _data = require("modules.data")
   _lanes = require("modules.lanes")
+  _sizing = require("modules.sizing")
   _state = require("modules.state")
 end)()
 
@@ -103,7 +104,7 @@ function Edit.processEdit(superitem, pool_id, action)
   local restored_items = Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, action)
   _state.action.edit_or_unglue.restored_items = restored_items
 
-  Edit.createSizingRegionFromSuperitem(superitem, pool_id)
+  _sizing.createSizingRegionFromSuperitem(superitem, pool_id)
   Edit.cleanUpValidation()
   Edit.deleteSuperitem(active_track, superitem)
 end
@@ -198,33 +199,6 @@ function Edit.validateRestoredItemPositions(superitem, pool_id, action)
   _state.action.edit_or_unglue.validated_items = restored_items
 
   return true
-end
-
-
-function Edit.createSizingRegionFromSuperitem(superitem, pool_id, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled)
-  local superitem_params, sizing_region_guid
-
-  superitem_params = _data.getSetItemParams(superitem)
-
-  if looped_source_sets_sizing_region__enabled == "true" and superitem_loop_is_enabled then
-    superitem_params.length, superitem_params.end_point = Edit.getSuperitemLoopLength(superitem, superitem_params)
-  end
-
-  sizing_region_guid = _common.getSetSizingRegion(pool_id, superitem_params)
-
-  return sizing_region_guid
-end
-
-
-function Edit.getSuperitemLoopLength(superitem, superitem_params)
-  local superitem_active_take, superitem_active_take_source, superitem_length, superitem_end_point
-
-  superitem_active_take = reaper.GetActiveTake(superitem)
-  superitem_active_take_source = reaper.GetMediaItemTake_Source(superitem_active_take)
-  superitem_length = reaper.GetMediaSourceLength(superitem_active_take_source)
-  superitem_end_point = superitem_length - superitem_params.position
-
-  return superitem_length, superitem_end_point
 end
 
 

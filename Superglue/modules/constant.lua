@@ -93,6 +93,7 @@ local Constant = {
 
     regionmarker = {
       guid_key_prefix = "MARKER_GUID:",
+      is_region = true
     },
 
     track = {

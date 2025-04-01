@@ -51,7 +51,7 @@ function Overglue.doOverglue(user_selected_items_on_this_track, pool_ids_by_dept
         local _, sizing_regions = _data.storeRetrieveProjectData(_constant.data.key.all_pool_ids_with_active_sizing_regions)
         retval, sizing_regions = serpent.load(sizing_regions)
         local sizing_region_guid = sizing_regions[pool_id]
-        local pool_params = _common.getSetSizingRegion(sizing_region_guid)
+        local pool_params = _common.getSetDeleteSizingRegion(sizing_region_guid)
 
         if pool_params then
             local pool_center = pool_params.position + (pool_params.end_point - pool_params.position) / 2
@@ -202,7 +202,7 @@ function Overglue.getOutermostAncestorPoolsWithParams(outermost_ancestor_pools--
         local sizing_region_guid = all_pool_ids_with_active_sizing_regions[this_outermost_ancestor_pool_id]
 
         if sizing_region_guid then
-            local sizing_params = _common.getSetSizingRegion(sizing_region_guid)
+            local sizing_params = _common.getSetDeleteSizingRegion(sizing_region_guid)
             if sizing_params then
                 outermost_ancestor_pools__with_params[this_outermost_ancestor_pool_id] = sizing_params
             end
