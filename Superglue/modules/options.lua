@@ -117,9 +117,9 @@ function Options.populateOptionsWidgets(option_window_widgets)
   option_window_widgets.option_form_buttons:add(option_window_widgets.option_form_save)
   option_window_widgets.option_form_buttons:add(option_window_widgets.option_form_cancel)
   option_window_widgets.option_footer:add(option_window_widgets.option_repo_text)
-  option_window_widgets.options_window_constant.branding:add(option_window_widgets.options_window_script_name)
-  option_window_widgets.options_window_constant.branding:add(option_window_widgets.options_window_logo)
-  option_window_widgets.options_window_top:add(option_window_widgets.options_window_constant.branding)
+  option_window_widgets.options_window_constant_branding:add(option_window_widgets.options_window_script_name)
+  option_window_widgets.options_window_constant_branding:add(option_window_widgets.options_window_logo)
+  option_window_widgets.options_window_top:add(option_window_widgets.options_window_constant_branding)
   option_window_widgets.options_window_top:add(option_window_widgets.options_window_title)
 end
 

@@ -11,6 +11,7 @@ local Superglue = {}
 
 
 local loadDependencies, bootstrap, getScriptPath, setPackageVals, returnPaths, initDependencies, routeAction, routeMainAction, routeUtilityAction, routeOptionToggle
+
 local _common, _constant, _dev, _init, _iteminfo, _options
 
 
@@ -130,7 +131,6 @@ end
 
 
 routeUtilityAction = function(action)
-  _common, _options, _dev, _iteminfo = _setup.load("common, options, dev, iteminfo")
 
   if action == "Open Superglue Options Window" then
     _options.openOptionsWindow()
