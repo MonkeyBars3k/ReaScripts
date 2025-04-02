@@ -3,7 +3,7 @@
 local Single = {}
 
 
-local loadDependencies, loadCircularDependencies, _common, _constant, _data, _depool, _edit, _glue, _init, _state, _module_utils, _multi
+local loadDependencies, loadCircularDependencies, _common, _constant, _data, _depool, _edit, _glue, _init, _reglue, _state, _module_utils, _multi
 
 local _dev = require("modules.dev")
 
@@ -14,6 +14,7 @@ loadDependencies = (function()
   _edit = require("modules.edit")
   _glue = require("modules.glue")
   _init = require("modules.init")
+  _reglue = require("modules.reglue")
   _state = require("modules.state")
 
   _module_utils = require("module-utils")
@@ -32,7 +33,7 @@ function Single.triggerSingleTrackSinglePoolGlue(items_to_glue, restored_items_p
   this_is_reglue = restored_items_pool_id
 
   if this_is_reglue then
-    superitem = _glue.handleReglue(items_to_glue, restored_items_pool_id)
+    superitem = _reglue.handleReglue(items_to_glue, restored_items_pool_id)
 
   else
     superitem = _glue.handleGlue(items_to_glue, nil, nil, nil, nil)

@@ -276,8 +276,8 @@ Constant.global_options = {
     name = "time_selection_sets_superitem_bounds_on_initial_glue",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.time_selection_sets_bounds_on_glue,
-    option_script_filename = "MB_Superglue - Options - Glue - Time selection determines Superitem bounds on initial glue (On-Off).lua",
-    user_readable_text = "Glue: Time selection determines Superitem bounds on initial Superitem creation",
+    option_script_filename = "Superglue - Change Option - Time selection determines Superitem bounds on initial Glue (On-Off)",
+    user_readable_text = "Time selection determines Superitem bounds on initial Glue",
     default_value = "false"
   },
 
@@ -285,8 +285,8 @@ Constant.global_options = {
     name = "auto_increase_channel_count_with_take_fx",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.auto_increase_channel_count,
-    option_script_filename = "MB_Superglue - Options - Glue - Auto-increase channel count with take FX (On-Off).lua",
-    user_readable_text = "Glue: Auto-increase channel count with take FX",
+    option_script_filename = "Superglue - Change Option - Auto-increase Superitem channel count from take FX on Glue (On-Off)",
+    user_readable_text = "Auto-increase Superitem channel count from take FX on Glue",
     default_value = "false"
   },
 
@@ -294,8 +294,8 @@ Constant.global_options = {
     name = "loop_source_sets_sizing_region_bounds_on_reglue",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue,
-    option_script_filename = "MB_Superglue - Options - Reglue - Looped source of Superitem determines Sizing Region bounds (On-Off).lua",
-    user_readable_text = "Reglue: Looped source of Superitem determines Sizing Region bounds",
+    option_script_filename = "Superglue - Change Option - Maintain loop length of Superitems on Reglue (On-Off).lua",
+    user_readable_text = "Looped source of Superitem determines Sizing Region bounds",
     default_value = "true"
   },
 
@@ -303,8 +303,8 @@ Constant.global_options = {
     name = "depool_all_siblings_on_reglue",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.depool_all_siblings_on_reglue,
-    option_script_filename = "MB_Superglue - Options - Reglue - Remove Siblings from Edited Superitem's Pool, giving every Sibling its own new Pool (On-Off).lua",
-    user_readable_text = "Reglue: Remove all sibling instances from pool (disable & undo pooling)",
+    option_script_filename = "Superglue - Change Option - Disable Superitem Pooling, generating new Pool for every Sibling on every Reglue (On-Off).lua",
+    user_readable_text = "Disable Superitem Pooling, generating new Pool for every Sibling on every Reglue",
     default_value = "false"
   },
 
@@ -312,8 +312,8 @@ Constant.global_options = {
     name = "multiitem_editing",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.multiitem_editing,
-    option_script_filename = "MB_Superglue - Options - Edit-Unglue-DePool - Enable multi-item Edit, Unglue, or DePool in single action (On-Off).lua",
-    user_readable_text = "Edit/Unglue/DePool: Enable multi-item Edit, Unglue, and DePool in single action (Disable for v1.x Smart Action)",
+    option_script_filename = "Superglue - Change Option - Multi-item Edit, Unglue, or DePool in single action (On-Off).lua",
+    user_readable_text = "Enable multi-item Edit, Unglue, or DePool in single action (Disable for v1.x Smart Action)",
     default_value = "true"
   },
 
@@ -321,8 +321,8 @@ Constant.global_options = {
     name = "item_images",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.item_images,
-    option_script_filename = "MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua",
-    user_readable_text = "Display: Insert item background images on Superglue and Edit, overwriting item notes",
+    option_script_filename = "Superglue - Change Option - Add background image on new Superitems and contained items (On-Off).lua",
+    user_readable_text = "Insert item background images on Superglue and Edit, overwriting item notes",
     default_value = "true"
   },
 
@@ -330,8 +330,8 @@ Constant.global_options = {
     name = "new_superglue_random_color",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.new_superglue_random_color,
-    option_script_filename = "MB_Superglue - Options - Display - Randomly color newly Superglued Superitem (On-Off).lua",
-    user_readable_text = "Display: Set newly glued Superitems to random color",
+    option_script_filename = "Superglue - Change Option - Color newly created Superitems randomly (On-Off).lua",
+    user_readable_text = "Set newly glued Superitems to random color",
     default_value = "true"
   },
 
@@ -339,8 +339,8 @@ Constant.global_options = {
     name = "retain_only_last_glue_source",
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.retain_only_last_glue_source,
-    option_script_filename = "MB_Superglue - Options - Files - Retain only the latest Superglue source media, leaving undo history offline (On-Off).lua",
-    user_readable_text = "Files: Retain only the latest Superglue source media (leaving previous Glues' undo history offline)",
+    option_script_filename = "Superglue - Change Option - Retain only the latest Superglue source media (On-Off).lua",
+    user_readable_text = "Retain only the latest Superglue source media (leaving previous Glues' undo history offline)",
     default_value = "false"
   },
 
@@ -348,8 +348,8 @@ Constant.global_options = {
     name = "maintain_source_position",
     type = "dropdown",
     ext_state_key = Constant.data.key.options.switch.maintain_source_position,
-    option_script_filename = "MB_Superglue - Options - Reglue - Audio source position of Siblings is maintained (Enable-Ask-Disable).lua",
-    user_readable_text = "Reglue: Audio source timeline location on Siblings is maintained",
+    option_script_filename = "Superglue - Change Option - Maintain Siblings' source offset on Reglue (Enable-Ask-Disable).lua",
+    user_readable_text = "Maintain Siblings' source offset (timeline position) on Reglue",
 
     values = {
       {"always", "Maintain source location"},
@@ -364,8 +364,8 @@ Constant.global_options = {
     name = "propagate_position_change",
     type = "dropdown",
     ext_state_key = Constant.data.key.options.switch.propagate_position,
-    option_script_filename = "MB_Superglue - Options - Reglue - Position change of Edited Superitem's left edge propagates to Siblings (Enable-Ask-Disable).lua",
-    user_readable_text = "Reglue: Left edge position change of edited Superitem propagates to Siblings",
+    option_script_filename = "Superglue - Change Option - Propagate Edited Superitems' left edge changes to Siblings on Reglue (Enable-Ask-Disable)",
+    user_readable_text = "Left edge position change of edited Superitem propagates to Siblings on Reglue",
 
     values = {
       {"always", "Always propagate position"},
@@ -380,8 +380,8 @@ Constant.global_options = {
     name = "propagate_length_change",
     type = "dropdown",
     ext_state_key = Constant.data.key.options.switch.propagate_length,
-    option_script_filename = "MB_Superglue - Options - Reglue - Length change of Edited Superitem propagates to Siblings (Enable-Ask-Disable).lua",
-    user_readable_text = "Reglue: Length change of edited Superitem propagates to Siblings",
+    option_script_filename = "Superglue - Change Option - Propagate Edited Superitems' length changes to Siblings on Reglue (Enable-Ask-Disable)",
+    user_readable_text = "Propagate Edited Superitems' length changes to Siblings on Reglue",
 
     values = {
       {"always", "Always propagate length"},
@@ -396,8 +396,8 @@ Constant.global_options = {
     name = "length_propagation_type",
     type = "dropdown",
     ext_state_key = Constant.data.key.options.switch.length_propagation_type,
-    option_script_filename = "MB_Superglue - Options - Reglue - Absolute or relative propagation length change on Siblings (still altered by playrate) (Absolute-Ask-Relative).lua",
-    user_readable_text = "Reglue: Absolute or relative length propagation on Siblings (can still be altered by playrate option)",
+    option_script_filename = "Superglue - Change Option - Absolute or relative length propagation to Siblings on Reglue (Absolute-Ask-Relative).lua",
+    user_readable_text = "Absolute or relative length propagation to Siblings on Reglue (can still be altered by playrate option)",
 
     values = {
       {"always", "Absolute length propagation"},
@@ -412,8 +412,8 @@ Constant.global_options = {
     name = "playrate_affects_propagation",
     type = "dropdown",
     ext_state_key = Constant.data.key.options.switch.playrate_affects_propagation,
-    option_script_filename = "MB_Superglue - Options - Reglue - Playrate of Siblings affects their length & position propagation values (Enable-Ask-Disable).lua",
-    user_readable_text = "Reglue: Sibling playrate affects Sibling length & position propagation by default",
+    option_script_filename = "Superglue - Change Option - Siblings' playrate affects their length & position propagation values on Reglue (Enable-Ask-Disable).lua",
+    user_readable_text = "Siblings' playrate affects their length & position propagation values on Reglue",
 
     values = {
       {"always", "Playrate always affects propagation"},

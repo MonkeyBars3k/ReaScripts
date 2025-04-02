@@ -82,21 +82,21 @@ end
 function Depool.refreshCurrentPoolStoredItemsPostDePool()
   local this_restored_item_exists, all_items_count, this_item, this_item_parent_pool_id, this_item_belongs_to_current_pool
 
-  for i = 1, #_state.superitem.params.fresh_glue().current_pool.restored_items do
-  this_restored_item_exists = reaper.ValidatePtr(_state.superitem.params.fresh_glue().current_pool.restored_items[i], _constant.api.datatype.mediaitem)
+  for i = 1, #_state.superitem.params.fresh_glue.current_pool.restored_items do
+  this_restored_item_exists = reaper.ValidatePtr(_state.superitem.params.fresh_glue.current_pool.restored_items[i], _constant.api.datatype.mediaitem)
 
   if not this_restored_item_exists then
-    _state.superitem.params.fresh_glue().current_pool.restored_items = {}
+    _state.superitem.params.fresh_glue.current_pool.restored_items = {}
     all_items_count = reaper.CountMediaItems(_constant.api.current_project)
 
     for j = 0, all_items_count-1 do
       this_item = reaper.GetMediaItem(_constant.api.current_project, j)
       this_item_parent_pool_id = _data.storeRetrieveItemData(this_item, _constant.data.key.suffix.pool.parent_id)
       this_item_parent_pool_id = tonumber(this_item_parent_pool_id)
-      this_item_belongs_to_current_pool = this_item_parent_pool_id == _state.superitem.params.fresh_glue().current_pool.pool_id
+      this_item_belongs_to_current_pool = this_item_parent_pool_id == _state.superitem.params.fresh_glue.current_pool.pool_id
 
       if this_item_belongs_to_current_pool then
-        table.insert(_state.superitem.params.fresh_glue().current_pool.restored_items, this_item)
+        table.insert(_state.superitem.params.fresh_glue.current_pool.restored_items, this_item)
       end
     end
 
