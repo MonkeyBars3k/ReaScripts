@@ -340,7 +340,7 @@ Constant.global_options = {
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.retain_only_last_glue_source,
     option_script_filename = "MB_Superglue - Options - Files - Retain only the latest Superglue source media, leaving undo history offline (On-Off).lua",
-    user_readable_text = "Files: Retain only the latest Superglue source media (leaving undo history offline)",
+    user_readable_text = "Files: Retain only the latest Superglue source media (leaving previous Glues' undo history offline)",
     default_value = "false"
   },
 

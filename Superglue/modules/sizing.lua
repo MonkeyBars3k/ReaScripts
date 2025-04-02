@@ -443,7 +443,7 @@ function Sizing.handleNewGlueSizing(selected_items, this_is_depool, pool_id, dep
     sizing_params = _glue().setUpGlueWithDePool(pool_id, depool_superitem_params)
 
   else
-    _sizing.instantiateDummySizingItem(sizing_params)
+    Sizing.instantiateDummySizingItem(sizing_params)
   end
 
   return sizing_params
