@@ -6,6 +6,9 @@ local Options = {}
 local loadDependencies, rtk, _constant
 
 
+
+local _dev = require("modules.dev")
+
 loadDependencies = (function()
   rtk = require("lib.rtk")
   _constant = require("modules.constant")
@@ -72,18 +75,78 @@ function Options.getActiveOption(option_name)
 end
 
 
+function Options.debug_log_dimensions(stage, option_window_widgets)
+  local calc = option_window_widgets.options_window.calc
+  local viewport_calc = option_window_widgets.options_viewport.calc
+  local content_calc = option_window_widgets.options_window_content.calc
+
+  _dev.log("DIMENSION DEBUG [%s]:", stage)
+  _dev.log("  Screen height: %d", reaper.GetAppVersion():match("OSX") and gfx.h or gfx.h/rtk.scale.framebuffer)
+  _dev.log("  Window height: %d (calc: %d, interior: %d)",
+           option_window_widgets.options_window.h or 0,
+           calc.h or 0,
+           (calc.h or 0) - ((calc.tpadding or 0) + (calc.bpadding or 0)))
+  _dev.log("  Viewport height: %d (calc: %d)",
+           option_window_widgets.options_viewport.h or 0,
+           viewport_calc.h or 0)
+  _dev.log("  Content height: %d (calc: %d)",
+           option_window_widgets.options_window_content.h or 0,
+           content_calc.h or 0)
+  _dev.log("  Content children: %d", #option_window_widgets.options_window_content.children)
+
+  -- Count total height of content children
+  local total_height = 0
+  for i, child in ipairs(option_window_widgets.options_window_content.children) do
+    local widget = child[1]
+    if widget.calc and widget.calc.h then
+      total_height = total_height + widget.calc.h
+      _dev.log("    Child %d: %s - height %d", i, widget.class.name, widget.calc.h)
+    end
+  end
+  _dev.log("  Total content height: %d", total_height)
+end
+
+
 function Options.openOptionsWindow()
-  local option_window_widgets, all_option_controls
+    local option_window_widgets, all_option_controls
+    local _, _, screen_w, screen_h = reaper.my_getViewport(0, 0, 0, 0, 0, 0, 0, 0, 1)
 
-  option_window_widgets = Options.createOptionsWidgets()
+    option_window_widgets = Options.createOptionsWidgets()
+    option_window_widgets.options_window:attr('h', 400) -- Temporary initial height
+    option_window_widgets.options_viewport:attr('flexh', true)
+    option_window_widgets.options_viewport:attr('vscrollbar', rtk.Viewport.SCROLLBAR_AUTO)
 
-  Options.populateOptionsWidgets(option_window_widgets)
+    Options.populateOptionsWidgets(option_window_widgets)
+    all_option_controls = Options.populateOptionControls(option_window_widgets)
+    Options.populateOptionsEventHandlers(option_window_widgets, all_option_controls)
+    Options.populateOptionsWindow(option_window_widgets)
 
-  all_option_controls = Options.populateOptionControls(option_window_widgets)
+    option_window_widgets.options_window:open{align = "center"}
 
-  Options.populateOptionsEventHandlers(option_window_widgets, all_option_controls)
-  Options.populateOptionsWindow(option_window_widgets)
-  option_window_widgets.options_window:open{align = "center"}
+    reaper.defer(function()
+      -- Multiple reflows can help stabilize calculations
+      option_window_widgets.options_window:reflow()
+      option_window_widgets.options_window:reflow()
+
+      -- Add nil checks for defensive programming
+      local content_height = option_window_widgets.options_window_content.calc and option_window_widgets.options_window_content.calc.h or 0
+      local footer_height = option_window_widgets.option_footer and option_window_widgets.option_footer.calc and option_window_widgets.option_footer.calc.h or 0
+      local buffer = 50 * rtk.scale.value
+
+      -- Rest of calculation remains same
+      local window_height = math.min(
+          content_height + footer_height + buffer,
+          screen_h * 0.85
+      )
+      window_height = math.max(window_height, 150)
+
+      option_window_widgets.options_window:attr('h', window_height)
+
+      local window_y = math.max(0, (screen_h - window_height) / 2)
+      option_window_widgets.options_window:attr('y', window_y)
+
+      _dev.log("Options window final dimensions - Height: %d, Y: %d", window_height, window_y)
+    end)
 end
 
 
@@ -171,11 +234,14 @@ end
 
 
 function Options.populateOptionsWindow(option_window_widgets)
-  -- local content_padding_adjustment, options_window_content_height
-
+  -- Add buttons and footer to content BEFORE setting viewport child
   option_window_widgets.options_window_content:add(option_window_widgets.option_form_buttons)
   option_window_widgets.options_window_content:add(option_window_widgets.option_footer)
+
+  -- Now set viewport child after content is fully populated
   option_window_widgets.options_viewport:attr("child", option_window_widgets.options_window_content)
+
+  -- Rest of function remains same
   option_window_widgets.options_window_inner:add(option_window_widgets.options_window_top)
   option_window_widgets.options_window_inner:add(option_window_widgets.options_viewport)
   option_window_widgets.options_window:add(option_window_widgets.options_window_inner)

@@ -3,25 +3,21 @@
 local Iteminfo = {}
 
 
-local rtk = require("lib.rtk")
-local serpent = require("lib.serpent")
-local _constant = require("modules.constant")
-local _common = require("modules.common")
-local _data = require("modules.data")
-local _init = require("modules.init")
-local _util = require("modules.util")
+local _dev = require("modules.dev")
+
+local loadDependencies, rtk, serpent, _constant, _common, _data, _init, _util
 
 
+loadDependencies = (function()
+  rtk = require("lib.rtk")
+  serpent = require("lib.serpent")
+  _constant = require("modules.constant")
+  _common = require("modules.common")
+  _data = require("modules.data")
+  _init = require("modules.init")
+  _util = require("modules.util")
+end)()
 
-function Iteminfo.injectDependencies(modules)
-  rtk = modules.rtk
-  serpent = modules.serpent
-  _constant = modules.constant
-  _common = modules.common
-  _data = modules.data
-  _init = modules.init
-  _util = modules.util
-end
 
 
 function Iteminfo.openItemInfoWindow()
@@ -182,26 +178,65 @@ end
 
 
 function Iteminfo.populateItemInfoWindow(all_selected_items_window_data)
-  local item_info_window, item_info_viewport, item_info_content, item_info_title, item_info_name, item_info_text, item_info_content_height
+    local item_info_window, item_info_viewport, item_info_content, item_info_title, item_info_name, item_info_text
 
-  item_info_window = rtk.Window{w = 0.3, maxh = 0.85, title = _constant.brand.name .. " Item Info"}
-  item_info_viewport = rtk.Viewport{halign = "center", padding = "0 38"}
-  item_info_content = rtk.VBox{padding = "27 0 7"}
-  item_info_title = rtk.Heading{_constant.brand.name .. " Item Info", w = 1, bmargin = 35, halign = "center"}
+    -- Get the actual screen dimensions
+    local _, _, screen_w, screen_h = reaper.my_getViewport(0, 0, 0, 0, 0, 0, 0, 0, 1)
 
-  item_info_content:add(item_info_title)
+    -- Create window with width set but use temporary height initially
+    local window_width = screen_w * 0.3
+    item_info_window = rtk.Window{
+        w = window_width,
+        h = 400,  -- Temporary default height
+        title = _constant.brand.name .. " Item Info"
+    }
 
-  for i = 1, #all_selected_items_window_data do
-    item_info_name = rtk.Text{all_selected_items_window_data[i].name, w = 1, bmargin = 8, tpadding = 12, tborder = "1px #666666", halign = "center", textalign = "center", fontscale = 1.2, wrap = "normal", color = "#599D8E"}
-    item_info_text = rtk.Text{all_selected_items_window_data[i].info, w = 1, textalign = "left", wrap = "normal"}
+    item_info_viewport = rtk.Viewport{
+        halign = "center",
+        padding = "0 38",
+        flexh = true,  -- Enable height flexibility for proper content height calculation
+        vscrollbar = rtk.Viewport.SCROLLBAR_AUTO
+    }
 
-    item_info_content:add(item_info_name)
-    item_info_content:add(item_info_text)
-  end
+    item_info_content = rtk.VBox{padding = "27 0 7", w = 1}
+    item_info_title = rtk.Heading{_constant.brand.name .. " Item Info", w = 1, bmargin = 35, halign = "center"}
 
-  item_info_viewport:attr("child", item_info_content)
-  item_info_window:add(item_info_viewport)
-  item_info_window:open{align = "center"}
+    item_info_content:add(item_info_title)
+
+    for i = 1, #all_selected_items_window_data do
+        item_info_name = rtk.Text{all_selected_items_window_data[i].name, w = 1, bmargin = 8, tpadding = 12, tborder = "1px #666666", halign = "center", textalign = "center", fontscale = 1.2, wrap = "normal", color = "#599D8E"}
+        item_info_text = rtk.Text{all_selected_items_window_data[i].info, w = 1, textalign = "left", wrap = "normal"}
+
+        item_info_content:add(item_info_name)
+        item_info_content:add(item_info_text)
+    end
+
+    item_info_viewport:attr("child", item_info_content)
+    item_info_window:add(item_info_viewport)
+
+    -- Open window first with default size
+    item_info_window:open{align = "center"}
+
+    -- Calculate proper size after window has rendered
+    reaper.defer(function()
+        -- Multiple reflows can help stabilize calculations
+        item_info_window:reflow()
+        item_info_window:reflow()
+
+        local content_height = item_info_content.calc and item_info_content.calc.h or 0
+        _dev.log("Deferred content calculated height: %d", content_height)
+
+        -- Add buffer for window chrome and padding
+        local window_height = math.min(content_height, screen_h * 0.85)
+        _dev.log("Setting deferred window height to: %d", window_height)
+
+        -- Set the final window height
+        item_info_window:attr('h', window_height)
+
+        -- Recenter the window vertically
+        local window_y = math.max(0, (screen_h - window_height) / 2)
+        item_info_window:attr('y', window_y)
+    end)
 end
 
 
