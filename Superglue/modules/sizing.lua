@@ -5,7 +5,7 @@ local Sizing = {}
 
 local _dev = require("modules.dev")
 
-local loadDependencies, serpent, _constant, _data, _state
+local loadDependencies, loadCircularDependencies, serpent, _constant, _data, _state, _module_utils, _glue
 
 
 loadDependencies = (function()
@@ -13,6 +13,13 @@ loadDependencies = (function()
   _constant = require("modules.constant")
   _data = require("modules.data")
   _state = require("modules.state")
+
+  _module_utils = require("module-utils")
+end)()
+
+
+loadCircularDependencies = (function()
+  _glue = function() return _module_utils.lazyRequire("glue") end
 end)()
 
 
@@ -258,7 +265,7 @@ function Sizing.handleNoSizer_TimeSelectionBoundsOptionEnabled(no_time_selection
   local user_response_create_time_selection, sizing_region_guid
 
   if no_time_selection_exists then
-    user_response_create_time_selection = reaper.ShowMessageBox("There's no time selection to set Superitem bounds to. Select Yes to set time selection to the bounds of the restored items, or No to abort Reglue.", "No time selection", _constant.api.msg.type.yes_no)
+    user_response_create_time_selection = reaper.ShowMessageBox("There's no time selection to set Superitem bounds to. Select Yes to set time selection to the bounds of the restored items, or No to abort Re_glue().", "No time selection", _constant.api.msg.type.yes_no)
 
     if user_response_create_time_selection == _constant.api.msg.response.yes then
       Sizing.createTimeSelectionFromRestoredItems(selected_items)
@@ -381,7 +388,7 @@ function Sizing.setUpParentReglueSizing(pool_id, selected_items)
     end_point = pool_parent_last_glue_end_point - _state.restored_items.delta.position_delta_near_project_start
   }
 
--- THIS PROBABLY NEEDS TO BE REENABLED (CASE: RESTORED ITEMS SMALLER THAN SIZING PARAMS ON EITHER/BOTH SIDES) BUT MUST BE SELECTED AT THE RIGHT TIME BEFORE GLUE. CURRENTLY THERE IS NO SELECTION SO IT REMAINS AFTER GLUE
+-- THIS PROBABLY NEEDS TO BE REENABLED (CASE: RESTORED ITEMS SMALLER THAN SIZING PARAMS ON EITHER/BOTH SIDES) BUT MUST BE SELECTED AT THE RIGHT TIME BEFORE _glue(). CURRENTLY THERE IS NO SELECTION SO IT REMAINS AFTER GLUE
   -- Sizing.instantiateDummySizingItem(sizing_params)
 
   return sizing_params
@@ -412,6 +419,34 @@ function Sizing.getSuperitemLoopLength(superitem, superitem_params)
   superitem_end_point = superitem_length - superitem_params.position
 
   return superitem_length, superitem_end_point
+end
+
+
+function Sizing.handleNewGlueSizing(selected_items, this_is_depool, pool_id, depool_superitem_params)
+  local global_option_time_selection_sets_bounds_enabled, sizing_params
+
+  global_option_time_selection_sets_bounds_enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.time_selection_sets_bounds_on_glue)
+
+  if global_option_time_selection_sets_bounds_enabled == "true" then
+    _state.user.time_selection_before_action.position, _state.user.time_selection_before_action.end_point = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
+    sizing_params = {
+      position = _state.user.time_selection_before_action.position,
+      length = _state.user.time_selection_before_action.end_point - _state.user.time_selection_before_action.position,
+      end_point = _state.user.time_selection_before_action.end_point
+    }
+
+  elseif global_option_time_selection_sets_bounds_enabled == "false" then
+    sizing_params = Sizing.getBoundsFromItems(selected_items)
+  end
+
+  if this_is_depool then
+    sizing_params = _glue().setUpGlueWithDePool(pool_id, depool_superitem_params)
+
+  else
+    _sizing.instantiateDummySizingItem(sizing_params)
+  end
+
+  return sizing_params
 end
 
 

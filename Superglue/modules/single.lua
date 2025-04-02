@@ -11,7 +11,6 @@ loadDependencies = (function()
   _common = require("modules.common")
   _constant = require("modules.constant")
   _data = require("modules.data")
-  _depool = require("modules.depool")
   _edit = require("modules.edit")
   _glue = require("modules.glue")
   _init = require("modules.init")
@@ -88,31 +87,6 @@ function Single.otherInstanceIsOpen(edit_pool_id)
 
       return this_item
     end
-  end
-end
-
-
-function Single.doSingleTrackDePool(user_selected_items_on_this_track, this_user_selected_items_track, action)
-  local superitems, selected_item_groups, restored_items, this_superitem, this_superitem_params, this_superitem_state, this_superitem_instance_pool_id, superitem, new_pool_id
-
-  superitems = Single.setUpSingleTrackEditOrUnglueOrDePool(user_selected_items_on_this_track)
-  selected_item_groups = _common.getSuperglueItemTypes(user_selected_items_on_this_track, {"restored"})
-  restored_items = selected_item_groups.restored.items
-  _state.action.glue.current_track = this_user_selected_items_track
-
-  for i = 1, #superitems do
-    this_superitem = superitems[i]
-    this_superitem_params, this_superitem_state, this_superitem_instance_pool_id = _depool.setUpDePool(this_superitem)
-    this_superitem_params.pool_id = _edit.processUnglue(this_superitem, this_superitem_instance_pool_id, action)
-    superitem = _glue.handleGlue(_state.action.edit_or_unglue.restored_items, nil, nil, this_superitem_params, false)
-    new_pool_id = _depool.handleDePoolPostGlue(superitem, this_superitem_state, this_superitem_params)
-
-    table.insert(_state.action.glue.all_glued_superitems, superitem)
-    table.insert(_state.action.depool.new_pool_ids, new_pool_id)
-  end
-
-  for i = 1, #restored_items do
-    _common.dePoolRestoredItem(restored_items[i])
   end
 end
 

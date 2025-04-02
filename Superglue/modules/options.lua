@@ -80,30 +80,17 @@ function Options.debug_log_dimensions(stage, option_window_widgets)
   local viewport_calc = option_window_widgets.options_viewport.calc
   local content_calc = option_window_widgets.options_window_content.calc
 
-  _dev.log("DIMENSION DEBUG [%s]:", stage)
-  _dev.log("  Screen height: %d", reaper.GetAppVersion():match("OSX") and gfx.h or gfx.h/rtk.scale.framebuffer)
-  _dev.log("  Window height: %d (calc: %d, interior: %d)",
-           option_window_widgets.options_window.h or 0,
-           calc.h or 0,
-           (calc.h or 0) - ((calc.tpadding or 0) + (calc.bpadding or 0)))
-  _dev.log("  Viewport height: %d (calc: %d)",
-           option_window_widgets.options_viewport.h or 0,
-           viewport_calc.h or 0)
-  _dev.log("  Content height: %d (calc: %d)",
-           option_window_widgets.options_window_content.h or 0,
-           content_calc.h or 0)
-  _dev.log("  Content children: %d", #option_window_widgets.options_window_content.children)
-
   -- Count total height of content children
   local total_height = 0
+
   for i, child in ipairs(option_window_widgets.options_window_content.children) do
+
     local widget = child[1]
+
     if widget.calc and widget.calc.h then
       total_height = total_height + widget.calc.h
-      _dev.log("    Child %d: %s - height %d", i, widget.class.name, widget.calc.h)
     end
   end
-  _dev.log("  Total content height: %d", total_height)
 end
 
 
@@ -144,8 +131,6 @@ function Options.openOptionsWindow()
 
       local window_y = math.max(0, (screen_h - window_height) / 2)
       option_window_widgets.options_window:attr('y', window_y)
-
-      _dev.log("Options window final dimensions - Height: %d, Y: %d", window_height, window_y)
     end)
 end
 

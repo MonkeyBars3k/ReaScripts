@@ -3,14 +3,13 @@
 local Glue = {}
 
 
-local loadDependencies, loadCircularDependencies, serpent, _constant, _depool, _init, _lanes, _sizing, _state, _util, _module_utils, _common, _data
+local loadDependencies, loadCircularDependencies, serpent, _constant, _init, _lanes, _sizing, _state, _util, _module_utils, _common, _data, _depool
 
 local _dev = require("modules.dev")
 
 loadDependencies = (function()
   serpent = require("lib.serpent")
   _constant = require("modules.constant")
-  _depool = require("modules.depool")
   _init = require("modules.init")
   _lanes = require("modules.lanes")
   _sizing = require("modules.sizing")
@@ -24,6 +23,7 @@ end)()
 loadCircularDependencies = (function()
   _common = function() return _module_utils.lazyRequire("common") end
   _data = function() return _module_utils.lazyRequire("data") end
+  _depool = function() return _module_utils.lazyRequire("depool") end
 end)()
 
 
@@ -105,34 +105,6 @@ function Glue.incrementPoolId(last_pool_id)
   end
 
   return new_pool_id
-end
-
-
-function Glue.handleNewGlueSizing(selected_items, this_is_depool, pool_id, depool_superitem_params)
-  local global_option_time_selection_sets_bounds_enabled, sizing_params
-
-  global_option_time_selection_sets_bounds_enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.time_selection_sets_bounds_on_glue)
-
-  if global_option_time_selection_sets_bounds_enabled == "true" then
-    _state.user.time_selection_before_action.position, _state.user.time_selection_before_action.end_point = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
-    sizing_params = {
-      position = _state.user.time_selection_before_action.position,
-      length = _state.user.time_selection_before_action.end_point - _state.user.time_selection_before_action.position,
-      end_point = _state.user.time_selection_before_action.end_point
-    }
-
-  elseif global_option_time_selection_sets_bounds_enabled == "false" then
-    sizing_params = _sizing.getBoundsFromItems(selected_items)
-  end
-
-  if this_is_depool then
-    sizing_params = Glue.setUpGlueWithDePool(pool_id, depool_superitem_params)
-
-  else
-    _sizing.instantiateDummySizingItem(sizing_params)
-  end
-
-  return sizing_params
 end
 
 
@@ -930,7 +902,7 @@ function Glue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancestor
       global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.depool_all_siblings_on_reglue)
 
       if global_option_toggle_depool_all_siblings_on_reglue == "true" and not this_is_ancestor_superitem_update then
-        global_option_toggle_depool_all_siblings_on_reglue = _depool.handleDePoolSibling(this_active_pool_instance)
+        global_option_toggle_depool_all_siblings_on_reglue = _depool().handleDePoolSibling(this_active_pool_instance)
 
       elseif global_option_toggle_depool_all_siblings_on_reglue == "false" then
         ancestor_pools_near_project_start = Glue.updateSuperitemChangedByReglue(this_active_pool_instance, this_item, ancestor_pools_near_project_start, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
@@ -1191,7 +1163,7 @@ function Glue.reglueAncestor(sizing_region_guid)
   local this_is_ancestor_superitem_update, selected_items, this_is_direct_parent_instance_update, ancestor_instance, ancestor_active_track
 
   reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
-  _depool.refreshCurrentPoolStoredItemsPostDePool()
+  _depool().refreshCurrentPoolStoredItemsPostDePool()
   _common().selectDeselectItems(_state.superitem.params.fresh_glue.current_pool.restored_items, true)
 
   this_is_ancestor_superitem_update = true

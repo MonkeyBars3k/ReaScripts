@@ -2,7 +2,7 @@
 
 local Depool = {}
 
-local loadDependencies, loadCircularDependencies, _common, _constant, _data, _edit, _state, _module_utils, _glue
+local loadDependencies, loadCircularDependencies, _common, _constant, _data, _edit, _state, _module_utils, _glue, _single
 
 
 loadDependencies = (function()
@@ -18,8 +18,41 @@ end)()
 
 loadCircularDependencies = (function()
   _glue = function() return _module_utils.lazyRequire("glue") end
+  _single = function() return _module_utils.lazyRequire("single") end
 end)()
 
+
+
+function Depool.dePoolSuperitems(user_selected_items_on_this_track, this_user_selected_items_track, action)
+  local superitems, this_superitem, this_superitem_params, this_superitem_state, this_superitem_instance_pool_id, superitem, new_pool_id
+
+  superitems = _single().setUpSingleTrackEditOrUnglueOrDePool(user_selected_items_on_this_track)
+  _state.action.glue.current_track = this_user_selected_items_track
+
+  for i = 1, #superitems do
+    this_superitem = superitems[i]
+    this_superitem_params, this_superitem_state, this_superitem_instance_pool_id = Depool.setUpDePool(this_superitem)
+    this_superitem_params.pool_id = _edit.processUnglue(this_superitem, this_superitem_instance_pool_id, action)
+    superitem = _glue().handleGlue(_state.action.edit_or_unglue.restored_items, nil, nil, this_superitem_params, false)
+    new_pool_id = Depool.handleDePoolPostGlue(superitem, this_superitem_state, this_superitem_params)
+
+    table.insert(_state.action.glue.all_glued_superitems, superitem)
+    table.insert(_state.action.depool.new_pool_ids, new_pool_id)
+  end
+end
+
+
+function Depool.dePoolRestoredItems(user_selected_items_on_this_track, this_user_selected_items_track)
+  local selected_item_groups, restored_items
+
+  selected_item_groups = _common.getSuperglueItemTypes(user_selected_items_on_this_track, {"restored"})
+  restored_items = selected_item_groups.restored.items
+  _state.action.glue.current_track = this_user_selected_items_track
+
+  for i = 1, #restored_items do
+    _common.dePoolRestoredItem(restored_items[i])
+  end
+end
 
 
 function Depool.handleDePoolSibling(active_pool_sibling)

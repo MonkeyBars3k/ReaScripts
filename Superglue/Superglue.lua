@@ -121,7 +121,7 @@ routeMainAction = function(action)
   elseif action == "Edit" or action == "Unglue" then
     _init.doEditOrUnglueAction(selected_item_count, action)
 
-  elseif action == "DePool" then
+  elseif string.find(action, "DePool") then
     _init.doDePoolAction(selected_item_count, action)
 
   elseif action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then

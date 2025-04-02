@@ -224,11 +224,9 @@ function Iteminfo.populateItemInfoWindow(all_selected_items_window_data)
         item_info_window:reflow()
 
         local content_height = item_info_content.calc and item_info_content.calc.h or 0
-        _dev.log("Deferred content calculated height: %d", content_height)
 
         -- Add buffer for window chrome and padding
         local window_height = math.min(content_height, screen_h * 0.85)
-        _dev.log("Setting deferred window height to: %d", window_height)
 
         -- Set the final window height
         item_info_window:attr('h', window_height)

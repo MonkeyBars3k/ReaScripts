@@ -5,11 +5,10 @@ local Common = {}
 
 local _dev = require("modules.dev")
 
-local loadDependencies, loadCircularDependencies, serpent, _constant, _state, _util, _module_utils, _data, _glue, _init, _lanes
+local loadDependencies, loadCircularDependencies, _constant, _state, _util, _module_utils, _data, _glue, _init, _lanes
 
 
 loadDependencies = (function()
-  serpent = require("lib.serpent")
   _constant = require("modules.constant")
   _state = require("modules.state")
   _util = require("modules.util")
@@ -403,7 +402,7 @@ function Common.adjustRestoredItem(superitem, restored_item, active_track, actio
   restored_item_params.position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, restored_item_params, action)
 
   reaper.SetMediaItemPosition(restored_item, restored_item_params.position, _constant.api.dont_refresh_ui)
-   _lanes().restoreItemLaneDelta(restored_item, superitem, active_track)
+  _lanes().restoreItemLaneDelta(restored_item, superitem, active_track)
 
   return restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 end
@@ -428,7 +427,7 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
   superitem_source = reaper.GetMediaItemTake_Source(superitem_active_take)
   superitem_source_length = reaper.GetMediaSourceLength(superitem_source)
 
-  if action == "Edit" or action == "Unglue" or action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then
+  if action == "Edit" or action == "Unglue" or string.find(action, "Smart") or string.find(action, "DePool") then
     superitem_loop_starts_in_later_half = _state.superitem.params.preunglue.unglued_pool.source_offset > (superitem_source_length / 2)
     this_item_position_delta_to_last_glue_superitem_instance = _state.superitem.params.preunglue.unglued_pool.position - _state.superitem.params.post_glue.edited_pool.position - _state.superitem.params.preunglue.unglued_pool.source_offset
 
@@ -439,7 +438,8 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
     if looped_source_sets_sizing_region__enabled == "true" and superitem_loop_is_enabled and superitem_loop_starts_in_later_half then
       this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + superitem_source_length
     end
-  elseif action == "DePool" then
+
+  elseif string.find(action, "DePool") then
     this_item_position_delta_to_last_glue_superitem_instance = _state.superitem.params.preunglue.unglued_pool.position - _state.superitem.params.post_glue.edited_pool.position + _state.superitem.params.post_glue.edited_pool.source_offset
   end
 

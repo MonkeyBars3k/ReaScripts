@@ -3,7 +3,7 @@
 local Multi = {}
 
 
-local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _overglue, _state, _util, _module_utils, _init, _single
+local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _depool, _overglue, _state, _util, _module_utils, _init, _single
 
 -- local _dev = require("modules.dev")
 
@@ -12,6 +12,7 @@ loadDependencies = (function()
   _common = require("modules.common")
   _constant = require("modules.constant")
   _data = require("modules.data")
+  _depool = require("modules.depool")
   _overglue = require("modules.overglue")
   _state = require("modules.state")
   _util = require("modules.util")
@@ -66,7 +67,7 @@ end
 function Multi.handleMultiitemCases(all_tracks_with_user_selected_items, action)
   local global_option_toggle_multiitem_editing_enabled, multiitem_result, user_wants_to_affect_1st_superitem, user_selected_items_on_this_track
 
-  if action == "Edit" or action == "Unglue" or action == "DePool" then
+  if action == "Edit" or action == "Unglue" or string.find(action, "DePool") then
 
     for i = 1, #all_tracks_with_user_selected_items do
 
@@ -74,7 +75,7 @@ function Multi.handleMultiitemCases(all_tracks_with_user_selected_items, action)
         global_option_toggle_multiitem_editing_enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.multiitem_editing)
 
         if global_option_toggle_multiitem_editing_enabled ~= "true" then
-          multiitem_result = reaper.ShowMessageBox('The option "Multi-item Edit, Unglue, or DePool in single action" is disabled, but more than one item is selected on one or more tracks. Would you like to ' .. action .. ' the first selected superitem on each track only?', "Multiple items selected", _constant.api.msg.type.ok_cancel)
+          multiitem_result = reaper.ShowMessageBox('The option "Multi-item Edit, Unglue, or Remove from Pool in single action" is disabled, but more than one item is selected on one or more tracks. Would you like to ' .. action .. ' the first selected superitem on each track only?', "Multiple items selected", _constant.api.msg.type.ok_cancel)
           user_wants_to_affect_1st_superitem = multiitem_result == _constant.api.msg.response.ok
 
           if user_wants_to_affect_1st_superitem then
@@ -115,8 +116,11 @@ function Multi.iterateTracksWithSelectedItems(all_tracks_with_user_selected_item
     elseif action == "Edit" or action == "Unglue" then
       _single().doSingleTrackEditOrUnglue(user_selected_items_on_this_track, action)
 
-    elseif action == "DePool" then
-      _single().doSingleTrackDePool(user_selected_items_on_this_track, this_user_selected_items_track, action)
+    elseif action == "DePoolSuperitems" then
+      _depool.dePoolSuperitems(user_selected_items_on_this_track, this_user_selected_items_track, action)
+
+    elseif action == "DePoolRestoredItems" then
+      _depool.dePoolRestoredItems(user_selected_items_on_this_track, this_user_selected_items_track)
 
     elseif action == "Smart Glue/Edit" or action == "Smart Glue/Unglue" then
 

@@ -184,7 +184,7 @@ function Init.completeGlueOrDePool(selected_items, action)
   if action == "Glue" then
     pool_ids_changed = _state.action.glue.changed_pool_ids
 
-  elseif action == "DePool" then
+  elseif string.find(action, "DePool") then
     pool_ids_changed = _state.action.depool.new_pool_ids
   end
 

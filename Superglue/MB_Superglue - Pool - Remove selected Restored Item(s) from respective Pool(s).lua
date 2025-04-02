@@ -6,4 +6,4 @@ local script_dir = script_file:match("^(.*[/\\])")
 
 package.path = package.path .. ";" .. script_dir .. "?.lua"
 
-require("Superglue").init("main.DePool")
+require("Superglue").init("main.DePoolRestoredItems")
