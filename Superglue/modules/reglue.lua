@@ -301,7 +301,7 @@ function Reglue.handleTakeStretchMarkers(instance_active_take, position_adjustme
   stretch_markers_count = reaper.GetTakeNumStretchMarkers(instance_active_take)
 
   if stretch_markers_count > 0 then
-    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
+    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.switch.maintain_source_position)
 
     if _state.propagation.user_wants_option.source_position then
       marker_position_adjustment = position_adjustment_delta
@@ -695,10 +695,11 @@ end
 
 
 function Reglue.getSuperitemPropagationOptionChoices()
-  _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
+  _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle",
+      _constant.data.key.options.switch.playrate_affects_propagation)
 
   if _state.superitem.position_changed_since_last_glue then
-    _state.propagation.user_wants_option.position = _common.getUserPropagationChoice("position", _constant.data.key.options.defaults.propagate_position_change)
+    _state.propagation.user_wants_option.position = _common.getUserPropagationChoice("position", _constant.data.key.options.switch.propagate_position)
 
     -- Lane propagation follows position propagation behavior
     if _constant.support.fixed_lanes then
@@ -707,7 +708,7 @@ function Reglue.getSuperitemPropagationOptionChoices()
   end
 
   if _state.superitem.offset_changed_since_last_glue then
-    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
+    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.switch.maintain_source_position)
   end
 end
 
@@ -724,7 +725,7 @@ if _state.propagation.user_wants_option.position then
     reaper.SetMediaItemPosition(instance, instance_adjusted_position, _constant.api.dont_refresh_ui)
 
     if _state.propagation.user_wants_option.source_position == nil then
-      _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.defaults.maintain_source_position)
+      _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.switch.maintain_source_position)
     end
 
     if _state.propagation.user_wants_option.source_position then
@@ -789,11 +790,11 @@ function Reglue.adjustSuperitemLength(instance, instance_playrate, this_instance
   local instance_current_length, instance_length_adjustment_delta, user_wants_relative_length_propagation, instance_adjusted_length
 
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
-  _state.propagation.user_wants_option.length = _common.getUserPropagationChoice("length", _constant.data.key.options.defaults.propagate_length_change)
+  _state.propagation.user_wants_option.length = _common.getUserPropagationChoice("length", _constant.data.key.options.toggle.propagate_length)
 
   if _state.propagation.user_wants_option.length then
-    _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
-    _state.propagation.user_wants_option.absolute_length_propagation = _common.getUserPropagationChoice("absolute_length_propagation", _constant.data.key.options.defaults.length_propagation_type)
+    _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.switch.playrate_affects_propagation)
+    _state.propagation.user_wants_option.absolute_length_propagation = _common.getUserPropagationChoice("absolute_length_propagation", _constant.data.key.options.switch.length_propagation_type)
     user_wants_relative_length_propagation = not _state.propagation.user_wants_option.absolute_length_propagation
 
     if _state.propagation.user_wants_option.absolute_length_propagation then

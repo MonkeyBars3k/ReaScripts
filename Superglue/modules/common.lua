@@ -496,11 +496,11 @@ function Common.getPropagateDialogValues()
   local propagate_dialog_data, propagate_dialog_params
 
   propagate_dialog_data = {
-    {"source_position", _constant.data.key.options.defaults.maintain_source_position, "audio source timeline locations so they remain in the same place?", "source position"},
-    {"length", _constant.data.key.options.defaults.propagate_length, "lengths to match?", "length"},
-    {"position", _constant.data.key.options.defaults.propagate_position, "left edge to adjust as well?", "left edge position"},
-    {"absolute_length_propagation", _constant.data.key.options.defaults.length_propagation_type, "length to match the Edited Superitem? (No = alter sibling length relatively by the length change amount)", "length"},
-    {"playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation, "position and/or length in proportion to their playrates?", "length and/or position"}
+    {"source_position", _constant.data.key.options.switch.maintain_source_position, "audio source timeline locations so they remain in the same place?", "source position"},
+    {"length", _constant.data.key.options.switch.propagate_length, "lengths to match?", "length"},
+    {"position", _constant.data.key.options.switch.propagate_position, "left edge to adjust as well?", "left edge position"},
+    {"absolute_length_propagation", _constant.data.key.options.switch.length_propagation_type, "length to match the Edited Superitem? (No = alter sibling length relatively by the length change amount)", "length"},
+    {"playrate_toggle", _constant.data.key.options.switch.playrate_affects_propagation, "position and/or length in proportion to their playrates?", "length and/or position"}
   }
   propagate_dialog_params = {}
 
