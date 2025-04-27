@@ -790,7 +790,7 @@ function Reglue.adjustSuperitemLength(instance, instance_playrate, this_instance
   local instance_current_length, instance_length_adjustment_delta, user_wants_relative_length_propagation, instance_adjusted_length
 
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
-  _state.propagation.user_wants_option.length = _common.getUserPropagationChoice("length", _constant.data.key.options.toggle.propagate_length)
+  _state.propagation.user_wants_option.length = _common.getUserPropagationChoice("length", _constant.data.key.options.switch.propagate_length)
 
   if _state.propagation.user_wants_option.length then
     _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.switch.playrate_affects_propagation)
