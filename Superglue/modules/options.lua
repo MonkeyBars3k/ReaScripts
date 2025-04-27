@@ -5,8 +5,6 @@ local Options = {}
 
 local loadDependencies, rtk, _constant
 
-
-
 local _dev = require("modules.dev")
 
 loadDependencies = (function()

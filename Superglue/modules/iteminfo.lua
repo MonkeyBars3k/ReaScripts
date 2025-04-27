@@ -27,7 +27,7 @@ function Iteminfo.openItemInfoWindow()
 
   if selected_item_count == false then return end
 
-  selected_items = _init.getSelectedItems(selected_item_count)
+  selected_items = _common.getSelectedItems(selected_item_count)
   no_superglue_items_are_selected, all_selected_items_window_data = Iteminfo.getAllSelectedItemsInfo(selected_items)
 
   if no_superglue_items_are_selected then

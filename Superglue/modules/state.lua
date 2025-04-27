@@ -2,6 +2,10 @@
 
 local State = {
 
+  options = {
+    loop_source_sets_sizing_region_bounds_on_reglue = nil
+  },
+
   user = {
     time_selection_before_action = {},
     item_selection = nil,
@@ -15,7 +19,8 @@ local State = {
       restored_items = nil,
       validated_items = nil,
       validated_track = nil,
-      track_freemode = nil
+      track_freemode = nil,
+      superitem_loop_is_enabled = nil
     },
 
     edit = {

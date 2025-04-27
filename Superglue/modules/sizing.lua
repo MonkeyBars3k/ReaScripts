@@ -343,7 +343,7 @@ end
 
 
 function Sizing.getReglueSizing(pool_id, sizing_region_guid, selected_items, this_is_ancestor_superitem_update)
-  local user_selected_instance_is_being_reglued, sizing_params
+  local --[[user_selected_instance_is_being_reglued,]] sizing_params
 
   user_selected_instance_is_being_reglued = not this_is_ancestor_superitem_update
   _state.superitem.pool_parent_last_glue_length = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_length)
@@ -353,7 +353,7 @@ function Sizing.getReglueSizing(pool_id, sizing_region_guid, selected_items, thi
     sizing_params = Sizing.setUpUserSelectedInstanceReglueSizing(sizing_region_guid, pool_id)
 
   elseif this_is_ancestor_superitem_update then
-    sizing_params = Sizing.setUpParentReglueSizing(pool_id, selected_items)
+    sizing_params = Sizing.setUpAncestorReglueSizing(pool_id, selected_items)
   end
 
   return sizing_params
@@ -376,31 +376,32 @@ function Sizing.setUpUserSelectedInstanceReglueSizing(sizing_region_guid, pool_i
 end
 
 
-function Sizing.setUpParentReglueSizing(pool_id, selected_items)
+function Sizing.setUpAncestorReglueSizing(pool_id, selected_items)
   local pool_parent_length_key_label, pool_parent_last_glue_position, pool_parent_last_glue_end_point, sizing_params
 
+-- LAST GLUE ISN'T RELEVANT HERE; PREEDIT IS, RIGHT?
   pool_parent_last_glue_position = _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.parent_position)
   pool_parent_last_glue_position = tonumber(pool_parent_last_glue_position)
   pool_parent_last_glue_end_point = pool_parent_last_glue_position + _state.superitem.pool_parent_last_glue_length
   sizing_params = {
-    position = pool_parent_last_glue_position - _state.restored_items.delta.position_delta_near_project_start,
-    length = _state.superitem.pool_parent_last_glue_length - _state.restored_items.delta.position_delta_near_project_start,
-    end_point = pool_parent_last_glue_end_point - _state.restored_items.delta.position_delta_near_project_start
+    position = pool_parent_last_glue_position--[[ - _state.restored_items.delta.position_delta_near_project_start]],
+    length = _state.superitem.pool_parent_last_glue_length--[[ - _state.restored_items.delta.position_delta_near_project_start]],
+    end_point = pool_parent_last_glue_end_point-- - _state.restored_items.delta.position_delta_near_project_start
   }
 
--- THIS PROBABLY NEEDS TO BE REENABLED (CASE: RESTORED ITEMS SMALLER THAN SIZING PARAMS ON EITHER/BOTH SIDES) BUT MUST BE SELECTED AT THE RIGHT TIME BEFORE _glue(). CURRENTLY THERE IS NO SELECTION SO IT REMAINS AFTER GLUE
+-- THIS PROBABLY NEEDS TO BE REENABLED (CASE: RESTORED ITEMS SMALLER THAN SIZING PARAMS ON EITHER/BOTH SIDES) BUT MUST BE SELECTED AT THE RIGHT TIME BEFORE GLUE. CURRENTLY THERE IS NO SELECTION SO IT REMAINS AFTER GLUE
   -- Sizing.instantiateDummySizingItem(sizing_params)
 
   return sizing_params
 end
 
 
-function Sizing.createSizingRegionFromSuperitem(superitem, pool_id, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled)
+function Sizing.createSizingRegionFromSuperitem(superitem, pool_id)
   local superitem_params, sizing_region_guid
 
   superitem_params = _data.getSetItemParams(superitem)
 
-  if looped_source_sets_sizing_region__enabled == "true" and superitem_loop_is_enabled then
+  if _state.options.loop_source_sets_sizing_region_bounds_on_reglue == "true" and _state.action.edit_or_unglue.superitem_loop_is_enabled then
     superitem_params.length, superitem_params.end_point = Sizing.getSuperitemLoopLength(superitem, superitem_params)
   end
 

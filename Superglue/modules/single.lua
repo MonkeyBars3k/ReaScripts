@@ -35,6 +35,8 @@ function Single.triggerSingleTrackSinglePoolGlue(items_to_glue, restored_items_p
   if this_is_reglue then
     superitem = _reglue.handleReglue(items_to_glue, restored_items_pool_id)
 
+    if superitem == false then return false end
+
   else
     superitem = _glue.handleGlue(items_to_glue, nil, nil, nil, nil)
   end

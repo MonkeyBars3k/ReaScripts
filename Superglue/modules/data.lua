@@ -132,14 +132,14 @@ end
 
 
 function Data.getSetItemParams(item, params)
-  local get, set, track, retval, track_guid, active_take, active_take_num, item_params
+  local get, set, track, track_guid, active_take, active_take_num, item_params
 
   get = not params
   set = params
 
   if get then
     track = reaper.GetMediaItemTrack(item)
-    retval, track_guid = reaper.GetSetMediaTrackInfo_String(track, _constant.api.take.key.guid, "", _constant.api.get_value)
+    _, track_guid = reaper.GetSetMediaTrackInfo_String(track, _constant.api.take.key.guid, "", _constant.api.get_value)
     active_take = reaper.GetActiveTake(item)
 
     if active_take then
@@ -148,11 +148,12 @@ function Data.getSetItemParams(item, params)
 
     item_params = {
       item_guid = reaper.BR_GetMediaItemGUID(item),
-      state = Data.getSetItemStateChunk(item),
+      -- state = Data.getSetItemStateChunk(item),
       track_guid = track_guid,
       active_take_num = active_take_num,
       position = reaper.GetMediaItemInfo_Value(item, _constant.api.item.key.position),
       length = reaper.GetMediaItemInfo_Value(item, _constant.api.item.key.length),
+      loop_src = reaper.GetMediaItemInfo_Value(item, _constant.api.item.key.loop_src),
       instance_pool_id = Data.storeRetrieveItemData(item, _constant.data.key.suffix.pool.instance_id),
       parent_pool_id = Data.storeRetrieveItemData(item, _constant.data.key.suffix.pool.parent_id)
     }
@@ -172,15 +173,15 @@ end
 
 
 function Data.storeRetrieveSuperitemParams(pool_id, action_step, superitem)
-  local retrieve, store, superitem_params_key_label, retval, superitem_params
+  local retrieve, store, superitem_params_key_label, superitem_params
 
   retrieve = not superitem
   store = superitem
   superitem_params_key_label = _constant.data.key.prefix.pool .. pool_id .. _constant.brand.separator .. action_step .. _constant.data.key.suffix.superitem.params
 
   if retrieve then
-    retval, superitem_params = Data.storeRetrieveProjectData(superitem_params_key_label)
-    retval, superitem_params = serpent.load(superitem_params)
+    _, superitem_params = Data.storeRetrieveProjectData(superitem_params_key_label)
+    _, superitem_params = serpent.load(superitem_params)
 
     if superitem_params then
       superitem_params.track = reaper.BR_GetMediaTrackByGUID(_constant.api.current_project, superitem_params.track_guid)

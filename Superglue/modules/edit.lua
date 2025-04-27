@@ -41,7 +41,7 @@ function Edit.getTrackForSuperitem(superitem, pool_id)
 
   _lanes.addRequiredLanesToTrack(pool_id, active_track, superitem)
 
-  return active_track, superitem_preedit_params
+  return active_track--, superitem_preedit_params
 end
 
 
@@ -49,7 +49,7 @@ function Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, 
   local restored_items
 
   if _state.action.edit_or_unglue.validated_items and #_state.action.edit_or_unglue.validated_items > 0 then
-    restored_items = Edit.transferValidatedItems(active_track, pool_id, superitem)
+    restored_items = Edit.transferValidatedItemsToActiveTrack(active_track, pool_id, superitem)
 
   else
     restored_items = _common.restoreStoredItems(pool_id, active_track, superitem, nil, action)
@@ -59,7 +59,7 @@ function Edit.processValidatedOrRestoredItems(active_track, superitem, pool_id, 
 end
 
 
-function Edit.transferValidatedItems(active_track, pool_id, superitem)
+function Edit.transferValidatedItemsToActiveTrack(active_track, pool_id, superitem)
   local restored_items = {}
 
   for i = 1, #_state.action.edit_or_unglue.validated_items do
@@ -95,7 +95,7 @@ end
 
 
 function Edit.processEdit(superitem, pool_id, action)
-  local active_track, superitem_preedit_params = Edit.getTrackForSuperitem(superitem, pool_id)
+  local active_track--[[, superitem_preedit_params]] = Edit.getTrackForSuperitem(superitem, pool_id)
   local superitem_state = _data.getSetItemStateChunk(superitem)
 
   _data.storeRetrieveSuperitemParams(pool_id, _constant.actionstep.preedit, superitem)

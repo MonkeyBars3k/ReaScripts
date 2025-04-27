@@ -232,6 +232,10 @@ Constant.data = {
         superitem_state = ":preglue-state-chunk"
       },
 
+      preedit = {
+        superitem_length = ":superitem-length"
+      },
+
       superitem = {
         superglue_active_take = "_superitem-superglue-active-take",
         params = "-superitem-params",
@@ -295,7 +299,7 @@ Constant.global_options = {
     type = "checkbox",
     ext_state_key = Constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue,
     option_script_filename = "Superglue - Change Option - Maintain loop length of Superitems on Reglue (On-Off).lua",
-    user_readable_text = "Looped source of Superitem determines Sizing Region bounds",
+    user_readable_text = "Maintain loop length of Superitems on Reglue; source length determines Sizing Region bounds",
     default_value = "true"
   },
 

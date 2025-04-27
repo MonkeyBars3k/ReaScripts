@@ -119,7 +119,7 @@ end
 
 
 function Reglue.handleReglue(selected_items, restored_items_pool_id)
-  local sizing_region_guid, superitem, superitem_params
+  local sizing_region_guid, superitem, superitem_params, result
 
   sizing_region_guid = _sizing.checkSizingRegionExists(restored_items_pool_id, selected_items)
 
@@ -136,7 +136,10 @@ function Reglue.handleReglue(selected_items, restored_items_pool_id)
   Reglue.adjustPostGlueTakeMarkersAndEnvelopes(superitem, nil, nil, true)
   Reglue.reglueAncestors(superitem_params.pool_id, superitem)
   reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
-  Reglue.propagateChangesToSuperitems(superitem, sizing_region_guid)
+  result = Reglue.propagateChangesToSuperitems(superitem, sizing_region_guid)
+
+  if result == false then return false end
+
   reaper.ClearPeakCache()
 
   return superitem
@@ -507,25 +510,30 @@ end
 
 
 function Reglue.propagateChangesToSuperitems(active_superitem, sizing_region_guid)
-  local this_is_ancestor_superitem_update, ancestor_pools_near_project_start, ancestor_pools_params_sorted_by_ascending_nesting_depth, this_ancestor_pool_id, ancestor_pool_is_present_in_overglue_pools
+  local this_is_ancestor_superitem_update, result, ancestor_pools_near_project_start, ancestor_pools_params_sorted_by_ascending_nesting_depth, this_ancestor_pool_id, ancestor_pool_is_present_in_overglue_pools
 
   this_is_ancestor_superitem_update = false
-  ancestor_pools_near_project_start = Reglue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancestor_superitem_update)
+  result = Reglue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancestor_superitem_update)
+
+  if result == false then return false end
+
+  ancestor_pools_near_project_start = result
+
   ancestor_pools_params_sorted_by_ascending_nesting_depth = Reglue.sortAncestorUpdatesByNestingDepth()
 
   for i = 1, #ancestor_pools_params_sorted_by_ascending_nesting_depth do
     _state.superitem.params.fresh_glue.current_pool = ancestor_pools_params_sorted_by_ascending_nesting_depth[i]
     this_ancestor_pool_id = tostring(_state.superitem.params.fresh_glue.current_pool.pool_id)
-    _state.restored_items.delta.position_delta_near_project_start = ancestor_pools_near_project_start[this_ancestor_pool_id]
+    -- _state.restored_items.delta.position_delta_near_project_start = ancestor_pools_near_project_start[this_ancestor_pool_id]
     _state.superitem.params.preedit.current_pool = _data.storeRetrieveSuperitemParams(this_ancestor_pool_id, _constant.actionstep.preedit)
     ancestor_pool_is_present_in_overglue_pools = _util.isPresentInArray(this_ancestor_pool_id, _state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor)
 
-    if _state.restored_items.delta.position_delta_near_project_start then
-      Reglue.adjustParentPoolChildrenNearProjectStart(this_ancestor_pool_id, _state.superitem.params.fresh_glue.edited_pool.pool_id)
+    -- if _state.restored_items.delta.position_delta_near_project_start then
+    --   Reglue.adjustParentPoolChildrenNearProjectStart(this_ancestor_pool_id, _state.superitem.params.fresh_glue.edited_pool.pool_id)
 
-    else
-      _state.restored_items.delta.position_delta_near_project_start = 0
-    end
+    -- else
+      -- _state.restored_items.delta.position_delta_near_project_start = 0
+    -- end
 
     if not ancestor_pool_is_present_in_overglue_pools then
       Reglue.reglueAncestor(sizing_region_guid)
@@ -535,7 +543,7 @@ end
 
 
 function Reglue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
-  local all_items_count, ancestor_pools_near_project_start, this_item, this_active_pool_instance, global_option_toggle_depool_all_siblings_on_reglue
+  local all_items_count, result, ancestor_pools_near_project_start, this_item, this_active_pool_instance, global_option_toggle_depool_all_siblings_on_reglue
 
   all_items_count = reaper.CountMediaItems(_constant.api.current_project)
   ancestor_pools_near_project_start = {}
@@ -551,7 +559,11 @@ function Reglue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancest
         global_option_toggle_depool_all_siblings_on_reglue = _depool.handleDePoolSibling(this_active_pool_instance)
 
       elseif global_option_toggle_depool_all_siblings_on_reglue == "false" then
-        ancestor_pools_near_project_start = Reglue.updateSuperitemChangedByReglue(this_active_pool_instance, this_item, ancestor_pools_near_project_start, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
+        result = Reglue.updateSuperitemChangedByReglue(this_active_pool_instance, this_item, ancestor_pools_near_project_start, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
+
+        if result == false then return false end
+
+        ancestor_pools_near_project_start = result
       end
     end
   end
@@ -612,7 +624,11 @@ function Reglue.updateSuperitemChangedByReglue(active_pool_instance, item, ances
 
   attempted_negative_instance_position = Reglue.adjustSuperitemChangedByReglue(active_pool_instance, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
 
-  if attempted_negative_instance_position ~= 0 then
+  if attempted_negative_instance_position == false then
+
+      return false
+
+  elseif attempted_negative_instance_position ~= 0 then
     instance_parent_pool_id = _data.storeRetrieveItemData(item, _constant.data.key.suffix.pool.parent_id)
     ancestor_pools_near_project_start[instance_parent_pool_id] = attempted_negative_instance_position
   end
@@ -635,6 +651,19 @@ function Reglue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superi
 
   if this_is_sibling_instance_update then
     instance_would_get_adjusted_before_project_start = Reglue.adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_playrate)
+
+    if instance_would_get_adjusted_before_project_start then
+      local msg = string.format(
+        "%s can't propagate the left-edge position change to a sibling instance (Pool #%s) because it would be moved before project start.\n\nFix the Superitem's position and try again.",
+        _constant.brand.name,
+        tostring(this_instance_parent_pool_id)
+      )
+
+      reaper.ShowMessageBox(msg, "Invalid Sibling Propagation", _constant.api.msg.type.ok)
+
+      return false
+    end
+
     Reglue.adjustSuperitemLength(instance, instance_playrate, this_instance_is_child)
 
     -- Propagate lane position to siblings -- WHY??
@@ -669,7 +698,7 @@ function Reglue.getSuperitemPropagationOptionChoices()
   _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
 
   if _state.superitem.position_changed_since_last_glue then
-    _state.propagation.user_wants_option.position = _common.getUserPropagationChoice("position", _constant.data.key.options.defaults.propagate_position)
+    _state.propagation.user_wants_option.position = _common.getUserPropagationChoice("position", _constant.data.key.options.defaults.propagate_position_change)
 
     -- Lane propagation follows position propagation behavior
     if _constant.support.fixed_lanes then
@@ -760,7 +789,7 @@ function Reglue.adjustSuperitemLength(instance, instance_playrate, this_instance
   local instance_current_length, instance_length_adjustment_delta, user_wants_relative_length_propagation, instance_adjusted_length
 
   instance_current_length = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
-  _state.propagation.user_wants_option.length = _common.getUserPropagationChoice("length", _constant.data.key.options.defaults.propagate_length)
+  _state.propagation.user_wants_option.length = _common.getUserPropagationChoice("length", _constant.data.key.options.defaults.propagate_length_change)
 
   if _state.propagation.user_wants_option.length then
     _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle", _constant.data.key.options.defaults.playrate_affects_propagation)
@@ -813,9 +842,9 @@ function Reglue.reglueAncestor(sizing_region_guid)
   _common.selectDeselectItems(_state.superitem.params.fresh_glue.current_pool.restored_items, true)
 
   this_is_ancestor_superitem_update = true
-  selected_items = _init.getSelectedItems(#_state.superitem.params.fresh_glue.current_pool.restored_items)
+  selected_items = _common.getSelectedItems(#_state.superitem.params.fresh_glue.current_pool.restored_items)
   this_is_direct_parent_instance_update = Reglue.isThisDirectParentInstanceUpdate(selected_items)
-  ancestor_instance = Reglue.handleGlue(selected_items, _state.superitem.params.fresh_glue.current_pool.pool_id, sizing_region_guid, nil, this_is_ancestor_superitem_update)
+  ancestor_instance = _glue().handleGlue(selected_items, _state.superitem.params.fresh_glue.current_pool.pool_id, sizing_region_guid, nil, this_is_ancestor_superitem_update)
   ancestor_active_track = _state.superitem.params.fresh_glue.current_pool.track
   _state.superitem.params.fresh_glue.current_pool = _data.getSetItemParams(ancestor_instance)
   _state.superitem.params.fresh_glue.current_pool.updated_src = _common.getSetWipeItemAudioSrc(ancestor_instance)

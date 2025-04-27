@@ -164,7 +164,7 @@ end
 function Init.doGlueAction(selected_item_count, action)
   local selected_items
 
-  selected_items = Init.getSelectedItems(selected_item_count)
+  selected_items = _common().getSelectedItems(selected_item_count)
   _state.action.glue.all_glued_superitems = {}
   _state.action.glue.changed_pool_ids = {}
 
@@ -214,7 +214,7 @@ function Init.doEditOrUnglueAction(selected_item_count, action)
 
   if selected_item_count == 0 then return end
 
-  local selected_items = Init.getSelectedItems(selected_item_count)
+  local selected_items = _common().getSelectedItems(selected_item_count)
   local selected_item_groups = _common().getSuperglueItemTypes(selected_items, {"superitem"})
   local superitems = selected_item_groups.superitem.items
 
@@ -243,7 +243,7 @@ end
 function Init.doDePoolAction(selected_item_count, action)
   local selected_items
 
-  selected_items = Init.getSelectedItems(selected_item_count)
+  selected_items = _common().getSelectedItems(selected_item_count)
   _state.action.glue.all_glued_superitems = {}
   _state.action.depool.new_pool_ids = {}
 
@@ -254,7 +254,7 @@ end
 function Init.doSmartAction(selected_item_count, action)
   local selected_items, pool_id
 
-  selected_items = Init.getSelectedItems(selected_item_count)
+  selected_items = _common().getSelectedItems(selected_item_count)
   _state.action.glue.all_glued_superitems = {}
   _state.action.glue.changed_pool_ids = {}
   _state.action.edit.changed_pool_ids = {}
@@ -484,21 +484,6 @@ function Init.selectedItemsAreInvalid(selected_items, action_text)
 
       return true
   end
-end
-
-
-function Init.getSelectedItems(selected_item_count)
-  local selected_items, this_item
-
-  selected_items = {}
-
-  for i = 0, selected_item_count-1 do
-    this_item = reaper.GetSelectedMediaItem(_constant.api.current_project, i)
-
-    table.insert(selected_items, this_item)
-  end
-
-  return selected_items
 end
 
 

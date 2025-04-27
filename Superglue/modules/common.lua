@@ -26,6 +26,21 @@ end)()
 
 
 
+function Common.getSelectedItems(selected_item_count)
+  local selected_items, this_item
+
+  selected_items = {}
+
+  for i = 0, selected_item_count-1 do
+    this_item = reaper.GetSelectedMediaItem(_constant.api.current_project, i)
+
+    table.insert(selected_items, this_item)
+  end
+
+  return selected_items
+end
+
+
 function Common.getSuperglueItemTypes(items, requested_types)
   local item_types_data, this_item, superitem_pool_id, restored_item_pool_id, this_requested_item_type
 
@@ -281,7 +296,7 @@ end
 
 
 function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_ancestor_superitem_update, action)
-  local stored_item_states_table, restored_items, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
+  local stored_item_states_table, restored_items, restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
 
   stored_item_states_table = _data().getStoredItemStatesTable(pool_id, action)
   restored_items = {}
@@ -292,7 +307,7 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
 
     if stored_item_state then
       _state.superitem.params.preunglue.unglued_pool = _data().getSetItemParams(superitem)
-      local restored_item = Common.handleRestoredItem(superitem, active_track, stored_item_state, {}, this_is_ancestor_superitem_update, action)
+      restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.handleRestoredItem(superitem, active_track, stored_item_state, this_is_ancestor_superitem_update, action)
 
       table.insert(restored_items, restored_item)
     end
@@ -302,8 +317,8 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
 end
 
 
-function Common.handleRestoredItem(superitem, active_track, stored_item_state, restored_instances_near_project_start, this_is_ancestor_superitem_update, action)
-  local restored_item, restored_instance_pool_id, restored_item_negative_position_delta, this_is_first_edit_after_auto_depool, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
+function Common.handleRestoredItem(superitem, active_track, stored_item_state, this_is_ancestor_superitem_update, action)
+  local restored_item, restored_instance_pool_id, restored_item_negative_position_delta, this_is_first_edit_after_auto_depool
 
   restored_item = Common.restoreItem(active_track, stored_item_state, this_is_ancestor_superitem_update)
   restored_instance_pool_id = _data().storeRetrieveItemData(restored_item, _constant.data.key.suffix.pool.instance_id)
@@ -313,14 +328,14 @@ function Common.handleRestoredItem(superitem, active_track, stored_item_state, r
   Common.handleRestoredItemImage(restored_item, restored_instance_pool_id, action)
 
   if not this_is_ancestor_superitem_update then
-    restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.adjustRestoredItem(superitem, restored_item, active_track, action)
+    restored_item = Common.adjustRestoredItem(superitem, restored_item, active_track, action)
   end
 
   if action == "Unglue" or action == "DePool" then
     _data().storeRetrieveItemData(restored_item, _constant.data.key.suffix.pool.parent_id, "")
   end
 
-  return restored_item, restored_instances_near_project_start, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
+  return restored_item
 end
 
 
@@ -396,38 +411,28 @@ end
 
 
 function Common.adjustRestoredItem(superitem, restored_item, active_track, action)
-  local restored_item_params, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
+  local restored_item_params
 
   restored_item_params = _data().getSetItemParams(restored_item)
-  restored_item_params.position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, restored_item_params, action)
+  restored_item_params.position = Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item_params, action)
 
   reaper.SetMediaItemPosition(restored_item, restored_item_params.position, _constant.api.dont_refresh_ui)
   _lanes().restoreItemLaneDelta(restored_item, superitem, active_track)
 
-  return restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
+  return restored_item
 end
 
 
-function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item, restored_item_params, action)
-  local looped_source_sets_sizing_region__enabled, this_item_position_delta_to_last_glue_superitem_instance, superitem_loop_is_enabled, superitem_active_take, superitem_source, superitem_source_length, superitem_loop_starts_in_later_half, restored_item_altered_position
+function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_item_params, action)
+  local this_item_position_delta_to_last_glue_superitem_instance, superitem_active_take, superitem_source, superitem_source_length, superitem_loop_starts_in_later_half, restored_item_altered_position
 
-  -- Log state values that affect calculation
-  -- _dev.log("RESTORE: item_params.position = " .. restored_item_params.position)
-  -- _dev.log("RESTORE: preunglue.position = " .. _state.superitem.params.preunglue.unglued_pool.position)
-  -- _dev.log("RESTORE: post_glue.position = " .. _state.superitem.params.post_glue.edited_pool.position)
-  -- _dev.log("RESTORE: preunglue.source_offset = " .. _state.superitem.params.preunglue.unglued_pool.source_offset)
-
-  -- if _state.superitem.params.post_glue.edited_pool.source_offset then
-  --   _dev.log("RESTORE: post_glue.source_offset = " .. _state.superitem.params.post_glue.edited_pool.source_offset)
-  -- end
-
-  looped_source_sets_sizing_region__enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue)
-  superitem_loop_is_enabled = reaper.GetMediaItemInfo_Value(superitem, _constant.api.item.key.loop_src) == _constant.api.timeline.loop_enabled
+  _state.options.loop_source_sets_sizing_region_bounds_on_reglue = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.loop_source_sets_sizing_region_bounds_on_reglue)
+  _state.action.edit_or_unglue.superitem_loop_is_enabled = reaper.GetMediaItemInfo_Value(superitem, _constant.api.item.key.loop_src) == _constant.api.timeline.loop_enabled
   superitem_active_take = reaper.GetActiveTake(superitem)
   superitem_source = reaper.GetMediaItemTake_Source(superitem_active_take)
   superitem_source_length = reaper.GetMediaSourceLength(superitem_source)
 
-  if action == "Edit" or action == "Unglue" or string.find(action, "Smart") or string.find(action, "DePool") then
+  if action == "Edit" or action == "Unglue" or string.find(action, "Smart") then
     superitem_loop_starts_in_later_half = _state.superitem.params.preunglue.unglued_pool.source_offset > (superitem_source_length / 2)
     this_item_position_delta_to_last_glue_superitem_instance = _state.superitem.params.preunglue.unglued_pool.position - _state.superitem.params.post_glue.edited_pool.position - _state.superitem.params.preunglue.unglued_pool.source_offset
 
@@ -435,7 +440,7 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
       this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + _state.superitem.params.post_glue.edited_pool.source_offset
     end
 
-    if looped_source_sets_sizing_region__enabled == "true" and superitem_loop_is_enabled and superitem_loop_starts_in_later_half then
+    if _state.options.loop_source_sets_sizing_region_bounds_on_reglue == "true" and _state.action.edit_or_unglue.superitem_loop_is_enabled and superitem_loop_starts_in_later_half then
       this_item_position_delta_to_last_glue_superitem_instance = this_item_position_delta_to_last_glue_superitem_instance + superitem_source_length
     end
 
@@ -445,10 +450,7 @@ function Common.getRestoredItemPositionDeltaSinceLastGlue(superitem, restored_it
 
   restored_item_altered_position = restored_item_params.position + this_item_position_delta_to_last_glue_superitem_instance
 
-  -- _dev.log("RESTORE: actual position_delta = " .. this_item_position_delta_to_last_glue_superitem_instance)
-  -- _dev.log("RESTORE: final position = " .. restored_item_altered_position)
-
-  return restored_item_altered_position, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled
+  return restored_item_altered_position
 end
 
 
