@@ -5,27 +5,14 @@ local Sibling = {}
 
 local _dev = require("modules.dev")
 
-local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _depool, _init, _sizing, _state, _util, _module_utils, _glue, _reglue
+local loadDependencies, _common, _constant, _data, _state
 
 
 loadDependencies = (function()
-  serpent = require("lib.serpent")
   _common = require("modules.common")
   _constant = require("modules.constant")
   _data = require("modules.data")
-  _depool = require("modules.depool")
-  _init = require("modules.init")
-  _sizing = require("modules.sizing")
   _state = require("modules.state")
-  _util = require("modules.util")
-
-  _module_utils = require("module-utils")
-end)()
-
-
-loadCircularDependencies = (function()
-  _glue = function() return _module_utils.lazyRequire("glue") end
-  _reglue = function() return _module_utils.lazyRequire("reglue") end
 end)()
 
 

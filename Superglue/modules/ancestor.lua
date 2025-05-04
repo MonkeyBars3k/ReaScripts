@@ -5,7 +5,7 @@ local Ancestor = {}
 
 local _dev = require("modules.dev")
 
-local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _depool, _init, _sizing, _state, _util, _module_utils, _glue, _reglue
+local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _depool, _state, _util, _module_utils, _glue, _reglue
 
 
 loadDependencies = (function()
@@ -14,8 +14,6 @@ loadDependencies = (function()
   _constant = require("modules.constant")
   _data = require("modules.data")
   _depool = require("modules.depool")
-  _init = require("modules.init")
-  _sizing = require("modules.sizing")
   _state = require("modules.state")
   _util = require("modules.util")
 
