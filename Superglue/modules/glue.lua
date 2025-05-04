@@ -3,7 +3,7 @@
 local Glue = {}
 
 
-local loadDependencies, loadCircularDependencies, serpent, _constant, _init, _lanes, _sizing, _state, _util, _module_utils, _common, _data, _reglue
+local loadDependencies, loadCircularDependencies, serpent, _constant, _init, _lanes, _sizing, _state, _util, _module_utils, _ancestor, _common, _data, _reglue
 
 local _dev = require("modules.dev")
 
@@ -21,6 +21,7 @@ end)()
 
 
 loadCircularDependencies = (function()
+  _ancestor = function() return _module_utils.lazyRequire("ancestor") end
   _common = function() return _module_utils.lazyRequire("common") end
   _data = function() return _module_utils.lazyRequire("data") end
   _reglue = function() return _module_utils.lazyRequire("reglue") end
@@ -232,10 +233,10 @@ function Glue.handlePostGlue(selected_items, pool_id, first_selected_item_name, 
   _state.pool.active_glue_pool_id = pool_id
 
   Glue.handleSuperitemPostGlue(superitem, superitem_init_name, pool_id, sizing_params, this_is_reglue)
-  _reglue().handleDescendantPoolReferences(pool_id, selected_items_pool_params)
+  _ancestor().handleDescendantPoolReferences(pool_id, selected_items_pool_params)
 
   if not this_is_ancestor_superitem_update then
-    _reglue().handleParentPoolReferencesInChildPools(pool_id, selected_items_pool_params)
+    _ancestor().handleParentPoolReferencesInChildPools(pool_id, selected_items_pool_params)
     _reglue().deleteUnselectedContainedItems()
   end
 

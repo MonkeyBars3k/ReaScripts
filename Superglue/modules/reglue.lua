@@ -5,11 +5,10 @@ local Reglue = {}
 
 local _dev = require("modules.dev")
 
-local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _depool, _init, _sizing, _state, _util, _module_utils, _glue
+local loadDependencies, loadCircularDependencies, _common, _constant, _data, _depool, _init, _sizing, _state, _util, _module_utils, _ancestor, _glue, _sibling
 
 
 loadDependencies = (function()
-  serpent = require("lib.serpent")
   _common = require("modules.common")
   _constant = require("modules.constant")
   _data = require("modules.data")
@@ -24,84 +23,12 @@ end)()
 
 
 loadCircularDependencies = (function()
+  _ancestor = function() return _module_utils.lazyRequire("ancestor") end
   _glue = function() return _module_utils.lazyRequire("glue") end
+  _sibling = function() return _module_utils.lazyRequire("sibling") end
 end)()
 
 
-
-
-
-
-function Reglue.handleDescendantPoolReferences(pool_id, contained_items_pool_params)
-  local this_pool_descendants, this_contained_item_instance_pool_id, this_contained_item_params, this_selected_item_is_superitem, this_child_pool_descendant_pool_ids, this_pool_descendants_string
-
-  this_pool_descendants = {}
-
-  for this_contained_item_instance_pool_id, this_contained_item_params in pairs(contained_items_pool_params) do
-    this_selected_item_is_superitem = not string.find(this_contained_item_instance_pool_id, _constant.noninstance_label)
-
-    if this_selected_item_is_superitem then
-      this_child_pool_descendant_pool_ids = _data.storeRetrievePoolData(this_contained_item_instance_pool_id, _constant.data.key.suffix.pool.descendant_ids)
-
-      table.insert(this_pool_descendants, this_contained_item_instance_pool_id)
-
-      for j = 1, #this_child_pool_descendant_pool_ids do
-        table.insert(this_pool_descendants, this_child_pool_descendant_pool_ids[j])
-      end
-    end
-  end
-
-  this_pool_descendants = _util.deduplicateTable(this_pool_descendants)
-  this_pool_descendants_string = serpent.dump(this_pool_descendants)
-
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.descendant_ids, this_pool_descendants_string)
-end
-
-
-function Reglue.handleParentPoolReferencesInChildPools(active_pool_id, contained_items_pool_params)
-  local this_contained_item_instance_pool_id, this_contained_item_params, this_selected_item_is_superitem
-
-  for this_contained_item_instance_pool_id, this_contained_item_params in pairs(contained_items_pool_params) do
-    this_selected_item_is_superitem = not string.find(this_contained_item_instance_pool_id, _constant.noninstance_label)
-
-    if this_selected_item_is_superitem then
-      Reglue.storeParentPoolReferencesInChildPool(this_contained_item_instance_pool_id, active_pool_id)
-    end
-  end
-end
-
-
-function Reglue.storeParentPoolReferencesInChildPool(preglue_child_instance_pool_id, active_pool_id)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids_referenced_in_child_pool, this_parent_pool_id, this_parent_pool_id_is_referenced_in_child_pool
-
-  parent_pool_ids_data_key_label = _constant.data.key.prefix.pool .. preglue_child_instance_pool_id .. _constant.data.key.suffix.pool.parent_ids_data
-  retval, parent_pool_ids_referenced_in_child_pool = _data.storeRetrieveProjectData(parent_pool_ids_data_key_label)
-
-  if retval == false then
-    parent_pool_ids_referenced_in_child_pool = {}
-
-  else
-    retval, parent_pool_ids_referenced_in_child_pool = serpent.load(parent_pool_ids_referenced_in_child_pool)
-  end
-
-  for i = 1, #parent_pool_ids_referenced_in_child_pool do
-    this_parent_pool_id = parent_pool_ids_referenced_in_child_pool[i]
-
-    if this_parent_pool_id == active_pool_id then
-      this_parent_pool_id_is_referenced_in_child_pool = true
-    end
-  end
-
-  if not this_parent_pool_id_is_referenced_in_child_pool then
-    active_pool_id = tostring(active_pool_id)
-
-    table.insert(parent_pool_ids_referenced_in_child_pool, active_pool_id)
-
-    parent_pool_ids_referenced_in_child_pool = serpent.dump(parent_pool_ids_referenced_in_child_pool)
-
-    _data.storeRetrieveProjectData(parent_pool_ids_data_key_label, parent_pool_ids_referenced_in_child_pool)
-  end
-end
 
 
 function Reglue.deleteUnselectedContainedItems()
@@ -150,7 +77,7 @@ function Reglue.handleReglue(selected_items, restored_items_pool_id)
         _util.round(_state.superitem.delta.position_during_glue,
                     _constant.api.time_value_decimal_resolution)
 
-  local validate_result = Reglue.validateSiblingPositionsBeforeReglue(restored_items_pool_id)
+  local validate_result = _sibling().validateSiblingPositionsBeforeReglue(restored_items_pool_id)
 
   if not validate_result then
     _init.setResetUsersItemSelection("reset")
@@ -171,7 +98,7 @@ function Reglue.handleReglue(selected_items, restored_items_pool_id)
   Reglue.setRegluePositionDeltas()
   Reglue.adjustPostGlueTakeMarkersAndEnvelopes(
         superitem, nil, nil, true)
-  Reglue.reglueAncestors(
+  _ancestor().reglueAncestors(
         _state.superitem.params.fresh_glue.edited_pool.pool_id,
         superitem)
 
@@ -385,69 +312,6 @@ function Reglue.adjustTakeStretchMarkers(instance_active_take, stretch_markers_c
 end
 
 
-function Reglue.reglueAncestors(pool_id, superitem, descendant_nesting_depth_of_active_parent)
-  local parent_pool_ids_data_key_label, retval, parent_pool_ids, parent_pool_ids_data_found_for_active_pool, this_parent_pool_id, parent_pool_is_present_in_overglue_pools
-
-  parent_pool_ids_data_key_label = _constant.data.key.prefix.pool .. pool_id .. _constant.data.key.suffix.pool.parent_ids_data
-  retval, parent_pool_ids = _data.storeRetrieveProjectData(parent_pool_ids_data_key_label)
-  parent_pool_ids_data_found_for_active_pool = retval == true
-
-  if not descendant_nesting_depth_of_active_parent then
-    descendant_nesting_depth_of_active_parent = 1
-  end
-
-  if parent_pool_ids_data_found_for_active_pool then
-    retval, parent_pool_ids = serpent.load(parent_pool_ids)
-
-    if #parent_pool_ids > 0 then
-      _state.user.time_selection_before_action.position, _state.user.time_selection_before_action.end_point = reaper.GetSet_LoopTimeRange(false, false, nil, nil, false)
-
-      for i = 1, #parent_pool_ids do
-        this_parent_pool_id = parent_pool_ids[i]
-        parent_pool_is_present_in_overglue_pools = _util.isPresentInArray(this_parent_pool_id, _state.pool.parent_pool_ids_on_this_track.descendant_to_ancestor)
-
-        if not parent_pool_is_present_in_overglue_pools then
-
-          if _state.superitem.params.ancestor_pools[this_parent_pool_id] then
-            Reglue.assignParentNestingDepth(this_parent_pool_id, descendant_nesting_depth_of_active_parent)
-
-          else
-            Reglue.traverseAncestorsUsingTempTracks(this_parent_pool_id, superitem, descendant_nesting_depth_of_active_parent)
-          end
-        end
-      end
-
-      reaper.GetSet_LoopTimeRange(true, false, _state.user.time_selection_before_action.position, _state.user.time_selection_before_action.end_point, false)
-    end
-  end
-end
-
-
-function Reglue.assignParentNestingDepth(this_parent_pool_id, descendant_nesting_depth_of_active_parent)
-  _state.superitem.params.ancestor_pools[this_parent_pool_id].children_nesting_depth = math.max(descendant_nesting_depth_of_active_parent, _state.superitem.params.ancestor_pools[this_parent_pool_id].children_nesting_depth)
-end
-
-
-function Reglue.traverseAncestorsUsingTempTracks(this_parent_pool_id, superitem, descendant_nesting_depth_of_active_parent)
-  local this_parent_is_ancestor_in_project, this_parent_instance_params, this_parent_instance_is_item_in_project
-
-  this_parent_instance_params = Reglue.getFirstPoolInstanceParams(this_parent_pool_id)
-  this_parent_instance_is_item_in_project = this_parent_instance_params
-
-  if not this_parent_instance_is_item_in_project then
-    this_parent_is_ancestor_in_project = Reglue.checkParentPoolIsAncestorInProject(this_parent_pool_id)
-
-    if this_parent_is_ancestor_in_project then
-      this_parent_instance_params = {}
-    end
-  end
-
-  if this_parent_instance_is_item_in_project or this_parent_is_ancestor_in_project then
-    Reglue.setUpAncestorReglues(this_parent_instance_params, this_parent_pool_id, descendant_nesting_depth_of_active_parent, superitem)
-  end
-end
-
-
 function Reglue.getFirstPoolInstanceParams(pool_id)
   local all_items_count, this_item, this_item_instance_pool_id, parent_instance_params
 
@@ -464,41 +328,6 @@ function Reglue.getFirstPoolInstanceParams(pool_id)
       return parent_instance_params
     end
   end
-
-  return false
-end
-
-
-function Reglue.checkParentPoolIsAncestorInProject(this_parent_pool_id)
-  local all_pool_ids_in_project, this_pool, this_pool_descendant_pool_ids, this_pool_descendant_pool_id
-
-  all_pool_ids_in_project = Reglue.getAllPoolIdsInProject()
-
-  for i = 1, #all_pool_ids_in_project do
-    this_pool = all_pool_ids_in_project[i]
-
-    if this_pool == this_parent_pool_id then
-
-      return true
-    end
-
-    this_pool_descendant_pool_ids = _data.storeRetrievePoolData(this_pool, _constant.data.key.suffix.pool.descendant_ids)
-    _, this_pool_descendant_pool_ids = serpent.load(this_pool_descendant_pool_ids)
-
-    if this_pool_descendant_pool_ids then
-
-      for j = 1, #this_pool_descendant_pool_ids do
-        this_pool_descendant_pool_id = tonumber(this_pool_descendant_pool_ids[j])
-
-        if this_pool_descendant_pool_id == this_parent_pool_id then
-
-          return true
-        end
-      end
-    end
-  end
-
-  Reglue.deletePoolDescendantsData(this_parent_pool_id)
 
   return false
 end
@@ -523,35 +352,6 @@ function Reglue.getAllPoolIdsInProject()
 end
 
 
-function Reglue.deletePoolDescendantsData(pool_id)
-  _data.storeRetrievePoolData(pool_id, _constant.data.key.suffix.pool.descendant_ids, "")
-end
-
-
-function Reglue.setUpAncestorReglues(parent_instance_params, parent_pool_id, descendant_nesting_depth_of_active_parent, superitem)
-  local parent_edit_temp_track__name, parent_edit_temp_track, restored_items, next_nesting_depth
-
-  parent_instance_params.pool_id = parent_pool_id
-  parent_instance_params.children_nesting_depth = descendant_nesting_depth_of_active_parent
-  parent_edit_temp_track__name = "Pool #" .. parent_pool_id .. " temp edit"
-
-  reaper.InsertTrackAtIndex(_constant.api.track.very_1st_track_of_project, _constant.api.track.no_defaults)
-
-  parent_edit_temp_track = reaper.GetTrack(_constant.api.current_project, 0)
-
-  reaper.GetSetMediaTrackInfo_String(parent_edit_temp_track, _constant.api.track.key.name, parent_edit_temp_track__name, _constant.api.set_value)
-  reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
-
-  restored_items = _common.restoreStoredItems(parent_pool_id, parent_edit_temp_track, superitem, true, nil)
-  parent_instance_params.track = parent_edit_temp_track
-  parent_instance_params.restored_items = restored_items
-  _state.superitem.params.ancestor_pools[parent_pool_id] = parent_instance_params
-  next_nesting_depth = descendant_nesting_depth_of_active_parent + 1
-
-  Reglue.reglueAncestors(parent_pool_id, superitem, next_nesting_depth)
-end
-
-
 function Reglue.propagateChangesToSuperitems(active_superitem, sizing_region_guid)
   local this_is_ancestor_superitem_update, result, ancestor_pools_near_project_start, ancestor_pools_params_sorted_by_ascending_nesting_depth, this_ancestor_pool_id, ancestor_pool_is_present_in_overglue_pools
 
@@ -562,7 +362,7 @@ function Reglue.propagateChangesToSuperitems(active_superitem, sizing_region_gui
 
   ancestor_pools_near_project_start = result
 
-  ancestor_pools_params_sorted_by_ascending_nesting_depth = Reglue.sortAncestorUpdatesByNestingDepth()
+  ancestor_pools_params_sorted_by_ascending_nesting_depth = _ancestor().sortAncestorUpdatesByNestingDepth()
 
   for i = 1, #ancestor_pools_params_sorted_by_ascending_nesting_depth do
     _state.superitem.params.fresh_glue.current_pool = ancestor_pools_params_sorted_by_ascending_nesting_depth[i]
@@ -579,7 +379,7 @@ function Reglue.propagateChangesToSuperitems(active_superitem, sizing_region_gui
     -- end
 
     if not ancestor_pool_is_present_in_overglue_pools then
-      Reglue.reglueAncestor(sizing_region_guid)
+      _ancestor().reglueAncestor(sizing_region_guid)
     end
   end
 end
@@ -725,7 +525,7 @@ function Reglue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superi
   local instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.src_offset)
   local instance_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.playrate)
 
-  Reglue.loadSuperitemPropagationOptionChoices()
+  _sibling().loadSuperitemPropagationOptionChoices()
 
   if this_is_sibling_instance_update then
     local instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start =
@@ -797,112 +597,10 @@ function Reglue.calculateAdjustedPosition(instance, instance_current_src_offset,
 end
 
 
-function Reglue.validateSiblingPositionsBeforeReglue(pool_id)
-  local cache = {}; _state.propagation.sibling_cache[pool_id] = cache
-  local NEG = _constant.position_start_of_project
-
-  Reglue.loadSuperitemPropagationOptionChoices()
-
-  for i = 0, reaper.CountMediaItems(0)-1 do
-    local it   = reaper.GetMediaItem(0, i)
-    local raw = _data.storeRetrieveItemData(it, _constant.data.key.suffix.pool.instance_id)
-    local inst_key = _constant.data.key.suffix.pool.instance_id
-    local inst_id  = _data.storeRetrieveItemData(it, inst_key)
-
-    if inst_id ~= "" and inst_id == pool_id then
-      local curP  = reaper.GetMediaItemInfo_Value(it, _constant.api.item.key.position)
-      local tk    = reaper.GetActiveTake(it)
-      local rate  = reaper.GetMediaItemTakeInfo_Value(tk, _constant.api.take.key.playrate)
-      local delta = _state.superitem.delta.position_during_glue_preview
-      local delta_adjusted = delta
-      if _state.propagation.user_wants_option.playrate_toggle then
-        delta_adjusted = delta_adjusted / (rate == 0 and 1 or rate)
-      end
-
-      local newP = curP + delta_adjusted
-
-      if newP < _constant.position_start_of_project then
-        reaper.ShowMessageBox(
-          "Propagating the left-edge shift would push a sibling before project start.\nOperation aborted.",
-          "Invalid sibling position", _constant.api.msg.type.ok)
-
-        return false
-      end
-
-      cache[reaper.BR_GetMediaItemGUID(it)] = {
-        new_pos = newP,
-        new_len = Reglue.calcNewLength(it, rate),
-        new_src = _state.propagation.user_wants_option.source_position
-                  and reaper.GetMediaItemTakeInfo_Value(tk, _constant.api.take.key.src_offset)
-                  or nil
-      }
-    end
-  end
-  return true
-end
-
-
-function Reglue.calcNewLength(instance, playrate)
-  if not _state.propagation.user_wants_option.length then
-    return reaper.GetMediaItemInfo_Value(instance,_constant.api.item.key.length)
-  end
-  local abs = _state.propagation.user_wants_option.absolute_length_propagation
-  local delta = _state.superitem.reglue_position_change_affect_on_length
-  if abs then
-    local L = _state.superitem.params.fresh_glue.edited_pool.length
-    return _state.propagation.user_wants_option.playrate_toggle and L/playrate or L
-  else
-    return reaper.GetMediaItemInfo_Value(instance,_constant.api.item.key.length) +
-           (_state.propagation.user_wants_option.playrate_toggle and delta/playrate or delta)
-  end
-end
-
-
-function Reglue.predictSiblingLength(instance, instance_playrate)
-    if not _state.propagation.user_wants_option then return reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length) end
-    local wants_len = _state.propagation.user_wants_option.length
-    if not wants_len then return reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length) end
-
-    local abs = _state.propagation.user_wants_option.absolute_length_propagation
-    local rel = not abs
-    local play = _state.propagation.user_wants_option.playrate_toggle
-    local curr = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
-
-    if abs then
-        local L = _state.superitem.params.fresh_glue.edited_pool.length
-        if play then L = L / instance_playrate end
-        return L
-    else -- relative
-        local delta = _state.superitem.reglue_position_change_affect_on_length
-        if play then delta = delta / instance_playrate end
-        return curr + delta
-    end
-end
-
-
-function Reglue.loadSuperitemPropagationOptionChoices()
-  _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle",
-      _constant.data.key.options.switch.playrate_affects_propagation)
-
-  if _state.superitem.position_changed_since_last_glue then
-    _state.propagation.user_wants_option.position = _common.getUserPropagationChoice("position", _constant.data.key.options.switch.propagate_position)
-
-    -- Lane propagation follows position propagation behavior
-    if _constant.support.fixed_lanes then
-      _state.propagation.user_wants_option.lane = _state.propagation.user_wants_option.position
-    end
-  end
-
-  if _state.superitem.offset_changed_since_last_glue then
-    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.switch.maintain_source_position)
-  end
-end
-
-
 function Reglue.adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_playrate, sibling_negative_position_validation)
   local instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start, take_markers_source_offset
 
-  instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start = Reglue.getPositionPropagationParams(instance, instance_current_src_offset, instance_playrate)
+  instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start = _sibling().getPositionPropagationParams(instance, instance_current_src_offset, instance_playrate)
 
 if _state.propagation.user_wants_option.position then
     take_markers_source_offset = _state.superitem.params.fresh_glue.edited_pool.source_offset - _state.superitem.params.preedit.edited_pool.source_offset
@@ -926,23 +624,6 @@ if _state.propagation.user_wants_option.position then
   end
 
   return instance_would_get_adjusted_before_project_start
-end
-
-
-function Reglue.getPositionPropagationParams(instance, instance_current_src_offset, instance_playrate)
-  local instance_current_position, instance_position_adjustment_delta, instance_adjusted_position, instance_would_get_adjusted_before_project_start
-
-  instance_current_position = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.position)
-  instance_position_adjustment_delta = _state.superitem.delta.position_during_glue
-
-  if _state.propagation.user_wants_option.playrate_toggle then
-    instance_position_adjustment_delta = instance_position_adjustment_delta / instance_playrate
-  end
-
-  instance_adjusted_position = instance_current_position + instance_position_adjustment_delta
-  instance_would_get_adjusted_before_project_start = instance_adjusted_position < _constant.position_start_of_project
-
-  return instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start
 end
 
 
@@ -1003,64 +684,6 @@ function Reglue.adjustSuperitemLength(instance, instance_playrate, this_instance
 
     reaper.SetMediaItemLength(instance, instance_adjusted_length, _constant.api.dont_refresh_ui)
   end
-end
-
-
-function Reglue.sortAncestorUpdatesByNestingDepth()
-  local ancestor_pools_params_sorted_by_ascending_nesting_depth
-
-  ancestor_pools_params_sorted_by_ascending_nesting_depth = {}
-
-  for pool_id, this_parent_instance_params in pairs(_state.superitem.params.ancestor_pools) do
-    table.insert(ancestor_pools_params_sorted_by_ascending_nesting_depth, this_parent_instance_params)
-  end
-
-  table.sort(ancestor_pools_params_sorted_by_ascending_nesting_depth, function(a, b)
-
-    return a.children_nesting_depth < b.children_nesting_depth end
-  )
-
-  return ancestor_pools_params_sorted_by_ascending_nesting_depth
-end
-
-
-function Reglue.reglueAncestor(sizing_region_guid)
-  local this_is_ancestor_superitem_update, selected_items, this_is_direct_parent_instance_update, ancestor_instance, ancestor_active_track
-
-  reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
-  _depool.refreshCurrentPoolStoredItemsPostDePool()
-  _common.selectDeselectItems(_state.superitem.params.fresh_glue.current_pool.restored_items, true)
-
-  this_is_ancestor_superitem_update = true
-  selected_items = _common.getSelectedItems(#_state.superitem.params.fresh_glue.current_pool.restored_items)
-  this_is_direct_parent_instance_update = Reglue.isThisDirectParentInstanceUpdate(selected_items)
-  ancestor_instance = _glue().handleGlue(selected_items, _state.superitem.params.fresh_glue.current_pool.pool_id, sizing_region_guid, nil, this_is_ancestor_superitem_update)
-  ancestor_active_track = _state.superitem.params.fresh_glue.current_pool.track
-  _state.superitem.params.fresh_glue.current_pool = _data.getSetItemParams(ancestor_instance)
-  _state.superitem.params.fresh_glue.current_pool.updated_src = _common.getSetWipeItemAudioSrc(ancestor_instance)
-
-  reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
-  Reglue.handleSuperitemsChangedByReglue(ancestor_instance, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
-  reaper.DeleteTrack(ancestor_active_track)
-end
-
-
-function Reglue.isThisDirectParentInstanceUpdate(selected_items)
-  local this_selected_item, this_selected_item_params, this_selected_instance_pool_id, this_is_direct_parent_instance_update
-
-  for i = 1, #selected_items do
-    this_selected_item = selected_items[i]
-    this_selected_item_params = _data.getSetItemParams(this_selected_item)
-    this_selected_instance_pool_id = this_selected_item_params.instance_pool_id
-
-    if this_selected_instance_pool_id == _state.superitem.params.fresh_glue.edited_pool.pool_id then
-      this_is_direct_parent_instance_update = true
-
-      break
-    end
-  end
-
-  return this_is_direct_parent_instance_update
 end
 
 
