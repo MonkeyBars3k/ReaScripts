@@ -1,9 +1,11 @@
+-- @noindex
+
 local Reglue = {}
 
 
 local _dev = require("modules.dev")
 
-local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _depool, _sizing, _state, _util, _module_utils, _glue
+local loadDependencies, loadCircularDependencies, serpent, _common, _constant, _data, _depool, _init, _sizing, _state, _util, _module_utils, _glue
 
 
 loadDependencies = (function()
@@ -12,6 +14,7 @@ loadDependencies = (function()
   _constant = require("modules.constant")
   _data = require("modules.data")
   _depool = require("modules.depool")
+  _init = require("modules.init")
   _sizing = require("modules.sizing")
   _state = require("modules.state")
   _util = require("modules.util")
@@ -119,29 +122,69 @@ end
 
 
 function Reglue.handleReglue(selected_items, restored_items_pool_id)
-  local sizing_region_guid, superitem, superitem_params, result
-
-  sizing_region_guid = _sizing.checkSizingRegionExists(restored_items_pool_id, selected_items)
+  local sizing_region_guid = _sizing.checkSizingRegionExists(
+        restored_items_pool_id, selected_items)
 
   if not sizing_region_guid then return false end
 
+  _state.superitem.params.last_glue.edited_pool =
+        _data.storeRetrieveSuperitemParams(
+            restored_items_pool_id, _constant.actionstep.postglue)
+
+  _state.superitem.params.preedit.edited_pool =
+        _data.storeRetrieveSuperitemParams(
+            restored_items_pool_id, _constant.actionstep.preedit)
+
+  local sr_params = _sizing.getSizingRegion(sizing_region_guid, 0)
+
+  if not sr_params then
+        reaper.ShowMessageBox("Sizing region vanished unexpectedly.",
+                              "Reglue aborted", _constant.api.msg.type.ok)
+        return false
+  end
+
+  _state.superitem.delta.position_during_glue =
+        sr_params.position - _state.superitem.params.preedit.edited_pool.position
+  _state.superitem.delta.position_during_glue_preview = _state.superitem.delta.position_during_glue
+  _state.superitem.delta.position_during_glue =
+        _util.round(_state.superitem.delta.position_during_glue,
+                    _constant.api.time_value_decimal_resolution)
+
+  local validate_result = Reglue.validateSiblingPositionsBeforeReglue(restored_items_pool_id)
+
+  if not validate_result then
+    _init.setResetUsersItemSelection("reset")
+
+    return false
+  end
+
   _data.cleanUnselectedRestoredItemsFromPool(restored_items_pool_id)
 
-  _state.superitem.params.last_glue.edited_pool = _data.storeRetrieveSuperitemParams(restored_items_pool_id, _constant.actionstep.postglue)
+  local superitem = _glue().handleGlue(
+        selected_items, restored_items_pool_id,
+        sizing_region_guid, nil, nil)
 
-  superitem = _glue().handleGlue(selected_items, restored_items_pool_id, sizing_region_guid, nil, nil)
-  superitem, superitem_params = Reglue.handleReglueSuperitemParams(superitem, restored_items_pool_id)
+  if superitem == false then return false end
 
-  Reglue.setRegluePositionDeltas(superitem_params) -- ARGUMENT NECESSARY HERE??
-  Reglue.adjustPostGlueTakeMarkersAndEnvelopes(superitem, nil, nil, true)
-  Reglue.reglueAncestors(superitem_params.pool_id, superitem)
-  reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
-  result = Reglue.propagateChangesToSuperitems(superitem, sizing_region_guid)
+  superitem = Reglue.handleReglueSuperitemParams(superitem, restored_items_pool_id)
 
-  if result == false then return false end
+  Reglue.setRegluePositionDeltas()
+  Reglue.adjustPostGlueTakeMarkersAndEnvelopes(
+        superitem, nil, nil, true)
+  Reglue.reglueAncestors(
+        _state.superitem.params.fresh_glue.edited_pool.pool_id,
+        superitem)
 
+  if superitem then
+    reaper.Main_OnCommand(_constant.cmd.deselect_all_items, _constant.api.cmd_flag)
+  end
+
+  local ok = Reglue.propagateChangesToSuperitems(
+        superitem, sizing_region_guid)
+  if ok == false then return false end
+
+  _state.propagation.sibling_cache[restored_items_pool_id] = nil
   reaper.ClearPeakCache()
-
   return superitem
 end
 
@@ -552,6 +595,29 @@ function Reglue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancest
     this_item = reaper.GetMediaItem(_constant.api.current_project, i)
     this_active_pool_instance = Reglue.getSuperitemChangedByReglue(this_item, active_superitem, this_is_ancestor_superitem_update)
 
+    -- ■ cached sibling adjustment (if dry-run already built it)
+    do
+      local pool_id = tonumber(
+            _data.storeRetrieveItemData(this_item,
+              _constant.data.key.suffix.pool.instance_id))
+      local cache   = _state.propagation.sibling_cache[pool_id]
+      if cache then
+        local guid = reaper.BR_GetMediaItemGUID(this_item)
+        local adj  = cache[guid]
+        if adj then
+          reaper.SetMediaItemPosition(this_item, adj.new_pos, _constant.api.dont_refresh_ui)
+          reaper.SetMediaItemLength  (this_item, adj.new_len, _constant.api.dont_refresh_ui)
+          if adj.new_src then
+            reaper.SetMediaItemTakeInfo_Value(
+              reaper.GetActiveTake(this_item),
+              _constant.api.take.key.src_offset,
+              adj.new_src)
+          end
+          return ancestor_pools_near_project_start  -- skip redundant processing
+        end
+      end
+    end
+
     if this_active_pool_instance then
       global_option_toggle_depool_all_siblings_on_reglue = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.depool_all_siblings_on_reglue)
 
@@ -637,64 +703,184 @@ function Reglue.updateSuperitemChangedByReglue(active_pool_instance, item, ances
 end
 
 
-function Reglue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update)
-  local this_is_sibling_instance_update, this_instance_parent_pool_id, this_instance_is_child, instance_active_take, instance_current_src_offset, instance_playrate, instance_would_get_adjusted_before_project_start
+function Reglue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update, sibling_negative_position_validation)
 
-  this_is_sibling_instance_update = not this_is_ancestor_superitem_update
-  this_instance_parent_pool_id = _data.storeRetrieveItemData(instance, _constant.data.key.suffix.pool.parent_id)
-  this_instance_is_child = this_instance_parent_pool_id and this_instance_parent_pool_id ~= ""
-  instance_active_take = reaper.GetActiveTake(instance)
-  instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.src_offset, "", false)
-  instance_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.playrate)
-
-  Reglue.getSuperitemPropagationOptionChoices()
-
-  if this_is_sibling_instance_update then
-    instance_would_get_adjusted_before_project_start = Reglue.adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_playrate)
-
-    if instance_would_get_adjusted_before_project_start then
-      local msg = string.format(
-        "%s can't propagate the left-edge position change to a sibling instance (Pool #%s) because it would be moved before project start.\n\nFix the Superitem's position and try again.",
-        _constant.brand.name,
-        tostring(this_instance_parent_pool_id)
-      )
-
-      reaper.ShowMessageBox(msg, "Invalid Sibling Propagation", _constant.api.msg.type.ok)
-
-      return false
-    end
-
-    Reglue.adjustSuperitemLength(instance, instance_playrate, this_instance_is_child)
-
-    -- Propagate lane position to siblings -- WHY??
-    if _constant.support.fixed_lanes and _state.propagation.user_wants_option.lane then
-      -- local editedSuperitem = reaper.BR_GetMediaItemByGUID(_constant.api.current_project, _state.superitem.params.fresh_glue.edited_pool.item_guid)
-      -- if editedSuperitem then
-      --   local editedSuperitemLane = reaper.GetMediaItemInfo_Value(editedSuperitem, "I_FIXEDLANE")
-      --   local instanceLane = reaper.GetMediaItemInfo_Value(instance, "I_FIXEDLANE")
-      --   local laneDelta = instanceLane - editedSuperitemLane
-
-      --   -- Get the edited superitem's new lane
-      --   local freshEditedSuperitemLane = reaper.GetMediaItemInfo_Value(_state.superitem.params.fresh_glue.edited_pool.superitem, "I_FIXEDLANE")
-      --   local targetLane = freshEditedSuperitemLane + laneDelta
-
-      --   -- Apply lane position - THIS SHOULD BE ABSTRACTED IN THE LANES MODULE
-      --   local laneY = _lanes.getLaneYPosition(targetLane)
-      --   reaper.SetMediaItemInfo_Value(instance, "F_FREEMODE_Y", laneY)
-      -- end
+  do
+    local pool_id = tonumber(_data.storeRetrieveItemData(instance, _constant.data.key.suffix.pool.instance_id))
+    local g       = reaper.BR_GetMediaItemGUID(instance)
+    local snap    = _state.propagation.sibling_cache[pool_id] and _state.propagation.sibling_cache[pool_id][g]
+    if snap and not sibling_negative_position_validation then
+      reaper.SetMediaItemPosition(instance, snap.new_pos, _constant.api.dont_refresh_ui)
+      reaper.SetMediaItemLength  (instance, snap.new_len, _constant.api.dont_refresh_ui)
+      if snap.new_src then
+        local tk = reaper.GetActiveTake(instance)
+        reaper.SetMediaItemTakeInfo_Value(tk, _constant.api.take.key.src_offset, snap.new_src)
+      end
+      return
     end
   end
 
-  if (this_is_sibling_instance_update or this_is_direct_parent_instance_update) and
-    _state.propagation.user_wants_option.source_position and
-    not instance_would_get_adjusted_before_project_start then
+  local this_is_sibling_instance_update = not this_is_ancestor_superitem_update
+  local instance_active_take = reaper.GetActiveTake(instance)
+  local instance_current_src_offset = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.src_offset)
+  local instance_playrate = reaper.GetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.playrate)
 
-    Reglue.adjustSuperitemSourceOffset(instance, instance_active_take, instance_current_src_offset, this_is_direct_parent_instance_update, this_is_sibling_instance_update)
+  Reglue.loadSuperitemPropagationOptionChoices()
+
+  if this_is_sibling_instance_update then
+    local instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start =
+    Reglue.calculateAdjustedPosition(instance, instance_current_src_offset, instance_playrate)
+
+    if sibling_negative_position_validation and instance_would_get_adjusted_before_project_start then
+      return "sibling_would_go_negative"
+    end
+
+    if not sibling_negative_position_validation then
+      if _state.propagation.user_wants_option.position then
+        local take_markers_source_offset = _state.superitem.params.fresh_glue.edited_pool.source_offset - _state.superitem.params.preedit.edited_pool.source_offset
+        Reglue.adjustPostGlueTakeMarkersAndEnvelopes(instance, nil, take_markers_source_offset)
+        reaper.SetMediaItemPosition(instance, instance_adjusted_position, _constant.api.dont_refresh_ui)
+
+        if _state.propagation.user_wants_option.source_position == nil then
+          _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice(
+            "source_position",
+            _constant.data.key.options.switch.maintain_source_position
+          )
+        end
+
+        if _state.propagation.user_wants_option.source_position then
+          reaper.SetMediaItemTakeInfo_Value(instance_active_take, _constant.api.take.key.src_offset, instance_current_src_offset)
+        end
+
+      else
+        Reglue.adjustPostGlueTakeMarkersAndEnvelopes(instance)
+      end
+    end
+  end
+
+  if sibling_negative_position_validation then
+    return instance_would_get_adjusted_before_project_start
+    and "sibling_would_go_negative" or nil,
+    {
+      guid     = reaper.BR_GetMediaItemGUID(instance),
+      new_pos  = instance_adjusted_position,
+      -- new_len added later in caller
+    }
+
+  else
+    if (this_is_sibling_instance_update or this_is_direct_parent_instance_update) and
+      _state.propagation.user_wants_option.source_position then
+      Reglue.adjustSuperitemSourceOffset(
+        instance,
+        instance_active_take,
+        instance_current_src_offset,
+        this_is_direct_parent_instance_update,
+        this_is_sibling_instance_update
+      )
+    end
   end
 end
 
 
-function Reglue.getSuperitemPropagationOptionChoices()
+function Reglue.calculateAdjustedPosition(instance, instance_current_src_offset, instance_playrate)
+  local instance_current_position = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.position)
+  local instance_position_adjustment_delta = _state.superitem.delta.position_during_glue
+
+  if _state.propagation.user_wants_option.playrate_toggle then
+    instance_position_adjustment_delta = instance_position_adjustment_delta / instance_playrate
+  end
+
+  local instance_adjusted_position = instance_current_position + instance_position_adjustment_delta
+  local instance_would_get_adjusted_before_project_start = instance_adjusted_position < _constant.position_start_of_project
+
+  return instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start
+end
+
+
+function Reglue.validateSiblingPositionsBeforeReglue(pool_id)
+  local cache = {}; _state.propagation.sibling_cache[pool_id] = cache
+  local NEG = _constant.position_start_of_project
+
+  Reglue.loadSuperitemPropagationOptionChoices()
+
+  for i = 0, reaper.CountMediaItems(0)-1 do
+    local it   = reaper.GetMediaItem(0, i)
+    local raw = _data.storeRetrieveItemData(it, _constant.data.key.suffix.pool.instance_id)
+    local inst_key = _constant.data.key.suffix.pool.instance_id
+    local inst_id  = _data.storeRetrieveItemData(it, inst_key)
+
+    if inst_id ~= "" and inst_id == pool_id then
+      local curP  = reaper.GetMediaItemInfo_Value(it, _constant.api.item.key.position)
+      local tk    = reaper.GetActiveTake(it)
+      local rate  = reaper.GetMediaItemTakeInfo_Value(tk, _constant.api.take.key.playrate)
+      local delta = _state.superitem.delta.position_during_glue_preview
+      local delta_adjusted = delta
+      if _state.propagation.user_wants_option.playrate_toggle then
+        delta_adjusted = delta_adjusted / (rate == 0 and 1 or rate)
+      end
+
+      local newP = curP + delta_adjusted
+
+      if newP < _constant.position_start_of_project then
+        reaper.ShowMessageBox(
+          "Propagating the left-edge shift would push a sibling before project start.\nOperation aborted.",
+          "Invalid sibling position", _constant.api.msg.type.ok)
+
+        return false
+      end
+
+      cache[reaper.BR_GetMediaItemGUID(it)] = {
+        new_pos = newP,
+        new_len = Reglue.calcNewLength(it, rate),
+        new_src = _state.propagation.user_wants_option.source_position
+                  and reaper.GetMediaItemTakeInfo_Value(tk, _constant.api.take.key.src_offset)
+                  or nil
+      }
+    end
+  end
+  return true
+end
+
+
+function Reglue.calcNewLength(instance, playrate)
+  if not _state.propagation.user_wants_option.length then
+    return reaper.GetMediaItemInfo_Value(instance,_constant.api.item.key.length)
+  end
+  local abs = _state.propagation.user_wants_option.absolute_length_propagation
+  local delta = _state.superitem.reglue_position_change_affect_on_length
+  if abs then
+    local L = _state.superitem.params.fresh_glue.edited_pool.length
+    return _state.propagation.user_wants_option.playrate_toggle and L/playrate or L
+  else
+    return reaper.GetMediaItemInfo_Value(instance,_constant.api.item.key.length) +
+           (_state.propagation.user_wants_option.playrate_toggle and delta/playrate or delta)
+  end
+end
+
+
+function Reglue.predictSiblingLength(instance, instance_playrate)
+    if not _state.propagation.user_wants_option then return reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length) end
+    local wants_len = _state.propagation.user_wants_option.length
+    if not wants_len then return reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length) end
+
+    local abs = _state.propagation.user_wants_option.absolute_length_propagation
+    local rel = not abs
+    local play = _state.propagation.user_wants_option.playrate_toggle
+    local curr = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
+
+    if abs then
+        local L = _state.superitem.params.fresh_glue.edited_pool.length
+        if play then L = L / instance_playrate end
+        return L
+    else -- relative
+        local delta = _state.superitem.reglue_position_change_affect_on_length
+        if play then delta = delta / instance_playrate end
+        return curr + delta
+    end
+end
+
+
+function Reglue.loadSuperitemPropagationOptionChoices()
   _state.propagation.user_wants_option.playrate_toggle = _common.getUserPropagationChoice("playrate_toggle",
       _constant.data.key.options.switch.playrate_affects_propagation)
 
@@ -713,7 +899,7 @@ function Reglue.getSuperitemPropagationOptionChoices()
 end
 
 
-function Reglue.adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_playrate)
+function Reglue.adjustSuperitemPosition(instance, instance_active_take, instance_current_src_offset, instance_playrate, sibling_negative_position_validation)
   local instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start, take_markers_source_offset
 
   instance_current_position, instance_adjusted_position, instance_would_get_adjusted_before_project_start = Reglue.getPositionPropagationParams(instance, instance_current_src_offset, instance_playrate)
@@ -722,7 +908,10 @@ if _state.propagation.user_wants_option.position then
     take_markers_source_offset = _state.superitem.params.fresh_glue.edited_pool.source_offset - _state.superitem.params.preedit.edited_pool.source_offset
 
     Reglue.adjustPostGlueTakeMarkersAndEnvelopes(instance, nil, take_markers_source_offset)
-    reaper.SetMediaItemPosition(instance, instance_adjusted_position, _constant.api.dont_refresh_ui)
+
+    if not sibling_negative_position_validation then
+      reaper.SetMediaItemPosition(instance, instance_adjusted_position, _constant.api.dont_refresh_ui)
+    end
 
     if _state.propagation.user_wants_option.source_position == nil then
       _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.switch.maintain_source_position)

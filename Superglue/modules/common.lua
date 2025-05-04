@@ -309,6 +309,16 @@ function Common.restoreStoredItems(pool_id, active_track, superitem, this_is_anc
       _state.superitem.params.preunglue.unglued_pool = _data().getSetItemParams(superitem)
       restored_item, looped_source_sets_sizing_region__enabled, superitem_loop_is_enabled = Common.handleRestoredItem(superitem, active_track, stored_item_state, this_is_ancestor_superitem_update, action)
 
+      local inst_id = _data().storeRetrieveItemData(restored_item,
+                        _constant.data.key.suffix.pool.instance_id)
+      if inst_id == "" then          -- Reaper wiped it; restore from state table
+          local saved   = stored_item_state.guid_instance_pool_id
+          if saved and saved ~= "" then
+              _data().storeRetrieveItemData(restored_item,
+                  _constant.data.key.suffix.pool.instance_id, saved)
+          end
+      end
+
       table.insert(restored_items, restored_item)
     end
   end
@@ -331,7 +341,7 @@ function Common.handleRestoredItem(superitem, active_track, stored_item_state, t
     restored_item = Common.adjustRestoredItem(superitem, restored_item, active_track, action)
   end
 
-  if action == "Unglue" or action == "DePool" then
+  if action == "Unglue" or action == "DePool" and not _state.action.edit_or_unglue.validating then
     _data().storeRetrieveItemData(restored_item, _constant.data.key.suffix.pool.parent_id, "")
   end
 

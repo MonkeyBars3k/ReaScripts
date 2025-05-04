@@ -20,7 +20,8 @@ local State = {
       validated_items = nil,
       validated_track = nil,
       track_freemode = nil,
-      superitem_loop_is_enabled = nil
+      superitem_loop_is_enabled = nil,
+      validating = nil
     },
 
     edit = {
@@ -98,7 +99,8 @@ local State = {
 
   propagation = {
     user_responses = {},
-    user_wants_option = {}
+    user_wants_option = {},
+    sibling_cache = {}
   }
 }
 

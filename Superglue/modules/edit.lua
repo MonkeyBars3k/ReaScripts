@@ -165,7 +165,9 @@ function Edit.validateRestoredItemPositions(superitem, pool_id, action)
 
   -- Use Common.restoreStoredItems to restore the items and check for negative positions
   _lanes.addRequiredLanesToTrack(pool_id, dummy_track, superitem)
+  _state.action.edit_or_unglue.validating = true
   local restored_items, _, _ = _common.restoreStoredItems(pool_id, dummy_track, superitem, nil, action)
+  _state.action.edit_or_unglue.validating = nil
 
   -- Check for negative positions
   local anyNegativePositions = false

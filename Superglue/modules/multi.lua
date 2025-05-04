@@ -104,14 +104,16 @@ end
 
 
 function Multi.iterateTracksWithSelectedItems(all_tracks_with_user_selected_items, action)
-  local this_user_selected_items_track, user_selected_items_on_this_track
+  local this_user_selected_items_track, user_selected_items_on_this_track, validation_passed
 
   for i = 1, #all_tracks_with_user_selected_items do
     this_user_selected_items_track = all_tracks_with_user_selected_items[i].track
     user_selected_items_on_this_track = all_tracks_with_user_selected_items[i].items
 
     if action == "Glue" then
-      Multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_selected_items_track)
+      validation_passed = Multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_selected_items_track)
+
+      if not validation_passed then return false end
 
     elseif action == "Edit" or action == "Unglue" then
       _single().doSingleTrackEditOrUnglue(user_selected_items_on_this_track, action)
@@ -134,7 +136,7 @@ end
 
 -- removed a call at end to select glued items because such is already getting called in _init().completeGlueOrDePool()
 function Multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_selected_items_track)
-  local global_option_toggle_multiitem_editing_enabled, restored_items_pool_id
+  local global_option_toggle_multiitem_editing_enabled, restored_items_pool_id, validation_passed
 
   _state.action.glue.current_track = this_user_selected_items_track
   global_option_toggle_multiitem_editing_enabled = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.multiitem_editing)
@@ -146,8 +148,9 @@ function Multi.doSingleTrackGlue(user_selected_items_on_this_track, this_user_se
 
   else
     restored_items_pool_id = _init().getFirstParentPoolIdFromSelectedItems(user_selected_items_on_this_track)
+    validation_passed = _single().triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track, restored_items_pool_id)
 
-    _single().triggerSingleTrackSinglePoolGlue(user_selected_items_on_this_track, restored_items_pool_id)
+    if not validation_passed then return false end
   end
 end
 

@@ -10,7 +10,7 @@
 local Superglue = {}
 
 
-local loadDependencies, bootstrap, getScriptPath, setPackageVals, returnPaths, initDependencies, routeAction, routeMainAction, routeUtilityAction, routeOptionToggle
+local loadDependencies, bootstrap, getScriptPath, extractDirectoryPath, setPackageVals, returnPaths, initDependencies, routeAction, routeMainAction, routeUtilityAction, routeOptionToggle
 
 local _common, _constant, _dev, _init, _iteminfo, _options
 
@@ -148,8 +148,6 @@ end
 
 
 routeOptionToggle = function(option_name)
-  _options = _setup.load("options")
-
   local active_option, current_val, new_val
 
   active_option = _options.getActiveOption(option_name)

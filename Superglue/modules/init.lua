@@ -4,7 +4,7 @@ local Init = {}
 
 local loadDependencies, loadCircularDependencies, _constant, _data,  _options, _state, _util, _module_utils, _common, _midi, _multi
 
--- local _dev = require("modules.dev")
+local _dev = require("modules.dev")
 
 loadDependencies = (function()
   _constant = require("modules.constant")
@@ -179,7 +179,13 @@ end
 function Init.completeGlueOrDePool(selected_items, action)
   local pool_ids_changed
 
-  if not _multi().setUpMultiTrackActions(selected_items, action) then return end
+  if not _multi().setUpMultiTrackActions(selected_items, action) then
+    _state.user.item_selection = Init.removeItemsAbsentFromProjectFromArray(_state.user.item_selection)
+
+    Init.setResetUsersItemSelection("reset")
+
+    return
+  end
 
   if action == "Glue" then
     pool_ids_changed = _state.action.glue.changed_pool_ids
@@ -430,6 +436,8 @@ function Init.setResetUsersItemSelection(set_reset)
     for i = 1, #_state.user.item_selection do
       reaper.SetMediaItemSelected(_state.user.item_selection[i], true)
     end
+
+    reaper.UpdateArrange()
   end
 end
 
