@@ -91,6 +91,9 @@ function Reglue.handleReglue(selected_items, restored_items_pool_id)
         selected_items, restored_items_pool_id,
         sizing_region_guid, nil, nil)
 
+  _state.superitem.active_instance = superitem
+  _state.superitem.active_pool     = restored_items_pool_id
+
   if superitem == false then return false end
 
   superitem = Reglue.handleReglueSuperitemParams(superitem, restored_items_pool_id)
@@ -110,7 +113,6 @@ function Reglue.handleReglue(selected_items, restored_items_pool_id)
         superitem, sizing_region_guid)
   if ok == false then return false end
 
-  _state.propagation.sibling_cache[restored_items_pool_id] = nil
   reaper.ClearPeakCache()
   return superitem
 end
@@ -145,6 +147,28 @@ function Reglue.setRegluePositionDeltas()
   _state.superitem.reglue_position_change_affect_on_length = _state.superitem.params.fresh_glue.edited_pool.length - _state.superitem.params.preedit.edited_pool.length
   _state.superitem.delta.offset_since_last_glue = _state.superitem.params.fresh_glue.edited_pool.source_offset - _state.superitem.params.last_glue.edited_pool.source_offset
   _state.superitem.delta.offset_since_last_glue = _util.round(_state.superitem.delta.offset_since_last_glue, _constant.api.time_value_decimal_resolution)
+
+
+
+  _dev.dbg("DELTA_SET_FLAGS", "offset_changed=%s", tostring(_state.superitem.offset_changed_since_last_glue))
+
+
+
+  do
+    local pool_id = _state.superitem.params.fresh_glue.edited_pool.pool_id
+    local cache   = _state.propagation.sibling_cache[pool_id]
+    if cache then
+      for guid, snap in pairs(cache) do
+        local item = reaper.BR_GetMediaItemByGUID(0, guid)
+        local take = reaper.GetActiveTake(item)
+        local guid = reaper.BR_GetMediaItemGUID(item)
+        local rate = reaper.GetMediaItemTakeInfo_Value(take, _constant.api.take.key.playrate)
+        local new_len = _sibling().calcNewLength(item, rate)
+        snap.new_len = new_len
+        cache[guid] = snap
+      end
+    end
+  end
 
   if _state.superitem.delta.position_during_glue ~= 0 then
     _state.superitem.position_changed_since_last_glue = true
@@ -393,26 +417,32 @@ function Reglue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancest
 
   for i = 0, all_items_count-1 do
     this_item = reaper.GetMediaItem(_constant.api.current_project, i)
+
+    if not reaper.ValidatePtr(this_item, "MediaItem*") or
+      reaper.BR_GetMediaItemGUID(this_item) == reaper.BR_GetMediaItemGUID(_state.superitem.active_instance)
+    then goto continue end
+
     this_active_pool_instance = Reglue.getSuperitemChangedByReglue(this_item, active_superitem, this_is_ancestor_superitem_update)
 
     -- ■ cached sibling adjustment (if dry-run already built it)
     do
-      local pool_id = tonumber(
-            _data.storeRetrieveItemData(this_item,
-              _constant.data.key.suffix.pool.instance_id))
+      local pool_id = _data.storeRetrieveItemData(this_item,
+              _constant.data.key.suffix.pool.instance_id)
       local cache   = _state.propagation.sibling_cache[pool_id]
       if cache then
         local guid = reaper.BR_GetMediaItemGUID(this_item)
-        local adj  = cache[guid]
+        local adj = cache and cache[guid]
         if adj then
           reaper.SetMediaItemPosition(this_item, adj.new_pos, _constant.api.dont_refresh_ui)
           reaper.SetMediaItemLength  (this_item, adj.new_len, _constant.api.dont_refresh_ui)
+
           if adj.new_src then
             reaper.SetMediaItemTakeInfo_Value(
               reaper.GetActiveTake(this_item),
               _constant.api.take.key.src_offset,
               adj.new_src)
           end
+
           return ancestor_pools_near_project_start  -- skip redundant processing
         end
       end
@@ -432,6 +462,8 @@ function Reglue.handleSuperitemsChangedByReglue(active_superitem, this_is_ancest
         ancestor_pools_near_project_start = result
       end
     end
+
+    ::continue::
   end
 
   return ancestor_pools_near_project_start
@@ -506,16 +538,38 @@ end
 function Reglue.adjustSuperitemChangedByReglue(instance, this_is_ancestor_superitem_update, this_is_direct_parent_instance_update, sibling_negative_position_validation)
 
   do
-    local pool_id = tonumber(_data.storeRetrieveItemData(instance, _constant.data.key.suffix.pool.instance_id))
+    local pool_id = _data.storeRetrieveItemData(instance, _constant.data.key.suffix.pool.instance_id)
     local g       = reaper.BR_GetMediaItemGUID(instance)
     local snap    = _state.propagation.sibling_cache[pool_id] and _state.propagation.sibling_cache[pool_id][g]
+
     if snap and not sibling_negative_position_validation then
       reaper.SetMediaItemPosition(instance, snap.new_pos, _constant.api.dont_refresh_ui)
       reaper.SetMediaItemLength  (instance, snap.new_len, _constant.api.dont_refresh_ui)
+
       if snap.new_src then
         local tk = reaper.GetActiveTake(instance)
+
+
+
+        _dev.dbg("CACHE_APPLY_SRC", "GUID=%s  setting src_offset=%s", g, tostring(snap.new_src))
+
+
+
+
         reaper.SetMediaItemTakeInfo_Value(tk, _constant.api.take.key.src_offset, snap.new_src)
       end
+
+
+
+
+
+      if not snap then
+        _dev.dbg("CACHE_MISS_SRC", "GUID=%s  no cached source offset applied", g)
+      end
+
+
+
+
       return
     end
   end

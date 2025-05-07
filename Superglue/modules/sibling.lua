@@ -19,6 +19,16 @@ end)()
 
 
 function Sibling.validateSiblingPositionsBeforeReglue(pool_id)
+
+
+
+  _dev.dbg("DELTA_PRE_SIB_VALIDATE", "pos=%s  offset=%s",
+      tostring(_state.superitem.delta.position_during_glue),
+      tostring(_state.superitem.delta.offset_since_last_glue))
+
+
+
+
   local cache = {}; _state.propagation.sibling_cache[pool_id] = cache
   local NEG = _constant.position_start_of_project
 
@@ -33,6 +43,20 @@ function Sibling.validateSiblingPositionsBeforeReglue(pool_id)
     if inst_id ~= "" and inst_id == pool_id then
       local curP  = reaper.GetMediaItemInfo_Value(it, _constant.api.item.key.position)
       local tk    = reaper.GetActiveTake(it)
+
+
+      _dev.dbg("CACHE_WRITE_TEST",
+        "GUID=%s  wants_src=%s  actual_src=%s",
+        reaper.BR_GetMediaItemGUID(it),
+        tostring(_state.propagation.user_wants_option.source_position),
+        tostring(reaper.GetMediaItemTakeInfo_Value(tk, _constant.api.take.key.src_offset)))
+
+          _dev.dbg("SIB_CACHE_BUILD", "GUID=%s  src_offset=%s", reaper.BR_GetMediaItemGUID(it),
+                   tostring(reaper.GetMediaItemTakeInfo_Value(tk, _constant.api.take.key.src_offset)))
+
+
+
+
       local rate  = reaper.GetMediaItemTakeInfo_Value(tk, _constant.api.take.key.playrate)
       local delta = _state.superitem.delta.position_during_glue_preview
       local delta_adjusted = delta
@@ -47,6 +71,12 @@ function Sibling.validateSiblingPositionsBeforeReglue(pool_id)
           "Propagating the left-edge shift would push a sibling before project start.\nOperation aborted.",
           "Invalid sibling position", _constant.api.msg.type.ok)
 
+
+
+        _dev.dbg("SOURCE_POS_OPTION", "source_position=%s", tostring(_state.propagation.user_wants_option.source_position))
+
+
+
         return false
       end
 
@@ -59,22 +89,46 @@ function Sibling.validateSiblingPositionsBeforeReglue(pool_id)
       }
     end
   end
+
   return true
 end
 
 
 function Sibling.calcNewLength(instance, playrate)
+
   if not _state.propagation.user_wants_option.length then
-    return reaper.GetMediaItemInfo_Value(instance,_constant.api.item.key.length)
+    return reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
   end
+
   local abs = _state.propagation.user_wants_option.absolute_length_propagation
-  local delta = _state.superitem.reglue_position_change_affect_on_length
+  local L0  = reaper.GetMediaItemInfo_Value(instance, _constant.api.item.key.length)
+
   if abs then
-    local L = _state.superitem.params.fresh_glue.edited_pool.length
-    return _state.propagation.user_wants_option.playrate_toggle and L/playrate or L
+    local fg = _state.superitem.params.fresh_glue
+            and _state.superitem.params.fresh_glue.edited_pool
+    local pre = _state.superitem.params.pre_edit
+
+    local target = fg and fg.length or pre and pre.length or L0
+
+    local computed_value = _state.propagation.user_wants_option.playrate_toggle
+           and target / playrate or target
+
+    return computed_value
   else
-    return reaper.GetMediaItemInfo_Value(instance,_constant.api.item.key.length) +
-           (_state.propagation.user_wants_option.playrate_toggle and delta/playrate or delta)
+    local delta = _state.superitem.reglue_position_change_affect_on_length
+               or _state.superitem.params.pre_edit
+                  and _state.superitem.params.fresh_glue
+                  and _state.superitem.params.fresh_glue.edited_pool.length
+                      - _state.superitem.params.pre_edit.length
+               or 0
+
+    if _state.propagation.user_wants_option.playrate_toggle then
+      delta = delta / playrate
+    end
+
+    local computed_value = L0 + delta
+
+    return computed_value
   end
 end
 
@@ -114,8 +168,18 @@ function Sibling.loadSuperitemPropagationOptionChoices()
     end
   end
 
-  if _state.superitem.offset_changed_since_last_glue then
-    _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.switch.maintain_source_position)
+  _state.propagation.user_wants_option.source_position = _common.getUserPropagationChoice("source_position", _constant.data.key.options.switch.maintain_source_position)
+
+  if _state.superitem.reglue_position_change_affect_on_length ~= 0 then
+    _state.propagation.user_wants_option.length =
+    _common.getUserPropagationChoice("length",
+      _constant.data.key.options.switch.propagate_length)
+
+    if _state.propagation.user_wants_option.length then
+      _state.propagation.user_wants_option.absolute_length_propagation =
+      _common.getUserPropagationChoice("absolute_length_propagation",
+        _constant.data.key.options.switch.length_propagation_type)
+    end
   end
 end
 

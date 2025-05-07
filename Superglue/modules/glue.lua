@@ -134,7 +134,11 @@ function Glue.handlePreglueItems(selected_items, pool_id, sizing_params, this_is
   selected_item_states, selected_items_pool_params = _data().prepareAndGetItemStates(selected_items, pool_id)
 
   _data().storeItemStates(pool_id, selected_item_states)
-  _common().selectDeselectItems(selected_items, true)
+
+  _common().selectDeselectItems(selected_items, true, function(item)
+    local guid = reaper.BR_GetMediaItemGUID(item)
+    return not _state.propagation.sibling_cache[pool_id] or not _state.propagation.sibling_cache[pool_id][guid]
+  end)
 
   return selected_items_pool_params
 end
@@ -209,6 +213,14 @@ end
 
 function Glue.glueSelectedItemsIntoSuperitem()
   local increase_channel_count_from_take_fx, superitem
+
+
+
+  for i = 0, reaper.CountSelectedMediaItems(0) - 1 do
+    local it = reaper.GetSelectedMediaItem(0, i)
+  end
+
+
 
   increase_channel_count_from_take_fx = reaper.GetExtState(_constant.data.key.options.global_section, _constant.data.key.options.toggle.auto_increase_channel_count)
 

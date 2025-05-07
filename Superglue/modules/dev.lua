@@ -10,6 +10,16 @@ local Dev = {
 
 
 
+
+function Dev.dbg(tag, ...)
+  local out = {"•[SG]" .. tag .. ":"}
+  for i = 1, select("#", ...) do
+    table.insert(out, tostring(select(i, ...)))
+  end
+  reaper.ShowConsoleMsg(table.concat(out, "  ") .. "\n")
+end
+
+
 function Dev.updateSelectedItems()
 
   for i = 0, reaper.CountSelectedMediaItems(0)-1 do
