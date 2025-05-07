@@ -3,29 +3,34 @@
 -- @version 1.900
 -- @changelog Enable Glue/Edit/Unglue on multiple tracks at once (https://github.com/MonkeyBars3k/ReaScripts/issues/11); Enable Editing/Ungluing multiple Superitems at once (https://github.com/MonkeyBars3k/ReaScripts/issues/15); Add script: Pool - Remove restored items from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/283); Add Option: Enable multi-item Edit/Unglue/Remove from Pool (https://github.com/MonkeyBars3k/ReaScripts/issues/343); Add option: Retain only the latest Superglue source media (undo history offline) (https://github.com/MonkeyBars3k/ReaScripts/issues/344); Reglue with Sibling DePool enabled throws error (https://github.com/MonkeyBars3k/ReaScripts/issues/345); Display item info: Support multiitem (https://github.com/MonkeyBars3k/ReaScripts/issues/348); Reglued child relative position to parent superitem position can't go negative (stuck at 0) (https://github.com/MonkeyBars3k/ReaScripts/issues/349); Replace simple condition assignments with short-circuit evaluations; Restored items placement wrong after DePool then Edit or Unglue (https://github.com/MonkeyBars3k/ReaScripts/issues/361); Display item info: Support multiitem (https://github.com/MonkeyBars3k/ReaScripts/issues/348); Remove Near Project Start submodule (https://github.com/MonkeyBars3k/ReaScripts/issues/376); Trying to Edit non-instance restored items throws Too many siblings error (https://github.com/MonkeyBars3k/ReaScripts/issues/375); New module system (https://github.com/MonkeyBars3k/ReaScripts/issues/379); Fixed Lanes support (https://github.com/MonkeyBars3k/ReaScripts/issues/364); Split up Remove script into 2 (https://github.com/MonkeyBars3k/ReaScripts/issues/377)
 -- @provides [main] .
---   [main] MB_Superglue - Edit - Reveal contained item(s) from selected Superitem previously glued by Superglue, retaining ability to Glue back to same Pool.lua
---   [main] MB_Superglue - Options - Display - Background images on new Superglue items - Superitems diagonal, contained items horizontal stripes (On-Off).lua
---   [main] MB_Superglue - Options - Display - Randomly color newly Superglued Superitem (On-Off).lua
---   [main] MB_Superglue - Options - Global - Open script options window.lua
---   [main] MB_Superglue - Options - Glue - Auto-increase channel count with take FX (On-Off).lua
---   [main] MB_Superglue - Options - Glue - Time selection determines Superitem bounds on initial glue (On-Off).lua
---   [main] MB_Superglue - Options - Reglue - Absolute or relative propagation length change on Siblings (still altered by playrate) (Absolute-Ask-Relative).lua
---   [main] MB_Superglue - Options - Reglue - Audio source position of Siblings is maintained (Enable-Ask-Disable).lua
---   [main] MB_Superglue - Options - Reglue - Length change of Edited Superitem propagates to Siblings (Enable-Ask-Disable).lua
---   [main] MB_Superglue - Options - Reglue - Looped source of Superitem determines Sizing Region bounds (On-Off).lua
---   [main] MB_Superglue - Options - Reglue - Playrate of Siblings affects their length & position propagation values (Enable-Ask-Disable).lua
---   [main] MB_Superglue - Options - Reglue - Position change of Edited Superitem's left edge propagates to Siblings (Enable-Ask-Disable).lua
---   [main] MB_Superglue - Options - Reglue - Remove Siblings from Edited Superitem's Pool, giving every Sibling its own new Pool (On-Off).lua
---   [main] MB_Superglue - Pool - Remove selected Superitem from current Pool & create new Pool for it.lua
---   [main] MB_Superglue - Smart Action - Glue or Edit selected item(s) by context.lua
---   [main] MB_Superglue - Smart Action - Glue or Unglue selected item(s) by context.lua
---   [main] MB_Superglue - Unglue - Reveal contained item(s) from selected Superitem & detach from Pool (won't propagate changes to siblings on Reglue).lua
---   [main] MB_Superglue - Utility - Display selected Superglue item info - Pool no., No. of contained items, Parent Pool, etc.lua
---   [main] MB_Superglue - Utility - Set all Superitems in project to one custom color.lua
---   [nomain] MB_Superglue - Utility - Dump Superglue project data to log.lua
+--   [main] Superglue - Change Option - Absolute or relative length propagation to Siblings on Reglue (Absolute-Ask-Relative).lua
+--   [main] Superglue - Change Option - Add background image on new Superitems and contained items (On-Off).lua
+--   [main] Superglue - Change Option - Auto-increase Superitem channel count from take FX on Glue (On-Off).lua
+--   [main] Superglue - Change Option - Color newly created Superitems randomly (On-Off).lua
+--   [main] Superglue - Change Option - Disable Superitem Pooling, generating new Pool for every Sibling on every Reglue (On-Off).lua
+--   [main] Superglue - Change Option - Maintain loop length of Superitems on Reglue (On-Off).lua
+--   [main] Superglue - Change Option - Maintain Siblings' source offset on Reglue (Enable-Ask-Disable).lua
+--   [main] Superglue - Change Option - Multi-item Edit, Unglue, or DePool in single action (On-Off).lua
+--   [main] Superglue - Change Option - Propagate Edited Superitems' left edge changes to Siblings on Reglue (Enable-Ask-Disable).lua
+--   [main] Superglue - Change Option - Propagate Edited Superitems' length changes to Siblings on Reglue (Enable-Ask-Disable).lua
+--   [main] Superglue - Change Option - Retain only the latest Superglue source media (On-Off).lua
+--   [main] Superglue - Change Option - Siblings' playrate affects their length & position propagation values on Reglue (Enable-Ask-Disable).lua
+--   [main] Superglue - Change Option - Time selection determines Superitem bounds on initial Glue (On-Off).lua
+--   [main] Superglue - Edit selected Superitem(s).lua
+--   [main] Superglue - Generate new Pool for each selected Superitem.lua
+--   [main] Superglue - Open Options window.lua
+--   [main] Superglue - Remove selected restored item(s) from Pool(s).lua
+--   [main] Superglue - Smart Glue or Edit selected item(s) by context.lua
+--   [main] Superglue - Smart Glue or Unglue selected item(s) by context.lua
+--   [main] Superglue - Unglue selected Superitem(s).lua
+--   [main] Superglue - Utility - Set all Superitems in project to one custom color.lua
+--   [main] Superglue - Utility - View selected Superglue items' data.lua
+--   [nomain] Superglue - Utility - Dump Superglue project data to log.lua
 --   [nomain] Superglue.lua
+--   [nomain] module-utils.lua
 --   [nomain] lib/serpent.lua
 --   [nomain] lib/rtk.lua
+--   [nomain] modules/ancestor.lua
 --   [nomain] modules/common.lua
 --   [nomain] modules/constant.lua
 --   [nomain] modules/data.lua
@@ -38,7 +43,11 @@
 --   [nomain] modules/lanes.lua
 --   [nomain] modules/multi.lua
 --   [nomain] modules/options.lua
+--   [nomain] modules/overglue.lua
+--   [nomain] modules/reglue.lua
+--   [nomain] modules/sibling.lua
 --   [nomain] modules/single.lua
+--   [nomain] modules/sizing.lua
 --   [nomain] modules/state.lua
 --   [nomain] modules/unglue.lua
 --   [nomain] modules/util.lua
@@ -46,6 +55,7 @@
 --   assets/sg-bg-restored.png
 --   assets/sg-bg-restoredinstance.png
 --   assets/sg-bg-superitem.png
+--   assets/sg-logo-nobg-sm.png
 --   gnu_license_v3.txt
 -- @link Superglue forum thread https://forum.cockos.com/showthread.php?p=2540818
 -- @about Main Glue script & package metadata for MB_Superglue
