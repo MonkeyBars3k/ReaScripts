@@ -49,7 +49,6 @@
 --   [nomain] modules/single.lua
 --   [nomain] modules/sizing.lua
 --   [nomain] modules/state.lua
---   [nomain] modules/unglue.lua
 --   [nomain] modules/util.lua
 --   [nomain] modules/vi.lua
 --   assets/sg-bg-restored.png
